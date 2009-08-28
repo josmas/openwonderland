@@ -32,7 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -98,7 +99,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private SimpleClient simpleClient;
    
     /** listeners to notify when our status changes */
-    private final List<SessionStatusListener> sessionStatusListeners;
+    private final Set<SessionStatusListener> sessionStatusListeners;
  
     /** connected clients */
     private final Map<ConnectionType, ClientRecord> clients;
@@ -145,7 +146,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
        
         // initialize listeners
         sessionStatusListeners =
-                new CopyOnWriteArrayList<SessionStatusListener>();
+                new CopyOnWriteArraySet<SessionStatusListener>();
       
         // initialize the notifier
         notifier = Executors.newSingleThreadExecutor();
@@ -384,10 +385,12 @@ public class WonderlandSessionImpl implements WonderlandSession {
             return;
         }
         
-        // send a message
-        getInternalClient().send(
-             new DetachClientMessage(record.getClientID()));
-        
+        // send a message if our client is still connected
+        if (simpleClient.isConnected()) {
+            getInternalClient().send(
+                 new DetachClientMessage(record.getClientID()));
+        }
+
         // notify the client
         client.disconnected();
     }
@@ -428,10 +431,12 @@ public class WonderlandSessionImpl implements WonderlandSession {
     }
    
     public void addSessionStatusListener(SessionStatusListener listener) {
+        System.out.println("Add listener " + listener + " to " + this);
         sessionStatusListeners.add(listener);
     }
     
     public void removeSessionStatusListener(SessionStatusListener listener) {
+        System.out.println("Remove listener " + listener + " from " + this);
         sessionStatusListeners.remove(listener);
     }
    
@@ -500,8 +505,13 @@ public class WonderlandSessionImpl implements WonderlandSession {
         notifier.submit(new Runnable() {
             public void run() {
                 for (SessionStatusListener listener : sessionStatusListeners) {
-                    listener.sessionStatusChanged(WonderlandSessionImpl.this, 
-                                                  status);
+                    try {
+                        listener.sessionStatusChanged(WonderlandSessionImpl.this,
+                                                      status);
+                    } catch (Throwable t) {
+                        logger.log(Level.WARNING, "Error notifying " + listener +
+                                   " " + status, t);
+                    }
                 }
             }
         });
@@ -513,7 +523,12 @@ public class WonderlandSessionImpl implements WonderlandSession {
             notifier.submit(new Runnable() {
                 public void run() {
                     for (ClientConnection connection : getConnections()) {
-                        connection.disconnected();
+                        try {
+                            connection.disconnected();
+                        } catch (Throwable t) {
+                            logger.log(Level.WARNING, "Error disconnecting " +
+                                       connection, t);
+                        }
                     }
                 }
             });

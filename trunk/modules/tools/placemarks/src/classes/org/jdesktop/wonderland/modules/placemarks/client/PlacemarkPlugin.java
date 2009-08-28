@@ -199,6 +199,15 @@ public class PlacemarkPlugin extends BaseClientPlugin
      * @inheritDoc()
      */
     @Override
+    public void cleanup() {
+        getSessionManager().removeLifecycleListener(this);
+        super.cleanup();
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    @Override
     protected void activate() {
 
         // Listen for changes to the list of Placemarks. This needs to come
@@ -249,9 +258,11 @@ public class PlacemarkPlugin extends BaseClientPlugin
      * @inheritDoc()
      */
     public void primarySession(WonderlandSession session) {
-        session.addSessionStatusListener(this);
-        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-            connectClient(session);
+        if (session != null) {
+            session.addSessionStatusListener(this);
+            if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+                connectClient(session);
+            }
         }
     }
 

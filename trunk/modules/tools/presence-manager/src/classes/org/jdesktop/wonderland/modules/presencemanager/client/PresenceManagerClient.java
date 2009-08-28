@@ -105,11 +105,14 @@ public class PresenceManagerClient extends BaseConnection implements
 
     @Override
     public void disconnect() {
+        // send a message if we aren't already disconnected
+        if (session.getStatus() != WonderlandSession.Status.DISCONNECTED) {
+            pm.removePresenceInfo(presenceInfo);
+        }
+
         // LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
-	
-	pm.removePresenceInfo(presenceInfo);
 
 	PresenceManagerFactory.reset();
     }
