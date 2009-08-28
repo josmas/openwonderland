@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.viewproperties.client;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ResourceBundle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
@@ -34,20 +35,21 @@ import org.jdesktop.wonderland.client.jme.ViewProperties;
  * and back clip).
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ViewPropertiesJDialog extends javax.swing.JDialog {
 
-    private static Logger logger = Logger.getLogger(ViewPropertiesJDialog.class.getName());
-    
+    private static final Logger LOGGER =
+            Logger.getLogger(ViewPropertiesJDialog.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/viewproperties/client/Bundle");
     // The original values for the field-of-view, front/back clip to use upon
     // revert.
     private int originalFieldOfView = 0;
     private int originalFrontClip = 0;
     private int originalBackClip = 0;
-
     // The view manager's properties
     private ViewProperties viewProperties = null;
-
     // This boolean indicates whether the values of the sliders and text fields
     // are being set programmatically. In such a case, we do not want to
     // generate an event.
@@ -57,7 +59,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
     /** Creates new form ViewControls */
     public ViewPropertiesJDialog() {
         initComponents();
-        setTitle("View Properties");
+        setTitle(BUNDLE.getString("View_Properties"));
 
         // Fetch the view properties object
         ViewManager manager = ViewManager.getViewManager();
@@ -66,20 +68,23 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // Listen for when the field-of-view slider value is changed and update
         // the text field.
         fovSlider.addChangeListener(new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
                 // Update the value of the text field and also the view
                 // properties. We only do this if the value of the slider has
                 // changed via the GUI and not programmatically.
-                logger.fine("Fov Slider State Changed, setSlidersLocal=" + setSlidersLocal);
-                if (setSlidersLocal == false) {
+                LOGGER.fine("Fov Slider State Changed, setSlidersLocal=" +
+                        setSlidersLocal);
+                if (!setSlidersLocal) {
                     // Says that we are changing the vlaues of the text field
                     // programatically. This prevents extra events being
                     // generated when manually setting the text field values.
-                    logger.fine("Fov Slider State Changed, setting fov text field value");
+                    LOGGER.fine("Fov Slider State Changed, setting fov text " +
+                            "field value");
                     setTextFieldsLocal = true;
                     try {
                         int fov = fovSlider.getValue();
-                        fovField.setValue((long)fov);
+                        fovField.setValue((long) fov);
                         viewProperties.setFieldOfView((float) fov);
                         setApplyEnabled();
                     } finally {
@@ -93,19 +98,22 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // value. Note that if the Close/Apply button are clicked, a focus
         // lost event is first generated.
         fovField.addPropertyChangeListener("value", new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent evt) {
                 // We only care about these events if we are not setting the
                 // text field values programmatically.
-                logger.fine("Fov Textfield Property Changed, setTextFieldsLocal=" + setTextFieldsLocal);
-                if (setTextFieldsLocal == false) {
+                LOGGER.fine("Fov Textfield Property Changed, " +
+                        "setTextFieldsLocal=" + setTextFieldsLocal);
+                if (!setTextFieldsLocal) {
                     // Says that we are changing the values of the sliders
                     // programmatically. This prevents extra events being
                     // generated when manually setting the slider values
-                    logger.fine("Fov Textfield Property Changed, setting fov slider value");
+                    LOGGER.fine("Fov Textfield Property Changed, setting fov " +
+                            "slider value");
                     setSlidersLocal = true;
                     try {
                         long fovValue = (Long) fovField.getValue();
-                        fovSlider.setValue((int)fovValue);
+                        fovSlider.setValue((int) fovValue);
                         viewProperties.setFieldOfView((float) fovValue);
                         setApplyEnabled();
                     } finally {
@@ -118,20 +126,23 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // Listen for when the front clip slider value is changed and update
         // the text field.
         frontClipSlider.addChangeListener(new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
                 // Update the value of the text field and also the view
                 // properties. We only do this if the value of the slider has
                 // changed via the GUI and not programmatically.
-                logger.fine("Front Clip Slider State Changed, setSlidersLocal=" + setSlidersLocal);
-                if (setSlidersLocal == false) {
+                LOGGER.fine("Front Clip Slider State Changed, " +
+                        "setSlidersLocal=" + setSlidersLocal);
+                if (!setSlidersLocal) {
                     // Says that we are changing the vlaues of the text field
                     // programatically. This prevents extra events being
                     // generated when manually setting the text field values.
-                    logger.fine("Front Clip Slider State Changed, setting fov text field value");
+                    LOGGER.fine("Front Clip Slider State Changed, setting " +
+                            "fov text field value");
                     setTextFieldsLocal = true;
                     try {
                         int clip = frontClipSlider.getValue();
-                        frontClipField.setValue((long)clip);
+                        frontClipField.setValue((long) clip);
                         viewProperties.setFrontClip((float) clip);
                         setApplyEnabled();
                     } finally {
@@ -145,19 +156,22 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // value. Note that if the Close/Apply button are clicked, a focus
         // lost event is first generated.
         frontClipField.addPropertyChangeListener("value", new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent evt) {
                 // We only care about these events if we are not setting the
                 // text field values programmatically.
-                logger.fine("Front Clip Textfield Property Changed, setTextFieldsLocal=" + setTextFieldsLocal);
-                if (setTextFieldsLocal == false) {
+                LOGGER.fine("Front Clip Textfield Property Changed, " +
+                        "setTextFieldsLocal=" + setTextFieldsLocal);
+                if (!setTextFieldsLocal) {
                     // Says that we are changing the values of the sliders
                     // programmatically. This prevents extra events being
                     // generated when manually setting the slider values
-                    logger.fine("Front Clip Textfield Property Changed, setting front clip slider value");
+                    LOGGER.fine("Front Clip Textfield Property Changed, " +
+                            "setting front clip slider value");
                     setSlidersLocal = true;
                     try {
                         long clipValue = (Long) frontClipField.getValue();
-                        frontClipSlider.setValue((int)clipValue);
+                        frontClipSlider.setValue((int) clipValue);
                         viewProperties.setFrontClip((float) clipValue);
                         setApplyEnabled();
                     } finally {
@@ -170,20 +184,23 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // Listen for when the rear clip slider value is changed and update
         // the text field.
         rearClipSlider.addChangeListener(new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
                 // Update the value of the text field and also the view
                 // properties. We only do this if the value of the slider has
                 // changed via the GUI and not programmatically.
-                logger.fine("Rear Clip Slider State Changed, setSlidersLocal=" + setSlidersLocal);
-                if (setSlidersLocal == false) {
+                LOGGER.fine("Rear Clip Slider State Changed, " +
+                        "setSlidersLocal=" + setSlidersLocal);
+                if (!setSlidersLocal) {
                     // Says that we are changing the vlaues of the text field
                     // programatically. This prevents extra events being
                     // generated when manually setting the text field values.
-                    logger.fine("Rear Clip Slider State Changed, setting fov text field value");
+                    LOGGER.fine("Rear Clip Slider State Changed, setting fov " +
+                            "text field value");
                     setTextFieldsLocal = true;
                     try {
                         int clip = rearClipSlider.getValue();
-                        rearClipField.setValue((long)clip);
+                        rearClipField.setValue((long) clip);
                         viewProperties.setBackClip((float) clip);
                         setApplyEnabled();
                     } finally {
@@ -197,19 +214,22 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // value. Note that if the Close/Apply button are clicked, a focus
         // lost event is first generated.
         rearClipField.addPropertyChangeListener("value", new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent evt) {
                 // We only care about these events if we are not setting the
                 // text field values programmatically.
-                logger.fine("Rear Clip Textfield Property Changed, setTextFieldsLocal=" + setTextFieldsLocal);
-                if (setTextFieldsLocal == false) {
+                LOGGER.fine("Rear Clip Textfield Property Changed, " +
+                        "setTextFieldsLocal=" + setTextFieldsLocal);
+                if (!setTextFieldsLocal) {
                     // Says that we are changing the values of the sliders
                     // programmatically. This prevents extra events being
                     // generated when manually setting the slider values
-                    logger.fine("Rear Clip Textfield Property Changed, setting rear clip slider value");
+                    LOGGER.fine("Rear Clip Textfield Property Changed, " +
+                            "setting rear clip slider value");
                     setSlidersLocal = true;
                     try {
                         long clipValue = (Long) rearClipField.getValue();
-                        rearClipSlider.setValue((int)clipValue);
+                        rearClipSlider.setValue((int) clipValue);
                         viewProperties.setBackClip((float) clipValue);
                         setApplyEnabled();
                     } finally {
@@ -222,18 +242,19 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // Listen for when the window is closing. We will pop up a confirm
         // dialog to see if the user wants to keep the current values.
         addWindowListener(new WindowAdapter() {
+
             @Override
             public void windowClosing(WindowEvent e) {
-                if (isDirty() == true) {
+                if (isDirty()) {
                     int result = JOptionPane.showConfirmDialog(
                             ViewPropertiesJDialog.this,
-                            "Do you wish to apply the properties before closing?",
-                            "Apply values?", JOptionPane.YES_NO_OPTION,
+                            BUNDLE.getString("Apply_Message"),
+                            BUNDLE.getString("Apply_Title"),
+                            JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
                     if (result == JOptionPane.YES_OPTION) {
                         okButtonActionPerformed(null);
-                    }
-                    else {
+                    } else {
                         // Reset the view to the original values and close the
                         // window. We do not dispose since we may want to use
                         // the dialog again.
@@ -257,10 +278,10 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
 
         // If we are making the dialog visible, then store the original values
         // from the view manager's properties
-        if (isVisible == true) {
-            originalFieldOfView = (int)viewProperties.getFieldOfView();
-            originalFrontClip = (int)viewProperties.getFrontClip();
-            originalBackClip = (int)viewProperties.getBackClip();
+        if (isVisible) {
+            originalFieldOfView = (int) viewProperties.getFieldOfView();
+            originalFrontClip = (int) viewProperties.getFrontClip();
+            originalBackClip = (int) viewProperties.getBackClip();
             updateGUI();
             setApplyEnabled();
         }
@@ -304,18 +325,18 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
      * original values.
      */
     private boolean isDirty() {
-        long fovValue = (Long)fovField.getValue();
-        if ((int)fovValue != originalFieldOfView) {
+        long fovValue = (Long) fovField.getValue();
+        if ((int) fovValue != originalFieldOfView) {
             return true;
         }
 
-        long frontClipValue = (Long)frontClipField.getValue();
-        if ((int)frontClipValue != originalFrontClip) {
+        long frontClipValue = (Long) frontClipField.getValue();
+        if ((int) frontClipValue != originalFrontClip) {
             return true;
         }
 
-        long rearClipValue = (Long)rearClipField.getValue();
-        if ((int)rearClipValue != originalBackClip) {
+        long rearClipValue = (Long) rearClipField.getValue();
+        if ((int) rearClipValue != originalBackClip) {
             return true;
         }
         return false;
@@ -343,7 +364,8 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         frontClipField = new javax.swing.JFormattedTextField();
         rearClipField = new javax.swing.JFormattedTextField();
 
-        okButton.setText("Apply");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/viewproperties/client/Bundle"); // NOI18N
+        okButton.setText(bundle.getString("ViewPropertiesJDialog.okButton.text")); // NOI18N
         okButton.setEnabled(false);
         okButton.setSelected(true);
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -352,7 +374,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
             }
         });
 
-        cancelButton.setText("Close");
+        cancelButton.setText(bundle.getString("ViewPropertiesJDialog.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -362,7 +384,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
-        fovLabel.setText("Field Of View:");
+        fovLabel.setText(bundle.getString("ViewPropertiesJDialog.fovLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -383,7 +405,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         mainPanel.add(fovSlider, gridBagConstraints);
 
-        frontClipLabel.setText("Front Clip:");
+        frontClipLabel.setText(bundle.getString("ViewPropertiesJDialog.frontClipLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -414,7 +436,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         mainPanel.add(frontClipSlider, gridBagConstraints);
 
-        rearClipLabel.setText("Back Clip:");
+        rearClipLabel.setText(bundle.getString("ViewPropertiesJDialog.rearClipLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -460,7 +482,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(345, Short.MAX_VALUE)
+                .addContainerGap(346, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okButton)
@@ -488,8 +510,9 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         } catch (java.lang.Exception excp) {
             String msg = "Error writing properties to user's local repository.";
             String title = "Error Writing Properties";
-            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
-            logger.log(Level.WARNING, "Error writing properties file", excp);
+            JOptionPane.showMessageDialog(
+                    this, msg, title, JOptionPane.ERROR_MESSAGE);
+            LOGGER.log(Level.WARNING, "Error writing properties file", excp);
         }
 
         // Close the window, we do not dispose since we may want to use the
@@ -501,28 +524,27 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
 
         // Check to see if the values have changed from the original values. If
         // so then ask whether we want to apply the changes or not.
-        if (isDirty() == true) {
+        if (isDirty()) {
             int result = JOptionPane.showConfirmDialog(
                     ViewPropertiesJDialog.this,
-                    "Do you wish to apply the properties before closing?",
-                    "Apply values?", JOptionPane.YES_NO_OPTION,
+                    BUNDLE.getString("Apply_Message"),
+                    BUNDLE.getString("Apply_Title"),
+                    JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
             if (result == JOptionPane.YES_OPTION) {
                 okButtonActionPerformed(null);
-            }
-            else {
+            } else {
                 // Reset the view to the original values and close the window.
                 // We do not dispose since we may want to use the dialog again.
-                viewProperties.setFieldOfView((float)originalFieldOfView);
-                viewProperties.setFrontClip((float)originalFrontClip);
-                viewProperties.setBackClip((float)originalBackClip);
+                viewProperties.setFieldOfView((float) originalFieldOfView);
+                viewProperties.setFrontClip((float) originalFrontClip);
+                viewProperties.setBackClip((float) originalBackClip);
                 setVisible(false);
             }
             return;
         }
         setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JFormattedTextField fovField;

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.viewproperties.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
@@ -35,11 +36,15 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * item under "View"
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @Plugin
 public class ViewPropertiesClientPlugin extends BaseClientPlugin {
 
-    private static Logger logger = Logger.getLogger(ViewPropertiesClientPlugin.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(ViewPropertiesClientPlugin.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/viewproperties/client/Bundle");
     private JMenuItem propertiesMI = null;
     private WeakReference<ViewPropertiesJDialog> viewPropertiesFrameRef = null;
 
@@ -48,11 +53,12 @@ public class ViewPropertiesClientPlugin extends BaseClientPlugin {
         // Create the Properties menu item that lets users edit the properties
         // of the view (field-of-view, front/back clip). The menu will be added
         // when our server becomes primary.
-        propertiesMI = new JMenuItem("Properties...");
+        propertiesMI = new JMenuItem(BUNDLE.getString("Properties..."));
         propertiesMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 ViewPropertiesJDialog dialog = getViewPropertiesJDialog();
-                if (dialog.isVisible() == false) {
+                if (!dialog.isVisible()) {
                     dialog.pack();
                     dialog.setSize(300, 200);
                     dialog.setModal(false);
@@ -75,14 +81,16 @@ public class ViewPropertiesClientPlugin extends BaseClientPlugin {
         // repository and set the initial values in the view manager's
         // properties
         try {
-            ViewProperties properties = ViewPropertiesUtils.loadViewProperties();
+            ViewProperties properties =
+                    ViewPropertiesUtils.loadViewProperties();
             ViewManager manager = ViewManager.getViewManager();
             ViewProperties viewProperties = manager.getViewProperties();
             viewProperties.setFieldOfView(properties.getFieldOfView());
             viewProperties.setFrontClip(properties.getFrontClip());
             viewProperties.setBackClip(properties.getBackClip());
         } catch (java.lang.Exception excp) {
-            logger.log(Level.WARNING, "Unable to read user's view properties", excp);
+            LOGGER.log(Level.WARNING,
+                    "Unable to read user's view properties", excp);
         }
     }
 
@@ -97,12 +105,13 @@ public class ViewPropertiesClientPlugin extends BaseClientPlugin {
      * necessary
      */
     private ViewPropertiesJDialog getViewPropertiesJDialog() {
-        if (viewPropertiesFrameRef == null || viewPropertiesFrameRef.get() == null) {
-            ViewPropertiesJDialog viewPropertiesFrame = new ViewPropertiesJDialog();
+        if (viewPropertiesFrameRef == null ||
+                viewPropertiesFrameRef.get() == null) {
+            ViewPropertiesJDialog viewPropertiesFrame =
+                    new ViewPropertiesJDialog();
             viewPropertiesFrameRef = new WeakReference(viewPropertiesFrame);
             return viewPropertiesFrame;
-        }
-        else {
+        } else {
             return viewPropertiesFrameRef.get();
         }
     }
