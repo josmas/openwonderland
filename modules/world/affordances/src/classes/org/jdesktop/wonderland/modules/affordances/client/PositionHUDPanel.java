@@ -42,30 +42,31 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * A panel to display affordance items on the HUD.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class PositionHUDPanel extends javax.swing.JPanel {
 
     /* The currently selected Cell and its movable component */
-    private Cell selectedCell = null;
-    private MovableComponent movableComponent = null;
+    private Cell selectedCell;
+    private MovableComponent movableComponent;
 
     /* Various listener on the Cell and Swing JSpinners */
-    private ComponentChangeListener componentListener = null;
-    private TransformChangeListener transformListener = null;
-    private ChangeListener translationListener = null;
-    private ChangeListener rotationListener = null;
-    private ChangeListener scaleListener = null;
+    private ComponentChangeListener componentListener;
+    private TransformChangeListener transformListener;
+    private ChangeListener translationListener;
+    private ChangeListener rotationListener;
+    private ChangeListener scaleListener;
 
     /* Models for the Swing JSpinners */
-    private SpinnerNumberModel xTranslationModel = null;
-    private SpinnerNumberModel yTranslationModel = null;
-    private SpinnerNumberModel zTranslationModel = null;
-    private SpinnerNumberModel xScaleModel = null;
-    private SpinnerNumberModel yScaleModel = null;
-    private SpinnerNumberModel zScaleModel = null;
-    private SpinnerNumberModel xRotationModel = null;
-    private SpinnerNumberModel yRotationModel = null;
-    private SpinnerNumberModel zRotationModel = null;
+    private SpinnerNumberModel xTranslationModel;
+    private SpinnerNumberModel yTranslationModel;
+    private SpinnerNumberModel zTranslationModel;
+    private SpinnerNumberModel xScaleModel;
+    private SpinnerNumberModel yScaleModel;
+    private SpinnerNumberModel zScaleModel;
+    private SpinnerNumberModel xRotationModel;
+    private SpinnerNumberModel yRotationModel;
+    private SpinnerNumberModel zRotationModel;
 
     /*
      * This boolean indicates whether the values of the spinners are being
@@ -112,13 +113,17 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // Listen for changes, if there is a movable component added or removed
         // update the state of the fields
         componentListener = new ComponentChangeListener() {
-            public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
-                if (type == ChangeType.ADDED && component instanceof MovableComponent) {
-                    movableComponent = (MovableComponent)component;
+
+            public void componentChanged(
+                    Cell cell, ChangeType type, CellComponent component) {
+                if ((type == ChangeType.ADDED) &&
+                        component instanceof MovableComponent) {
+                    movableComponent = (MovableComponent) component;
 
                     // We must enable the GUI components in the AWT Event
                     // Thread.
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
                             setGUIEnabled(true);
                         }
@@ -130,9 +135,11 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // Listen for changes to the cell transform that may be done by other
         // parts of this client or other clients.
         transformListener = new TransformChangeListener() {
+
             public void transformChanged(Cell cell, ChangeSource source) {
                 // We must call this in the AWT Event Thread
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         updateGUI();
                     }
@@ -146,6 +153,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // 'setLocal' is set always in the AWT Event Thread, the same thread
         // as this listener.
         translationListener = new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
                 if (setLocal == false) {
                     updateTranslation();
@@ -159,6 +167,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // Listen for changes to the rotation values and update the cell as a
         // result. See the comments above for 'translationListener' too.
         rotationListener = new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
                 if (setLocal == false) {
                     updateRotation();
@@ -172,6 +181,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // Listen for changes to the scale values and update the cell as a
         // result. See the comments above for 'translationListener' too.
         scaleListener = new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
                 if (setLocal == false) {
                     updateScale();
@@ -185,28 +195,37 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // Listen for focus gained on the text field's of the spinners. Select
         // all of the text
         FocusListener focusListener = new FocusAdapter() {
+
             @Override
             public void focusGained(final FocusEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
-                      ((JFormattedTextField)e.getSource()).selectAll();
+                        ((JFormattedTextField) e.getSource()).selectAll();
                     }
                 });
             }
         };
-        ((JSpinner.DefaultEditor)translationXTF.getEditor()).getTextField().addFocusListener(focusListener);
-        ((JSpinner.DefaultEditor)translationYTF.getEditor()).getTextField().addFocusListener(focusListener);
-        ((JSpinner.DefaultEditor)translationZTF.getEditor()).getTextField().addFocusListener(focusListener);
-        ((JSpinner.DefaultEditor)rotationXTF.getEditor()).getTextField().addFocusListener(focusListener);
-        ((JSpinner.DefaultEditor)rotationYTF.getEditor()).getTextField().addFocusListener(focusListener);
-        ((JSpinner.DefaultEditor)rotationZTF.getEditor()).getTextField().addFocusListener(focusListener);
-        ((JSpinner.DefaultEditor)scaleTF.getEditor()).getTextField().addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor) translationXTF.getEditor()).getTextField().
+                addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor) translationYTF.getEditor()).getTextField().
+                addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor) translationZTF.getEditor()).getTextField().
+                addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor) rotationXTF.getEditor()).getTextField().
+                addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor) rotationYTF.getEditor()).getTextField().
+                addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor) rotationZTF.getEditor()).getTextField().
+                addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor) scaleTF.getEditor()).getTextField().
+                addFocusListener(focusListener);
 
         // Turn off the GUI initially, until we have a selected cell
         clearGUI();
         setGUIEnabled(false);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -249,12 +268,13 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         translationPanel.setLayout(new java.awt.GridLayout(4, 1));
 
-        jLabel4.setText("Position (meters)");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/affordances/client/resources/Bundle"); // NOI18N
+        jLabel4.setText(bundle.getString("PositionHUDPanel.jLabel4.text")); // NOI18N
         translationPanel.add(jLabel4);
 
         xTranslationPanel.setLayout(new javax.swing.BoxLayout(xTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel1.setText("X:");
+        jLabel1.setText(bundle.getString("PositionHUDPanel.jLabel1.text")); // NOI18N
         xTranslationPanel.add(jLabel1);
 
         translationXTF.setMinimumSize(new java.awt.Dimension(100, 30));
@@ -265,7 +285,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         yTranslationPanel.setLayout(new javax.swing.BoxLayout(yTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel2.setText("Y:");
+        jLabel2.setText(bundle.getString("PositionHUDPanel.jLabel2.text")); // NOI18N
         yTranslationPanel.add(jLabel2);
 
         translationYTF.setMinimumSize(new java.awt.Dimension(100, 30));
@@ -276,7 +296,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         zTranslationPanel.setLayout(new javax.swing.BoxLayout(zTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel3.setText("Z:");
+        jLabel3.setText(bundle.getString("PositionHUDPanel.jLabel3.text")); // NOI18N
         zTranslationPanel.add(jLabel3);
 
         translationZTF.setMinimumSize(new java.awt.Dimension(100, 30));
@@ -297,12 +317,12 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         rotationPanel.setLayout(new java.awt.GridLayout(4, 1));
 
-        jLabel10.setText("Rotation (degrees)");
+        jLabel10.setText(bundle.getString("PositionHUDPanel.jLabel10.text")); // NOI18N
         rotationPanel.add(jLabel10);
 
         xRotationPanel.setLayout(new javax.swing.BoxLayout(xRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel11.setText("X:");
+        jLabel11.setText(bundle.getString("PositionHUDPanel.jLabel11.text")); // NOI18N
         xRotationPanel.add(jLabel11);
 
         rotationXTF.setMinimumSize(new java.awt.Dimension(100, 30));
@@ -313,7 +333,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         yRotationPanel.setLayout(new javax.swing.BoxLayout(yRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel12.setText("Y:");
+        jLabel12.setText(bundle.getString("PositionHUDPanel.jLabel12.text")); // NOI18N
         yRotationPanel.add(jLabel12);
 
         rotationYTF.setMinimumSize(new java.awt.Dimension(100, 30));
@@ -324,7 +344,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         zRotationPanel.setLayout(new javax.swing.BoxLayout(zRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel13.setText("Z:");
+        jLabel13.setText(bundle.getString("PositionHUDPanel.jLabel13.text")); // NOI18N
         zRotationPanel.add(jLabel13);
 
         rotationZTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -346,7 +366,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         resizePanel.setLayout(new java.awt.GridLayout(2, 0));
 
-        jLabel14.setText("Scale");
+        jLabel14.setText(bundle.getString("PositionHUDPanel.jLabel14.text")); // NOI18N
         resizePanel.add(jLabel14);
 
         resizeSubPanel.setLayout(new java.awt.GridLayout(1, 0));
@@ -420,11 +440,11 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         float z = (Float) zRotationModel.getValue();
 
         // Convert to radians
-        x = (float)Math.toRadians(x);
-        y = (float)Math.toRadians(y);
-        z = (float)Math.toRadians(z);
+        x = (float) Math.toRadians(x);
+        y = (float) Math.toRadians(y);
+        z = (float) Math.toRadians(z);
 
-        Quaternion newRotation = new Quaternion(new float[] { x, y, z });
+        Quaternion newRotation = new Quaternion(new float[]{x, y, z});
         if (movableComponent != null) {
             CellTransform cellTransform = selectedCell.getLocalTransform();
             cellTransform.setRotation(newRotation);
@@ -554,12 +574,11 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         movableComponent = cell.getComponent(MovableComponent.class);
         if (movableComponent == null) {
             setGUIEnabled(false);
-        }
-        else {
+        } else {
             setGUIEnabled(true);
         }
     }
-    
+
     /**
      * Returns the currently selected cell, null if no cell is currently
      * selected.
@@ -572,7 +591,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         }
         return null;
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
