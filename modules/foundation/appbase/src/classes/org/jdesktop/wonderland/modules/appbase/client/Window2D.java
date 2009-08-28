@@ -1576,7 +1576,9 @@ public abstract class Window2D implements HUDDisplayable {
                         (LinkedList<View2D>) views.clone();
                 for (View2D view : viewsToRemove) {
                     View2DDisplayer displayer = view.getDisplayer();
-                    displayer.destroyView(view);
+                    if (displayer != null) {
+                        displayer.destroyView(view);
+                    }
                 }
                 views.clear();
                 cellViews.clear();
