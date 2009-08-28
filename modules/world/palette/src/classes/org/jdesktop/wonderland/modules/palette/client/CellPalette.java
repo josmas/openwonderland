@@ -47,27 +47,33 @@ import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureList
  * A palette of cell types available to create in the world.
  * 
  * @author  Jordan Slott <jslott@dev.java.net>
+ * @author  Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-public class CellPalette extends javax.swing.JFrame implements ListSelectionListener {
-    /* A map of cell display names and their cell factories */
+public class CellPalette
+        extends javax.swing.JFrame implements ListSelectionListener {
 
-    private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
+    private final static Logger LOGGER =
+            Logger.getLogger(CellPalette.class.getName());
+
+    /* A map of cell display names and their cell factories */
+    private Map<String, CellFactorySPI> cellFactoryMap =
+            new HashMap<String, CellFactorySPI>();
 
     /* The "No Preview Available" image */
-    private Image noPreviewAvailableImage = null;
+    private Image noPreviewAvailableImage;
 
     /* The handler for the drag source for the preview image */
-    private PaletteDragGestureListener gestureListener = null;
+    private PaletteDragGestureListener gestureListener;
 
     /* The listener for changes in the list of registered Cell factories */
-    private CellRegistryListener cellListener = null;
+    private CellRegistryListener cellListener;
 
     /* The drag support from the preview label */
-    private DragSource dragSource = null;
+    private DragSource dragSource;
 
     /* The drag gesture recognizers for the cell palette */
-    private DragGestureRecognizer previewRecognizer = null;
-    private DragGestureRecognizer listRecognizer = null;
+    private DragGestureRecognizer previewRecognizer;
+    private DragGestureRecognizer listRecognizer;
 
     /** Creates new form CellPalette */
     public CellPalette() {
@@ -109,11 +115,12 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         // Update the list values. We also want to (de)register a listener for
         // changes to the list of registered Cell factories any time after we
         // make it (in)visible.
-        if (visible == true) {
+        CellRegistry cellRegistry = CellRegistry.getCellRegistry();
+        if (visible) {
             updateListValues();
-            CellRegistry.getCellRegistry().addCellRegistryListener(cellListener);
+            cellRegistry.addCellRegistryListener(cellListener);
         } else {
-            CellRegistry.getCellRegistry().removeCellRegistryListener(cellListener);
+            cellRegistry.removeCellRegistryListener(cellListener);
         }
 
         // Finally, ask the superclass to make the dialog visible.
@@ -138,13 +145,14 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         previewLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Insert Component");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/palette/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("CellPalette.title")); // NOI18N
         setName("cellFrame"); // NOI18N
 
         cellList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         cellScrollPane.setViewportView(cellList);
 
-        createButton.setText("Insert");
+        createButton.setText(bundle.getString("CellPalette.createButton.text")); // NOI18N
         createButton.setEnabled(false);
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -153,7 +161,7 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         });
 
         jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
-        jLabel1.setText("Insert Component:");
+        jLabel1.setText(bundle.getString("CellPalette.jLabel1.text")); // NOI18N
 
         previewPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         previewPanel.setMinimumSize(new java.awt.Dimension(128, 128));
@@ -216,9 +224,8 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 try {
                     CellUtils.createCell(setup);
                 } catch (CellCreationException excp) {
-                    Logger logger = Logger.getLogger(CellPalette.class.getName());
-                    logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
-                            " using palette", excp);
+                    LOGGER.log(Level.WARNING, "Unable to create cell " +
+                            cellDisplayName + " using palette", excp);
                 }
             }
         }).start();
@@ -235,14 +242,14 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             // Clear out any existing entries in the map of registered Cells
             cellFactoryMap.clear();
 
-            // Fetch the registry of cells and for each, get the palette info and
-            // populate the list.
+            // Fetch the registry of cells and for each, get the palette info
+            // and populate the list.
             CellRegistry registry = CellRegistry.getCellRegistry();
             Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
-            List<String> listNames = new LinkedList();
+            List<String> listNames = new LinkedList<String>();
 
-            // Loop through each cell factory we find. Insert the cell names into
-            // a list. Ignore any factories without a cell name.
+            // Loop through each cell factory we find. Insert the cell names
+            // into a list. Ignore any factories without a cell name.
             for (CellFactorySPI cellFactory : cellFactories) {
                 try {
                     String name = cellFactory.getDisplayName();
@@ -252,8 +259,8 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                     }
                 } catch (java.lang.Exception excp) {
                     // Just ignore, but log a message
-                    Logger logger = Logger.getLogger(CellPalette.class.getName());
-                    logger.log(Level.WARNING, "No Display Name for Cell Factory " +
+                    LOGGER.log(Level.WARNING,
+                            "No Display Name for Cell Factory " +
                             cellFactory, excp);
                 }
             }
@@ -272,8 +279,8 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
      */
     public void valueChanged(ListSelectionEvent e) {
 
-        // We synchronized around the cellFactoryMap so that this action does not
-        // interfere with any changes in the map.
+        // We synchronized around the cellFactoryMap so that this action does
+        // not interfere with any changes in the map.
         synchronized (cellFactoryMap) {
 
             // Fetch the display name of the cell selected. If it happens to
@@ -332,8 +339,9 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             // recognizer if necessary
             if (previewRecognizer == null) {
                 previewRecognizer =
-                        dragSource.createDefaultDragGestureRecognizer(previewLabel,
-                        DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+                        dragSource.createDefaultDragGestureRecognizer(
+                        previewLabel, DnDConstants.ACTION_COPY_OR_MOVE,
+                        gestureListener);
             } else {
                 previewRecognizer.setComponent(previewLabel);
             }

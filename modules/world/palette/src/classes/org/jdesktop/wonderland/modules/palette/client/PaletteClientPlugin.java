@@ -20,10 +20,11 @@ package org.jdesktop.wonderland.modules.palette.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
@@ -57,20 +58,24 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
  * Client-size plugin for the cell palette.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author  Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @Plugin
 @ContextMenuFactory
 public class PaletteClientPlugin extends BaseClientPlugin
-        implements ContextMenuFactorySPI
-{
-    private static Logger logger = Logger.getLogger(PaletteClientPlugin.class.getName());
+        implements ContextMenuFactorySPI {
+
+    private static final Logger LOGGER =
+            Logger.getLogger(PaletteClientPlugin.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/palette/client/resources/Bundle");
 
     /* The single instance of the cell palette dialog */
-    private WeakReference<CellPalette> cellPaletteFrameRef = null;
+    private WeakReference<CellPalette> cellPaletteFrameRef;
 
     /* The single instance of the Affordance HUD Panel */
-    private static HUDCellPalette hudCellPalette = null;
-    private static HUDComponent paletteHUD = null;
+    private static HUDCellPalette hudCellPalette;
+    private static HUDComponent paletteHUD;
 
     /* The menu item to add to the menu */
     private JMenuItem paletteMI;
@@ -85,18 +90,20 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // Create the Palette menu and the Cell submenu and dialog that lets
         // users create new cells.  The menu will be added when our server
         // becomes primary.
-        paletteMI = new JMenuItem("Component...");
+        paletteMI = new JMenuItem(BUNDLE.getString("Component..."));
         paletteMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 CellPalette cellPaletteFrame;
-                if (cellPaletteFrameRef == null || cellPaletteFrameRef.get() == null) {
+                if ((cellPaletteFrameRef == null) ||
+                        (cellPaletteFrameRef.get() == null)) {
                     cellPaletteFrame = new CellPalette();
-                    cellPaletteFrameRef = new WeakReference(cellPaletteFrame);
-                }
-                else {
+                    cellPaletteFrameRef = 
+                            new WeakReference<CellPalette>(cellPaletteFrame);
+                } else {
                     cellPaletteFrame = cellPaletteFrameRef.get();
                 }
-                
+
                 if (cellPaletteFrame.isVisible() == false) {
                     cellPaletteFrame.setVisible(true);
                 }
@@ -106,12 +113,14 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        paletteHUDMI = new JMenuItem("Shortcuts");
+        paletteHUDMI = new JMenuItem(BUNDLE.getString("Shortcuts"));
         paletteHUDMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 // Display the HUD Panel. We need to call HUD methods
                 // on a thread OTHER than the AWT Event Thread.
                 new Thread() {
+
                     @Override
                     public void run() {
                         if (paletteHUD == null) {
@@ -139,7 +148,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // create HUD control
         paletteHUD = mainHUD.createComponent(hudCellPalette);
-        paletteHUD.setName("Shortcuts");
+        paletteHUD.setName(BUNDLE.getString("Shortcuts"));
         paletteHUD.setPreferredLocation(Layout.NORTHEAST);
 
         // add affordances HUD panel to main HUD
@@ -158,7 +167,8 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // Register the handler for CellServerState flavors with the system-wide
         // drag and drop manager. When the preview icon is dragged from the Cell
         // Palette this handler creates an instance of the cell in the world.
-        DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
+        DragAndDropManager dndManager =
+                DragAndDropManager.getDragAndDropManager();
         dndManager.registerDataFlavorHandler(dndHandler);
     }
 
@@ -168,7 +178,8 @@ public class PaletteClientPlugin extends BaseClientPlugin
         JmeClientMain.getFrame().removeFromInsertMenu(paletteMI);
         JmeClientMain.getFrame().removeFromWindowMenu(paletteHUDMI);
 
-        DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
+        DragAndDropManager dndManager =
+                DragAndDropManager.getDragAndDropManager();
         dndManager.unregisterDataFlavorHandler(dndHandler);
     }
 
@@ -176,11 +187,11 @@ public class PaletteClientPlugin extends BaseClientPlugin
      * @inheritDoc()
      */
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        final SimpleContextMenuItem deleteItem = 
-                new SimpleContextMenuItem("Delete", null, new DeleteListener());
+        final SimpleContextMenuItem deleteItem = new SimpleContextMenuItem(
+                BUNDLE.getString("Delete"), null, new DeleteListener());
 
-        final SimpleContextMenuItem duplicateItem =
-                new SimpleContextMenuItem("Duplicate", null, new DuplicateListener());
+        final SimpleContextMenuItem duplicateItem = new SimpleContextMenuItem(
+                BUNDLE.getString("Duplicate"), null, new DuplicateListener());
 
         // find the security component for both this cell and it's parent,
         // if any
@@ -196,18 +207,18 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // see if we can check security locally, or if we have to make a
         // remote request
         if ((sc == null || sc.hasPermissions()) &&
-            (psc == null || psc.hasPermissions()))
-        {
+                (psc == null || psc.hasPermissions())) {
             duplicateItem.setEnabled(canDuplicate(psc));
             deleteItem.setEnabled(canDelete(sc, psc));
         } else {
             Thread t = new Thread(new Runnable() {
+
                 public void run() {
                     duplicateItem.setEnabled(canDuplicate(psc));
-                    duplicateItem.setLabel("Duplicate");
+                    duplicateItem.setLabel(BUNDLE.getString("Duplicate"));
                     duplicateItem.fireMenuItemRepaintListeners();
                     deleteItem.setEnabled(canDelete(sc, psc));
-                    deleteItem.setLabel("Delete");
+                    deleteItem.setLabel(BUNDLE.getString("Delete"));
                     deleteItem.fireMenuItemRepaintListeners();
                 }
             }, "Cell palette security check");
@@ -217,20 +228,20 @@ public class PaletteClientPlugin extends BaseClientPlugin
             // quickly
             try {
                 t.join(250);
-            } catch (InterruptedException ie) {}
+            } catch (InterruptedException ie) {
+            }
 
             if (!t.isAlive()) {
                 duplicateItem.setEnabled(false);
-                duplicateItem.setLabel("Duplicate (checking)");
+                duplicateItem.setLabel(BUNDLE.getString("Duplicate_Checking"));
                 deleteItem.setEnabled(false);
-                deleteItem.setLabel("Delete (checking)");
+                deleteItem.setLabel(BUNDLE.getString("Delete_Checking"));
             }
         }
 
-        return new ContextMenuItem[] {
-            deleteItem,
-            duplicateItem,
-        };
+        return new ContextMenuItem[]{
+                    deleteItem,
+                    duplicateItem,};
     }
 
     private boolean canDuplicate(SecurityComponent psc) {
@@ -279,15 +290,17 @@ public class PaletteClientPlugin extends BaseClientPlugin
             // Display a confirmation dialog to make sure we really want to
             // delete the cell.
             Cell cell = event.getCell();
+            String message = BUNDLE.getString("Confirm_Delete_Message");
+            message = MessageFormat.format(message, cell.getName());
             int result = JOptionPane.showConfirmDialog(
                     JmeClientMain.getFrame().getFrame(),
-                    "Are you sure you wish to delete cell " + cell.getName(),
-                    "Confirm Delete",
+                    message, BUNDLE.getString("Confirm_Delete"),
                     JOptionPane.YES_NO_OPTION);
 
             // Note that pressing the Esc key results in -1, so we must check
             // for that too (CLOSED_OPTION)
-            if (result == JOptionPane.NO_OPTION || result == JOptionPane.CLOSED_OPTION) {
+            if ((result == JOptionPane.NO_OPTION) ||
+                    (result == JOptionPane.CLOSED_OPTION)) {
                 return;
             }
 
@@ -303,13 +316,17 @@ public class PaletteClientPlugin extends BaseClientPlugin
         public void actionPerformed(ContextMenuItemEvent event) {
             // Create a new name for the cell, based upon the old name.
             Cell cell = event.getCell();
-            String cellName = cell.getName() + " Copy";
+            String cellName = BUNDLE.getString("Copy_Of");
+            cellName = MessageFormat.format(cellName, cell.getName());
 
             // If we want to delete, send a message to the server as such
-            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-            CellEditChannelConnection connection = (CellEditChannelConnection)
-                    session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-            CellDuplicateMessage msg = new CellDuplicateMessage(cell.getCellID(), cellName);
+            WonderlandSession session =
+                    LoginManager.getPrimary().getPrimarySession();
+            CellEditChannelConnection connection = 
+                    (CellEditChannelConnection) session.getConnection(
+                    CellEditConnectionType.CLIENT_TYPE);
+            CellDuplicateMessage msg =
+                    new CellDuplicateMessage(cell.getCellID(), cellName);
             connection.send(msg);
 
             // Really should receive an OK/Error response from the server!
