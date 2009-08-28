@@ -9,7 +9,7 @@
     
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client"/>
     <target name="dist" depends="build">
@@ -21,7 +21,7 @@
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                     <fileset dir="${current.dir}/src/classes">
-                        <include name="${module.src}/client/cell/resources/**/*.png"/>
+                        <include name="${module.src}/client/cell/resources/**"/>
                     </fileset>
                 </clientjar>
             </client>

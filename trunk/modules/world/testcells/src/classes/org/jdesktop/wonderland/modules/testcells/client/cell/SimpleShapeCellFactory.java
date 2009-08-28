@@ -22,6 +22,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
@@ -31,28 +32,35 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCe
  * The cell factory for the sample cell.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
 public class SimpleShapeCellFactory implements CellFactorySPI {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/testcells/client/cell/resources/Bundle");
+
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
         // Create a setup with some default values
-        SimpleShapeCellServerState cellServerState = new SimpleShapeCellServerState();
+        SimpleShapeCellServerState cellServerState =
+                new SimpleShapeCellServerState();
         cellServerState.setShape(Shape.CONE);
 
         return (T) cellServerState;
     }
 
     public String getDisplayName() {
-        return "Simple Shape";
+        return BUNDLE.getString("Simple_Shape");
     }
 
     public Image getPreviewImage() {
-        URL url = SimpleShapeCellFactory.class.getResource("resources/simpleshape_preview.png");
+        URL url = SimpleShapeCellFactory.class.getResource(
+                "resources/simpleshape_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
