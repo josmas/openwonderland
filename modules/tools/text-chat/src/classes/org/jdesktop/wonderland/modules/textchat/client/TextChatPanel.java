@@ -29,10 +29,12 @@ import javax.swing.SwingUtilities;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  * @author nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class TextChatPanel extends javax.swing.JPanel {
 
-    private Logger logger = Logger.getLogger(TextChatPanel.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(TextChatPanel.class.getName());
     private TextChatConnection textChatConnection = null;
     private String localUser = null;
     private String remoteUser = null;
@@ -77,7 +79,8 @@ public class TextChatPanel extends javax.swing.JPanel {
 
             public void run() {
                 messageTextArea.append(msg);
-                messageTextArea.setCaretPosition(messageTextArea.getText().length());
+                messageTextArea.setCaretPosition(
+                        messageTextArea.getText().length());
             }
         });
     }
@@ -115,8 +118,8 @@ public class TextChatPanel extends javax.swing.JPanel {
 
             public void run() {
                 String date = new SimpleDateFormat("h:mm a").format(new Date());
-                String msg = "--- User " + remoteUser + " has left the world at " +
-                        date + " ---\n";
+                String msg = "--- User " + remoteUser +
+                        " has left the world at " + date + " ---\n";
                 messageTextArea.append(msg);
                 messageTextField.setEnabled(false);
                 sendButton.setEnabled(false);
@@ -132,8 +135,8 @@ public class TextChatPanel extends javax.swing.JPanel {
 
             public void run() {
                 String date = new SimpleDateFormat("h:mm a").format(new Date());
-                String msg = "--- User " + remoteUser + " has joined the world at " +
-                        date + " ---\n";
+                String msg = "--- User " + remoteUser +
+                        " has joined the world at " + date + " ---\n";
                 messageTextArea.append(msg);
                 messageTextField.setEnabled(true);
                 sendButton.setEnabled(true);
@@ -174,7 +177,8 @@ public class TextChatPanel extends javax.swing.JPanel {
         messageTextField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         messageTextField.setEnabled(false);
 
-        sendButton.setText("Send");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/textchat/client/resources/Bundle"); // NOI18N
+        sendButton.setText(bundle.getString("TextChatPanel.sendButton.text")); // NOI18N
         sendButton.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout textEntryPanelLayout = new org.jdesktop.layout.GroupLayout(textEntryPanel);
@@ -182,7 +186,7 @@ public class TextChatPanel extends javax.swing.JPanel {
         textEntryPanelLayout.setHorizontalGroup(
             textEntryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, textEntryPanelLayout.createSequentialGroup()
-                .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sendButton)
                 .addContainerGap())
@@ -204,7 +208,7 @@ public class TextChatPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(textEntryPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
