@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
+import java.lang.reflect.InvocationTargetException;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.image.Texture;
@@ -58,6 +59,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -283,8 +285,6 @@ public class ImportSessionFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         loadImportGroupMI = new javax.swing.JMenuItem();
         saveImportGroupMI = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        sceneGraphWindowMI = new javax.swing.JMenuItem();
 
         jList1.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -355,7 +355,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 .add(editB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(removeB)
-                .addContainerGap(203, Short.MAX_VALUE))
+                .addContainerGap(218, Short.MAX_VALUE))
         );
 
         getContentPane().add(eastP, java.awt.BorderLayout.EAST);
@@ -405,10 +405,10 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                                     .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                         .add(264, 264, 264))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
                     .add(centerPLayout.createSequentialGroup()
                         .add(modelListL)
-                        .addContainerGap(576, Short.MAX_VALUE))))
+                        .addContainerGap(562, Short.MAX_VALUE))))
         );
 
         centerPLayout.linkSize(new java.awt.Component[] {descriptionL, jLabel5, targetNameL}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -421,7 +421,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(modelListL)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(targetNameL)
@@ -493,7 +493,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 .add(okB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cancelButton)
-                .addContainerGap(237, Short.MAX_VALUE))
+                .addContainerGap(85, Short.MAX_VALUE))
         );
         southPLayout.setVerticalGroup(
             southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -520,12 +520,13 @@ public class ImportSessionFrame extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 336, Short.MAX_VALUE)
+            .add(0, 351, Short.MAX_VALUE)
         );
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.WEST);
 
         jMenu1.setText(bundle.getString("ImportSessionFrame.jMenu1.text")); // NOI18N
+        jMenu1.setEnabled(false);
 
         loadImportGroupMI.setText(bundle.getString("ImportSessionFrame.loadImportGroupMI.text")); // NOI18N
         loadImportGroupMI.addActionListener(new java.awt.event.ActionListener() {
@@ -544,18 +545,6 @@ public class ImportSessionFrame extends javax.swing.JFrame {
         jMenu1.add(saveImportGroupMI);
 
         jMenuBar1.add(jMenu1);
-
-        jMenu2.setText(bundle.getString("ImportSessionFrame.jMenu2.text")); // NOI18N
-
-        sceneGraphWindowMI.setText(bundle.getString("ImportSessionFrame.sceneGraphWindowMI.text")); // NOI18N
-        sceneGraphWindowMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sceneGraphWindowMIActionPerformed(evt);
-            }
-        });
-        jMenu2.add(sceneGraphWindowMI);
-
-        jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
 
@@ -591,7 +580,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
         String moduleName = targetModuleTF.getText();
         ArrayList<DeployedModel> deploymentInfo = new ArrayList();
         WorldManager wm = ClientContextJME.getWorldManager();
-        ServerSessionManager targetServer =
+        final ServerSessionManager targetServer =
                 (ServerSessionManager) targetServerSelector.getSelectedItem();
 
         // Check we are not about to overwrite an existing module
@@ -617,30 +606,33 @@ public class ImportSessionFrame extends javax.swing.JFrame {
             }
         }
 
-        File moduleJar = createModuleJar(deploymentInfo, null);
+        final File moduleJar = createModuleJar(deploymentInfo, null);
 
         final JDialog uploadingDialog = new JDialog(this);
-        uploadingDialog.setLayout(new BorderLayout());
-        uploadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
-        uploadingDialog.pack();
-        uploadingDialog.setSize(200, 100);
-        uploadingDialog.setVisible(true);
-        uploadingDialog.setAlwaysOnTop(true);
+                uploadingDialog.setLayout(new BorderLayout());
+                uploadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
+                uploadingDialog.pack();
+                uploadingDialog.setSize(200, 100);
+                uploadingDialog.setVisible(true);
+                uploadingDialog.setAlwaysOnTop(true);
+
         // Now deploy to server
-        try {
-            ModuleUploader uploader = new ModuleUploader(
-                    new URL(targetServer.getServerURL()));
-            uploader.upload(moduleJar);
-        } catch (MalformedURLException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-            return;
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, null, e);
-            return;
-        } finally {
-            uploadingDialog.setVisible(false);
-            uploadingDialog.dispose();
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
+                    uploader.upload(moduleJar);
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.SEVERE, "MalformedURL " + targetServer.getServerURL(), ex);
+                    return;
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "IO Exception during upload", e);
+                    return;
+                }
+                uploadingDialog.setVisible(false);
+                uploadingDialog.dispose();
+            }
+        });
 
         // Remove entities, once we create the cells on the server we
         // will be sent the client cells
@@ -683,6 +675,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
 
             for (ImportedModel model : imports) {
                 try {
+                    model.setDeploymentBaseURL("wla://"+moduleName+"/");
                     deploymentInfo.add(model.getModelLoader().deployToModule(
                             tmpDir, model));
                 } catch (IOException ex) {
@@ -790,9 +783,6 @@ private void saveAsModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         createModuleJar(deploymentInfo, chooser.getSelectedFile());
     }
 }//GEN-LAST:event_saveAsModuleBActionPerformed
-
-private void sceneGraphWindowMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sceneGraphWindowMIActionPerformed
-}//GEN-LAST:event_sceneGraphWindowMIActionPerformed
 
 private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsSrcBActionPerformed
     String moduleName = targetModuleTF.getText();
@@ -1113,7 +1103,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     private javax.swing.JLabel jLabel6;
     private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -1127,7 +1116,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     private javax.swing.JButton saveAsModuleB;
     private javax.swing.JButton saveAsSrcB;
     private javax.swing.JMenuItem saveImportGroupMI;
-    private javax.swing.JMenuItem sceneGraphWindowMI;
     private javax.swing.JPanel southP;
     private javax.swing.JPopupMenu tablePopupMenu;
     private javax.swing.JTextField targetModuleTF;
