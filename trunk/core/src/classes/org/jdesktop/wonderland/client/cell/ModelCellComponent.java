@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
 
@@ -37,6 +38,7 @@ import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
  *
  * @author paulby
  */
+@ComponentLookupClass(ModelCellComponent.class)
 public class ModelCellComponent extends CellComponent {
     private String deployedModelURL = null;   // URL of .dep file
     protected DeployedModel deployedModel = null;
@@ -87,7 +89,8 @@ public class ModelCellComponent extends CellComponent {
     public Node loadModel() {
         Node ret = new Node();
 
-        getDeployedModel();
+        if (deployedModel==null)
+            getDeployedModel();
 
         ModelLoader loader = deployedModel.getModelLoader();
         Node model = loader.loadDeployedModel(deployedModel);
