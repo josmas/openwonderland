@@ -59,6 +59,12 @@ public class XAppRegistryPlugin extends BaseClientPlugin
         super.initialize(session);
     }
 
+    @Override
+    public void cleanup() {
+        super.getSessionManager().removeLifecycleListener(this);
+        super.cleanup();
+    }
+
     /**
      * @inheritDoc()
      */
@@ -108,9 +114,11 @@ public class XAppRegistryPlugin extends BaseClientPlugin
      * @inheritDoc()
      */
     public void primarySession(WonderlandSession session) {
-        session.addSessionStatusListener(this);
-        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-            connectClient(session);
+        if (session != null) {
+            session.addSessionStatusListener(this);
+            if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+                connectClient(session);
+            }
         }
     }
 

@@ -70,9 +70,11 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
     }
 
     public void primarySession(WonderlandSession session) {
-        session.addSessionStatusListener(this);
-        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-            connectClient(session);
+        if (session != null) {
+            session.addSessionStatusListener(this);
+            if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+                connectClient(session);
+            }
         }
     }
 

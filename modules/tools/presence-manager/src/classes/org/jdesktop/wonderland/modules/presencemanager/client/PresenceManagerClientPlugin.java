@@ -61,10 +61,12 @@ public class PresenceManagerClientPlugin extends BaseClientPlugin
     }
 
     public void primarySession(WonderlandSession session) {
-	logger.fine("Primary session:  " + session.getUserID());
-        session.addSessionStatusListener(this);
-        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-            connectClient(session);
+	if (session != null) {
+            logger.fine("Primary session:  " + session.getUserID());
+            session.addSessionStatusListener(this);
+            if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+                connectClient(session);
+            }
         }
     }
 
