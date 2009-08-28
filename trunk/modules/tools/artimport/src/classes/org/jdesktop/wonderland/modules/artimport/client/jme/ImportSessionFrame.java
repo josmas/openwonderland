@@ -776,9 +776,11 @@ private void saveAsModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     ArrayList<DeployedModel> deploymentInfo = new ArrayList();
 
     JFileChooser chooser = new JFileChooser();
+    chooser.setDialogTitle(BUNDLE.getString("CHOOSE_DIRECTORY_FOR_MODULE_JAR"));
+    chooser.setApproveButtonText(BUNDLE.getString("CHOOSE_DIRECTORY"));
+    chooser.setDialogType(JFileChooser.SAVE_DIALOG);
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//                chooser.setCurrentDirectory(lastModelDir);
-    int returnVal = chooser.showOpenDialog(ImportSessionFrame.this);
+    int returnVal = chooser.showSaveDialog(ImportSessionFrame.this);
     if (returnVal == JFileChooser.APPROVE_OPTION) {
         createModuleJar(deploymentInfo, chooser.getSelectedFile());
     }
