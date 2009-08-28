@@ -29,8 +29,11 @@ import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
  * A dialog box so that users can add a Placemark.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener {
+public class AddEditPlacemarkJDialog
+        extends JDialog implements DocumentListener {
+
     public static final int RET_CANCEL = 0;
     public static final int RET_OK = 1;
     private int returnStatus = RET_CANCEL;
@@ -41,7 +44,6 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
     private float z = 0.0f;
     private float angle = 0.0f;
     private Set<Placemark> placemarkSet = null;
-
     // If we are editing a placemark, we pass in the current placemark to be
     // edited.
     private Placemark currentPlacemark = null;
@@ -49,7 +51,8 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
     /** 
      * Creates a new dialog with empty initial values
      */
-    public AddEditPlacemarkJDialog(JFrame frame, boolean modal, Set<Placemark> placemarks) {
+    public AddEditPlacemarkJDialog(JFrame frame, boolean modal,
+            Set<Placemark> placemarks) {
         super(frame, modal);
         placemarkSet = placemarks;
         initComponents();
@@ -61,7 +64,7 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
         yTextField.setText("0.0");
         zTextField.setText("0.0");
         angleTextField.setText("0.0");
-        
+
         // Listen for changes in the text fields, to enable/disable buttons,
         // etc.
         nameTextField.getDocument().addDocumentListener(this);
@@ -71,7 +74,8 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
     /**
      * Creates a new dialog with initial values found in the Placemark
      */
-    public AddEditPlacemarkJDialog(JFrame frame, boolean model, Placemark placemark, Set<Placemark> placemarks) {
+    public AddEditPlacemarkJDialog(JFrame frame, boolean model,
+            Placemark placemark, Set<Placemark> placemarks) {
         this(frame, model, placemarks);
         currentPlacemark = placemark;
 
@@ -86,7 +90,7 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
     public String getPlacemarkName() {
         return name;
     }
-    
+
     public String getServerURL() {
         return serverURL;
     }
@@ -107,11 +111,13 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
         return angle;
     }
 
-    /** @return the return status of this dialog - one of RET_OK or RET_CANCEL */
+    /**
+     * @return the return status of this dialog - one of RET_OK or RET_CANCEL
+     */
     public int getReturnStatus() {
         return returnStatus;
     }
-    
+
     /**
      * @inheritDoc()
      */
@@ -142,7 +148,7 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
         String tmpURL = urlTextField.getText();
 
         // The OK button can only be abled if both text fields are not null
-        boolean enabled = tmpName.equals("") == false && tmpURL.equals("") == false;
+        boolean enabled = !tmpName.equals("") && !tmpURL.equals("");
         okButton.setEnabled(enabled);
     }
 
@@ -186,14 +192,15 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Add X11 Shared App");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("AddEditPlacemarkJDialog.title")); // NOI18N
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
             }
         });
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("AddEditPlacemarkJDialog.okButton.text")); // NOI18N
         okButton.setEnabled(false);
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -201,41 +208,41 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("AddEditPlacemarkJDialog.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Please enter information about the Placemark below:");
+        jLabel1.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel1.text")); // NOI18N
 
-        jLabel2.setText("Placemark Name:");
+        jLabel2.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel2.text")); // NOI18N
 
-        jLabel3.setText("Server URL:");
+        jLabel3.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel3.text")); // NOI18N
 
-        jLabel4.setText("Location:");
+        jLabel4.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel4.text")); // NOI18N
 
-        jLabel5.setText("X:");
+        jLabel5.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel5.text")); // NOI18N
 
-        jLabel6.setText("Y:");
+        jLabel6.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel6.text")); // NOI18N
 
-        jLabel7.setText("Z:");
+        jLabel7.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel7.text")); // NOI18N
 
-        jLabel8.setText("Look At:");
+        jLabel8.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel8.text")); // NOI18N
 
-        jLabel9.setText("degrees");
+        jLabel9.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel9.text")); // NOI18N
 
         xTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
 
         yTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
-        yTextField.setText("0.0");
+        yTextField.setText(bundle.getString("AddEditPlacemarkJDialog.yTextField.text")); // NOI18N
 
         zTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
-        zTextField.setText("0.0");
+        zTextField.setText(bundle.getString("AddEditPlacemarkJDialog.zTextField.text")); // NOI18N
 
         angleTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
-        angleTextField.setText("0.0");
+        angleTextField.setText(bundle.getString("AddEditPlacemarkJDialog.angleTextField.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -275,14 +282,14 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
                                             .add(jLabel7)
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                             .add(zTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(58, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel3)
-                        .addContainerGap(341, Short.MAX_VALUE))
+                        .addContainerGap(389, Short.MAX_VALUE))
                     .add(jLabel4)
                     .add(layout.createSequentialGroup()
                         .add(jLabel8)
-                        .addContainerGap(358, Short.MAX_VALUE))))
+                        .addContainerGap(412, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -325,15 +332,15 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
         // Check to see that a name has been entered in the GUI, if not, flag
         // an error, but leave the dialog open
         name = nameTextField.getText();
-        if (name == null || name.equals("") == true) {
+        if (name == null || name.equals("")) {
             String msg = "Please enter a name for the Placemark.";
             JOptionPane.showMessageDialog(this, msg);
             return;
         }
-        
+
         // Check to see that no other entry has the name. If there is
         // another entry, note an error and do not close the dialog box.
-        if (isNameDuplicate(name) == true) {
+        if (isNameDuplicate(name)) {
             String msg = "Another Placemark already exists with the same " +
                     "name. Please choose another.";
             JOptionPane.showMessageDialog(this, msg);
@@ -372,7 +379,7 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
      */
     private float parseFloatString(String floatStr) {
         // If the given String is null or an empty return, return 0.0 right away
-        if (floatStr == null || floatStr.equals("") == true) {
+        if (floatStr == null || floatStr.equals("")) {
             return 0.0f;
         }
 
@@ -392,7 +399,8 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
     private boolean isNameDuplicate(String name) {
         // First check to see if we are currently editing a placemark. And if
         // so and the name is the same name as it, then return false.
-        if (currentPlacemark != null && name.equals(currentPlacemark.getName()) == true) {
+        if ((currentPlacemark != null) &&
+                name.equals(currentPlacemark.getName())) {
             return false;
         }
 
@@ -400,13 +408,12 @@ public class AddEditPlacemarkJDialog extends JDialog implements DocumentListener
         // check to see whether it equals one of those.
         for (Placemark placemark : placemarkSet) {
             String placemarkName = placemark.getName();
-            if (placemarkName.equals(name) == true) {
+            if (placemarkName.equals(name)) {
                 return true;
             }
         }
         return false;
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JFormattedTextField angleTextField;
     private javax.swing.JButton cancelButton;

@@ -55,13 +55,16 @@ import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
  * the configured list of X Apps.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @Plugin
 public class PlacemarkPlugin extends BaseClientPlugin
         implements SessionLifecycleListener, SessionStatusListener {
 
-    private static Logger logger = Logger.getLogger(PlacemarkPlugin.class.getName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle");
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle");
+    private static final Logger LOGGER =
+            Logger.getLogger(PlacemarkPlugin.class.getName());
     private WeakReference<EditPlacemarksJFrame> managePlacemarksFrameRef = null;
     private JMenuItem manageMI = null;
     private JMenuItem addMI = null;
@@ -69,8 +72,8 @@ public class PlacemarkPlugin extends BaseClientPlugin
     private PlacemarkListener listener = null;
     private PlacemarkClientConfigConnection placemarksConfigConnection = null;
     private PlacemarkConfigListener configListener = null;
-    
-    // A Map of Placemarks to their menu items for system-wide and user placemarks
+    // A Map of Placemarks to their menu items for system-wide and user
+    // placemarks
     private Map<Placemark, JMenuItem> systemPlacemarkMenuItems = new HashMap();
     private Map<Placemark, JMenuItem> userPlacemarkMenuItems = new HashMap();
 
@@ -90,22 +93,24 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
         // Create the "Manage Placemarks..." menu item. The menu will be added
         // when our server intiializes.
-        manageMI = new JMenuItem("Manage Placemarks...");
+        manageMI = new JMenuItem(BUNDLE.getString("Manage_Placemarks..."));
         manageMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 EditPlacemarksJFrame managePlacemarksFrame;
-                if (managePlacemarksFrameRef == null || managePlacemarksFrameRef.get() == null) {
+                if (managePlacemarksFrameRef == null ||
+                        managePlacemarksFrameRef.get() == null) {
                     JFrame frame = JmeClientMain.getFrame().getFrame();
                     managePlacemarksFrame = new EditPlacemarksJFrame();
                     managePlacemarksFrame.setLocationRelativeTo(frame);
                     managePlacemarksFrame.setSize(500, 300);
-                    managePlacemarksFrameRef = new WeakReference(managePlacemarksFrame);
-                }
-                else {
+                    managePlacemarksFrameRef =
+                            new WeakReference(managePlacemarksFrame);
+                } else {
                     managePlacemarksFrame = managePlacemarksFrameRef.get();
                 }
 
-                if (managePlacemarksFrame.isVisible() == false) {
+                if (!managePlacemarksFrame.isVisible()) {
                     managePlacemarksFrame.setSize(400, 300);
                     managePlacemarksFrame.setVisible(true);
                 }
@@ -114,8 +119,9 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
         // Create the "Add Placemark..." menu item. This menu will be added when
         // our server initializes.
-        addMI = new JMenuItem("Add Placemark...");
+        addMI = new JMenuItem(BUNDLE.getString("Add_Placemark..."));
         addMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 JFrame frame = JmeClientMain.getFrame().getFrame();
 
@@ -124,20 +130,24 @@ public class PlacemarkPlugin extends BaseClientPlugin
                 Placemark placemark = getCurrentPlacemark(sessionManager);
 
                 // Fetch the list of known USER Placemark names
-                PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
-                Set<Placemark> placemarkSet = registry.getAllPlacemarks(PlacemarkType.USER);
+                PlacemarkRegistry registry =
+                        PlacemarkRegistry.getPlacemarkRegistry();
+                Set<Placemark> placemarkSet =
+                        registry.getAllPlacemarks(PlacemarkType.USER);
 
-                // Display a dialog with the values in the Placemark. And if we wish
-                // to update the values, then re-add the placemark. (Re-adding the
-                // placemark should have the effect of updating its values.
-                AddEditPlacemarkJDialog dialog =
-                        new AddEditPlacemarkJDialog(frame, true, placemark, placemarkSet);
-                dialog.setTitle("Add Placemark");
+                // Display a dialog with the values in the Placemark. And if we
+                // wish to update the values, then re-add the placemark.
+                // (Re-adding the placemark should have the effect of updating
+                // its values.
+                AddEditPlacemarkJDialog dialog = new AddEditPlacemarkJDialog(
+                        frame, true, placemark, placemarkSet);
+                dialog.setTitle(BUNDLE.getString("Add_Placemark"));
                 dialog.setLocationRelativeTo(frame);
                 dialog.pack();
                 dialog.setVisible(true);
 
-                if (dialog.getReturnStatus() == AddEditPlacemarkJDialog.RET_OK) {
+                if (dialog.getReturnStatus() ==
+                        AddEditPlacemarkJDialog.RET_OK) {
                     // Create a new placemark with the new information.
                     String name = dialog.getPlacemarkName();
                     String url = dialog.getServerURL();
@@ -145,33 +155,38 @@ public class PlacemarkPlugin extends BaseClientPlugin
                     float y = dialog.getLocationY();
                     float z = dialog.getLocationZ();
                     float angle = dialog.getLookAtAngle();
-                    Placemark newPlacemark = new Placemark(name, url, x, y, z, angle);
+                    Placemark newPlacemark =
+                            new Placemark(name, url, x, y, z, angle);
 
                     try {
                         PlacemarkUtils.addUserPlacemark(newPlacemark);
                     } catch (Exception excp) {
-                        logger.log(Level.WARNING, "Unable to add " + name + " to " +
-                                " user's placemarks", excp);
+                        LOGGER.log(Level.WARNING, "Unable to add " + name +
+                                " to user's placemarks", excp);
                         return;
                     }
 
-                    // Tell the client-side registry of placemarks that a new one has
-                    // been added
-                    registry.registerPlacemark(newPlacemark, PlacemarkType.USER);
+                    // Tell the client-side registry of placemarks that a new
+                    // one has been added
+                    registry.registerPlacemark(
+                            newPlacemark, PlacemarkType.USER);
                 }
             }
         });
 
         // Menu item to take avatar to starting location
-        startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
+        startingLocationMI = new JMenuItem(
+                BUNDLE.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 Vector3f position = new Vector3f();
                 Quaternion look = new Quaternion();
                 try {
-                    ClientContextJME.getClientMain().gotoLocation(null, position, look);
+                    ClientContextJME.getClientMain().gotoLocation(
+                            null, position, look);
                 } catch (IOException ex) {
-                    logger.log(Level.WARNING, "Failed to go to starting " +
+                    LOGGER.log(Level.WARNING, "Failed to go to starting " +
                             "location.", ex);
                 }
             }
@@ -191,21 +206,22 @@ public class PlacemarkPlugin extends BaseClientPlugin
         PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
         registry.addPlacemarkRegistryListener(listener);
 
-        // Fetch the list of system-wide placemarks and add them to the Placemark
-        // main menu item.
+        // Fetch the list of system-wide placemarks and add them to the
+        // Placemark main menu item.
         PlacemarkList systemList = PlacemarkUtils.getSystemPlacemarkList();
         for (Placemark placemark : systemList.getPlacemarksAsList()) {
             registry.registerPlacemark(placemark, PlacemarkType.SYSTEM);
         }
 
-        // Fetch the list of system-wide placemarks and add them to the Placemark
-        // main menu item.
+        // Fetch the list of system-wide placemarks and add them to the
+        // Placemark main menu item.
         PlacemarkList userList = PlacemarkUtils.getUserPlacemarkList();
         for (Placemark placemark : userList.getPlacemarksAsList()) {
             registry.registerPlacemark(placemark, PlacemarkType.USER);
         }
 
-        // Add the "Manage Placemarks..." and "Add Placemark..." to the main frame
+        // Add the "Manage Placemarks..." and "Add Placemark..." to the main
+        // frame
         JmeClientMain.getFrame().addToPlacemarksMenu(manageMI, -1);
         JmeClientMain.getFrame().addToPlacemarksMenu(addMI, -1);
         JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
@@ -222,7 +238,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
         JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
     }
 
-        /**
+    /**
      * @inheritDoc()
      */
     public void sessionCreated(WonderlandSession session) {
@@ -260,10 +276,11 @@ public class PlacemarkPlugin extends BaseClientPlugin
     private void connectClient(WonderlandSession session) {
         try {
             configListener = new ClientPlacemarkConfigListener();
-            placemarksConfigConnection.addPlacemarkConfigListener(configListener);
+            placemarksConfigConnection.addPlacemarkConfigListener(
+                    configListener);
             placemarksConfigConnection.connect(session);
         } catch (ConnectionFailureException e) {
-            logger.log(Level.WARNING, "Connect client error", e);
+            LOGGER.log(Level.WARNING, "Connect client error", e);
         }
     }
 
@@ -272,7 +289,8 @@ public class PlacemarkPlugin extends BaseClientPlugin
      */
     private void disconnectClient() {
         placemarksConfigConnection.disconnect();
-        placemarksConfigConnection.removePlacemarkConfigListener(configListener);
+        placemarksConfigConnection.removePlacemarkConfigListener(
+                configListener);
         configListener = null;
     }
 
@@ -306,8 +324,9 @@ public class PlacemarkPlugin extends BaseClientPlugin
         // following formula: angle = atan2(normal dot (v1 cross v2), v1 dot v2)
         float dotProduct = v1.dot(v2);
         Vector3f crossProduct = v1.cross(v2);
-        float lookAngle = (float)Math.atan2(normal.dot(crossProduct), dotProduct);
-        lookAngle = (float)Math.toDegrees(lookAngle);
+        float lookAngle = (float) Math.atan2(
+                normal.dot(crossProduct), dotProduct);
+        lookAngle = (float) Math.toDegrees(lookAngle);
 
         return new Placemark("", url, x, y, z, lookAngle);
     }
@@ -315,15 +334,18 @@ public class PlacemarkPlugin extends BaseClientPlugin
     /**
      * Listens for when Placemarks are added or removed.
      */
-    private class ClientPlacemarkConfigListener implements PlacemarkConfigListener {
+    private class ClientPlacemarkConfigListener
+            implements PlacemarkConfigListener {
 
         public void placemarkAdded(Placemark placemark) {
-            PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+            PlacemarkRegistry registry =
+                    PlacemarkRegistry.getPlacemarkRegistry();
             registry.registerPlacemark(placemark, PlacemarkType.SYSTEM);
         }
 
         public void placemarkRemoved(Placemark placemark) {
-            PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+            PlacemarkRegistry registry =
+                    PlacemarkRegistry.getPlacemarkRegistry();
             registry.unregisterPlacemark(placemark, PlacemarkType.SYSTEM);
         }
     }
@@ -332,6 +354,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
      * Action listener for Placemark menu items.
      */
     private class PlacemarkActionListener implements ActionListener {
+
         private Placemark placemark = null;
 
         /** Constructor, takes the placemark associated with the menu item */
@@ -349,13 +372,14 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
             // create the rotation
             Quaternion look = new Quaternion();
-            Vector3f axis = new Vector3f(Vector3f.UNIT_Y); 
+            Vector3f axis = new Vector3f(Vector3f.UNIT_Y);
             look.fromAngleAxis((float) Math.toRadians(angle), axis);
 
             try {
-                ClientContextJME.getClientMain().gotoLocation(url, location, look);
+                ClientContextJME.getClientMain().gotoLocation(
+                        url, location, look);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -365,6 +389,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
      * system accordingly.
      */
     private class PlacemarkMenuListener implements PlacemarkListener {
+
         public void placemarkAdded(Placemark placemark, PlacemarkType type) {
             // First try to find any existing placemark with the same name. If
             // there is one, then remove the JMenuItem from the menu. Note that
@@ -375,13 +400,13 @@ public class PlacemarkPlugin extends BaseClientPlugin
             // Now add the new JMenuItem to either the system or user position
             // in the Placemarks menu
             JMenuItem menuItem = new JMenuItem(placemark.getName());
-            PlacemarkActionListener listner = new PlacemarkActionListener(placemark);
+            PlacemarkActionListener listner =
+                    new PlacemarkActionListener(placemark);
             menuItem.addActionListener(listner);
             if (type == PlacemarkType.USER) {
                 userPlacemarkMenuItems.put(placemark, menuItem);
                 JmeClientMain.getFrame().addToPlacemarksMenu(menuItem, 2);
-            }
-            else {
+            } else {
                 systemPlacemarkMenuItems.put(placemark, menuItem);
                 JmeClientMain.getFrame().addToPlacemarksMenu(menuItem, 1);
             }
@@ -389,8 +414,9 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
         public void placemarkRemoved(Placemark placemark, PlacemarkType type) {
             // Try to find the existing placemark and remove it from the menu
-            Map<Placemark, JMenuItem> map = (type == PlacemarkType.USER) ?
-                userPlacemarkMenuItems : systemPlacemarkMenuItems;
+            Map<Placemark, JMenuItem> map =
+                    (type == PlacemarkType.USER) ? userPlacemarkMenuItems
+                    : systemPlacemarkMenuItems;
 
             JMenuItem menuItem = map.get(placemark);
             if (menuItem != null) {

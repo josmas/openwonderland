@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.modules.placemarks.client;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,10 +40,14 @@ import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
  * Cell Palettes.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class EditPlacemarksJFrame extends javax.swing.JFrame {
 
-    private Logger logger = Logger.getLogger(EditPlacemarksJFrame.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle");
+    private static final Logger LOGGER =
+            Logger.getLogger(EditPlacemarksJFrame.class.getName());
     private PlacemarkTableModel placemarksTableModel = null;
     private JTable placemarksTable = null;
 
@@ -51,7 +57,8 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
 
         // Create the user table to display the user Placemarks
         PlacemarkList placemarkList = PlacemarkUtils.getUserPlacemarkList();
-        placemarksTableModel = new PlacemarkTableModel(placemarkList.getPlacemarksAsList());
+        placemarksTableModel =
+                new PlacemarkTableModel(placemarkList.getPlacemarksAsList());
         placemarksTable = new JTable(placemarksTableModel);
         placemarksTable.setColumnSelectionAllowed(false);
         placemarksTable.setRowSelectionAllowed(true);
@@ -61,36 +68,41 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         // Listen for changes to the select on the user table and enable/
         // disable the Edit/Remove buttons as a result.
         ListSelectionListener userListener = new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent e) {
                 boolean isRowSelected = placemarksTable.getSelectedRow() != -1;
                 editButton.setEnabled(isRowSelected);
                 removeButton.setEnabled(isRowSelected);
             }
         };
-        placemarksTable.getSelectionModel().addListSelectionListener(userListener);
+        placemarksTable.getSelectionModel().addListSelectionListener(
+                userListener);
 
         // Upon a double-click, activated the Edit... button
         placemarksTable.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     editButton.doClick();
                 }
             }
-
         });
 
         // Listen for changes in the list of registered Placemarks in the
         // system and update the table model accordingly
         PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
         registry.addPlacemarkRegistryListener(new PlacemarkListener() {
-            public void placemarkAdded(Placemark placemark, PlacemarkType type) {
+
+            public void placemarkAdded(
+                    Placemark placemark, PlacemarkType type) {
                 if (type == PlacemarkType.USER) {
                     placemarksTableModel.addToPlacemarkList(placemark);
                 }
             }
 
-            public void placemarkRemoved(Placemark placemark, PlacemarkType type) {
+            public void placemarkRemoved(
+                    Placemark placemark, PlacemarkType type) {
                 if (type == PlacemarkType.USER) {
                     placemarksTableModel.removeFromPlacemarkList(placemark);
                 }
@@ -129,18 +141,18 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
          */
         @Override
         public String getColumnName(int column) {
-           switch (column) {
-               case 0:
-                   return "Name";
-               case 1:
-                   return "Server URL";
-               case 2:
-                   return "Location";
-               case 3:
-                   return "Look Angle";
-               default:
-                   return "";
-           }
+            switch (column) {
+                case 0:
+                    return BUNDLE.getString("Name");
+                case 1:
+                    return BUNDLE.getString("Server_URL");
+                case 2:
+                    return BUNDLE.getString("Location");
+                case 3:
+                    return BUNDLE.getString("Look_Angle");
+                default:
+                    return "";
+            }
         }
 
         /**
@@ -154,9 +166,11 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                 case 1:
                     return item.getUrl();
                 case 2:
-                    return "(" + item.getX() + ", " + item.getY() + ", " + item.getZ() + ")";
+                    return "(" + item.getX() + ", " + item.getY() + ", " +
+                            item.getZ() + ")";
                 case 3:
-                    return item.getAngle() + " degrees";
+                    String value = BUNDLE.getString("Look_Angle_Value");
+                    return MessageFormat.format(value, item.getAngle());
                 default:
                     return "";
             }
@@ -215,7 +229,8 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
 
-        setTitle("Manage Placemarks");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("EditPlacemarksJFrame.title")); // NOI18N
         getContentPane().setLayout(new java.awt.GridLayout(1, 1));
 
         mainPanel.setLayout(new java.awt.GridLayout(1, 0));
@@ -234,7 +249,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
 
         userButtonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
 
-        addButton.setText("Add...");
+        addButton.setText(bundle.getString("EditPlacemarksJFrame.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -242,7 +257,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         });
         userButtonPanel.add(addButton);
 
-        editButton.setText("Edit...");
+        editButton.setText(bundle.getString("EditPlacemarksJFrame.editButton.text")); // NOI18N
         editButton.setEnabled(false);
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -251,7 +266,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         });
         userButtonPanel.add(editButton);
 
-        removeButton.setText("Remove");
+        removeButton.setText(bundle.getString("EditPlacemarksJFrame.removeButton.text")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -277,12 +292,14 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // Fetch the list of known USER Placemark names
         PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
-        Set<Placemark> placemarkSet = registry.getAllPlacemarks(PlacemarkType.USER);
+        Set<Placemark> placemarkSet =
+                registry.getAllPlacemarks(PlacemarkType.USER);
 
         // When the Add... button is pressed popup a dialog asking for all of
         // the information. Add it to the repository and registry upon OK.
-        AddEditPlacemarkJDialog dialog = new AddEditPlacemarkJDialog(this, true, placemarkSet);
-        dialog.setTitle("Add Placemark");
+        AddEditPlacemarkJDialog dialog =
+                new AddEditPlacemarkJDialog(this, true, placemarkSet);
+        dialog.setTitle(BUNDLE.getString("Add_Placemark"));
         dialog.setLocationRelativeTo(this);
         dialog.pack();
         dialog.setVisible(true);
@@ -299,7 +316,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             try {
                 PlacemarkUtils.addUserPlacemark(placemark);
             } catch (Exception excp) {
-                logger.log(Level.WARNING, "Unable to add " + name + " to " +
+                LOGGER.log(Level.WARNING, "Unable to add " + name + " to " +
                         " user's placemarks", excp);
                 return;
             }
@@ -318,13 +335,13 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         if (row == -1) {
             return;
         }
-        String name = (String)placemarksTableModel.getValueAt(row, 0);
+        String name = (String) placemarksTableModel.getValueAt(row, 0);
         Placemark placemark = placemarksTableModel.getPlacemark(row);
 
         try {
             PlacemarkUtils.removeUserPlacemark(name);
         } catch (Exception excp) {
-            logger.log(Level.WARNING, "Unable to remove " + name + " from " +
+            LOGGER.log(Level.WARNING, "Unable to remove " + name + " from " +
                     " user's placemarks", excp);
             return;
         }
@@ -338,7 +355,8 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         // Fetch the list of known USER Placemark names
         PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
-        Set<Placemark> placemarkSet = registry.getAllPlacemarks(PlacemarkType.USER);
+        Set<Placemark> placemarkSet =
+                registry.getAllPlacemarks(PlacemarkType.USER);
 
         // When the Edit..... button is pressed find the Placemark selected
         // and display a dialog with the values filled in.
@@ -351,8 +369,9 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         // Display a dialog with the values in the Placemark. And if we wish
         // to update the values, then re-add the placemark. (Re-adding the
         // placemark should have the effect of updating its values.
-        AddEditPlacemarkJDialog dialog = new AddEditPlacemarkJDialog(this, true, placemark, placemarkSet);
-        dialog.setTitle("Edit Placemark");
+        AddEditPlacemarkJDialog dialog = new AddEditPlacemarkJDialog(
+                this, true, placemark, placemarkSet);
+        dialog.setTitle(BUNDLE.getString("Edit_Placemark"));
         dialog.setLocationRelativeTo(this);
         dialog.pack();
         dialog.setVisible(true);
@@ -363,8 +382,8 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             try {
                 PlacemarkUtils.removeUserPlacemark(oldName);
             } catch (Exception excp) {
-                logger.log(Level.WARNING, "Unable to remove " + oldName + " from " +
-                        " user's placemarks", excp);
+                LOGGER.log(Level.WARNING, "Unable to remove " + oldName +
+                        " from " + " user's placemarks", excp);
                 return;
             }
 
@@ -384,7 +403,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             try {
                 PlacemarkUtils.addUserPlacemark(newPlacemark);
             } catch (Exception excp) {
-                logger.log(Level.WARNING, "Unable to add " + name + " to " +
+                LOGGER.log(Level.WARNING, "Unable to add " + name + " to " +
                         " user's placemarks", excp);
                 return;
             }
@@ -394,7 +413,6 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             registry.registerPlacemark(newPlacemark, PlacemarkType.USER);
         }
     }//GEN-LAST:event_editButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton editButton;

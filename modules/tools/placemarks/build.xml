@@ -31,7 +31,7 @@
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
     </pathconvert>
        
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client,
 						-placemarks-compile-web">
@@ -60,22 +60,25 @@
         <module name="placemarks" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">
 
-          <requires name="content-repository" version="1"/>
-          <requires name="darkstar" version="1"/>
+            <requires name="content-repository" version="1"/>
+            <requires name="darkstar" version="1"/>
 
-           <client>
-             <clientjar name="placemarks-client" basedir="${build.classes.dir}">
-               <include name="${module.src}/client/**"/>
-               <include name="${module.src}/common/**"/>
-             </clientjar>
-           </client> 
+            <client>
+                <clientjar name="placemarks-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**"/>
+                    </fileset>
+                </clientjar>
+            </client>
 
-          <server>
+            <server>
                 <serverjar name="placemarks-server" basedir="${build.classes.dir}">
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>
-           </server>
+            </server>
 
             <part name="web">
                 <jar name="wonderland-placemarks.war">
@@ -86,9 +89,9 @@
 
                     <fileset dir="${current.dir}/web"/>
                 </jar>
-            </part>            
+            </part>
         </module>
-    </target>                                                       
+    </target>
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
