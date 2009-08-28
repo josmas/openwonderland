@@ -256,6 +256,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     private void exitMIActionPerformed(ActionEvent evt) {
+        ClientContextJME.getWorldManager().shutdown();
         System.exit(0);
     }
 
@@ -675,6 +676,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         jLabel1.setText("jLabel1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         serverPanel.setPreferredSize(new java.awt.Dimension(692, 35));
@@ -762,6 +768,11 @@ private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         serverListener.serverURLChanged(serverField.getText());
     }
 }//GEN-LAST:event_goButtonActionPerformed
+
+private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+    ClientContextJME.getWorldManager().shutdown();
+}//GEN-LAST:event_formWindowClosing
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
