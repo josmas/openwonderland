@@ -59,6 +59,7 @@ import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
@@ -272,6 +273,7 @@ public class JmeColladaLoader implements ModelLoader {
             ModelCellComponentServerState setup = new ModelCellComponentServerState();
             cellSetup.addComponentServerState(setup);
             cellSetup.setName(importedModel.getWonderlandName());
+            cellSetup.setBoundingVolumeHint(new BoundingVolumeHint(false, importedModel.getModelBG().getWorldBound()));
 
             Vector3f offset = importedModel.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
@@ -360,7 +362,8 @@ public class JmeColladaLoader implements ModelLoader {
             targetFile.createNewFile();
             // TODO compress the dae file using gzip stream
             copyAsset(source[0], targetFile, true); // TODO handle multiple dae files
-            deployedModel.setModelURL("wla://"+moduleName+"/"+filename+"/"+filenameGZ);
+            deployedModel.setModelURL(importedModel.getDeploymentBaseURL()+filename+"/"+filenameGZ);
+//            deployedModel.setModelURL("wla://"+moduleName+"/"+filename+"/"+filenameGZ);
             deployedModel.setLoaderDataURL(deployedModel.getModelURL()+".ldr");
 
             deployDeploymentData(targetDir, deployedModel, filenameGZ);

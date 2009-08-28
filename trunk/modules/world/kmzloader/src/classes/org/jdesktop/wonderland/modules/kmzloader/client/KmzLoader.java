@@ -235,10 +235,10 @@ class KmzLoader extends JmeColladaLoader {
             deployZipModels(zipFile, targetDir);
             String kmzFilename = modelURL.toExternalForm();
             kmzFilename = kmzFilename.substring(kmzFilename.lastIndexOf('/')+1);
-            deployedModel.setModelURL("wla://"+moduleName+"/"+kmzFilename+"/"+((KmzImportedModel)importedModel).getPrimaryModel()+".gz");
-            deployedModel.setLoaderDataURL("wla://"+moduleName+"/"+kmzFilename+"/"+kmzFilename+".ldr");
+            deployedModel.setModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+((KmzImportedModel)importedModel).getPrimaryModel()+".gz");
+            deployedModel.setLoaderDataURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".ldr");
             deployDeploymentData(targetDir, deployedModel, kmzFilename);
-            state.setDeployedModelURL("wla://"+moduleName+"/"+kmzFilename+"/"+kmzFilename+".dep");
+            state.setDeployedModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".dep");
         } catch (ZipException ex) {
             Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

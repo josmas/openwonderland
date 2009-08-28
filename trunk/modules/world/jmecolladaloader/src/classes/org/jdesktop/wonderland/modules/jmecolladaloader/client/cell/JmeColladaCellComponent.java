@@ -26,11 +26,13 @@ import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentClientState;
 
 /**
  *
  * @author paulby
+ * @deprecated made obsolete by .dep deployment files
  */
 @ComponentLookupClass(ModelCellComponent.class)
 public class JmeColladaCellComponent extends ModelCellComponent {
