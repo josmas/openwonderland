@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.securitygroups.client;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.JTable;
@@ -34,8 +35,12 @@ import org.jdesktop.wonderland.modules.securitygroups.common.GroupUtils;
 /**
  *
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class GroupManagerFrame extends JFrame implements ListSelectionListener {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/securitygroups/client/Bundle");
     private String baseUrl;
     private CredentialManager cm;
     private DefaultTableModel tableModel;
@@ -46,10 +51,41 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         this.cm = cm;
 
         initComponents();
+        tableModel = new DefaultTableModel() {
+
+            String[] names = new String[]{
+                BUNDLE.getString("Group_Name"),
+                BUNDLE.getString("Members")
+            };
+            Class[] types = new Class[]{
+                String.class,
+                Integer.class
+            };
+            boolean[] canEdit = new boolean[]{
+                false,
+                false
+            };
+
+            @Override
+            public String getColumnName(int column) {
+                return names[column];
+            }
+
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                return types[columnIndex];
+            }
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        };
+        groupTable.setModel(tableModel);
 
         groupTable.getSelectionModel().addListSelectionListener(this);
-        groupTable.getColumnModel().getColumn(0).setCellRenderer(new GroupNameRenderer());
-        tableModel = (DefaultTableModel) groupTable.getModel();
+        groupTable.getColumnModel().getColumn(0).setCellRenderer(
+                new GroupNameRenderer());
 
         loadGroups();
     }
@@ -61,7 +97,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         try {
             if (filter.trim().length() == 0) {
                 groups = GroupUtils.getGroupsForUser(baseUrl, cm.getUsername(),
-                                                     false, cm);
+                        false, cm);
             } else {
                 groups = GroupUtils.getGroups(baseUrl, filter, false, cm);
             }
@@ -75,10 +111,10 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
 
         // clear existing rows
         tableModel.setRowCount(0);
-        
+
         // now add in the groups
         for (GroupDTO g : groups) {
-            tableModel.addRow(new Object[] { g, g.getMemberCount() });
+            tableModel.addRow(new Object[]{g, g.getMemberCount()});
         }
     }
 
@@ -91,7 +127,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
 
         if (selected != null) {
             System.out.println("Selected: " + selected.getId() + " editable: " +
-                               selected.isEditable());
+                    selected.isEditable());
         }
 
         boolean editable = (selected != null && selected.isEditable());
@@ -119,7 +155,8 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         removeButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
 
-        setTitle("Edit Groups");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/securitygroups/client/Bundle"); // NOI18N
+        setTitle(bundle.getString("GroupManagerFrame.title")); // NOI18N
 
         groupTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -147,32 +184,32 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         groupTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(groupTable);
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        jLabel1.setText("Groups:");
+        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel1.setText(bundle.getString("GroupManagerFrame.jLabel1.text")); // NOI18N
 
-        filterTF.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        filterTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        jLabel2.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        jLabel2.setText("Filter:");
+        jLabel2.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel2.setText(bundle.getString("GroupManagerFrame.jLabel2.text")); // NOI18N
 
-        filterButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        filterButton.setText("Refresh");
+        filterButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        filterButton.setText(bundle.getString("GroupManagerFrame.filterButton.text")); // NOI18N
         filterButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterButtonActionPerformed(evt);
             }
         });
 
-        addButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        addButton.setText("New Group...");
+        addButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        addButton.setText(bundle.getString("GroupManagerFrame.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        editButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        editButton.setText("Edit...");
+        editButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        editButton.setText(bundle.getString("GroupManagerFrame.editButton.text")); // NOI18N
         editButton.setEnabled(false);
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -180,8 +217,8 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
             }
         });
 
-        removeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        removeButton.setText("Remove");
+        removeButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        removeButton.setText(bundle.getString("GroupManagerFrame.removeButton.text")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -189,8 +226,8 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
             }
         });
 
-        closeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        closeButton.setText("Close");
+        closeButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        closeButton.setText(bundle.getString("GroupManagerFrame.closeButton.text")); // NOI18N
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
@@ -205,11 +242,11 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 272, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 262, Short.MAX_VALUE)
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(filterTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -217,11 +254,11 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
                         .add(filterButton)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                        .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
                         .add(261, 261, 261))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(closeButton)
@@ -295,7 +332,6 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
             return null;
         }
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton closeButton;
@@ -310,16 +346,16 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
     // End of variables declaration//GEN-END:variables
 
     class GroupNameRenderer extends DefaultTableCellRenderer {
+
         @Override
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean hasFocus,
-                int row, int column)
-        {
+                int row, int column) {
             GroupDTO group = (GroupDTO) value;
             String name = group.getId();
 
             return super.getTableCellRendererComponent(table, name, isSelected,
-                                                       hasFocus, row, column);
+                    hasFocus, row, column);
         }
     }
 }

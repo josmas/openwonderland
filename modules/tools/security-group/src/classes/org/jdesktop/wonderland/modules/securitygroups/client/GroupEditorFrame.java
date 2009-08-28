@@ -15,10 +15,11 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.securitygroups.client;
 
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
@@ -33,8 +34,12 @@ import org.jdesktop.wonderland.modules.securitygroups.common.MemberDTO;
 /**
  *
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class GroupEditorFrame extends JFrame implements ListSelectionListener {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/securitygroups/client/Bundle");
     private String baseUrl;
     private CredentialManager cm;
     private DefaultTableModel tableModel;
@@ -43,31 +48,62 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
 
     /** Creates new form GroupEditorFrame */
     public GroupEditorFrame(GroupManagerFrame parent,
-                            String baseUrl, GroupDTO group,
-                            CredentialManager cm)
-    {
+            String baseUrl, GroupDTO group,
+            CredentialManager cm) {
         this.parent = parent;
         this.baseUrl = baseUrl;
         this.cm = cm;
 
         initComponents();
-    
+        tableModel = new javax.swing.table.DefaultTableModel() {
+
+            String[] names = new String[]{
+                BUNDLE.getString("Username"),
+                BUNDLE.getString("Owner")
+            };
+            Class[] types = new Class[]{
+                String.class,
+                Boolean.class
+            };
+            boolean[] canEdit = new boolean[]{
+                false,
+                true
+            };
+
+            @Override
+            public String getColumnName(int column) {
+                return names[column];
+            }
+
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                return types[columnIndex];
+            }
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        };
+        memberTable.setModel(tableModel);
+
         memberTable.getSelectionModel().addListSelectionListener(this);
-        tableModel = (DefaultTableModel) memberTable.getModel();
 
         // if the group is null, this is a new group we are creating a
         // new group
         if (group == null) {
             isAdd = true;
-            okButton.setText("Create");
-            tableModel.addRow(new Object[] { cm.getUsername(), true });
-            setTitle("New Group");
+            okButton.setText(BUNDLE.getString("Create"));
+            tableModel.addRow(new Object[]{cm.getUsername(), true});
+            setTitle(BUNDLE.getString("New_Group"));
         } else {
             isAdd = false;
             groupnameTF.setText(group.getId());
             groupnameTF.setEditable(false);
             populateTable(group);
-            setTitle("Edit Group " + group.getId());
+            String title = BUNDLE.getString("Edit_Group");
+            title = MessageFormat.format(title, group.getId());
+            setTitle(title);
         }
     }
 
@@ -78,8 +114,8 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
 
             // now add each member to the table
             for (MemberDTO member : group.getMembers()) {
-                tableModel.addRow(new Object[] { member.getId(),
-                                                 member.isOwner() });
+                tableModel.addRow(new Object[]{member.getId(),
+                            member.isOwner()});
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -124,44 +160,22 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
         jLabel1 = new javax.swing.JLabel();
         groupnameTF = new javax.swing.JTextField();
 
-        jScrollPane1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        jScrollPane1.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        memberTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Username", "Owner"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Boolean.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, true
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
         memberTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(memberTable);
 
-        addButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        addButton.setText("Add User...");
+        addButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/securitygroups/client/Bundle"); // NOI18N
+        addButton.setText(bundle.getString("GroupEditorFrame.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        removeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        removeButton.setText("Remove");
+        removeButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        removeButton.setText(bundle.getString("GroupEditorFrame.removeButton.text")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -169,26 +183,26 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             }
         });
 
-        cancelButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        cancelButton.setText("Cancel");
+        cancelButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        cancelButton.setText(bundle.getString("GroupEditorFrame.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
 
-        okButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        okButton.setText("OK");
+        okButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        okButton.setText(bundle.getString("GroupEditorFrame.okButton.text")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        jLabel1.setText("Group name:");
+        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel1.setText(bundle.getString("GroupEditorFrame.jLabel1.text")); // NOI18N
 
-        groupnameTF.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        groupnameTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -197,11 +211,11 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(groupnameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE))
+                        .add(groupnameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -244,15 +258,15 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             // an existing group
             if (isAdd) {
                 GroupDTO existing = GroupUtils.getGroup(baseUrl,
-                                                        groupnameTF.getText(),
-                                                        cm);
+                        groupnameTF.getText(),
+                        cm);
                 if (existing != null) {
-                    String message = "Group " + groupnameTF.getText() +
-                                     " already exists.  Please choose a" +
-                                     " different name";
-                    String title = "Group exists";
+                    String groupName = groupnameTF.getText();
+                    String message = BUNDLE.getString("Group_Exists_Message");
+                    message = MessageFormat.format(message, groupName);
+                    String title = BUNDLE.getString("Group_Exists_Title");
                     JOptionPane.showMessageDialog(this, message, title,
-                                                  JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
@@ -272,14 +286,16 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        String username = JOptionPane.showInputDialog(this, "Enter user name", "Add User", JOptionPane.QUESTION_MESSAGE);
-        tableModel.addRow(new Object[] { username, false });
+        String username = JOptionPane.showInputDialog(this,
+                BUNDLE.getString("Enter_User_Name"),
+                BUNDLE.getString("Add_User"),
+                JOptionPane.QUESTION_MESSAGE);
+        tableModel.addRow(new Object[]{username, false});
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         tableModel.removeRow(memberTable.getSelectedRow());
     }//GEN-LAST:event_removeButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton cancelButton;
@@ -290,5 +306,4 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
     private javax.swing.JButton okButton;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
-
 }

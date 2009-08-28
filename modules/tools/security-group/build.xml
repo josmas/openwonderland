@@ -26,7 +26,7 @@
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
     </pathconvert>
 
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client,
                                                 -module-compile-web,
@@ -60,6 +60,9 @@
                 <clientjar name="securitygroups-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/**/*.properties"/>
+                    </fileset>
                 </clientjar>
             </client>
 
@@ -96,7 +99,7 @@
                 </jar>
             </part>
         </module>
-    </target>                                  
+    </target>
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
