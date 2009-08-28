@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
@@ -29,6 +30,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  *
  * @author paulby
  */
+@ComponentLookupClass(ModelCellComponentMO.class)
 public class ModelCellComponentMO extends CellComponentMO {
 
     protected ModelCellComponentServerState serverState = null;

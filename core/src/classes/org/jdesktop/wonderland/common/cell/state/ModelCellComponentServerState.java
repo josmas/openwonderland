@@ -17,18 +17,11 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
-import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  * The ColladaCellSetup class is the cell that renders a collada model cell in
