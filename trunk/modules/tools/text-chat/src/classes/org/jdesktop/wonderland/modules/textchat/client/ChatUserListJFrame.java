@@ -39,10 +39,12 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  * A list of users that someone can start a chat with.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ChatUserListJFrame extends javax.swing.JFrame {
 
-    private Logger logger = Logger.getLogger(ChatUserListJFrame.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(ChatUserListJFrame.class.getName());
     private PresenceManager presenceManager = null;
     private ChatManager chatManager = null;
     final private DefaultListModel listModel;
@@ -62,6 +64,7 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
         // Enable the "Start Chat" button only if an item is selected
         startChatButton.setEnabled(false);
         userList.addListSelectionListener(new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent e) {
                 startChatButton.setEnabled(userList.getSelectedIndex() != -1);
             }
@@ -69,6 +72,7 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
 
         // Upon a double-click of the user list, activate the start button
         userList.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
@@ -82,16 +86,17 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
         // When the "Start Chat" button is selected, tell the chat manager to
         // begin a new chat
         startChatButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                String selectedUser = (String)userList.getSelectedValue();
+                String selectedUser = (String) userList.getSelectedValue();
                 if (selectedUser == null) {
-                    logger.warning("No user selected on chat window");
+                    LOGGER.warning("No user selected on chat window");
                     return;
                 }
 
                 WonderlandIdentity id = userMap.get(selectedUser);
                 if (id == null) {
-                    logger.warning("No ID found for user " + selectedUser);
+                    LOGGER.warning("No ID found for user " + selectedUser);
                     return;
                 }
                 String remoteUser = id.getUsername();
@@ -111,14 +116,15 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
         presenceManager = PresenceManagerFactory.getPresenceManager(session);
         initUserList();
 
-         // Listen for changes in the users, and update the list as appropriate
+        // Listen for changes in the users, and update the list as appropriate
         presenceManager.addPresenceManagerListener(new PresenceManagerListener() {
+
             public void userAdded(PresenceInfo pInfo) {
                 // Add the user if it does not already exist and it is not the
                 // same as this user.
                 String displayName = getDisplayName(pInfo.userID);
-                if (userMap.containsKey(displayName) == false) {
-                    if (pInfo.userID.equals(localUserIdentity) == false) {
+                if (!userMap.containsKey(displayName)) {
+                    if (!pInfo.userID.equals(localUserIdentity)) {
                         userMap.put(displayName, pInfo.userID);
                         listModel.addElement(displayName);
                     }
@@ -133,8 +139,8 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
                 // Remove the user if it does exist and it is not the same as
                 // this user.
                 String displayName = getDisplayName(pInfo.userID);
-                if (userMap.containsKey(displayName) == true) {
-                    if (pInfo.userID.equals(localUserIdentity) == false) {
+                if (userMap.containsKey(displayName)) {
+                    if (!pInfo.userID.equals(localUserIdentity)) {
                         userMap.remove(displayName);
                         listModel.removeElement(displayName);
                     }
@@ -145,12 +151,12 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
                 chatManager.deactivateChat(pInfo.userID.getUsername());
             }
 
-            public void presenceInfoChanged(PresenceInfo pInfo, ChangeType type) {
+            public void presenceInfoChanged(
+                    PresenceInfo pInfo, ChangeType type) {
                 // Dispatch toe userAdded() or userRemoved()
                 if (type == ChangeType.USER_ADDED) {
                     userAdded(pInfo);
-                }
-                else if (type == ChangeType.USER_REMOVED) {
+                } else if (type == ChangeType.USER_REMOVED) {
                     userRemoved(pInfo);
                 }
             }
@@ -167,7 +173,7 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
     private void initUserList() {
         for (PresenceInfo info : presenceManager.getAllUsers()) {
             WonderlandIdentity id = info.userID;
-            if (id.equals(localUserIdentity) == false) {
+            if (!id.equals(localUserIdentity)) {
                 String displayName = getDisplayName(id);
                 userMap.put(displayName, id);
                 listModel.addElement(displayName);
@@ -198,7 +204,8 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
         userList = new javax.swing.JList();
         startChatButton = new javax.swing.JButton();
 
-        setTitle("Private Text Chat");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/textchat/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("ChatUserListJFrame.title")); // NOI18N
 
         userListScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         userListScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -207,7 +214,7 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
         userList.setVisibleRowCount(10);
         userListScrollPane.setViewportView(userList);
 
-        startChatButton.setText("Start Chat");
+        startChatButton.setText(bundle.getString("ChatUserListJFrame.startChatButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -215,7 +222,7 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(67, Short.MAX_VALUE)
+                .addContainerGap(75, Short.MAX_VALUE)
                 .add(startChatButton)
                 .addContainerGap())
         );
@@ -230,7 +237,6 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton startChatButton;
     private javax.swing.JList userList;

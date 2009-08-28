@@ -20,8 +20,10 @@ package org.jdesktop.wonderland.modules.textchat.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -44,26 +46,31 @@ import org.jdesktop.wonderland.modules.textchat.client.TextChatConnection.TextCh
  * Manages all of the Text Chat windows for the client.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ChatManager implements TextChatListener {
 
-    private static Logger logger = Logger.getLogger(ChatManager.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(ChatManager.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/textchat/client/resources/Bundle");
     // a mapping from named text chats to HUD components
-    private Map<String, WeakReference<HUDComponent>> textChatHUDRefMap = null;
+    private Map<String, WeakReference<HUDComponent>> textChatHUDRefMap;
     // a further mapping from a text chat HUD component to the underlying
     // TextChatPanel
-    private Map<HUDComponent, WeakReference<TextChatPanel>> textChatPanelRefMap = null;
-    private JCheckBoxMenuItem textChatMenuItem = null;
-    private TextChatConnection textChatConnection = null;
-    private String localUserName = null;
-    private ServerSessionManager loginInfo = null;
-    private SessionLifecycleListener sessionListener = null;
+    private Map<HUDComponent, WeakReference<TextChatPanel>> textChatPanelRefMap;
+    private JCheckBoxMenuItem textChatMenuItem;
+    private TextChatConnection textChatConnection;
+    private String localUserName;
+    private ServerSessionManager loginInfo;
+    private SessionLifecycleListener sessionListener;
 
     /**
      * Singleton to hold instance of ChatManager. This holder class is loaded
      * on the first execution of ChatManager.getChatManager().
      */
     private static class ChatManagerHolder {
+
         private final static ChatManager manager = new ChatManager();
     }
 
@@ -82,15 +89,17 @@ public class ChatManager implements TextChatListener {
 
         // create the text chat all HUD component
         HUDComponent textChatHUDComponent = createTextChatHUD("");
-        textChatHUDComponent.setName("Text Chat All");
+        textChatHUDComponent.setName(BUNDLE.getString("Text_Chat_All"));
 
         // keep a weak reference to it so that it gets garbage collected
-        final WeakReference<HUDComponent> hudPanelRef = new WeakReference(textChatHUDComponent);
+        final WeakReference<HUDComponent> hudPanelRef =
+                new WeakReference(textChatHUDComponent);
         textChatHUDRefMap.put("", new WeakReference(textChatHUDComponent));
 
         // Create the global text chat menu item. Listen for when it is
         // selected or de-selected and show/hide the frame as appropriate.
-        textChatMenuItem = new JCheckBoxMenuItem("Text Chat All");
+        textChatMenuItem = new JCheckBoxMenuItem(
+                BUNDLE.getString("Text_Chat_All"));
         textChatMenuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -109,6 +118,7 @@ public class ChatManager implements TextChatListener {
         // we enable the menu items and set the primary sessions on their
         // objects.
         sessionListener = new SessionLifecycleListener() {
+
             public void sessionCreated(WonderlandSession session) {
                 // Do nothing for now
             }
@@ -123,8 +133,11 @@ public class ChatManager implements TextChatListener {
         final TextChatPanel textChatPanel = new TextChatPanel();
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        HUDComponent textChatHUDComponent = mainHUD.createComponent(textChatPanel);
-        textChatHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/textchat/client/resources/UserListChatText32x32.png")));
+        HUDComponent textChatHUDComponent =
+                mainHUD.createComponent(textChatPanel);
+        textChatHUDComponent.setIcon(new ImageIcon(getClass().getResource(
+                "/org/jdesktop/wonderland/modules/textchat/client/resources/" +
+                "UserListChatText32x32.png")));
         textChatHUDComponent.setPreferredLocation(Layout.SOUTHWEST);
         mainHUD.addComponent(textChatHUDComponent);
 
@@ -136,7 +149,8 @@ public class ChatManager implements TextChatListener {
                     synchronized (textChatHUDRefMap) {
                         e.getObject().setVisible(false);
                         // TODO: really dispose of HUD component
-                        WeakReference<HUDComponent> ref = textChatHUDRefMap.get(userKey);
+                        WeakReference<HUDComponent> ref =
+                                textChatHUDRefMap.get(userKey);
                         if (ref != null) {
                             HUDComponent textChatHUDComponent = ref.get();
                             textChatHUDRefMap.remove(userKey);
@@ -147,7 +161,8 @@ public class ChatManager implements TextChatListener {
             }
         });
 
-        textChatPanelRefMap.put(textChatHUDComponent, new WeakReference(textChatPanel));
+        textChatPanelRefMap.put(
+                textChatHUDComponent, new WeakReference(textChatPanel));
 
         return textChatHUDComponent;
     }
@@ -171,7 +186,8 @@ public class ChatManager implements TextChatListener {
      */
     public void unregister() {
         // Close down all of the individual text chat windows
-        for (Map.Entry<String, WeakReference<HUDComponent>> entry : textChatHUDRefMap.entrySet()) {
+        for (Map.Entry<String, WeakReference<HUDComponent>> entry :
+                textChatHUDRefMap.entrySet()) {
             HUDComponent component = entry.getValue().get();
             component.setVisible(false);
             // TODO: really dispose of HUD component
@@ -205,7 +221,7 @@ public class ChatManager implements TextChatListener {
         try {
             textChatConnection.connect(session);
         } catch (ConnectionFailureException excp) {
-            logger.log(Level.WARNING, "Unable to establish a connection to " +
+            LOGGER.log(Level.WARNING, "Unable to establish a connection to " +
                     "the chat connection.", excp);
             return;
         }
@@ -213,7 +229,8 @@ public class ChatManager implements TextChatListener {
         // Next, for the global chat, set its information and make it visible
         // initially.
         HUDComponent textChatHUDComponent = textChatHUDRefMap.get("").get();
-        TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
+        TextChatPanel textChatPanel =
+                textChatPanelRefMap.get(textChatHUDComponent).get();
 
         textChatPanel.setActive(textChatConnection, localUserName, "");
         textChatMenuItem.setEnabled(true);
@@ -241,10 +258,15 @@ public class ChatManager implements TextChatListener {
 
             // Otherwise, create the frame, add it to the map, and display
             HUDComponent textChatHUDComponent = createTextChatHUD(remoteUser);
-            textChatHUDComponent.setName("Text Chat" + " (" + remoteUser + ")");
-            textChatHUDRefMap.put(remoteUser, new WeakReference(textChatHUDComponent));
-            TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
-            textChatPanel.setActive(textChatConnection, localUserName, remoteUser);
+            String name = BUNDLE.getString("Text_Chat_With");
+            name = MessageFormat.format(name, remoteUser);
+            textChatHUDComponent.setName(name);
+            textChatHUDRefMap.put(
+                    remoteUser, new WeakReference(textChatHUDComponent));
+            TextChatPanel textChatPanel =
+                    textChatPanelRefMap.get(textChatHUDComponent).get();
+            textChatPanel.setActive(
+                    textChatConnection, localUserName, remoteUser);
             textChatHUDComponent.setVisible(true);
         }
     }
@@ -266,7 +288,8 @@ public class ChatManager implements TextChatListener {
                 return;
             }
             HUDComponent textChatHUDComponent = ref.get();
-            TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
+            TextChatPanel textChatPanel =
+                    textChatPanelRefMap.get(textChatHUDComponent).get();
             textChatPanel.deactivate();
         }
     }
@@ -286,7 +309,8 @@ public class ChatManager implements TextChatListener {
                 return;
             }
             HUDComponent textChatHUDComponent = ref.get();
-            TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
+            TextChatPanel textChatPanel =
+                    textChatPanelRefMap.get(textChatHUDComponent).get();
             textChatPanel.reactivate();
         }
     }
@@ -299,13 +323,14 @@ public class ChatManager implements TextChatListener {
         // empty string, then this is a "global" message and we fetch its
         // frame. It should exist. We always add the message, no matter whether
         // the frame is visible or not.
-        if (toUser == null || toUser.equals("") == true) {
+        if (toUser == null || toUser.equals("")) {
             WeakReference<HUDComponent> ref = textChatHUDRefMap.get("");
             if (ref == null) {
                 return;
             }
             HUDComponent textChatHUDComponent = ref.get();
-            TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
+            TextChatPanel textChatPanel =
+                    textChatPanelRefMap.get(textChatHUDComponent).get();
 
             textChatPanel.appendTextMessage(message, fromUser);
             return;
@@ -319,7 +344,8 @@ public class ChatManager implements TextChatListener {
             WeakReference<HUDComponent> ref = textChatHUDRefMap.get(fromUser);
             if (ref != null) {
                 HUDComponent textChatHUDComponent = ref.get();
-                TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
+                TextChatPanel textChatPanel =
+                        textChatPanelRefMap.get(textChatHUDComponent).get();
                 textChatPanel.appendTextMessage(message, fromUser);
                 return;
             }
@@ -328,9 +354,13 @@ public class ChatManager implements TextChatListener {
             // user, but the frame does not exist, and is not visible. So we
             // create it and add to the map and display it.
             HUDComponent textChatHUDComponent = createTextChatHUD(fromUser);
-            textChatHUDComponent.setName("Text Chat" + " (" + fromUser + ")");
-            textChatHUDRefMap.put(fromUser, new WeakReference(textChatHUDComponent));
-            TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
+            String name = BUNDLE.getString("Text_Chat_With");
+            name = MessageFormat.format(name, fromUser);
+            textChatHUDComponent.setName(name);
+            textChatHUDRefMap.put(
+                    fromUser, new WeakReference(textChatHUDComponent));
+            TextChatPanel textChatPanel =
+                    textChatPanelRefMap.get(textChatHUDComponent).get();
             textChatPanel.setActive(textChatConnection, toUser, fromUser);
             textChatPanel.appendTextMessage(message, fromUser);
             textChatHUDComponent.setVisible(true);
