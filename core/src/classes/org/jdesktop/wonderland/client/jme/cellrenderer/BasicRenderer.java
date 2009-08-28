@@ -200,7 +200,6 @@ public abstract class BasicRenderer implements CellRendererJME {
         sceneRoot = createSceneGraph(ret);
         rootNode.attachChild(sceneRoot);
         applyTransform(rootNode, cell.getLocalTransform());
-        System.err.println("Setting root transform "+cell.getLocalTransform());
         addRenderState(rootNode);
 
         addDefaultComponents(ret, rootNode);
@@ -240,7 +239,6 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         if (rootNode!=null) {
             rootNode.updateWorldBound();
-            System.err.println("BOUNDS "+rootNode.getWorldBound());
 
             // Some subclasses (like the imi collada renderer) already add
             // a render component
