@@ -17,8 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.microphone.client.cell;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.sgs.client.ClientChannel;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +44,8 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 
@@ -99,9 +104,13 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
             try {
-                return new ModelRenderer(this, AssetUtils.getAssetURL("wla://microphone/models/Microphone.dae"));
+                DeployedModel m =
+                       LoaderManager.getLoaderManager().getLoaderFromDeployment(AssetUtils.getAssetURL("wla://microphone/Microphone.kmz/Microphone.kmz.dep"));
+                return new ModelRenderer(this, m);
             } catch (MalformedURLException ex) {
                 Logger.getLogger(MicrophoneCell.class.getName()).log(Level.SEVERE, "Failed to load microphone model", ex);
+            } catch(IOException ioe) {
+                Logger.getLogger(MicrophoneCell.class.getName()).log(Level.SEVERE, "Failed to load microphone model", ioe);
             }
         }
 
