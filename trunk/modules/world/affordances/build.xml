@@ -15,7 +15,7 @@
         <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
     </pathconvert>
 
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client"/>
     
@@ -30,9 +30,9 @@
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                     <fileset dir="${current.dir}/src/classes">
-                        <include name="${module.src}/client/resources/**/*.png"/>
+                        <include name="${module.src}/client/resources/**"/>
                     </fileset>
-                </clientjar> 
+                </clientjar>
             </client>
 
             <server>
@@ -42,7 +42,7 @@
                 </serverjar>
             </server>
         </module>
-    </target>                                  
+    </target>
              
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
