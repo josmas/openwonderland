@@ -34,6 +34,7 @@ public class ImportedModel extends Model {
     private ModelLoader modelLoader;  // Loader used
     private Node modelBG;  // Root of scene created by loader
     private Entity entity;    // Entity for the model
+    private String deploymentBaseURL;
 
     public ImportedModel(URL originalFile, Map<URL, String> textureFileMapping) {
         super(originalFile);
@@ -109,6 +110,20 @@ public class ImportedModel extends Model {
      */
     public void setEntity(Entity entity) {
         this.entity = entity;
+    }
+
+    /**
+     * @return the deploymentBaseURL
+     */
+    public String getDeploymentBaseURL() {
+        return deploymentBaseURL;
+    }
+
+    /**
+     * @param deploymentBaseURL the deploymentBaseURL to set
+     */
+    public void setDeploymentBaseURL(String deploymentBaseURL) {
+        this.deploymentBaseURL = deploymentBaseURL;
     }
 
 }
