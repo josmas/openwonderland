@@ -69,7 +69,7 @@ public class JmeColladaCellComponentMO extends ModelCellComponentMO {
             state = new JmeColladaCellComponentClientState();
         }
 
-        serverState.setClientState((JmeColladaCellComponentClientState)state);
+        ((JmeColladaCellComponentServerState)serverState).setClientState((JmeColladaCellComponentClientState)state);
 
         return state;
     }

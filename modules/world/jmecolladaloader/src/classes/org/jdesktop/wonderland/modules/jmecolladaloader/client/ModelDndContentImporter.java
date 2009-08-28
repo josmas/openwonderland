@@ -43,6 +43,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.FileUtils;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Bounds;
@@ -205,6 +206,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         }
         tmpDir = new File(tmpDir, file.getName());
         tmpDir.mkdirs();
+        System.err.println("DEPLOYING TO "+tmpDir);
 
         // Create a fake entity, which will be used to calculate the model offset
         // from the cell
@@ -216,6 +218,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(cellRoot);
         entity.addComponent(RenderComponent.class, rc);
         importedModel.setEntity(entity);
+        importedModel.setDeploymentBaseURL("wlcontent://users/" + loginInfo.getUsername() + "/art/");
 
         DeployedModel deployedModel = loader.deployToModule(tmpDir, importedModel);
 
@@ -237,14 +240,13 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         URL tmpUrl = new URL(deployedModel.getModelURL());
         String modelFile = "art" + tmpUrl.getPath();
 
-        // THIS IS A HACK, should not be assuming JmeColladaCellComponentServerState, but
-        // we don't have any other loaders yet (kmzloader is a subclass)
         ModelCellServerState cellState = (ModelCellServerState) deployedModel.getCellServerState();
-        JmeColladaCellComponentServerState compState = (JmeColladaCellComponentServerState) cellState.getComponentServerState(JmeColladaCellComponentServerState.class);
-        compState.setModel("wlcontent://users/" + loginInfo.getUsername() + "/" + modelFile);
-        // END HACK
+        ModelCellComponentServerState compState = (ModelCellComponentServerState) cellState.getComponentServerState(ModelCellComponentServerState.class);
+//        compState.setDeployedModelURL("wlcontent://users/" + loginInfo.getUsername() + "/" + modelFile);
 
-        deployedModel.setModelURL(compState.getModel()); // Make everything consistent with the state
+        System.err.println("DEPLOYED DEP FILE "+compState.getDeployedModelURL());
+
+//        deployedModel.setModelURL(compState.getDeployedModelURL()); // Make everything consistent with the state
 
         return deployedModel;
     }
