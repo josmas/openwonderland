@@ -15,7 +15,7 @@
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client"/>
     
@@ -29,10 +29,13 @@
             <client>
                 <clientjar name="viewproperties-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
-                </clientjar> 
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/**/*.properties"/>
+                    </fileset>
+                </clientjar>
             </client>
         </module>
-    </target>                                  
+    </target>
              
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
