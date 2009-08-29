@@ -54,11 +54,11 @@ public abstract class AppConventionalCell extends App2DCell {
     protected String command;
     /** The connection info. */
     protected String connectionInfo;
-    /** The app has been started. */
-    private boolean appStarted;
     /** Indicates that this cell is a slave and has connectedToTheApp. */
     private boolean slaveStarted;
- 
+    /** Indicates that the cell renderer for this cell has been created. */
+    private boolean cellRendererExists;
+
     /** 
      * Creates a new instance of AppConventionalCell.
      *
@@ -110,55 +110,34 @@ public abstract class AppConventionalCell extends App2DCell {
             channel.removeMessageReceiver(AppConventionalCellAppExittedMessage.class);
         }
 
-        // Launch the app when it is visible for the first time
-        if (status == CellStatus.VISIBLE && increasing && !appStarted) {
-
-            if (launchLocation.equalsIgnoreCase("user") &&
-                launchUser.equals(cellCacheSession.getUserID().getUsername())) {
-
-                // Master case
-
-		StartMasterReturnInfo ret = startMaster(appName, command, fvi);
-                if (ret == null || ret.connInfo == null) {
-                    logger.warning("Cannot launch app " + appName);
-                    // TODO: what else to do? Delete the cell? If so, how?
-                    return;
-                }
-                connectionInfo = ret.connInfo;
-                logger.info("AppConventional cellID " + getCellID() + " connectionInfo = " + 
-                            connectionInfo);
-
-                // Notify server and clients of the new connection info.
-                AppConventionalCellSetConnectionInfoMessage msg =
-                    new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
-
-                // Send the message to the server for broadcast to all slaves (and also this master
-                // so we must self-ignore (see setConnectionInfo). Note that we cannot send this
-                // message synchronously and wait for a response because we are already in a
-                // darkstar message handler.
-                channel.send(msg);
-
-                this.app = ret.app;
-
+        // Keep track of whether the cell renderer has been created
+        if (status == CellStatus.ACTIVE) {
+            if (increasing) {
+                cellRendererExists = true;
             } else {
-
-                // Slave case
-                //
-                // Slaves must wait to connect until valid connection info is known. This can happen 
-                // in one of two ways. If the slave cell was loaded into this client AFTER the master
-                // app started the connection info will already be known (i.e. non-null). Otherwise, 
-                // if the slave cell was loaded into this client BEFORE the master app started this 
-                // client will eventually receive a SetConnectionInfo message whic contains the 
-                // connection info.
-
-                if (connectionInfo != null) {
-                    logger.info("Starting slave from setClientState");
-                    startTheSlave(connectionInfo);
-                }
+                cellRendererExists = false;
             }
 
-            appStarted = true;
+            startSlaveIfReady();
         }
+
+        // Launch the app when it is visible for the first time
+        if (status == CellStatus.VISIBLE && increasing) {
+
+            // Slave case
+            //
+            // Slaves must wait to connect until valid connection info is known. This can happen 
+            // in one of two ways. If the slave cell was loaded into this client AFTER the master
+            // app started the connection info will already be known (i.e. non-null). Otherwise, 
+            // if the slave cell was loaded into this client BEFORE the master app started this 
+            // client will eventually receive a SetConnectionInfo message whic contains the 
+            // connection info.
+
+            startSlaveIfReady();
+        } 
+
+        // TODO: it would be a good idea to disconnect the slave at some point 
+        // (INACTIVE && !increasing?) to save on resources.
     }
 
     /**
@@ -202,14 +181,24 @@ public abstract class AppConventionalCell extends App2DCell {
         // Slave: If this message arrives after we are already connected, just ignore it.
         if (slaveStarted) return;
 
-        if (connInfo != null) {
-            connectionInfo = connInfo;
-            logger.info("Starting slave from setConnectionInfo");
+        connectionInfo = connInfo;
+        startSlaveIfReady();
+    }
+
+    /**
+     * Starts the slave if all preconditions are satisified. Before we can start the slave
+     * we must have a cell renderer and we must have a connection info.
+     */
+    private void startSlaveIfReady() {
+        if (slaveStarted) return;
+
+        if (cellRendererExists && connectionInfo != null) {
             startTheSlave(connectionInfo);
         }
     }
 
     private void startTheSlave (String connectionInfo) {
+        logger.info("Starting app slave.");
         app = startSlave(connectionInfo, fvi);
         if (app != null) {
             slaveStarted = true;
