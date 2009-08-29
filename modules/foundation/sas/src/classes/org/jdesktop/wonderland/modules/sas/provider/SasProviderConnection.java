@@ -95,7 +95,7 @@ public class SasProviderConnection extends BaseConnection {
         } else if (message instanceof SasProviderAppStopMessage) {
             SasProviderAppStopMessage msg = (SasProviderAppStopMessage) message;
 
-            logger.warning("Received app message from server");
+            logger.warning("Received app stop message from server");
             logger.warning("launchMsgID= " + msg.getLaunchMessageID());
 
             listener.appStop(this, msg.getLaunchMessageID());
