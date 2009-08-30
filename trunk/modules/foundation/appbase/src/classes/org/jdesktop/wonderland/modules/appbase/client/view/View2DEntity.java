@@ -1154,7 +1154,7 @@ public abstract class View2DEntity implements View2D {
                 if (parentEntity != null) {
                     logger.fine("Remove entity " + entity + " from parent entity " + parentEntity);
                     RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
-                    sgChangeAttachPointSet(rc, null);
+                    sgChangeAttachPointSetAddEntity(rc, null, null, null);
                     parentEntity.removeEntity(entity);
                     parentEntity = null;
                 }
@@ -1220,8 +1220,8 @@ public abstract class View2DEntity implements View2D {
                             attachState = AttachState.ATTACHED_TO_WORLD;
                             logger.fine("Attached parentless entity " + entity + " to world manager.");
                         } else {
-                            parentEntity.addEntity(entity);
                             RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
+                            // TODO: these two statements appear to be obsolete.
                             RenderComponent rcParent = 
                                 (RenderComponent) parentEntity.getComponent(RenderComponent.class);
                             Node attachNode = rcParent.getSceneRoot();
@@ -1233,7 +1233,7 @@ public abstract class View2DEntity implements View2D {
                             // geometry node for this view.
                             attachNode = (Node) attachNode.getChild(0);
 
-                            sgChangeAttachPointSet(rc, attachNode);
+                            sgChangeAttachPointSetAddEntity(rc, attachNode, parentEntity, entity);
                             attachState = AttachState.ATTACHED_TO_ENTITY;
                             logger.fine("Attach ortho entity " + entity + " to geometry node of parent entity " + parentEntity);
                         }
@@ -1245,7 +1245,7 @@ public abstract class View2DEntity implements View2D {
                         logger.warning("getParentEntity() returns null; must be non-null");
                     } else {
                         logger.fine("Attach entity " + entity + " to parent entity " + parentEntity);
-                        parentEntity.addEntity(entity);
+
                         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                         RenderComponent rcParent = 
                             (RenderComponent) parentEntity.getComponent(RenderComponent.class);
@@ -1265,7 +1265,7 @@ public abstract class View2DEntity implements View2D {
                             }
                         }
 
-                        sgChangeAttachPointSet(rc, attachNode);
+                        sgChangeAttachPointSetAddEntity(rc, attachNode, parentEntity, entity);
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                         entity.getComponent(RenderComponent.class).setOrtho(false);
                     }
@@ -1283,12 +1283,15 @@ public abstract class View2DEntity implements View2D {
 
         // React to frame changes (must do before handling size changes)
         if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_ORTHO | CHANGED_TYPE |
-                           CHANGED_PIXEL_SCALE | CHANGED_USER_RESIZABLE)) != 0) { 
+                           CHANGED_PIXEL_SCALE | CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) { 
             logger.fine("Update frame for view " + this);
             logger.fine("decorated " + decorated);
 
-            if ((changeMask & (CHANGED_DECORATED | CHANGED_ORTHO)) != 0) {
-                if (decorated && !ortho) {
+            if ((changeMask & (CHANGED_DECORATED | CHANGED_ORTHO | CHANGED_VISIBLE)) != 0) {
+                // Some popups initiall are decorated and then are set to undecorated before
+                // the popup becomes visible. So to avoid wasting time, wait until the window
+                // becomes visible before attaching its frame.
+                if (decorated && !ortho && isActuallyVisible()) {
                     if (!hasFrame()) {
                         logger.fine("Attach frame");
                         attachFrame();
@@ -1605,7 +1608,7 @@ public abstract class View2DEntity implements View2D {
         GEOMETRY_CLEANUP,
         VIEW_NODE_ORTHO_SET,
         TRANSFORM_USER_SET,
-        ATTACH_POINT_SET
+        ATTACH_POINT_SET_ADD_ENTITY
     };
 
     private static class SGChange {
@@ -1728,13 +1731,18 @@ public abstract class View2DEntity implements View2D {
        }
     }
 
-    private static class SGChangeAttachPointSet extends SGChange {
+    private static class SGChangeAttachPointSetAddEntity extends SGChange {
         private RenderComponent rc;
         private Node node;
-        private SGChangeAttachPointSet (RenderComponent rc, Node node) {
-            super(SGChangeOp.ATTACH_POINT_SET);
+        private Entity parentEntity;
+        private Entity entity;
+        private SGChangeAttachPointSetAddEntity (RenderComponent rc, Node node, Entity parentEntity, 
+                                                 Entity entity) {
+            super(SGChangeOp.ATTACH_POINT_SET_ADD_ENTITY);
             this.rc = rc;
             this.node = node;
+            this.parentEntity = parentEntity;
+            this.entity = entity;
        }
     }
 
@@ -1784,8 +1792,9 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeTransformUserSet(viewNode, transform));
     }
 
-    protected synchronized void sgChangeAttachPointSet (RenderComponent rc, Node node) {
-        sgChanges.add(new SGChangeAttachPointSet(rc, node));
+    protected synchronized void sgChangeAttachPointSetAddEntity (RenderComponent rc, Node node, 
+                                                                 Entity parentEntity, Entity entity) {
+        sgChanges.add(new SGChangeAttachPointSetAddEntity(rc, node, parentEntity, entity));
     }
 
     // Note: this method doesn't need to be synchronized because it does everything via a 
@@ -1900,9 +1909,16 @@ public abstract class View2DEntity implements View2D {
                          break;
                      }
 
-                     case ATTACH_POINT_SET: {
-                         SGChangeAttachPointSet chg = (SGChangeAttachPointSet) sgChange;
+                     case ATTACH_POINT_SET_ADD_ENTITY: {
+                         SGChangeAttachPointSetAddEntity chg = (SGChangeAttachPointSetAddEntity) sgChange;
                          chg.rc.setAttachPoint(chg.node);
+                         
+                         // Note: in the latest MTGame, addEntity makes the entity immediately visible.
+                         // So, to avoid having the scene graph come up at the wrong place, we need
+                         // to perform the addEntity after setting the attach point.
+                         if (chg.parentEntity != null && chg.entity != null) {
+                             chg.parentEntity.addEntity(chg.entity);
+                         }
                          break;
                      }
 
