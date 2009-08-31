@@ -237,7 +237,7 @@ public abstract class InputPicker {
      *
      * Returns non-null if window is a WindowSwing. If it is a WindowSwing then
      * return the appropriate hit entity and the corresponding pick info.
-     * Otherwise forward the event to the event distributor as a 3D event.
+     * Otherwise save the pickinfos the event to the event distributor as a 3D event.
      *
      * @param awtEvent The event whose entity and pickInfo need to be picked.
      * @return An object of class PickEventReturn, which contains the return
@@ -343,10 +343,15 @@ public abstract class InputPicker {
         } else {
 
             // This is a 3D event
-            swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
+            if (awtMouseEvent.getID() == MouseEvent.MOUSE_RELEASED) {
+                // TODO: someday: HACK: workaround for 600
+                swingPickInfos.add(new PickInfoQueueEntry(destPickInfo, awtMouseEvent));
+            } else {
+                swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
+            }
 
             generateSwingEnterExitEvents(null);
-            
+
             return null;
         }
     }
@@ -383,15 +388,13 @@ public abstract class InputPicker {
     }
 
     /**
-     * NOTE: THIS METHOD IS OBSOLETE.
-     *
      * Mouse Event picker for non-Swing (3D) events.
      * Finds the first consuming entity and then turns the work over to the event deliverer.
      * This method does not return a result but instead enqueues an entry for the event in
      * the input queue of the event deliverer.
      */
     void pickMouseEvent3D (MouseEvent awtEvent) {
-	logger.fine("Received awt event = " + awtEvent);
+	logger.fine("pickMouseEvent3D: Received awt event = " + awtEvent);
 	MouseEvent3D event;
 
 	// Determine the destination pick info by reading from the pickInfo Queue, performing a pick, 
