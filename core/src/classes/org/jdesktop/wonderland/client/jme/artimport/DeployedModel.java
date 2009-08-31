@@ -143,9 +143,12 @@ public class DeployedModel {
      * Apply the model transform the modelBG node
      */
     public void applyModelTransform(Node modelBG) {
-        modelBG.setLocalScale(modelBGScale);
-        modelBG.setLocalTranslation(modelBGTranslation);
-        modelBG.setLocalRotation(modelBGRotation);
+        if (getModelScale()!=null)
+            modelBG.setLocalScale(getModelScale());
+        if (getModelTranslation()!=null)
+            modelBG.setLocalTranslation(getModelTranslation());
+        if (getModelRotation()!=null)
+            modelBG.setLocalRotation(getModelRotation());
     }
 
     public void addCellServerState(CellServerState cellServerState) {
