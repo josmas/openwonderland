@@ -21,11 +21,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
- * A list of users that someone can start a chat with.
+ * A JPanel that displays a chat from a user (or for global chat) that has a
+ * text field and Send button.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  * @author nsimpson
@@ -33,8 +33,6 @@ import javax.swing.SwingUtilities;
  */
 public class TextChatPanel extends javax.swing.JPanel {
 
-    private static final Logger LOGGER =
-            Logger.getLogger(TextChatPanel.class.getName());
     private TextChatConnection textChatConnection = null;
     private String localUser = null;
     private String remoteUser = null;
@@ -45,7 +43,6 @@ public class TextChatPanel extends javax.swing.JPanel {
         // Listen for a Return on the text entry field, and click the Send
         // button
         messageTextField.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 sendButton.doClick();
             }
@@ -55,40 +52,39 @@ public class TextChatPanel extends javax.swing.JPanel {
         // the server. We immediately display the message locally since it is
         // not mirrored from the server for the sending client.
         sendButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                String text = messageTextField.getText();
+                final String text = messageTextField.getText();
                 textChatConnection.sendTextMessage(text, localUser, remoteUser);
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         messageTextField.setText("");
+                        appendTextMessage(text, localUser);
                     }
                 });
-                appendTextMessage(text, localUser);
             }
         });
     }
 
     /**
      * Adds a text message, given the user name and message to the chat window.
+     *
+     * NOTE: This method assumes it is being invoked on the AWT Event Thread.
+     *
+     * @param message The text message to append
+     * @param userName The user name from which the message originated
      */
     public void appendTextMessage(String message, String userName) {
-        final String msg = userName + ": " + message + "\n";
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                messageTextArea.append(msg);
-                messageTextArea.setCaretPosition(
-                        messageTextArea.getText().length());
-            }
-        });
+        String msg = userName + ": " + message + "\n";
+        messageTextArea.append(msg);
+        messageTextArea.setCaretPosition(messageTextArea.getText().length());
     }
 
     /**
      * Makes the text frame active, giving the text chat connection, the name
      * of the local user and the name of the remote user (empty string if for
      * all users).
+     *
+     * NOTE: This method assumes it is being invoked on the AWT Event Thread.
      *
      * @param connection The text chat communications connection
      * @param localUser The user name of this user
@@ -99,49 +95,37 @@ public class TextChatPanel extends javax.swing.JPanel {
         this.textChatConnection = connection;
         this.localUser = localUser;
         this.remoteUser = remoteUser;
-        final String user = remoteUser;
 
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                messageTextField.setEnabled(true);
-                sendButton.setEnabled(true);
-            }
-        });
+        messageTextField.setEnabled(true);
+        sendButton.setEnabled(true);
     }
 
     /**
      * Deactivates the chat by displaying a message and turning off the GUI.
+     *
+     * NOTE: This method assumes it is being invoked on the AWT Event Thread.
      */
     public void deactivate() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                String date = new SimpleDateFormat("h:mm a").format(new Date());
-                String msg = "--- User " + remoteUser +
-                        " has left the world at " + date + " ---\n";
-                messageTextArea.append(msg);
-                messageTextField.setEnabled(false);
-                sendButton.setEnabled(false);
-            }
-        });
+        String date = new SimpleDateFormat("h:mm a").format(new Date());
+        String msg = "--- User " + remoteUser +
+                " has left the world at " + date + " ---\n";
+        messageTextArea.append(msg);
+        messageTextField.setEnabled(false);
+        sendButton.setEnabled(false);
     }
 
     /**
      * Re-activates the chat by displaying a message and turning on the GUI.
+     *
+     * NOTE: This method assumes it is being invoked on the AWT Event Thread.
      */
     public void reactivate() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                String date = new SimpleDateFormat("h:mm a").format(new Date());
-                String msg = "--- User " + remoteUser +
-                        " has joined the world at " + date + " ---\n";
-                messageTextArea.append(msg);
-                messageTextField.setEnabled(true);
-                sendButton.setEnabled(true);
-            }
-        });
+        String date = new SimpleDateFormat("h:mm a").format(new Date());
+        String msg = "--- User " + remoteUser +
+                " has joined the world at " + date + " ---\n";
+        messageTextArea.append(msg);
+        messageTextField.setEnabled(true);
+        sendButton.setEnabled(true);
     }
 
     /** This method is called from within the constructor to
