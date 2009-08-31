@@ -362,15 +362,18 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
         // Next, persist the running apps.
         LinkedList<LaunchRequest> launches = runningLaunches.getLaunches(execCap);
-        for (LaunchRequest launchReq : launches) {
-            logger.warning("Persisting running app to pending list, appName = " + launchReq.appName);
-            pendingLaunches.add(launchReq);
-            cellsToRemove.add(launchReq.cellID);
+        if (launches != null) {
+            for (LaunchRequest launchReq : launches) {
+                logger.warning("Persisting running app to pending list, appName = " + launchReq.appName);
+                pendingLaunches.add(launchReq);
+                cellsToRemove.add(launchReq.cellID);
+            }
+
+            for (CellID cellID : cellsToRemove) {
+                runningLaunches.remove(cellID, execCap);
+            }
+            cellsToRemove.clear();
         }
-         for (CellID cellID : cellsToRemove) {
-            runningLaunches.remove(cellID, execCap);
-        }
-        cellsToRemove.clear();
 
         AppContext.getDataManager().markForUpdate(this);
     }
