@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import com.jme.bounding.BoundingSphere;
+import com.jme.intersection.TriangleCollisionResults;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -30,6 +31,7 @@ import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.Geometry;
+import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
@@ -39,6 +41,7 @@ import imi.character.CharacterMotionListener;
 import imi.character.CharacterProcessor;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarController;
+import imi.character.avatar.CollisionListener;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
@@ -48,6 +51,7 @@ import imi.scene.PMatrix;
 import imi.scene.PTransform;
 import imi.scene.polygonmodel.PPolygonModelInstance;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.CollisionComponent;
@@ -64,6 +68,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
@@ -115,6 +120,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private Entity rootEntity = null;
 
     private CollisionChangeRequestListener collisionChangeRequestListener;
+//    private CollisionListener collisionListener = null;
     
     /** Collection of listeners **/
     private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners
@@ -640,6 +646,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         collisionChangeRequestListener.setCollisionController(controller);
         AvatarController ac = (AvatarController)avatar.getContext().getController();
         ac.setCollisionController(controller);
+//        collisionListener = new WLCollisionListener();
+//        ac.addCollisionListener(collisionListener);
     }
 
 
@@ -805,15 +813,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     public void triggerGoto(Vector3f position, Quaternion look) {
-        CharacterController cc = avatarCharacter.getContext().getController();
-        PPolygonModelInstance body = cc.getModelInstance();
-
-        PMatrix newPosition = new PMatrix(body.getTransform().getLocalMatrix(false));
-        newPosition.setTranslation(position);
-        newPosition.setRotation(look);
-
-        body.getTransform().getLocalMatrix(true).set(newPosition);
-        cc.notifyTransfromUpdate(position, newPosition);
+        CellTransform transform = new CellTransform();
+        transform.setRotation(look);
+        transform.setTranslation(position);
+        cell.getComponent(MovableComponent.class).localMoveRequest(transform);
+        avatarCharacter.getModelInst().setTransform(new PTransform(look, position, new Vector3f(1, 1, 1)));
     }
 
     /**
@@ -922,4 +926,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         }
     }
+
+//    class WLCollisionListener implements CollisionListener {
+//
+//        public void processCollision(TriangleCollisionResults tcr) {
+//            for (int i=0; i<tcr.getNumber(); i++) {
+//                ArrayList<Integer> tris = tcr.getCollisionData(i).getSourceTris();
+//                if (tris.size() != 0) {
+//                    TriMesh mesh = (TriMesh)tcr.getCollisionData(i).getSourceMesh();
+//                    System.err.println("Collision ");
+//                    // get entity
+//                    // post event
+//                }
+//            }
+//        }
+//
+//    }
 }
