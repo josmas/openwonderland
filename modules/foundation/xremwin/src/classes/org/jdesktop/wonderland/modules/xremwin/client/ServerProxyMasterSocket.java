@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.logging.Level;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.CreateWindowMsgArgs;
@@ -122,13 +123,14 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
     }
 
     protected synchronized void establishConnection() {
-        try {
+       try {
             sock = new Socket(masterHost, portBase + wsDisplayNum);
             sock.setSoTimeout(SOCKET_TIMEOUT);
             in = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
             out = sock.getOutputStream();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            AppXrw.logger.log(Level.WARNING, "Error connecting to " + masterHost + " port " +
+                              (portBase + wsDisplayNum), ex);
             throw new RuntimeException(ex);
         }
     }

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.appbase.client.utils.net;
 
 import java.net.InetAddress;
+import java.net.Inet6Address;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -82,7 +83,10 @@ public class NetworkAddress {
 		    while (eia.hasMoreElements()) {
 			InetAddress ia = eia.nextElement();
 
-			if (!ia.isLinkLocalAddress()) {
+                        // ignore link local addresses
+                        // issue #524: also ignore IPv6 addresses until xremwin properly
+                        // supports IPv6
+			if (!ia.isLinkLocalAddress() && !(ia instanceof Inet6Address)) {
 			    networkAddressList.add(
 				new NetworkAddress(ni.getName(), ia.getHostAddress()));
 			    break;
