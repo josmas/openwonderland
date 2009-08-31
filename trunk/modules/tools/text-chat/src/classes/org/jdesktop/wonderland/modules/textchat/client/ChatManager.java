@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -38,8 +39,6 @@ import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.modules.textchat.client.TextChatConnection.TextChatListener;
 
 /**
@@ -54,23 +53,28 @@ public class ChatManager implements TextChatListener {
             Logger.getLogger(ChatManager.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/textchat/client/resources/Bundle");
-    // a mapping from named text chats to HUD components
+
+    // A mapping from named text chats to HUD components, where the key is the
+    // name of the remote person involved in the text chat and the value is a
+    // weak reference to the HUD panel displaying the chat. NOTE: Accesses to
+    // this Map must by synchronized, and only takes place on the AWT Event
+    // Thread.
     private Map<String, WeakReference<HUDComponent>> textChatHUDRefMap;
-    // a further mapping from a text chat HUD component to the underlying
-    // TextChatPanel
+
+    // A further mapping from a text chat HUD component to the underlying
+    // TextChatPanel. NOTE: Accesses to this Map must by synchronized, and only
+    // takes place on the AWT Event Thread.
     private Map<HUDComponent, WeakReference<TextChatPanel>> textChatPanelRefMap;
+    
     private JCheckBoxMenuItem textChatMenuItem;
     private TextChatConnection textChatConnection;
     private String localUserName;
-    private ServerSessionManager loginInfo;
-    private SessionLifecycleListener sessionListener;
 
     /**
      * Singleton to hold instance of ChatManager. This holder class is loaded
      * on the first execution of ChatManager.getChatManager().
      */
     private static class ChatManagerHolder {
-
         private final static ChatManager manager = new ChatManager();
     }
 
@@ -83,130 +87,35 @@ public class ChatManager implements TextChatListener {
         return ChatManagerHolder.manager;
     }
 
+    /**
+     * Private constructor, singelton pattern
+     */
     private ChatManager() {
         textChatHUDRefMap = new HashMap();
         textChatPanelRefMap = new HashMap();
 
-        // create the text chat all HUD component
-        HUDComponent textChatHUDComponent = createTextChatHUD("");
-        textChatHUDComponent.setName(BUNDLE.getString("Text_Chat_All"));
-
-        // keep a weak reference to it so that it gets garbage collected
-        final WeakReference<HUDComponent> hudPanelRef =
-                new WeakReference(textChatHUDComponent);
-        textChatHUDRefMap.put("", new WeakReference(textChatHUDComponent));
-
         // Create the global text chat menu item. Listen for when it is
-        // selected or de-selected and show/hide the frame as appropriate.
+        // selected or de-selected and show/hide the frame as appropriate. This
+        // menu item will get added/removed for each primary session.
         textChatMenuItem = new JCheckBoxMenuItem(
                 BUNDLE.getString("Text_Chat_All"));
         textChatMenuItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                HUDComponent textChatHUDComponent = hudPanelRef.get();
-                boolean show = !textChatHUDComponent.isVisible();
+                // Fetch the global text chat menu item and make it visible
+                // if not already so.
+                HUDComponent hud = textChatHUDRefMap.get("").get();
+                boolean show = !hud.isVisible();
                 textChatMenuItem.setState(show);
-                textChatHUDComponent.setVisible(show);
+                hud.setVisible(show);
             }
         });
         textChatMenuItem.setEnabled(false);
-
-        // Add the global text chat menu item to the "Window" menu
-        JmeClientMain.getFrame().addToWindowMenu(textChatMenuItem, 2);
-
-        // Wait for a primary session to become active. When it does, then
-        // we enable the menu items and set the primary sessions on their
-        // objects.
-        sessionListener = new SessionLifecycleListener() {
-
-            public void sessionCreated(WonderlandSession session) {
-                // Do nothing for now
-            }
-
-            public void primarySession(WonderlandSession session) {
-                setPrimarySession(session);
-            }
-        };
-    }
-
-    private HUDComponent createTextChatHUD(final String userKey) {
-        final TextChatPanel textChatPanel = new TextChatPanel();
-
-        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        HUDComponent textChatHUDComponent =
-                mainHUD.createComponent(textChatPanel);
-        textChatHUDComponent.setIcon(new ImageIcon(getClass().getResource(
-                "/org/jdesktop/wonderland/modules/textchat/client/resources/" +
-                "UserListChatText32x32.png")));
-        textChatHUDComponent.setPreferredLocation(Layout.SOUTHWEST);
-        mainHUD.addComponent(textChatHUDComponent);
-
-        textChatHUDComponent.addEventListener(new HUDEventListener() {
-
-            public void HUDObjectChanged(HUDEvent e) {
-                // Remove from the map which will let it garbage collect
-                if (e.getEventType() == HUDEventType.CLOSED) {
-                    synchronized (textChatHUDRefMap) {
-                        e.getObject().setVisible(false);
-                        // TODO: really dispose of HUD component
-                        WeakReference<HUDComponent> ref =
-                                textChatHUDRefMap.get(userKey);
-                        if (ref != null) {
-                            HUDComponent textChatHUDComponent = ref.get();
-                            textChatHUDRefMap.remove(userKey);
-                            textChatPanelRefMap.remove(textChatHUDComponent);
-                        }
-                    }
-                }
-            }
-        });
-
-        textChatPanelRefMap.put(
-                textChatHUDComponent, new WeakReference(textChatPanel));
-
-        return textChatHUDComponent;
     }
 
     /**
      * Registers the primary session
      */
-    public void register(ServerSessionManager loginInfo) {
-        this.loginInfo = loginInfo;
-        loginInfo.addLifecycleListener(sessionListener);
-
-        // XXX Check if we already have primary session, should be handled
-        // by addLifecycleListener
-        if (loginInfo.getPrimarySession() != null) {
-            setPrimarySession(loginInfo.getPrimarySession());
-        }
-    }
-
-    /**
-     * Unregister and menus we have created, etc.
-     */
-    public void unregister() {
-        // Close down all of the individual text chat windows
-        for (Map.Entry<String, WeakReference<HUDComponent>> entry :
-                textChatHUDRefMap.entrySet()) {
-            HUDComponent component = entry.getValue().get();
-            component.setVisible(false);
-            // TODO: really dispose of HUD component
-        }
-        textChatHUDRefMap.clear();
-
-        // remove the session listener
-        loginInfo.removeLifecycleListener(sessionListener);
-
-        // Remove the menu item
-        JmeClientMain.getFrame().removeFromWindowMenu(textChatMenuItem);
-    }
-
-    /**
-     * Sets the primary session, when it is made the primary session. This
-     * turns on everything: enables the menu items, displays the global chat
-     * dialog.
-     */
-    private void setPrimarySession(WonderlandSession session) {
+    public void register(WonderlandSession session) {
         // Capture the local user name for later use
         localUserName = session.getUserID().getUsername();
 
@@ -226,16 +135,86 @@ public class ChatManager implements TextChatListener {
             return;
         }
 
-        // Next, for the global chat, set its information and make it visible
-        // initially.
-        HUDComponent textChatHUDComponent = textChatHUDRefMap.get("").get();
-        TextChatPanel textChatPanel =
-                textChatPanelRefMap.get(textChatHUDComponent).get();
+        // Create the HUD component for the "Text Chat All" window. Note that
+        // this must happen on the AWT Event Thread.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Create the new text chat "all" window and make it visible
+                // and active.
+                HUDComponent hud = createTextChatHUD("", false);
+                hud.setName("Text Chat All");
+                TextChatPanel panel = textChatPanelRefMap.get(hud).get();
 
-        textChatPanel.setActive(textChatConnection, localUserName, "");
-        textChatMenuItem.setEnabled(true);
-        textChatMenuItem.setSelected(true);
-        textChatHUDComponent.setVisible(true);
+                panel.setActive(textChatConnection, localUserName, "");
+                textChatMenuItem.setEnabled(true);
+                textChatMenuItem.setSelected(true);
+                hud.setVisible(true);
+
+                // Listen for when the HUD component closes. When it does, we
+                // need to set the state of the checkbox menu item.
+                hud.addEventListener(new HUDEventListener() {
+                    public void HUDObjectChanged(HUDEvent event) {
+                        // If the window is being closed, we need to update the
+                        // state of the checkbox menu item, but we must do this
+                        // in the AWT Event Thread.
+                        if (event.getEventType() == HUDEventType.CLOSED) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    textChatMenuItem.setSelected(false);
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // Add the global text chat menu item to the "Window" menu. Note
+                // we need to do this after the global text chat window is
+                // create, otherwise there is a (small) chance that a user can
+                // select the menu item before the text chat panel has been
+                // created.
+                JmeClientMain.getFrame().addToWindowMenu(textChatMenuItem, 2);
+            }
+        });
+    }
+
+    /**
+     * Unregister and menus we have created, etc.
+     */
+    public void unregister() {
+        // First remove the listen for incoming text chat messages.
+        textChatConnection.removeTextChatListener(this);
+
+        // Next, remove the menu item. We need to do this before we shut down
+        // all of the text chat windows, otherwise there is a (small) chance
+        // that a user can select the menu item after the chat windows have
+        // been destroyed.
+        JmeClientMain.getFrame().removeFromWindowMenu(textChatMenuItem);
+
+        // Finally, close down all of the individual text chat windows and clear
+        // out the maps of text chat panels. We need to do this on the AWT
+        // Even Thread.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Loop through all of the entries in the map and tell the HUD
+                // components to close themselves down.
+                for (String name : textChatHUDRefMap.keySet()) {
+                    HUDComponent component = textChatHUDRefMap.get(name).get();
+                    component.setVisible(false);
+                    // TODO: really dispose of HUD component
+                }
+
+                // Clear out the maps of all of the text chat panels.
+                textChatHUDRefMap.clear();
+                textChatPanelRefMap.clear();
+
+                // Disconnect from the text chat connection. Note that we should
+                // do this AFTER we close the text chat windows, otherwise there
+                // is a (small) chance that someone will type in a window when
+                // there is no active connection (which may result in a some-
+                // what hamrless exception, but it's good to avoid if we can).
+                textChatConnection.disconnect();
+            }
+        });
     }
 
     /**
@@ -244,31 +223,31 @@ public class ChatManager implements TextChatListener {
      *
      * @param remoteUser The remote participants user name
      */
-    public void startChat(String remoteUser) {
+    public void startChat(final String remoteUser) {
+        
         // Do all of this synchronized. This makes sure that multiple text chat
-        // window aren't create if a local user clicks to create a new text
-        // chat and a message comes in for that remote user.
-        synchronized (textChatHUDRefMap) {
-            // Check to see if the text chat window already exists. If so, then
-            // we do nothing and return.
-            WeakReference<HUDComponent> ref = textChatHUDRefMap.get(remoteUser);
-            if (ref != null) {
-                return;
-            }
+        // window aren't created if a local user clicks to create a new text
+        // chat and a message comes in for that remote user. We do this on the
+        // AWT Event Thread to achieve proper synchronization.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Check to see if the text chat window already exists. If so, then
+                // we do nothing and return.
+                WeakReference<HUDComponent> ref = textChatHUDRefMap.get(remoteUser);
+                if (ref != null) {
+                    return;
+                }
 
-            // Otherwise, create the frame, add it to the map, and display
-            HUDComponent textChatHUDComponent = createTextChatHUD(remoteUser);
-            String name = BUNDLE.getString("Text_Chat_With");
-            name = MessageFormat.format(name, remoteUser);
-            textChatHUDComponent.setName(name);
-            textChatHUDRefMap.put(
-                    remoteUser, new WeakReference(textChatHUDComponent));
-            TextChatPanel textChatPanel =
-                    textChatPanelRefMap.get(textChatHUDComponent).get();
-            textChatPanel.setActive(
-                    textChatConnection, localUserName, remoteUser);
-            textChatHUDComponent.setVisible(true);
-        }
+                // Otherwise, create the frame, add it to the map, and display
+                HUDComponent hud = createTextChatHUD(remoteUser, true);
+                String name = BUNDLE.getString("Text_Chat_With");
+                name = MessageFormat.format(name, remoteUser);
+                hud.setName(name);
+                TextChatPanel panel = textChatPanelRefMap.get(hud).get();
+                panel.setActive(textChatConnection, localUserName, remoteUser);
+                hud.setVisible(true);
+            }
+        });
     }
 
     /**
@@ -277,93 +256,165 @@ public class ChatManager implements TextChatListener {
      *
      * @param remoteUser The remote participants user name
      */
-    public void deactivateChat(String remoteUser) {
+    public void deactivateChat(final String remoteUser) {
+        
         // Do all of this synchronized, so that we do not interfere with the
-        // code to create chats
-        synchronized (textChatHUDRefMap) {
-            // Check to see if the text chat window exists. If not, then do
-            // nothing.
-            WeakReference<HUDComponent> ref = textChatHUDRefMap.get(remoteUser);
-            if (ref == null) {
-                return;
+        // code to create chats. We do this on the AWT Event Thread to achieve
+        // proper synchronization.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Check to see if the text chat window exists. If not, then do
+                // nothing.
+                WeakReference<HUDComponent> ref = textChatHUDRefMap.get(remoteUser);
+                if (ref == null) {
+                    return;
+                }
+                HUDComponent textChatHUDComponent = ref.get();
+                TextChatPanel textChatPanel =
+                        textChatPanelRefMap.get(textChatHUDComponent).get();
+                textChatPanel.deactivate();
             }
-            HUDComponent textChatHUDComponent = ref.get();
-            TextChatPanel textChatPanel =
-                    textChatPanelRefMap.get(textChatHUDComponent).get();
-            textChatPanel.deactivate();
-        }
+        });
     }
 
     /**
      * Re-activates the text chat given the remote user's name, if such a frame
      * exists. Displays a message in the window and turns on its GUI.
      */
-    public void reactivateChat(String remoteUser) {
+    public void reactivateChat(final String remoteUser) {
+        
         // Do all of this synchronized, so that we do not interfere with the
-        // code to create chats
-        synchronized (textChatHUDRefMap) {
-            // Check to see if the text chat window exists. If not, then do
-            // nothing.
-            WeakReference<HUDComponent> ref = textChatHUDRefMap.get(remoteUser);
-            if (ref == null) {
-                return;
+        // code to create chats. We do this on the AWT Event Thread to achieve
+        // proper synchronization.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Check to see if the text chat window exists. If not, then do
+                // nothing.
+                WeakReference<HUDComponent> ref = textChatHUDRefMap.get(remoteUser);
+                if (ref == null) {
+                    return;
+                }
+                HUDComponent textChatHUDComponent = ref.get();
+                TextChatPanel textChatPanel =
+                        textChatPanelRefMap.get(textChatHUDComponent).get();
+                textChatPanel.reactivate();
             }
-            HUDComponent textChatHUDComponent = ref.get();
-            TextChatPanel textChatPanel =
-                    textChatPanelRefMap.get(textChatHUDComponent).get();
-            textChatPanel.reactivate();
-        }
+        });
     }
 
     /**
      * @inheritDoc()
      */
-    public void textMessage(String message, String fromUser, String toUser) {
-        // Fetch the frame associated with the user. If the "to" user is an
-        // empty string, then this is a "global" message and we fetch its
-        // frame. It should exist. We always add the message, no matter whether
-        // the frame is visible or not.
-        if (toUser == null || toUser.equals("")) {
-            WeakReference<HUDComponent> ref = textChatHUDRefMap.get("");
-            if (ref == null) {
-                return;
-            }
-            HUDComponent textChatHUDComponent = ref.get();
-            TextChatPanel textChatPanel =
-                    textChatPanelRefMap.get(textChatHUDComponent).get();
+    public void textMessage(final String message, final String fromUser,
+            final String toUser) {
 
-            textChatPanel.appendTextMessage(message, fromUser);
-            return;
+        // We do all of this on the AWT Event Thread to achieve the proper
+        // synchronization on textChatHUDRefMap while also doing the proper
+        // Swing stuff.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Fetch the frame associated with the user. If the "to" user is
+                // an empty string, then this is a "global" message and we fetch
+                // its frame. It should exist. We always add the message, no
+                // matter whether the frame is visible or not.
+                if (toUser == null || toUser.equals("") == true) {
+                    WeakReference<HUDComponent> ref = textChatHUDRefMap.get("");
+                    if (ref == null) {
+                        return;
+                    }
+                    HUDComponent textChatHUDComponent = ref.get();
+                    TextChatPanel textChatPanel =
+                            textChatPanelRefMap.get(textChatHUDComponent).get();
+                    textChatPanel.appendTextMessage(message, fromUser);
+                    return;
+                }
+
+                // Otherwise, the "toUser" is for this specific user. We fetch
+                // the frame associated with the "from" user. If it exists
+                // (which also means it is visible), then add the message.
+
+                // Find the HUD component in the map. If it does exist, then
+                // simply add the message to the end of the list.
+                WeakReference<HUDComponent> ref = textChatHUDRefMap.get(fromUser);
+                if (ref != null) {
+                    HUDComponent textChatHUDComponent = ref.get();
+                    TextChatPanel textChatPanel =
+                            textChatPanelRefMap.get(textChatHUDComponent).get();
+                    textChatPanel.appendTextMessage(message, fromUser);
+                    return;
+                }
+
+                // Finally, we reached here when we have a message from a
+                // specific user, but the frame does not exist, and is not
+                // visible. So we create it and display it.
+                HUDComponent hud = createTextChatHUD(fromUser, true);
+                String name = BUNDLE.getString("Text_Chat_With");
+                name = MessageFormat.format(name, fromUser);
+                hud.setName(name);
+                TextChatPanel panel = textChatPanelRefMap.get(hud).get();
+                panel.setActive(textChatConnection, toUser, fromUser);
+                panel.appendTextMessage(message, fromUser);
+                hud.setVisible(true);
+            }
+        });
+    }
+
+    /**
+     * Creates and returns a new text chat component, given the name of the
+     * remote user for which the text chat is assigned. If the "handleClose"
+     * argument is true, then the HUD Component is removed from the Maps when
+     * destroyed.
+     *
+     * NOTE: This method assumes it is being called on the AWT Event Thread
+     */
+    private HUDComponent createTextChatHUD(final String userKey,
+            boolean handleClose) {
+        
+        // Create a new text chat Swing Panel
+        final TextChatPanel textChatPanel = new TextChatPanel();
+
+        // Create a new HUD Panel with the Swing panel and add. It still isn't
+        // visible.
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        HUDComponent hudComponent = mainHUD.createComponent(textChatPanel);
+        hudComponent.setIcon(new ImageIcon(getClass().getResource(
+                "/org/jdesktop/wonderland/modules/textchat/client/resources/" +
+                "UserListChatText32x32.png")));
+        hudComponent.setPreferredLocation(Layout.SOUTHWEST);
+        mainHUD.addComponent(hudComponent);
+
+        // Listen for when the text chat HUD panel is closed. When that happens
+        // remove it from the HUD and the various maps.
+        if (handleClose == true) {
+            hudComponent.addEventListener(new HUDEventListener() {
+                public void HUDObjectChanged(final HUDEvent e) {
+                    // Remove from the map which will let it garbage collect. We
+                    // need to do this on the AWT Event Thread to synchronize
+                    // access  to the Map
+                    if (e.getEventType() == HUDEventType.CLOSED) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                e.getObject().setVisible(false);
+                                // TODO: really dispose of HUD component
+                                WeakReference<HUDComponent> ref =
+                                        textChatHUDRefMap.get(userKey);
+                                if (ref != null) {
+                                    HUDComponent hud = ref.get();
+                                    textChatHUDRefMap.remove(userKey);
+                                    textChatPanelRefMap.remove(hud);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
         }
 
-        // Otherwise, the "toUser" is for this specific user. We fetch the
-        // frame associated with the "from" user. If it exists (which also
-        // means it is visible), then add the message.
-        synchronized (textChatHUDRefMap) {
-
-            WeakReference<HUDComponent> ref = textChatHUDRefMap.get(fromUser);
-            if (ref != null) {
-                HUDComponent textChatHUDComponent = ref.get();
-                TextChatPanel textChatPanel =
-                        textChatPanelRefMap.get(textChatHUDComponent).get();
-                textChatPanel.appendTextMessage(message, fromUser);
-                return;
-            }
-
-            // Finally, we reached here when we have a message from a specific
-            // user, but the frame does not exist, and is not visible. So we
-            // create it and add to the map and display it.
-            HUDComponent textChatHUDComponent = createTextChatHUD(fromUser);
-            String name = BUNDLE.getString("Text_Chat_With");
-            name = MessageFormat.format(name, fromUser);
-            textChatHUDComponent.setName(name);
-            textChatHUDRefMap.put(
-                    fromUser, new WeakReference(textChatHUDComponent));
-            TextChatPanel textChatPanel =
-                    textChatPanelRefMap.get(textChatHUDComponent).get();
-            textChatPanel.setActive(textChatConnection, toUser, fromUser);
-            textChatPanel.appendTextMessage(message, fromUser);
-            textChatHUDComponent.setVisible(true);
-        }
+        // Put in the proper maps: a map of the HUD component to the Swing
+        // component and a map of the remote user name ("" for global text chat)
+        // to the HUD component
+        textChatPanelRefMap.put(hudComponent, new WeakReference(textChatPanel));
+        textChatHUDRefMap.put(userKey, new WeakReference(hudComponent));
+        return hudComponent;
     }
 }
