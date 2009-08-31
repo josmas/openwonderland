@@ -907,14 +907,13 @@ public abstract class View2DEntity implements View2D {
     }
 
     private Dimension userResizeCalcWindowNewSize (Vector2f dragVector) {
+        if (dragVector.x == 0 && dragVector.y == 0) return null;
+
         // Convert local coords drag vector to a pixel vector
         Vector2f pixelScale = getPixelScaleCurrent();
         //System.err.println("pixelScale = " + pixelScale);
         int deltaWidth = (int)(dragVector.x / pixelScale.x);
         int deltaHeight = (int)(dragVector.y / pixelScale.y);
-        if (deltaWidth == 0 && deltaHeight == 0) return null;
-        if (deltaWidth < 1) deltaWidth = 1;
-        if (deltaHeight < 1) deltaHeight = 1;
 
         //System.err.println("deltaWH = " + deltaWidth + ", " + deltaHeight);
 
@@ -925,6 +924,9 @@ public abstract class View2DEntity implements View2D {
         //System.err.println("Old size, wh = " + width + ", " + height);
         width += deltaWidth;
         height -= deltaHeight;
+        if (width < 1) width = 1;
+        if (height < 1) height = 1;
+        //System.err.println("New size, wh = " + width + ", " + height);
 
         return new Dimension(width, height);
     }
@@ -949,15 +951,28 @@ public abstract class View2DEntity implements View2D {
         if (userResizeNewSize == null) return;
         //System.err.println("userResizeNewSize = " + userResizeNewSize);
 
-        // Resize only the view
-        setSizeApp(userResizeNewSize);
+        Vector2f pixelScale = getPixelScale();
+        final float width = pixelScale.x * userResizeNewSize.width;
+        final float height = pixelScale.y * userResizeNewSize.height;
+
+        Image image = getWindow().getTexture().getImage();
+        final float widthRatio = (float)userResizeNewSize.width / image.getWidth();
+        final float heightRatio = (float)userResizeNewSize.height / image.getHeight();
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                geometryNode.setSize(width, height);
+                geometryNode.setTexCoords(widthRatio, heightRatio);
+                ClientContextJME.getWorldManager().addToUpdateList(viewNode);
+            }
+        }, null);
     }
 
     public synchronized void userResizeFinish () {
-        //System.err.println("********* Resize Finish");
+        //System.err.println("********* Resize Finish, final size = " + userResizeNewSize);
         // TODO: for now, only support non-continuous resize. That is, only perform
         // the actual window resize at the end of the drag operation.
-        window.setSize(userResizeNewSize.width, userResizeNewSize.height);
+        window.userSetSize(userResizeNewSize.width, userResizeNewSize.height);
     }
 
     /** TODO: NOTYET

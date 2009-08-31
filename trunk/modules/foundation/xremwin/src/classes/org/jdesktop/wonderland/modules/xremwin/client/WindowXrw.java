@@ -84,7 +84,7 @@ public class WindowXrw extends WindowConventional {
         setScreenPosition(x, y);
 
         // TODO: disable resize corner until bugs are fixed
-        //setUserResizable(true);
+        setUserResizable(true);
     }
 
     /**
@@ -333,4 +333,11 @@ public class WindowXrw extends WindowConventional {
     public String toString () {
         return getName();
     }
+
+    public synchronized void userSetSize(int width, int height) {
+        ClientXrw client = ((AppXrw) app).getClient();
+        client.windowSetSize(this, width, height);
+        setSize(width, height);
+    }
+
 }

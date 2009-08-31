@@ -626,6 +626,10 @@ public abstract class Window2D implements HUDDisplayable {
         return pixelOffset.y;
     }
 
+    public synchronized void userSetSize(int width, int height) {
+        setSize(width, height);
+    }
+
     /**
      * Specify the size of the window (excluding the decoration).
      * Note: the arguments do NOT include the borderWidth.
