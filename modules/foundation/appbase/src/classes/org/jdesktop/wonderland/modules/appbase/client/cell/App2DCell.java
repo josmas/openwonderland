@@ -212,10 +212,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
         if (App2D.doAppInitialPlacement && !state.isInitialPlacementDone()) {
             // Initial cell placement hasn't yet been done. Volunteer to do it.
-            logger.info("creatorViewTransform = " + 
-                    state.getCreatorViewTransform());
-            fvi = new FirstVisibleInitializerCell(this,
-                    state.getCreatorViewTransform(), initialPlacementSize);
+            CellTransform creatorViewTransform = state.getCreatorViewTransform();
+            logger.info("creatorViewTransform = " + creatorViewTransform);
+            if (creatorViewTransform != null) {
+                fvi = new FirstVisibleInitializerCell(this, creatorViewTransform, initialPlacementSize);
+            }
             logger.info("fvi = " + fvi);
         }
     }
