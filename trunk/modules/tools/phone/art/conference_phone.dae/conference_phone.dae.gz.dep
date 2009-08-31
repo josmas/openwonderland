@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <deployed-model>
     <version>1</version>
-    <deployedURL>wla://phone/conference_phone.dae/conference_phone.dae.gz</deployedURL>
+    <modelURL>wla://phone/conference_phone.dae/conference_phone.dae.gz</modelURL>
     <modelBGScale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
     <modelBGTranslation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
     <modelBGRotation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
