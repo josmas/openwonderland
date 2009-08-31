@@ -41,7 +41,7 @@ import imi.character.CharacterMotionListener;
 import imi.character.CharacterProcessor;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarController;
-import imi.character.avatar.CollisionListener;
+//import imi.character.avatar.CollisionListener;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
