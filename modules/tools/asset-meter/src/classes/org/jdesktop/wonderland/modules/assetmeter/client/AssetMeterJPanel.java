@@ -246,7 +246,6 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
                         plugin.getHUDComponent().setVisible(false);
                         dismissTimer = null;
                     } else {
-                        System.err.println("--- restarting dismiss timer");
                         dismissTimer.restart();
                     }
                 }
