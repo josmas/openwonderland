@@ -31,7 +31,7 @@
             <td width="50%"></td>
         </tr>
         <tr valign="top">
-            <td width="40%">(click <a href="http://download.java.net/lg3d/wonderland/daily-0.5-dev/">here</a> for the latest nightly build)<br></td>
+            <td width="40%">(click here to <a href="http://download.java.net/lg3d/wonderland/daily-0.5-dev/">get the latest nightly build</a>)<br></td>
             <td width="10%"></td>
             <td width="50%"></td>
         </tr>
@@ -45,10 +45,23 @@
     <!-- Table holding the main content -->
     <table align="center" cellspacing="0" cellpadding="0" cellborder="0" width="98%">
     <tr><td>
-
-    <b>Prerequisites</b>
     
-    <p>This page describes how to install a Wonderland server from a binary "jar" file. This is an activity we recommend for advanced end users, system administrators, or software developers. After installing a binary build, you will end up with an instance of a Wonderland server, including a web server component and several default Wonderland worlds. You will be able to provide end users with a link to a web page which has a button to launch a Wonderland client.</p>
+<center>
+<a href="#prereqs">Prerequisites</a> |
+<a href="#install">Installing</a> |
+<a href="#shutdown">Shutting Down</a> |
+<a href="#config-options">Configuring</a> |
+<a href="#uninstall">Uninstalling</a> |
+<a href="#next">What's Next?</a> |
+<a href="#platforms">Platform Exceptions</a> |
+</center>
+
+    <a name="prereqs">
+    <b>Prerequisites</b></a>
+    
+    <p>This page describes how to install a Wonderland server from a binary "jar" file. This is an activity we recommend for advanced end users, system administrators, or software developers. After installing a binary build, you will end up with an instance of a Wonderland server, including a web server component and several default Wonderland worlds. You will be able to provide end users with a link to a web page which has a button to launch a Wonderland client.<br><br>
+    
+     <b>Important Note:</b> Even if you have successfully run a Wonderland client on your system, you may still need to upgrade Java to be able to run the Wonderland server. See the "Java SE 6 JDK" bullet below.</p>
         
     <p>
     Before you download and install the binary release of Project Wonderland, make sure you have met the following requirements:
@@ -56,19 +69,28 @@
         <li><b>Supported Operating Systems</b>: Windows XP/Vista, Linux (Debian/Ubuntu), Solaris 10, Mac OS X<br><br>
         If Wonderland does not seem to run on your system, see the note below on <a href="#platforms">platform exceptions</a>.<br><br>
         
-        <li><b>Java SE 6 (either JRE or JDK)</b><br><br>
-        You can download Java SE 6 here: <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>.<br><br>
-        <i>Note For Macintosh Users:</i> You need to be sure that Java SE 6 is not only installed, but also set as the active Java version.  Go to Applications -> Utilities -> Java Preferences, and make sure that "Java SE 6" is first on the list under "Java Applications".<br><br>
-        <i>Note For Windows Users:</i> Windows requires JDK 6 to be installed and will not work with the JRE.<br><br>
-
         <li><b>Access to a command line</b><br><br>
-        You will need to know how to use a few simple commands such as "cd" and "rm".
+        You will need to know how to use a few simple commands such as "cd" and "rm".<br><br>
+        
+        <li><b>Java SE 6 JDK</b><br><br>
+        
+        Each Wonderland binary build includes both a Wonderland server and a Wonderland client. Although you may think you have "Java" installed on your system, you need the Java SE Development Kit (JDK) installed and not just the Java Runtime Environment (JRE). The JRE is sufficient for running the Wonderland client as well as other Java applications downloaded from the Internet, but it is not sufficient for running the Wonderland server.<br><br>
+        
+        <b>Windows, Linux & Solaris users</b><br>
+        If you think you  may already have the JDK installed, a quick test is to type the following command in a terminal window:<br><br>
+        
+        <code>javac -version</code><br><br>
+        
+        If you get a response such as "javac 1.6.0_16," then you have what you need. If you get a "command not found" error, then you will need to download Java SE 6 from here: <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>. Scroll down the page until you see "Java SE Development Kit (JDK)" and download the current update of the JDK 6 for your platform. <br><br>
+        <b>Macintosh users</b><br>
+        The JDK comes pre-installed on most Macs, so you should already have it, but you need to be sure that Java SE 6 is set as the active Java version.  Go to Applications -> Utilities -> Java Preferences, and make sure that "Java SE 6" is first on the list under "Java Applications."<br><br>
+
     </ul>
     
  
     
-    <br>
-    <b>Installing a Nightly Binary Build</b>
+    <br><a name="install">
+    <b>Installing a Nightly Binary Build</b></a>
     <p>
         Each night (US Pacific time), a new Wonderland binary build is created. These are known as the "nightly builds," or simply as the "nightly." To install a nightly, follow these steps:    </p>
     <ol>
@@ -83,16 +105,15 @@
             <ul>
             <code>java -jar Wonderland.jar</code>
             </ul><br>
-        Or on a Windows system by typing the following, including the quotation marks:<br><br>
+        Or on a Windows system by typing the following, including the quotation marks, but replacing the "_16" with the number of the update that you have installed:<br><br>
             <ul>
-            <code>"\Program Files\Java\jre6\bin\java" -jar Wonderland.jar</code>
+            <code>"\Program Files\Java\jdk1.6.0_16\bin\java" -jar Wonderland.jar</code>
             </ul><br>
-        Unless you're on a Vista 64-bit system, in which case you need to type:<br><br>
+        Unless you're on a Vista 64-bit system, in which case you need to type a variation of the command, again replacing the "_16" if necessary:<br><br>
             <ul>
-            <code>"\Program Files (x86)\Java\jre6\bin\java" -jar Wonderland.jar</code>
+            <code>"\Program Files (x86)\Java\jdk1.6.0_16\bin\java" -jar Wonderland.jar</code>
             </ul><br>         
-        <b>NOTE:</b> For Linux and Ubuntu systems, it is recommended you manually configure the IP address of the
-        server. See the <b>Configuration Options</b> section below for further instructions.<br><br>
+        <b>NOTE:</b> For Linux and Ubuntu systems, it is recommended you manually configure the IP address of the server. See the <a href="#config-options">Configuration Options</a> section below for further instructions.<br><br>
             
         <li>Be patient while the Wonderland server starts up.<br><br>
         You should soon see lots of messages fly by in the terminal window, including lots of warnings. Expect some pauses. The process will take a minute or two.<br><br>
@@ -114,13 +135,13 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
         <li>Click "Launch Wonderland 0.5" from the launch page.
     </ol>
     
-    <br>
-    <b>Shutting Down the Wonderland Server</b>
+    <br><a name="shutdown">
+    <b>Shutting Down the Wonderland Server</b></a>
     <p>
     When you run Wonderland following the instructions above, the Wonderland server will stay running until you stop it. To stop the server, find the terminal window where you started it and type "Ctrl-C" to end the process. Closing the terminal window or shutting down the terminal program will have the same effect, so be careful to leave the window open and the terminal program running for as long as you or anyone else is still using Wonderland.</p>
     
-    <br>
-    <b>Configuration Options</b>
+    <br><a name="config-options">
+    <b>Configuration Options</b></a>
     <p>
     For most installations, there's no need to configure the Wonderland software, but if you have properties you would like to change, you can add them at the command line. For example:</p>
     
@@ -135,8 +156,8 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
 <code>java -jar Wonderland.jar my.run.properties</code>
     </ul>
     
-    <br>
-    <b>Uninstalling Wonderland</b>
+    <br><a name="uninstall">
+    <b>Uninstalling Wonderland</b></a>
     <p>
     To uninstall the Wonderland binary distribution from your machine, perform the following steps:
     
@@ -147,8 +168,8 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
         The "~" notation means your home directory. The complete directory name was printed in your terminal window when you started the Wonderland server (see the log file location in Step 8 above). 
     </ol>
     
-    <br>
-    <b>What's Next?</b>
+    <br><a name="next">
+    <b>What's Next?</b></a>
     <p>
     There are a number of additional configuration steps you might be interested in, depending on how you plan 
     to deploy Project Wonderland. The following articles and tutorials cover more advanced configuration options:
