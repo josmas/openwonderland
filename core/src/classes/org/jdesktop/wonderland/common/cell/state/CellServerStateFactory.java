@@ -54,8 +54,8 @@ public class CellServerStateFactory {
     };
     
     /* The JAXB contexts used to create marshallers and unmarshallers */
-    private static JAXBContext jaxbContext = null;
-    
+    private static JAXBContext systemContext = null;
+
     /* The Logger for this class */
     private static Logger logger = Logger.getLogger(CellServerStateFactory.class.getName());
      
@@ -64,12 +64,13 @@ public class CellServerStateFactory {
         ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
 
         try {
-            jaxbContext = JAXBContext.newInstance(getClasses(scl));
+            systemContext = JAXBContext.newInstance(getClasses(scl));
         } catch (javax.xml.bind.JAXBException excp) {
-            CellServerStateFactory.logger.log(Level.SEVERE, "[CELL] SETUP FACTORY Failed to create JAXBContext", excp);
+            CellServerStateFactory.logger.log(Level.SEVERE,
+                     "[CELL] SETUP FACTORY Failed to create JAXBContext", excp);
         }
     }
-    
+
     /**
      * Returns the object that marshalls JAXB-annotated classes into XML using
      * classes available in the supplied classLoader. If classLoader is null the
@@ -79,13 +80,8 @@ public class CellServerStateFactory {
      */
     public static Marshaller getMarshaller(ScannedClassLoader classLoader) {
         try {
-            if (classLoader == null) {
-                classLoader = ScannedClassLoader.getSystemScannedClassLoader();
-            }
-        
-            Class[] clazz = getClasses(classLoader);
-            JAXBContext jc = JAXBContext.newInstance(clazz);
-            Marshaller m = jc.createMarshaller();
+            JAXBContext context = getContext(classLoader);
+            Marshaller m = context.createMarshaller();
             m.setProperty("jaxb.formatted.output", true);
             return m;
 
@@ -106,13 +102,8 @@ public class CellServerStateFactory {
      */
     public static Unmarshaller getUnmarshaller(ScannedClassLoader classLoader) {
         try {
-            if (classLoader == null) {
-                classLoader = ScannedClassLoader.getSystemScannedClassLoader();
-            }
-
-            Class[] clazz = getClasses(classLoader);
-            JAXBContext jc = JAXBContext.newInstance(clazz);
-            return jc.createUnmarshaller();
+            JAXBContext context = getContext(classLoader);
+            return context.createUnmarshaller();
 
         } catch (JAXBException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -120,7 +111,24 @@ public class CellServerStateFactory {
             
         return null;
     }
-    
+
+    /**
+     * Get the JAXB context to use for the given classloader
+     * @param the classloader to get a context for, or null to get the
+     * context for the system classloader
+     * @return a JAXB context
+     */
+    private static JAXBContext getContext(ScannedClassLoader classLoader)
+        throws JAXBException
+    {
+        if (classLoader == null) {
+            return systemContext;
+        } else {
+            Class[] clazz = getClasses(classLoader);
+            return JAXBContext.newInstance(clazz);
+        }
+    }
+
     /**
      * Find and return all the classes from the classLoader that implement the CellServerStateSPI
      * inteface

@@ -236,22 +236,31 @@ public abstract class CellServerState implements Serializable {
 
     /**
      * Takes the input reader of the XML file and instantiates an instance of
-     * the CellServerState class. Also takes the class loader associated with
-     * the context.
+     * the CellServerState class. Also takes the unmarshaller to use to decode
+     * the server state. Appropriate unmarshallers can be retrieved from the
+     * CellServerStateFactory.
      * <p>
      * @param r The input data of the version XML data
-     * @param cl The class loader
+     * @param unmarshaller the unmarshaller to use while decoding. If no
+     * unmashaller is specified, the unmarshaller associated with the system
+     * classloader will be used.
      * @throw ClassCastException If the input data does not map to CellServerState
      * @throw JAXBException Upon error reading the XML data
      */
-    public static CellServerState decode(Reader r, ScannedClassLoader cl) throws JAXBException {
+    public static CellServerState decode(Reader r, Unmarshaller unmarshaller)
+            throws JAXBException
+    {
+        /* If the unmarshaller is null, get the system unmarshaller */
+        if (unmarshaller == null) {
+            unmarshaller = CellServerStateFactory.getUnmarshaller(null);
+        }
+
         /*
          * De-serialize from XML. We set up an adapter to handle XML elements
          * of type AssetURI. This will properly decode them and also fill in
          * the name of the server context.
          */
-        Unmarshaller u = CellServerStateFactory.getUnmarshaller(cl);
-        CellServerState setup = (CellServerState)u.unmarshal(r);
+        CellServerState setup = (CellServerState) unmarshaller.unmarshal(r);
         
         /* Convert metadata to internal representation */
         if (setup.metadata != null) {
@@ -291,13 +300,22 @@ public abstract class CellServerState implements Serializable {
     
     /**
      * Writes the CellServerState class to an output writer. Also takes the
-     * class loader context.
-     * <p>
+     * marshaller to use to encode the server state. Appropriate marshallers can
+     * be retrieved from the CellServerStateFactory.
      * @param w The output write to write to
-     * @param cl The class loader
+     * @param marshaller the marshaller to use, or null to use the marshaller
+     * associated with the system classloader
      * @throw JAXBException Upon error writing the XML data
      */   
-    public void encode(Writer w, ScannedClassLoader cl) throws JAXBException {
+    public void encode(Writer w, Marshaller marshaller) throws JAXBException {
+        /*
+         * If the marshaller is null, use the one associated with the system
+         * classloader
+         */
+        if (marshaller == null) {
+            marshaller = CellServerStateFactory.getMarshaller(null);
+        }
+
         /* Convert internal metadata map to one suitable for serialization */
         if (this.internalMetaData != null) {
             this.metadata = new MetaDataHashMap();
@@ -326,8 +344,7 @@ public abstract class CellServerState implements Serializable {
         }
 
         /* Write out as XML */
-        Marshaller m = CellServerStateFactory.getMarshaller(cl);
-        m.marshal(this, w);
+        marshaller.marshal(this, w);
     }
     
     /**

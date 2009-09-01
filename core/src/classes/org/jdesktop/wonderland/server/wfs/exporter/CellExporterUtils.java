@@ -106,16 +106,10 @@ public class CellExporterUtils {
             setup.getMetaData().put("CellID", cellID.toString());
         }
 
-        // Write the setup information as an XML string. If we have trouble
-        // writing this, then punt.
-        StringWriter sw = new StringWriter();
-        setup.encode(sw);
-        String setupStr = sw.toString();
-
         // Create the descriptor for the cell using the world root, path of the
         // parent, name of the cell and setup information we obtained from the
         // cell
-        return new CellDescriptor(worldRoot, parentPath, cellID, cellName, setupStr);
+        return new CellExportDescriptor(worldRoot, parentPath, cellID, cellName, setup);
     }
 
     /**
