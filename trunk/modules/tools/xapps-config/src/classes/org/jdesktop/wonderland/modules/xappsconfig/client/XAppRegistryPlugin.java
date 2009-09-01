@@ -17,11 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.xappsconfig.client;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -45,6 +48,9 @@ public class XAppRegistryPlugin extends BaseClientPlugin
     private static Logger logger = Logger.getLogger(XAppRegistryPlugin.class.getName());
     private XAppsClientConfigConnection xappsConfigConnection = null;
     private X11AppConfigListener listener = null;
+
+    // The set of Cell factories that this plugin has currently registered
+    private Set<CellFactorySPI> factorySet = new HashSet();
 
     /**
      * @inheritDoc()
@@ -72,26 +78,20 @@ public class XAppRegistryPlugin extends BaseClientPlugin
     protected void activate() {
         CellRegistry registry = CellRegistry.getCellRegistry();
 
-        // Fetch the list of X Apps registered for the user and register them
-        // with the Cell Registry
-//        List<XAppRegistryItem> userItems =
-//                XAppRegistryItemUtils.getUserXAppRegistryItemList();
-//        for (XAppRegistryItem item : userItems) {
-//            String appName = item.getAppName() + " (User)";
-//            String command = item.getCommand();
-//            XAppCellFactory factory = new XAppCellFactory(appName, command);
-//            registry.registerCellFactory(factory);
-//        }
-
         // Fetch the list of X Apps registered for the system and register them
-        // with the Cell Registry
-        List<XAppRegistryItem> systemItems =
-                XAppRegistryItemUtils.getSystemXAppRegistryItemList();
-        for (XAppRegistryItem item : systemItems) {
-            String appName = item.getAppName();
-            String command = item.getCommand();
-            XAppCellFactory factory = new XAppCellFactory(appName, command);
-            registry.registerCellFactory(factory);
+        // with the Cell Registry. We synchronize over the set of factories
+        // in case one is added/removed via the configuration channel at the
+        // same time.
+        synchronized (factorySet) {
+            List<XAppRegistryItem> systemItems =
+                    XAppRegistryItemUtils.getSystemXAppRegistryItemList();
+            for (XAppRegistryItem item : systemItems) {
+                String appName = item.getAppName();
+                String command = item.getCommand();
+                XAppCellFactory factory = new XAppCellFactory(appName, command);
+                registry.registerCellFactory(factory);
+                factorySet.add(factory);
+            }
         }
     }
 
@@ -100,7 +100,17 @@ public class XAppRegistryPlugin extends BaseClientPlugin
      */
     @Override
     protected void deactivate() {
-        // Do nothing.
+        // Remove the set of cell factories that this plugin has registered
+        // on the Cell Registry. We synchronize over the set of factories
+        // in case one is added/removed via the configuration channel at the
+        // same time.
+        synchronized (factorySet) {
+            CellRegistry registry = CellRegistry.getCellRegistry();
+            for (CellFactorySPI factory : factorySet) {
+                registry.unregisterCellFactory(factory);
+            }
+            factorySet.clear();
+        }
     }
 
     /**
@@ -165,17 +175,27 @@ public class XAppRegistryPlugin extends BaseClientPlugin
     private class X11AppConfigListener implements XAppsConfigListener {
 
         public void xappAdded(String appName, String command) {
-            CellRegistry registry = CellRegistry.getCellRegistry();
-            XAppCellFactory factory = new XAppCellFactory(appName, command);
-            registry.registerCellFactory(factory);
+            // Add the new factory to the registry.  We synchronize over the
+            // set of factories in case the primary connection changes.
+            synchronized (factorySet) {
+                CellRegistry registry = CellRegistry.getCellRegistry();
+                XAppCellFactory factory = new XAppCellFactory(appName, command);
+                registry.registerCellFactory(factory);
+                factorySet.add(factory);
+            }
         }
 
         public void xappRemoved(String appName) {
             // Remove the X11 App from the Cell registry. We only need the app
-            // name to create a suitable XAppCellFactory to remove.
-            CellRegistry registry = CellRegistry.getCellRegistry();
-            XAppCellFactory factory = new XAppCellFactory(appName, null);
-            registry.unregisterCellFactory(factory);
+            // name to create a suitable XAppCellFactory to remove. We
+            // synchronize over the set of factories in case the primary
+            // connection changes.
+            synchronized (factorySet) {
+                CellRegistry registry = CellRegistry.getCellRegistry();
+                XAppCellFactory factory = new XAppCellFactory(appName, null);
+                registry.unregisterCellFactory(factory);
+                factorySet.remove(factory);
+            }
         }
     }
 }
