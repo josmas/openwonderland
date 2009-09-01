@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.wfs.exporter;
 
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
@@ -35,7 +36,6 @@ import org.jdesktop.wonderland.common.wfs.WorldRoot;
  */
 public class CellExportDescriptor extends CellDescriptor {
     private CellServerState serverState;
-    private String setupInfo;
 
     /** Default constructor */
     public CellExportDescriptor() {
@@ -56,6 +56,7 @@ public class CellExportDescriptor extends CellDescriptor {
      */
     @Override
     public String getSetupInfo() {
+        String setupInfo = super.getSetupInfo();
         if (setupInfo == null) {
             try {
                 // Write the setup information as an XML string. If we have trouble
@@ -63,6 +64,8 @@ public class CellExportDescriptor extends CellDescriptor {
                 StringWriter sw = new StringWriter();
                 serverState.encode(sw);
                 setupInfo = sw.toString();
+
+                super.setSetupInfo(setupInfo);
             } catch (JAXBException ex) {
                 throw new IllegalStateException("Unable to write " +
                                                 serverState, ex);
