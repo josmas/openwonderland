@@ -110,7 +110,11 @@ public class LoaderManager {
     }
 
     public ModelLoader getLoader(DeployedModel model) {
-        return classnameToLoader.get(model.getModelLoaderClassname()).getLoader();
+        ModelLoaderFactory factory = classnameToLoader.get(model.getModelLoaderClassname());
+        if (factory==null) {
+            return null;
+        }
+        return factory.getLoader();
     }
 
     public ModelLoader getLoader(String fileextension) {
