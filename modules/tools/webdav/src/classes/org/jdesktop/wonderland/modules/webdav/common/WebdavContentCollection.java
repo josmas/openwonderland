@@ -59,10 +59,45 @@ public class WebdavContentCollection extends WebdavContentNode
     }
 
     public WebdavContentNode getChild(String path) throws ContentRepositoryException {
+        // divide the path into a series of children
+        String[] children = path.split("/");
+        WebdavContentNode out = this;
+        
+        // walk each child, recursively getting the parent
+        for (String child : children) {
+            if (child.trim().length() == 0) {
+                continue;
+            }
+            if (!(out instanceof WebdavContentCollection)) {
+                logger.warning("In path " + path + " expected " + 
+                               out.getName() + " to be a collection, but " +
+                               "found a node");
+                return null;
+            }
+            WebdavContentCollection parent = (WebdavContentCollection) out;
+            out = parent.getChildNode(child);
+            if (out == null) {
+                logger.warning("In path " + path + " element " + child + 
+                               " not found");
+                return null;
+            }
+        }
+        
+        return out;
+    }
+
+    protected WebdavContentNode getChildNode(String name)
+            throws ContentRepositoryException
+    {
+        // make sure this isn't a path
+        if (name.contains("/")) {
+            throw new ContentRepositoryException("Paths not allowed: " + name);
+        }
+
         try {
-            HttpURL url = getChildURL(getResource().getHttpURL(), path);
+            HttpURL url = getChildURL(getResource().getHttpURL(), name);
             
-            logger.fine("[WebdavContentCollection] Get child " + path +
+            logger.fine("[WebdavContentCollection] Get child " + name +
                         " returns " + url + " from " + this);
 
             AuthenticatedWebdavResource resource =
@@ -82,6 +117,11 @@ public class WebdavContentCollection extends WebdavContentNode
     public WebdavContentNode createChild(String name, Type type)
             throws ContentRepositoryException
     {
+        // make sure this isn't a path
+        if (name.contains("/")) {
+            throw new ContentRepositoryException("Paths not allowed: " + name);
+        }
+
         try {
             HttpURL newURL = getChildURL(getResource().getHttpURL(), name);
 
@@ -113,6 +153,11 @@ public class WebdavContentCollection extends WebdavContentNode
     public WebdavContentNode removeChild(String name)
             throws ContentRepositoryException
     {
+        // make sure this isn't a path
+        if (name.contains("/")) {
+            throw new ContentRepositoryException("Paths not allowed: " + name);
+        }
+
         try {
             HttpURL removeURL = getChildURL(getResource().getHttpURL(), name);
             AuthenticatedWebdavResource removeResource =
