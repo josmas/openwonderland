@@ -44,14 +44,13 @@ public class WebdavContentRepository implements ContentRepository {
         return root;
     }
 
-    public WebdavContentCollection getSystemRoot()
+    public synchronized WebdavContentCollection getSystemRoot()
             throws ContentRepositoryException
     {
-        if (systemRoot != null) {
-            return systemRoot;
+        if (systemRoot == null) {
+            systemRoot = (WebdavContentCollection) root.getChild("system");
         }
 
-        systemRoot = (WebdavContentCollection) root.getChild("system");
         return systemRoot;
     }
 
@@ -59,14 +58,13 @@ public class WebdavContentRepository implements ContentRepository {
         return getUserRoot(true);
     }
 
-    public WebdavContentCollection getUserRoot(boolean create)
+    public synchronized WebdavContentCollection getUserRoot(boolean create)
             throws ContentRepositoryException
     {
-        if (userRoot != null) {
-            return userRoot;
+        if (userRoot == null) {
+            userRoot = getUserRoot(userId, create);
         }
-        
-        userRoot = getUserRoot(userId, create);
+
         return userRoot;
     }
 
@@ -76,17 +74,21 @@ public class WebdavContentRepository implements ContentRepository {
         return getUserRoot(username, false);
     }
 
-    protected WebdavContentCollection getUserRoot(String username,
-                                                  boolean create)
+    protected synchronized WebdavContentCollection getUserRoot(String username,
+                                                               boolean create)
             throws ContentRepositoryException
     {
+        // get the "users" directory
         if (usersRoot == null) {
             usersRoot = (WebdavContentCollection) root.getChild("users");
         }
+
+        // if there is no "users" directory, then the repository isn't valid
         if (usersRoot == null) {
             return null;
         }
 
+        // get or create the user directory
         WebdavContentCollection userDir =
                 (WebdavContentCollection) usersRoot.getChild(username);
         if (userDir == null && create) {
