@@ -1,72 +1,73 @@
 <%-- 
     Document   : admin
-    Created on : Oct 7, 2008, 4:33:56 PM
-    Author     : jkaplan
+    Created on : Fri Aug 28 11:40:20 EDT 2009 @694 /Internet Time/
+    Author     : gritchie
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    
 <%@ taglib uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
-<head>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
     <title>Project Wonderland Server Administration</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="keywords" content="Project Wonderland, Virtual World, Open Source" />
     <meta name="description" content="Project Wonderland Server Administration" />
-    <link href="ce.css" rel="stylesheet" type="text/css" media="screen" />
-    <link href="admin.css" rel="stylesheet" type="text/css" media="screen" />
-
+    <link href="css/base.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="css/admin.css" rel="stylesheet" type="text/css" media="screen" />
     <script type="text/javascript">
             function resizeIframe() {
                 var height = document.documentElement.clientHeight;
                 height -= document.getElementById('contentFrame').offsetTop;
-                height -= 10; // bottom margin
+                height -= 0; // bottom margin
     
                 document.getElementById('contentFrame').style.height = height + "px"; 
             };
     
             window.onresize = resizeIframe;
     </script>
-</head>
+    <!--[if lt IE 7]>
+	<link href="css/patch.css" rel="stylesheet" type="text/css" />
+	<![endif]-->
 
-<body onload="resizeIframe()">
-    <div id="container">
-        
-        <div id="header">
-            <img style="float:left" src="images/banner-left.jpg" />
-            <img src="images/banner-right-wonderland.jpg" />
-            <div id="projectName">
-                <span id="labs">Project Wonderland</span><br />
-                Server Administration
-            </div>
-            <div id="serverInfo">
-                Wonderland Server:  <%= request.getLocalName()%><br/>
-                Wonderland Version: ${requestScope['version'].version}
-                                    (rev. ${requestScope['version'].revision})<br/>
-            </div>
-        </div>
-        
+  </head>
+
+  <body onload="resizeIframe()">
+    <div id="page">
+      <div id="head">
+        <img alt="Project Wonderland logo" src="images/idy_admin.png" /><h1>Server Admin</h1> 
+      </div>
+
         <div id="moduleMenu">
+          <ul id="navlist">
             <c:forEach var="adminPage" items="${requestScope['adminPages']}">
                 <c:choose>
                     <c:when test="${adminPage.absolute}">
-                        <a href="${adminPage.url}">${adminPage.displayName}</a><br/>
+                        <li><a href="${adminPage.url}">${adminPage.displayName}</a></li>
                     </c:when>
                     <c:otherwise>
-                        <a href="admin?pageURL=${adminPage.url}">${adminPage.displayName}</a><br/>
+                        <li><a href="admin?pageURL=${adminPage.url}">${adminPage.displayName}</a></li>
                     </c:otherwise>
                 </c:choose>
             </c:forEach>
-        </div>
-        
-        <div id="content">
-            <iframe id="contentFrame" frameborder="0" width="100%" height="100%"
-                    src="${requestScope['pageURL']}" name="content"/>
+          </ul>
 
-           
-        </div>
+          <div id="footer">
+            <p id="serverInfo">Server: <%= request.getLocalName()%><br />
+             Version: ${requestScope['version'].version} (rev. ${requestScope['version'].revision})<br />
+            </p>
+          </div>
+		</div>
+		
+      <div id="content">    
+        <iframe id="contentFrame" frameborder="0" width="100%" height="100%" src="${requestScope['pageURL']}" name="content"/>
+      </div>
     </div>
-</body>
+  </body>
 </html>
+
+
