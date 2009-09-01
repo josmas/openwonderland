@@ -12,9 +12,10 @@
 
 <html>
     <head>
-        <title>Project Wonderland Content Repository Browser</title>
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-        <link href="${pageContext.servletContext.contextPath}/repobrowser.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
+        <title>Project Wonderland Content Repository Browser</title>
     </head>
     <body>
         <c:set var="current" value="${requestScope['current']}"/>
