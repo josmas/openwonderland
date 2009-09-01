@@ -26,7 +26,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Describes a cell within a wfs, including the root path of the wfs, the path
@@ -36,11 +35,11 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @XmlRootElement(name="wfs-cell-descriptor")
 public class CellDescriptor {
-    @XmlElementRef private WorldRoot worldRoot = null;
-    @XmlElementRef private CellPath cellParent = null;
-    @XmlElement(name="cell-id") private String cellID = null;
-    @XmlElement(name="cell-name") private String cellName = null;
-    @XmlElement(name="xml-setup-info") private String setupInfo = null;
+    private WorldRoot worldRoot = null;
+    private CellPath cellParent = null;
+    private String cellID = null;
+    private String cellName = null;
+    private String setupInfo = null;
 
     private static JAXBContext jaxbContext = null;
     static {
@@ -64,27 +63,27 @@ public class CellDescriptor {
         this.setupInfo = setupInfo;
     }
 
-    @XmlTransient
+    @XmlElement(name="cell-id")
     public String getCellID() {
         return cellID;
     }
     
-    @XmlTransient
+    @XmlElement(name="cell-name")
     public String getCellName() {
         return cellName;
     }
 
-    @XmlTransient
+    @XmlElementRef
     public CellPath getParentPath() {
         return cellParent;
     }
 
-    @XmlTransient
+    @XmlElementRef
     public WorldRoot getRootPath() {
         return worldRoot;
     }
 
-    @XmlTransient
+    @XmlElement(name="xml-setup-info")
     public String getSetupInfo() {
         return setupInfo;
     }
