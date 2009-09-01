@@ -307,7 +307,7 @@ public class AudioManagerClient extends BaseConnection implements
         avatar.removeViewCellConfiguredListener(this);
 
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
-        SoftphoneControlImpl.getInstance().sendCommandToSoftphone("endCalls");
+        SoftphoneControlImpl.getInstance().sendCommandToSoftphone("Shutdown");
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
         notifyDisconnectListeners();
     }
