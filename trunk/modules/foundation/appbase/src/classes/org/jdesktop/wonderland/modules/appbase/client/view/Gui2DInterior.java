@@ -135,7 +135,9 @@ public class Gui2DInterior extends Gui2D {
                 if (view.getWindow().getApp().getControlArb().hasControl()) {
                     SwingUtilities.invokeLater(new Runnable () {
                         public void run () {
-                            view.deliverEvent(view.getWindow(), me3d);
+                            if (view != null) {
+                                view.deliverEvent(view.getWindow(), me3d);
+                            }
                         }
                     });
                     return;
