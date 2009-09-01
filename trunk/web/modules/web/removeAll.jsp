@@ -10,6 +10,8 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
         <title>JSP Page</title>
     </head>
     <body>
