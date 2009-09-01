@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.server.WonderlandContext;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellImporterUtils {
+    
     /* The prefix to add to URLs for the WFS web service */
     private static final String WFS_PREFIX = "wonderland-web-wfs/wfs/";
     
