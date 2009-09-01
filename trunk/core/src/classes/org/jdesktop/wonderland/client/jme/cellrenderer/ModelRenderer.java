@@ -77,11 +77,20 @@ public class ModelRenderer extends BasicRenderer {
         }
 
         if (deployedModel!=null) {
-            Node ret = deployedModel.getModelLoader().loadDeployedModel(deployedModel);
+            ModelLoader loader = deployedModel.getModelLoader();
+            if (loader==null) {
+                logger.warning("No loader for model "+deployedModel.getModelURL());
+                return new Node("No Loader");
+            }
+            Node ret = loader.loadDeployedModel(deployedModel);
             return ret;
         }
 
         ModelLoader loader = LoaderManager.getLoaderManager().getLoader(deployedModelURL);
+        if (loader==null) {
+            logger.warning("No loader for model "+deployedModel.getModelURL());
+            return new Node("No Loader");
+        }
         deployedModel = new DeployedModel(deployedModelURL, loader);
         deployedModel.setModelTranslation(modelTranslation);
         deployedModel.setModelRotation(modelRotation);
