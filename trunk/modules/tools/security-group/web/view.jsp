@@ -11,8 +11,9 @@
 <%@ taglib uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
 <html>
-<head>    
-<link href="groupeditor.css" rel="stylesheet" type="text/css" media="screen" />
+    <head>
+        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
 <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
 <script type="text/javascript">
     function updateGroups() {
