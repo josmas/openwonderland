@@ -22,6 +22,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.logging.Level;
@@ -67,6 +68,13 @@ class MtgLoader implements ModelLoader {
     }
     
     public Node loadDeployedModel(DeployedModel model) {
+        String baseURL=null;
+        try {
+            baseURL = AssetUtils.getAssetURL(model.getModelURL().substring(0, model.getModelURL().lastIndexOf('/')+1)).toExternalForm();
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(MtgLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ClientContextJME.getWorldManager().setConfigBaseURL(baseURL.substring(0,baseURL.length()-1));
         try {
             load(AssetUtils.getAssetURL(model.getModelURL()));
 
@@ -74,11 +82,10 @@ class MtgLoader implements ModelLoader {
             Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return null;
+        return new Node("mtg-stub");
     }
 
     private Entity load(URL url) {
-
         ClientContextJME.getWorldManager().loadConfiguration(url, new ConfigLoadListener() {
 
             public void configLoaded(ConfigInstance ci) {
