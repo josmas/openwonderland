@@ -31,9 +31,27 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
- * The cell registry manages the collection of cell types registered with the
- * system. This is used to display them in the palette and also provides the
- * necessary information to create them in-world.
+ * The Cell Registry manages the collection of Cell registered with the system.
+ * Each Cell is represented by a Cell Factory that implements the CellFactorySPI
+ * interface. This CellFactorySPI interface tells the system how to create a
+ * new instance of the Cell in the world.
+ * <p>
+ * Modules may register Cell Factories in this Cell Registry in one of two
+ * ways:
+ * <p>
+ * (1) Annotate their CellFactorySPI class with the @CellFactory annotation.
+ * (2) Manually register their CellFactorySPI class using registerCellFactory().
+ * <p>
+ * This class maintains the set of registered Cell Factories for the current
+ * primary ServerSessionManager. When the primary ServerSessionManager changes,
+ * the current set of Cell Factories that were registered via the @CellFactory
+ * annotation are unregistered before the set of Cell Factories associated with
+ * the new primary ServerSessionManager and annotated with @CellFactory are
+ * added.
+ * <p>
+ * Modules that manually add CellFactorySPI class with registerCellFactory()
+ * must manually unregister their class with unregisterCellFactory() whenever
+ * the primary ServerSessionManager changes.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -46,8 +64,7 @@ public class CellRegistry implements PrimaryServerListener {
     private Map<String, Set<CellFactorySPI>> cellFactoryExtensionMap = null;
 
     /* The set of all cell factories associated with the cuurent session */
-    private final Set<CellFactorySPI> sessionFactories =
-            new LinkedHashSet<CellFactorySPI>();
+    private final Set<CellFactorySPI> sessionFactories = new LinkedHashSet();
 
     /* A list of listeners for changes to the cell factory entries */
     private Set<CellRegistryListener> listeners = new HashSet();
@@ -221,8 +238,10 @@ public class CellRegistry implements PrimaryServerListener {
                 if (factories != null) {
                     factories.remove(factory);
 
-                    if (factories.isEmpty()) {
-                        cellFactoryExtensionMap.remove(factories);
+                    // If there are no more factories for the given extension,
+                    // then remove it from the map.
+                    if (factories.isEmpty() == true) {
+                        cellFactoryExtensionMap.remove(extension);
                     }
                 }
             }
