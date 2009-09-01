@@ -1,21 +1,23 @@
 <%-- 
     Document   : index
-    Created on : Aug 7, 2008, 4:31:15 PM
-    Author     : jkaplan
+    Created on : Fri Aug 28 14:08:28 EDT 2009 @797 /Internet Time/
+    Author     : gritchie
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    
 <%@ page import="org.jdesktop.wonderland.runner.Runner" %>
 
 <%@ taglib uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
-<html>
-<head>    
-<link href="runner.css" rel="stylesheet" type="text/css" media="screen" />
-<script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
+<script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript">
+</script>
 <script type="text/javascript">
     var pe;
     
@@ -39,7 +41,7 @@
     function updateService(service, index) {
         processStatus(service);
         
-        var row = $('runnerTable').down('tr', index + 3);
+        var row = $('runnerTable').down('tr', index + 1);
         if (row == null) {
             row = new Element('tr');
             row.insert(new Element('td', { 'class': 'installed' }));
@@ -124,7 +126,7 @@
         for (var i = 0; i < times.length; i++) {
             var timeStr = times[i] + " sec.";
             if (times[i] == 0) {
-                timeStr = "none";
+                timeStr = "never";
             }
             
             if (times[i] == period) {
@@ -139,33 +141,25 @@
         }
     }
 </script>
-</head>
-<body onload="updateServices(); setUpdatePeriod(15);">
-<h1>Wonderland Server Status</h1>
 
-<table class="installed" id="runnerTable">
-    <tr>
-        <td colspan="3">
-            <table>
-                <tr><td>
-                    <h3>Server Components</h3>
-                </td><td>
-                     (<a href="/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=editRunners" target="_top">edit</a>)
-                </td></tr>
-            </table>
-        </td>
-        <td class="refresh" id="periods"></td>
-    </tr>
-    <tr class="header">
-        <td class="installed"><b>Name</b></td>
-        <td class="installed"><b>Location</b></td>
-        <td class="installed"><b>Status</b></td>
-        <td class="installed"><b>Actions</b></td>
-    </tr>
-</table>    
+    <title>Wonderland Server Status</title>
+  </head>
 
-<a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>
-<a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>
-<a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
+  <body onload="updateServices(); setUpdatePeriod(15);">
+    <h2>Wonderland Server Status</h2>
 
-</body>
+    <table class="installed" id="runnerTable">
+      <caption>
+        <span class="refresh" id="periods"></span><span class="heading">Server Components</span> <a href="/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=editRunners" target="_top">(edit)</a>
+      </caption>
+      <tr class="header">
+        <td class="installed">Name</td>
+        <td class="installed">Location</td>
+        <td class="installed">Status</td>
+        <td class="installed">Actions</td>
+      </tr>
+    </table>
+    
+    <a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
+  </body>
+</html>
