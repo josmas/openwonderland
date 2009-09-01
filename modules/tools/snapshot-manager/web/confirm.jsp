@@ -14,8 +14,9 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
+        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
         <title>Confirm</title>
-        <link href="snapshot.css" rel="stylesheet" type="text/css" media="screen" />
     </head>
     <body>
         <h3>Confirm</h3>
