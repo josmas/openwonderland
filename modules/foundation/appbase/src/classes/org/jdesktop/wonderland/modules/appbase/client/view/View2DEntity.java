@@ -1330,7 +1330,7 @@ public abstract class View2DEntity implements View2D {
                     reattachFrame();
                 }
             }
-            if ((changeMask & CHANGED_USER_RESIZABLE) != 0) {
+            if ((changeMask & (CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) {
                 if (decorated && !ortho) {
                     frameUpdateUserResizable();
                 }
