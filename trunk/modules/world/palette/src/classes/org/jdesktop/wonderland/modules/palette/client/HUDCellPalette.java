@@ -17,81 +17,79 @@
  */
 package org.jdesktop.wonderland.modules.palette.client;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragSource;
+import java.awt.datatransfer.Transferable;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JViewport;
+import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry.CellRegistryListener;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureListener;
+import org.jdesktop.wonderland.modules.palette.client.dnd.CellServerStateTransferable;
 
 /**
  * A palette of cells to create in the world by drag and drop, as a HUD panel.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author nsimpson
  */
 public class HUDCellPalette extends javax.swing.JPanel {
 
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
+    private List<Image> imageList;
+    private DefaultListModel model;
     private Image noPreviewAvailableImage = null;
     private CellRegistryListener cellListener = null;
-
-    private int index = 0;
-    private JPanel palettePanel;
     private static final int SIZE = 48;
-    private static final int SPACING = 10;
-    private static final int NUMBER_VISIBLE = 5;
-    private int width = 0;
 
-    /** Creates new form VisualPanelFrame */
     public HUDCellPalette() {
         initComponents();
 
-        // Create the icon for the "No Preview Available" image
-        URL url = CellPalette.class.getResource("resources/nopreview.png");
+        imageList = new ArrayList();
+        model = new DefaultListModel();
+        componentList.setModel(model);
+        componentList.setCellRenderer(new ListImageRenderer());
+        componentList.setDragEnabled(true);
+
+        // Create a generic image for cells that don't have a preview image
+        URL url = CellPalette.class.getResource("resources/nopreview128x128.png");
         noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
 
-        // Create the scroll pane and viewport, and add the icons
-        JViewport viewport = new JViewport();
-        FlowLayout layout = new FlowLayout();
-        palettePanel = new JPanel();
-        palettePanel.setLayout(layout);
-        layout.setHgap(0);
-        layout.setVgap(0);
-
-        viewport.setView(palettePanel);
-        width = getWidth(NUMBER_VISIBLE, SIZE, SPACING);
-        viewport.setPreferredSize(new Dimension(width, SIZE));
-        mainPanel.add(viewport);
+        componentList.setTransferHandler(new ListTransferHandler());
 
         // Create a listener for changes to the list of registered Cell
         // factories, to be used in setVisible(). When the list changes we
         // simply do a fresh update of all values.
         cellListener = new CellRegistryListener() {
+
             public void cellRegistryChanged() {
                 // Since this is not happening (necessarily) in the AWT Event
                 // Thread, we should put it in one
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         updatePanelIcons();
                     }
@@ -100,6 +98,71 @@ public class HUDCellPalette extends javax.swing.JPanel {
         };
         CellRegistry.getCellRegistry().addCellRegistryListener(cellListener);
         updatePanelIcons();
+    }
+
+    public class ListTransferHandler extends TransferHandler {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport info) {
+            // the cell palette doesn't support import
+            return false;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            CellFactorySPI factory = cellFactoryMap.get((String) componentList.getSelectedValue());
+
+            return new CellServerStateTransferable(factory);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int getSourceActions(JComponent c) {
+            // only support copying
+            return TransferHandler.COPY;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Icon getVisualRepresentation(Transferable t) {
+            Image image = imageList.get(componentList.getSelectedIndex());
+            ImageIcon icon = new ImageIcon(image);
+            return (Icon) image;
+        }
+    }
+
+    public class ListImageRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean hasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list,
+                    value, index, isSelected, hasFocus);
+            Image icon = imageList.get(index);
+            label.setIcon(new ImageIcon(icon));
+            label.setText("");
+            label.setTransferHandler(new ListTransferHandler());
+
+//            // Set up the drag and drop support for the image
+//            DragSource ds = DragSource.getDefaultDragSource();
+//            PaletteDragGestureListener listener = new PaletteDragGestureListener();
+//            listener.previewImage = icon;
+//            listener.cellFactory = cellFactoryMap.get((String)value);
+//            ds.createDefaultDragGestureRecognizer(componentList,
+//                    DnDConstants.ACTION_COPY, listener);
+
+            return (label);
+        }
     }
 
     /**
@@ -113,7 +176,9 @@ public class HUDCellPalette extends javax.swing.JPanel {
         synchronized (cellFactoryMap) {
             // First remove all of the entries in the map and the panel
             cellFactoryMap.clear();
-            palettePanel.removeAll();
+            model.clear();
+            componentList.removeAll();
+            imageList.clear();
 
             // Fetch the registry of cells and for each, get the palette info and
             // populate the list.
@@ -127,10 +192,13 @@ public class HUDCellPalette extends javax.swing.JPanel {
                     // and add to the panel
                     String name = cellFactory.getDisplayName();
                     Image preview = cellFactory.getPreviewImage();
+
                     if (name != null) {
+                        model.addElement(name);
                         cellFactoryMap.put(name, cellFactory);
-                        JPanel label = createJLabel(preview, name, SIZE);
-                        palettePanel.add(label);
+                        // Store the image for the list renderer
+                        Image image = createScaledImage(preview, name, SIZE);
+                        imageList.add(image);
                     }
                 } catch (java.lang.Exception excp) {
                     // Just ignore, but log a message
@@ -139,87 +207,94 @@ public class HUDCellPalette extends javax.swing.JPanel {
                             cellFactory, excp);
                 }
             }
-
-            // Tell the panel to invalide itself and re-do its layout
-            palettePanel.invalidate();
-            palettePanel.repaint();
-            index = 0;
-            int offset = getOffset(index, SIZE, SPACING);
-            palettePanel.scrollRectToVisible(new Rectangle(offset, 0, width, SIZE));
+            componentList.invalidate();
         }
-    }
-
-    /**
-     * Computes the total width of the viewport given the number of items visible,
-     * their size, and the spacing between each
-     */
-    private int getWidth(int numberItems, int size, int spacing) {
-        // The first part of the width is the number of items times each of
-        // their sizes
-        int guiWidth = numberItems * size;
-
-        // But we need to account for the interior spacing of each, to the right
-        // of every item but the last. For for n items, there are n-1 spacings
-        guiWidth += (spacing * (numberItems - 1));
-        return guiWidth;
-    }
-
-    /**
-     * Computes the offset (width-wise) of the nth item
-     */
-    private int getOffset(int n, int size, int spacing) {
-        // The first part of the offset is the number of items times each of
-        // their sizes
-        int offset = n * size;
-
-        // But we need to account for the interior spacing of each, to the right
-        // of every item.
-        offset += (spacing * n);
-        return offset;
     }
 
     /**
      * Creates a new label given the Image, the cell name, and the size to make
      * it.
      */
-    private JPanel createJLabel(Image image, String displayName, int size) {
-        // If the preview image is null, then use the default one
+    private Image createScaledImage(Image image, String displayName, int size) {
+        ImageIcon srcImage;
+        boolean label = false;
+
         if (image == null) {
-            image = noPreviewAvailableImage;
+            // If the preview image is null, then use the default one
+            srcImage = new ImageIcon(noPreviewAvailableImage);
+            label = true;
+        } else {
+            srcImage = new ImageIcon(image);
         }
 
         // First resize the image. We use a trick to fetch the BufferedImage
         // from the given Image, by creating the ImageIcon and calling the
         // getImage() method. Then resize into a Buffered Image.
-        Image srcImage = new ImageIcon(image).getImage();
         BufferedImage resizedImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = resizedImage.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2.drawImage(srcImage, 0, 0, size, size, null);
+        g2.drawImage(srcImage.getImage(), 0, 0, size, size, null);
         g2.dispose();
 
-        // Create the label with the preview image
-        JLabel label = new JLabel(new ImageIcon(resizedImage));
-        label.setPreferredSize(new Dimension(size, size));
-        label.setMaximumSize(new Dimension(size, size));
-        label.setMinimumSize(new Dimension(size, size));
-        label.setToolTipText(displayName);
+        if (label) {
+            labelImage(resizedImage, displayName);
+        }
 
-        // Put the label in a panel with a border
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(1, 1));
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, SPACING));
-        panel.add(label);
+        return resizedImage;
+    }
 
-        // Set up the drag and drop support for the image
-        DragSource ds = DragSource.getDefaultDragSource();
-        PaletteDragGestureListener listener = new PaletteDragGestureListener();
-        listener.previewImage = resizedImage;
-        listener.cellFactory = cellFactoryMap.get(displayName);
-        ds.createDefaultDragGestureRecognizer(label,
-                DnDConstants.ACTION_COPY_OR_MOVE, listener);
+    private Image labelImage(BufferedImage image, String label) {
+        if (label != null) {
+            Graphics2D g2 = image.createGraphics();
 
-        return panel;
+            String[] words = label.split(" ");
+
+            // find the longest word
+            String longest = "";
+            for (int i = 0; i < words.length; i++) {
+                if (words[i].length() > longest.length()) {
+                    longest = words[i];
+                }
+            }
+
+            int rowGap = 3;
+            int x;
+            int y = rowGap;
+            int iw = image.getWidth();
+            int ih = image.getHeight();
+
+            int fontSize = 10;
+            Font font = new Font("SansSerif", Font.BOLD, fontSize);
+            FontMetrics metrics = g2.getFontMetrics(font);
+
+            // find the font required to fit the longest word in the width of
+            // the image
+            while (!(metrics.getStringBounds(longest, g2).getWidth() < iw - 2) &&
+                    fontSize > 5) {
+                fontSize--;
+                font = new Font("SansSerif", Font.BOLD, fontSize);
+                metrics = g2.getFontMetrics(font);
+            }
+
+            g2.setFont(font);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                           RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+            g2.setColor(Color.DARK_GRAY);
+
+            Rectangle2D maxBounds = metrics.getMaxCharBounds(g2);
+            int wh = (int) maxBounds.getHeight();
+
+            // draw each word in order from top to bottom, centered in row
+            for (int i = 0; i < words.length; i++) {
+                Rectangle2D stringBounds = metrics.getStringBounds(words[i], g2);
+                x = (int) (iw / 2 - stringBounds.getWidth() / 2);
+                g2.drawString(words[i], x, y + wh);
+                y += wh + rowGap;
+            }
+
+            g2.dispose();
+        }
+        return image;
     }
 
     /** This method is called from within the constructor to
@@ -231,66 +306,24 @@ public class HUDCellPalette extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton2 = new javax.swing.JButton();
-        mainPanel = new javax.swing.JPanel();
-        jButton3 = new javax.swing.JButton();
+        componentScrollPane = new javax.swing.JScrollPane();
+        componentList = new javax.swing.JList();
 
+        setPreferredSize(new java.awt.Dimension(530, 75));
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/palette/client/resources/left_arrow.png"))); // NOI18N
-        jButton2.setBorderPainted(false);
-        jButton2.setMargin(new java.awt.Insets(0, 5, 0, 5));
-        jButton2.setMaximumSize(new java.awt.Dimension(16, 32));
-        jButton2.setPreferredSize(new java.awt.Dimension(16, 32));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                leftMouseButtonActionPerformed(evt);
-            }
-        });
-        add(jButton2);
+        componentScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
-        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        mainPanel.setLayout(new java.awt.GridLayout(1, 0));
-        add(mainPanel);
+        componentList.setBackground(new java.awt.Color(0, 0, 0));
+        componentList.setDragEnabled(true);
+        componentList.setLayoutOrientation(javax.swing.JList.HORIZONTAL_WRAP);
+        componentList.setVisibleRowCount(1);
+        componentScrollPane.setViewportView(componentList);
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/palette/client/resources/right_arrow.png"))); // NOI18N
-        jButton3.setBorderPainted(false);
-        jButton3.setIconTextGap(0);
-        jButton3.setMargin(new java.awt.Insets(0, 5, 0, 5));
-        jButton3.setMaximumSize(new java.awt.Dimension(16, 32));
-        jButton3.setMinimumSize(new java.awt.Dimension(16, 32));
-        jButton3.setPreferredSize(new java.awt.Dimension(16, 32));
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rightMouseButtonActionPerformed(evt);
-            }
-        });
-        add(jButton3);
+        add(componentScrollPane);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void leftMouseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leftMouseButtonActionPerformed
-        if (index <= 0) {
-            return;
-        }
-        index--;
-        int offset = getOffset(index, SIZE, SPACING);
-        palettePanel.scrollRectToVisible(new Rectangle(offset, 0, width, SIZE));
-}//GEN-LAST:event_leftMouseButtonActionPerformed
-
-    private void rightMouseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rightMouseButtonActionPerformed
-        if ((index + NUMBER_VISIBLE) >= cellFactoryMap.size()) {
-            return;
-        }
-        index++;
-        int offset = getOffset(index, SIZE, SPACING);
-        palettePanel.scrollRectToVisible(new Rectangle(offset, 0, width, SIZE));
-}//GEN-LAST:event_rightMouseButtonActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JPanel mainPanel;
+    private javax.swing.JList componentList;
+    private javax.swing.JScrollPane componentScrollPane;
     // End of variables declaration//GEN-END:variables
-
 }
