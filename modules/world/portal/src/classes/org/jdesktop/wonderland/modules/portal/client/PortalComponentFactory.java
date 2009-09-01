@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.portal.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -26,20 +27,24 @@ import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
  * The cell component factory for the portal cell component.
  * 
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellComponentFactory
 public class PortalComponentFactory implements CellComponentFactorySPI {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/portal/client/resources/Bundle");
+
     public String getDisplayName() {
-        return "Portal";
+        return BUNDLE.getString("Portal");
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
         PortalComponentServerState state = new PortalComponentServerState();
-        return (T)state;
+        return (T) state;
     }
 
     public String getDescription() {
-        return "A portal capability allows users to teleport";
+        return BUNDLE.getString("Portal_Description");
     }
 }

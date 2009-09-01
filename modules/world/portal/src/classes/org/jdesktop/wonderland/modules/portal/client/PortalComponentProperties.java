@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.portal.client;
 
 import com.jme.math.Quaternion;
@@ -32,19 +31,19 @@ import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 /**
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(PortalComponentServerState.class)
-public class PortalComponentProperties extends javax.swing.JPanel
+public class PortalComponentProperties extends JPanel
         implements PropertiesFactorySPI {
 
-    private CellPropertiesEditor editor = null;
-    
-    private String origServerURL = null;
-    private String origX = null;
-    private String origY = null;
-    private String origZ = null;
-    private String origAngle = null;
-    
+    private CellPropertiesEditor editor;
+    private String origServerURL;
+    private String origX;
+    private String origY;
+    private String origZ;
+    private String origAngle;
+
     /** Creates new form PortalComponentProperties */
     public PortalComponentProperties() {
         // Initialize the GUI
@@ -82,14 +81,15 @@ public class PortalComponentProperties extends javax.swing.JPanel
      */
     public void open() {
         CellServerState cellServerState = editor.getCellServerState();
-        PortalComponentServerState state = (PortalComponentServerState)
-                 cellServerState.getComponentServerState(PortalComponentServerState.class);
+        PortalComponentServerState state =
+                (PortalComponentServerState) cellServerState.getComponentServerState(
+                PortalComponentServerState.class);
         if (state != null) {
             origServerURL = state.getServerURL();
             if (origServerURL != null) {
                 urlTF.setText(origServerURL);
             }
-            
+
             Vector3f origin = state.getLocation();
             if (origin != null) {
                 origX = String.valueOf(origin.x);
@@ -103,7 +103,7 @@ public class PortalComponentProperties extends javax.swing.JPanel
             locX.setText(origX);
             locY.setText(origY);
             locZ.setText(origZ);
-            
+
             Quaternion r = state.getLook();
             if (r != null) {
                 origAngle = String.valueOf(r.toAngleAxis(new Vector3f()));
@@ -128,18 +128,19 @@ public class PortalComponentProperties extends javax.swing.JPanel
         // Figure out whether there already exists a server state for the
         // component.
         CellServerState cellServerState = editor.getCellServerState();
-        PortalComponentServerState state = (PortalComponentServerState) 
-            cellServerState.getComponentServerState(PortalComponentServerState.class);
+        PortalComponentServerState state = 
+                (PortalComponentServerState) cellServerState.getComponentServerState(
+                PortalComponentServerState.class);
         if (state == null) {
             state = new PortalComponentServerState();
         }
-        
+
         String serverURL = urlTF.getText().trim();
         if (serverURL.length() == 0) {
             serverURL = null;
         }
         state.setServerURL(serverURL);
-        
+
         Vector3f location = new Vector3f();
         String xstr = locX.getText().trim();
         String ystr = locY.getText().trim();
@@ -152,20 +153,19 @@ public class PortalComponentProperties extends javax.swing.JPanel
             location.z = Float.parseFloat(zstr);
         }
         state.setLocation(location);
-        
+
         Quaternion look = new Quaternion();
         String anglestr = angleTF.getText().trim();
         if (anglestr.length() == 0) {
             look = null;
         } else {
             Quaternion q = new Quaternion(0.0f, 1.0f, 0.0f,
-                                          Float.parseFloat(anglestr));
+                    Float.parseFloat(anglestr));
             look = new Quaternion(q);
         }
         state.setLook(look);
         editor.addToUpdateList(state);
     }
-
 
     /**
      * @inheritDoc()
@@ -184,6 +184,7 @@ public class PortalComponentProperties extends javax.swing.JPanel
      * or clean indications to the cell properties editor.
      */
     class TextFieldListener implements DocumentListener {
+
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -200,13 +201,13 @@ public class PortalComponentProperties extends javax.swing.JPanel
             if (editor == null) {
                 return;
             }
-            
+
             boolean clean = urlTF.getText().equals(origServerURL);
             clean &= locX.getText().trim().equals(origX);
             clean &= locY.getText().trim().equals(origY);
             clean &= locZ.getText().trim().equals(origZ);
             clean &= angleTF.getText().trim().equals(origAngle);
-            
+
             editor.setPanelDirty(PortalComponentProperties.class, !clean);
         }
     }
@@ -232,17 +233,18 @@ public class PortalComponentProperties extends javax.swing.JPanel
         angleTF = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
 
-        jLabel1.setText("Server URL:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/portal/client/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("PortalComponentProperties.jLabel1.text")); // NOI18N
 
-        jLabel2.setText("Location:");
+        jLabel2.setText(bundle.getString("PortalComponentProperties.jLabel2.text")); // NOI18N
 
-        jLabel3.setText("x:");
+        jLabel3.setText(bundle.getString("PortalComponentProperties.jLabel3.text")); // NOI18N
 
-        jLabel4.setText("y:");
+        jLabel4.setText(bundle.getString("PortalComponentProperties.jLabel4.text")); // NOI18N
 
-        jLabel5.setText("z:");
+        jLabel5.setText(bundle.getString("PortalComponentProperties.jLabel5.text")); // NOI18N
 
-        jLabel10.setText("angle:");
+        jLabel10.setText(bundle.getString("PortalComponentProperties.jLabel10.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -296,8 +298,6 @@ public class PortalComponentProperties extends javax.swing.JPanel
                     .add(jLabel10)))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField angleTF;
     private javax.swing.JLabel jLabel1;
