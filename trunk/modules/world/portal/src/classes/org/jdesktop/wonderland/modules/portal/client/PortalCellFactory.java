@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
@@ -34,15 +35,20 @@ import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
  * The cell factory for the portal cell.
  * 
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
 public class PortalCellFactory implements CellFactorySPI {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/portal/client/resources/Bundle");
+
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
 
         ModelLoader loader = LoaderManager.getLoaderManager().getLoader("kmz");
         ModelCellServerState cellState = loader.getCellServerState(
@@ -57,11 +63,11 @@ public class PortalCellFactory implements CellFactorySPI {
         // pcs.setOrigin(new Origin(new Vector3f(0f, 2.6f, 0f)));
         //state.addComponentServerState(pcs);
 
-        return (T)cellState;
+        return (T) cellState;
     }
 
     public String getDisplayName() {
-        return "Portal Cell";
+        return BUNDLE.getString("Portal_Cell");
     }
 
     public Image getPreviewImage() {
