@@ -14,7 +14,8 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
         <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
-        <link href="xapps-config.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
         <title>Add new X11 App</title>
     </head>
     <body>
