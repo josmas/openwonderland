@@ -110,7 +110,7 @@ public class FrameResizeCorner extends FrameComponent {
 
     /**
      * Specify whether this resize corner should be enabled (that is, react to input events).
-     * Default: true.
+     * Default: false.
      */
     public void setEnabled (boolean enabled) {
         this.enabled = enabled;
