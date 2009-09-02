@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.help;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenu;
@@ -33,24 +34,28 @@ import org.jdesktop.wonderland.common.help.HelpInfo;
  * The system of menus and menu items for the help in a WL client.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class HelpSystem implements PrimaryServerListener {
 
-    private static Logger logger = Logger.getLogger(HelpSystem.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(HelpSystem.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/client/jme/resources/bundle");
     private JMenu helpMenu = null;
-    
+
     /** Constructor */
     public HelpSystem() {
         // Create the root menu. This will be available immediately so the
         // main frame can add it right away. It won't get populated until the
         // session becomes active.
-        helpMenu = new JMenu("Help");
+        helpMenu = new JMenu(BUNDLE.getString("Help"));
 
         // Listen for connections to the primary server. Whenever there is a
         // new primary server, we want to refresh the Help menu
         LoginManager.addPrimaryServerListener(this);
     }
-    
+
     /**
      * Returns the root JMenu for the help system.
      * 
@@ -81,26 +86,28 @@ public class HelpSystem implements PrimaryServerListener {
         // Event Thread.
         HelpInfo helpInfo = HelpUtils.fetchHelpInfo(manager);
         if (helpInfo == null) {
-            logger.warning("Unable to fetch Help Info from server");
+            LOGGER.warning("Unable to fetch Help Info from server");
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     helpMenu.removeAll();
                 }
             });
             return;
         }
-        
+
         // Generate the new menu structure. We need to update the menu structure
         // in the AWT Event Thread.
         final HelpInfo.HelpMenuEntry entries[] = helpInfo.getHelpEntries();
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 helpMenu.removeAll();
                 buildJMenu(helpMenu, entries);
             }
         });
     }
-    
+
     /**
      * Builds the chilren beneath a JMenu representing a folder (and any
      * sub-items) recursively.
@@ -110,7 +117,7 @@ public class HelpSystem implements PrimaryServerListener {
         if (entries == null) {
             return;
         }
-        
+
         // Loop through all of the entries and add them to the given menu.
         // Recursively add children to sub-menus too.
         for (HelpInfo.HelpMenuEntry entry : entries) {
@@ -118,31 +125,31 @@ public class HelpSystem implements PrimaryServerListener {
             // to put its children in, add the JMenu to the current menu and
             // recursively add its children.
             if (entry instanceof HelpInfo.HelpMenuFolder) {
-                HelpInfo.HelpMenuFolder folder = (HelpInfo.HelpMenuFolder)entry;
+                HelpInfo.HelpMenuFolder folder =
+                        (HelpInfo.HelpMenuFolder) entry;
                 JMenu subMenu = new JMenu(folder.name);
                 menu.add(subMenu);
                 buildJMenu(subMenu, folder.entries);
-            }
-            else if (entry instanceof HelpInfo.HelpMenuItem) {
+            } else if (entry instanceof HelpInfo.HelpMenuItem) {
                 // If we are just adding a item, then create a new JMenuItem.
                 // We need to create a listener to act when the menu item is
                 // selected.
-                HelpInfo.HelpMenuItem item = (HelpInfo.HelpMenuItem)entry;
+                HelpInfo.HelpMenuItem item = (HelpInfo.HelpMenuItem) entry;
                 final String uri = item.helpURI;
                 JMenuItem menuItem = new JMenuItem(item.name);
                 menuItem.addActionListener(new ActionListener() {
+
                     public void actionPerformed(ActionEvent event) {
                         try {
                             WebBrowserLauncher.openURL(uri);
                         } catch (Exception excp) {
-                            logger.log(Level.WARNING, "Unable to launch URL " +
+                            LOGGER.log(Level.WARNING, "Unable to launch URL " +
                                     uri, excp);
                         }
                     }
                 });
                 menu.add(menuItem);
-            }
-            else if (entry instanceof HelpInfo.HelpMenuSeparator) {
+            } else if (entry instanceof HelpInfo.HelpMenuSeparator) {
                 // If we are adding a separator, then do so.
                 menu.addSeparator();
             }
