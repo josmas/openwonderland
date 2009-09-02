@@ -167,7 +167,8 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
 
         //Keep the skybox centered on the view
         curViewCell = newViewCell;
-        curViewCell.addTransformChangeListener(this);
+        if (curViewCell!=null)
+            curViewCell.addTransformChangeListener(this);
     }
 
     public void transformChanged(Cell cell, ChangeSource source) {
