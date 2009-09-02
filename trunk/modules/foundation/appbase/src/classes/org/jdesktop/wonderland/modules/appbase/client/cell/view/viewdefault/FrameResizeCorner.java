@@ -123,13 +123,23 @@ public class FrameResizeCorner extends FrameComponent {
         return enabled;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public void update() throws InstantiationException {
         updateLayout();
+        updateCommon();
+    }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void update(float newWidth3D, float newHeight3D) throws InstantiationException {
+        updateLayout(newWidth3D, newHeight3D);
+        updateCommon();
+    }
+
+    public void updateCommon() throws InstantiationException {
+        
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
                 if (horizBar != null) {
@@ -156,17 +166,19 @@ public class FrameResizeCorner extends FrameComponent {
         }
     }
 
+        
+    protected void updateLayout() {
+        updateLayout(view.getDisplayerLocalWidth(), view.getDisplayerLocalHeight());
+    }
+
     /**
      * Layout the two bars of the resize corner.
      */
-    protected void updateLayout() {
+    protected void updateLayout(float viewWidth, float viewHeight) {
 
         // First make sure that the geometry of the neighboring components is up to date
         rightSide.updateLayout();
         bottomSide.updateLayout();
-
-        float viewWidth = view.getDisplayerLocalWidth();
-        float viewHeight = view.getDisplayerLocalHeight();
 
         // Origin of the resize corner coordinate system is the lower right
         // corner of the view.

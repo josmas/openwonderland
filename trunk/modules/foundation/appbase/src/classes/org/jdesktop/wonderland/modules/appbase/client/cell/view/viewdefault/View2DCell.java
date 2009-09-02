@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
+import java.awt.Dimension;
 
 /**
  * TODO
@@ -314,6 +315,14 @@ public class View2DCell extends View2DEntity {
      */
     public CellTransform getUserTransformCell () {
         return userTransformCell.clone(null);
+    }
+
+    protected void userResizeFrameUpdate (float newWidth3D, float newHeight3D, Dimension newSize) {
+        try {
+            frame.update(newWidth3D, newHeight3D, newSize);
+        } catch (InstantiationException ex) {
+            logger.warning("Instantiation exception during user resize of frame");
+        }
     }
 }
 

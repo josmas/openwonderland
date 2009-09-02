@@ -94,9 +94,18 @@ public class FrameSide extends FrameComponent {
     @Override
     public void update() throws InstantiationException {
         updateLayout();
+        updateCommon();
+    }
 
+    public void update(float newWidth3D, float newHeight3D) throws InstantiationException {
+        updateLayout(newWidth3D, newHeight3D);
+        updateCommon();
+    }
+
+    private void updateCommon () throws InstantiationException {
         rect.resize(width, height);
 
+        // For some reason, this needs to be a synchronous (waiting) update
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
                 if (localToCellNode != null) {
@@ -104,14 +113,9 @@ public class FrameSide extends FrameComponent {
                     ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
             }
-        }, null);
+        }, null, true); 
 
         super.update();
-
-        /* For debug
-        rect.printRenderState();
-        rect.printGeometry();
-        */
     }
 
     /**
@@ -138,12 +142,16 @@ public class FrameSide extends FrameComponent {
      * Calculate the desired layout, based on the view size.
      */
     protected void updateLayout() {
+        updateLayout(view.getDisplayerLocalWidth(), view.getDisplayerLocalHeight());
+    }
+
+    protected void updateLayout(float newWidth3D, float newHeight3D) {
 
         // Note: we are moving the side CENTERS in this routine. This is slightly
         // different from the old code.
 
-        float innerWidth = view.getDisplayerLocalWidth();
-        float innerHeight = view.getDisplayerLocalHeight();
+        float innerWidth = newWidth3D;
+        float innerHeight = newHeight3D;
         float sideThickness = Frame2DCell.SIDE_THICKNESS;
 
         switch (whichSide) {

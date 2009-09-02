@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.view.Frame2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import java.awt.Dimension;
 
 /**
  * TODO
@@ -237,6 +238,29 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         }
 
         updateControl(controlArb);
+    }
+
+    /**
+     * The form of update used during user resize. 
+     */
+    public synchronized void update (float newWidth3D, float newHeight3D, Dimension newSize) 
+        throws InstantiationException 
+    {
+        if (header != null) {
+            header.update(newWidth3D, newHeight3D, newSize);
+        }
+        if (leftSide != null) {
+            leftSide.update(newWidth3D, newHeight3D);
+        }
+        if (rightSide != null) {
+            rightSide.update(newWidth3D, newHeight3D);
+        }
+        if (bottomSide != null) {
+            bottomSide.update(newWidth3D, newHeight3D);
+        }
+        if (resizeCorner != null) {
+            resizeCorner.update(newWidth3D, newHeight3D);
+        }
     }
 
     /** {@inheritDoc} */
