@@ -26,20 +26,20 @@ import org.jdesktop.wonderland.client.input.Event;
  */
 public class AvatarCollisionChangeRequestEvent extends Event {
 
-    private boolean collisionEnabled;
+    private boolean collisionResponseEnabled;
     private boolean gravityEnabled;
 
-    public AvatarCollisionChangeRequestEvent(boolean collisionEnabled, boolean gravityEnabled) {
-        this.collisionEnabled = collisionEnabled;
+    public AvatarCollisionChangeRequestEvent(boolean collisionResponseEnabled, boolean gravityEnabled) {
+        this.collisionResponseEnabled = collisionResponseEnabled;
         this.gravityEnabled = gravityEnabled;
     }
 
     @Override
     public Event clone(Event evt) {
         if (evt==null) {
-            evt = new AvatarCollisionChangeRequestEvent(isCollisionEnabled(), isGravityEnabled());
+            evt = new AvatarCollisionChangeRequestEvent(isCollisionResponseEnabled(), isGravityEnabled());
         } else {
-            ((AvatarCollisionChangeRequestEvent)evt).collisionEnabled = isCollisionEnabled();
+            ((AvatarCollisionChangeRequestEvent)evt).collisionResponseEnabled = isCollisionResponseEnabled();
             ((AvatarCollisionChangeRequestEvent)evt).gravityEnabled = isGravityEnabled();
         }
         super.clone(evt);
@@ -50,8 +50,8 @@ public class AvatarCollisionChangeRequestEvent extends Event {
     /**
      * @return the collisionEnabled
      */
-    public boolean isCollisionEnabled() {
-        return collisionEnabled;
+    public boolean isCollisionResponseEnabled() {
+        return collisionResponseEnabled;
     }
 
     /**
