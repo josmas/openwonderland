@@ -141,6 +141,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         groupId = state.getGroupId();
 
+	if (groupId == null || groupId.length() == 0) {
+	    groupId = CallID.getCallID(cellRef.get().getCellID());
+	}
+
         treatments = state.getTreatments();
 
 	volume = state.getVolume();
@@ -215,6 +219,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             channelComponent.removeMessageReceiver(AudioTreatmentRequestMessage.class);
             channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
 	    removeProximityListener();
+
+	    cleanup();
             return;
         }
 
@@ -384,7 +390,15 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     private void cleanup() {
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        TreatmentGroup group = vm.createTreatmentGroup(groupId);
+	if (groupId == null) {
+	    return;
+	}
+
+        TreatmentGroup group = vm.getTreatmentGroup(groupId);
+
+	if (group == null) {
+	    return;
+	}
 
 	Treatment[] treatments = group.getTreatments().values().toArray(new Treatment[0]);
 
@@ -397,7 +411,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 		logger.warning("No call for treatment " + treatment);
 		group.removeTreatment(treatment);
 	    } else {
-		logger.info("Ending call for treatment " + treatment);
+		logger.info("Ending call for treatment " + treatment + " groupId " + groupId);
 
 		try {
 		    call.end(true);
