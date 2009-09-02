@@ -81,7 +81,8 @@ public class CellPalette
         initComponents();
 
         // Create the icon for the "No Preview Available" image
-        URL url = CellPalette.class.getResource("resources/nopreview.png");
+        URL url = 
+                CellPalette.class.getResource("resources/nopreview128x128.png");
         noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
 
         // Listen for list selection events and update the preview panel with
