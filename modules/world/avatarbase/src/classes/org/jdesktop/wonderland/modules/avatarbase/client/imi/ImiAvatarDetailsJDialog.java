@@ -26,6 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -53,23 +54,24 @@ import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
  * 
  * @author jkaplan
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
-    private static final Logger logger = Logger.getLogger(ImiAvatarDetailsJDialog.class.getName());
-    private final Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+    private static final Logger LOGGER =
+            Logger.getLogger(ImiAvatarDetailsJDialog.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
+    private final Cursor waitCursor =
+            Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
     private final Cursor normalCursor = Cursor.getDefaultCursor();
-
     // The avatar we are currently configuring
-    private ImiAvatar avatar = null;
-
+    private ImiAvatar avatar;
     // The original avatar name when the dialog is first opened. This is used
     // to determine whether the avatar name has actually changed.
-    private String originalAvatarName = null;
-
+    private String originalAvatarName;
     // The current set of attributes for the avatar configuration
-    private WonderlandCharacterParams currentParams = null;
-
+    private WonderlandCharacterParams currentParams;
     // This boolean indicates whether the values of the GUI components are being
     // set programmatically. In such a case, we do not want to generate calls
     // to the avatar system.
@@ -83,8 +85,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Hair, and apply immediate
         hairComboBox.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (setLocal == false) {
+                if (!setLocal) {
                     comboBoxChanged(hairComboBox, ConfigType.HAIR);
                 }
             }
@@ -92,8 +95,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Head, and apply immediate
         headComboBox.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (setLocal == false) {
+                if (!setLocal) {
                     comboBoxChanged(headComboBox, ConfigType.HEAD);
                 }
             }
@@ -101,8 +105,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Torso, and apply immediate
         torsoComboBox.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (setLocal == false) {
+                if (!setLocal) {
                     comboBoxChanged(torsoComboBox, ConfigType.TORSO);
                 }
             }
@@ -110,8 +115,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Legs, and apply immediate
         legsComboBox.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (setLocal == false) {
+                if (!setLocal) {
                     comboBoxChanged(legsComboBox, ConfigType.LEGS);
                 }
             }
@@ -119,8 +125,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Jacket, and apply immediate
         jacketComboBox.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (setLocal == false) {
+                if (!setLocal) {
                     comboBoxChanged(jacketComboBox, ConfigType.JACKET);
                 }
             }
@@ -128,8 +135,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Hands, and apply immediate
         handsComboBox.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (setLocal == false) {
+                if (!setLocal) {
                     comboBoxChanged(handsComboBox, ConfigType.HANDS);
                 }
             }
@@ -137,8 +145,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Feet, and apply immediate
         feetComboBox.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (setLocal == false) {
+                if (!setLocal) {
                     comboBoxChanged(feetComboBox, ConfigType.FEET);
                 }
             }
@@ -146,70 +155,82 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for the Hair Color.. button click to configure the its color
         hairButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.HAIR_COLOR, "Hair Color");
+                configureColor(ConfigType.HAIR_COLOR,
+                        BUNDLE.getString("Hair_Color"));
             }
         });
 
         // Listen for the Skin Color.. button click to configure the its color
         skinButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.SKIN_COLOR, "Skin Color");
+                configureColor(ConfigType.SKIN_COLOR,
+                        BUNDLE.getString("Skin_Color"));
             }
         });
 
         // Listen for the Shirt Color.. button click to configure the its color
         torsoButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.SHIRT_COLOR, "Shirt Color");
+                configureColor(ConfigType.SHIRT_COLOR,
+                        BUNDLE.getString("Shirt_Color"));
             }
         });
 
         // Listen for the Pants Color.. button click to configure the its color
         pantsButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.PANTS_COLOR, "Pants Color");
+                configureColor(ConfigType.PANTS_COLOR,
+                        BUNDLE.getString("Pants_Color"));
             }
         });
 
         // Listen for the Shoe Color.. button click to configure the its color
         shoeButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.SHOE_COLOR, "Shoe Color");
+                configureColor(ConfigType.SHOE_COLOR,
+                        BUNDLE.getString("Shoe_Color"));
             }
         });
 
         // Listen when the gender radio buttons are selected. Update the gender
         // and apply
         maleRadioButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 // Reset the GUI with a new male avatar and apply the changes
                 try {
-                    if (setLocal == false) {
+                    if (!setLocal) {
                         WonderlandCharacterParams params =
                                 WonderlandCharacterParams.loadMale();
                         setAttributes(params);
                         apply();
                     }
                 } catch (IOException ex) {
-                    logger.log(Level.WARNING, "Unable to load male avatar", ex);
+                    LOGGER.log(Level.WARNING, "Unable to load male avatar", ex);
                     return;
                 }
             }
         });
 
         femaleRadioButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 // Reset the GUI with a new female avatar and apply the changes
                 try {
-                    if (setLocal == false) {
+                    if (!setLocal) {
                         WonderlandCharacterParams params =
                                 WonderlandCharacterParams.loadFemale();
                         setAttributes(params);
                         apply();
                     }
                 } catch (IOException ex) {
-                    logger.log(Level.WARNING, "Unable to load male avatar", ex);
+                    LOGGER.log(Level.WARNING, "Unable to load male avatar", ex);
                     return;
                 }
             }
@@ -219,6 +240,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // original settings when the dialog was first opened and close the
         // dialog
         cancelButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 // Revert to the avatar currently set and close the window
                 AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
@@ -231,6 +253,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // avatar. We do not need to apply() again, since that is done for
         // each change.
         useButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 use();
             }
@@ -239,6 +262,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // For the Randomize button, select a random set of attributes and
         // apply
         randomizeButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 currentParams.randomize();
                 updateComboBoxes();
@@ -248,6 +272,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for when the window is close and do a cancel()
         addWindowListener(new WindowAdapter() {
+
             @Override
             public void windowClosing(WindowEvent e) {
                 // Revert to the avatar currently set and close the window
@@ -261,6 +286,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // main user list. We simply just close the window here.
         AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
         registry.addAvatarListener(new AvatarListener() {
+
             public void avatarAdded(AvatarSPI added) {
                 // We don't care if an avatar has been added.
             }
@@ -268,7 +294,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
             public void avatarRemoved(AvatarSPI removed) {
                 // If the avatar remove equals this avatar, then close this
                 // dialog
-                if (avatar != null && avatar.equals(removed) == true) {
+                if ((avatar != null) && avatar.equals(removed)) {
                     setVisible(false);
                 }
             }
@@ -280,7 +306,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * on the first execution of getImiAvatarDetailsJDialog()
      */
     private static class DetailsDialogHolder {
-        private final static ImiAvatarDetailsJDialog d = new ImiAvatarDetailsJDialog();
+
+        private final static ImiAvatarDetailsJDialog d =
+                new ImiAvatarDetailsJDialog();
     }
 
     /**
@@ -295,6 +323,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
     /**
      * Sets the current avatar in use and updates the GUI. This method is
      * thread safe, so only a single thread can set the avatar at once.
+     * @param avatar the current avatar
      */
     public synchronized void setAvatar(ImiAvatar avatar) {
         this.avatar = avatar;
@@ -305,6 +334,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // call to setAttributes() happens in the AWT Event Thread.
         final WonderlandCharacterParams params = avatar.getAvatarParams(true);
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 setAttributes(params);
                 apply();
@@ -321,7 +351,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // the one we are configuring
         super.setVisible(isVisible);
     }
-    
+
     /**
      * Sets the current attributes of the avatar and refreshes the GUI.
      *
@@ -330,8 +360,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * @param attributes The attribute of the avatar configuration
      */
     public void setAttributes(WonderlandCharacterParams attributes) {
-        if (EventQueue.isDispatchThread() == false) {
-            logger.severe("SET ATTRIBUTES NOT IN AWT EVENT THREAD!");
+        if (!EventQueue.isDispatchThread()) {
+            LOGGER.severe("SET ATTRIBUTES NOT IN AWT EVENT THREAD!");
         }
 
         // Make a copy of the attributes given, so that any changes we make
@@ -360,7 +390,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      *
      * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
-    private void populateComboBox(JComboBox box, ConfigType type, String prefix) {
+    private void populateComboBox(
+            JComboBox box, ConfigType type, String prefix) {
         // Make sure we block out any events that happen because the elements
         // in the combo box are being updated
         setLocalChanges(true);
@@ -409,7 +440,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         try {
             int index = currentParams.getElementIndex(type);
             if (index == -1) {
-                logger.warning("Unable to find selected element for " + type);
+                LOGGER.warning("Unable to find selected element for " + type);
                 return;
             }
             box.setSelectedIndex(index);
@@ -440,12 +471,12 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         setLocalChanges(true);
         try {
             GenderConfigElement gender =
-                    (GenderConfigElement) currentParams.getElement(ConfigType.GENDER);
+                    (GenderConfigElement) currentParams.getElement(
+                    ConfigType.GENDER);
             if (gender.getGender() == GenderConfigElement.MALE) {
                 maleRadioButton.setSelected(true);
                 femaleRadioButton.setSelected(false);
-            }
-            else {
+            } else {
                 maleRadioButton.setSelected(false);
                 femaleRadioButton.setSelected(true);
             }
@@ -463,7 +494,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // settings.
         int index = box.getSelectedIndex();
         if (index == -1) {
-            logger.warning("No item is selected for " + type);
+            LOGGER.warning("No item is selected for " + type);
             return;
         }
         currentParams.setElement(type, index);
@@ -479,9 +510,10 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
     private void configureColor(ConfigType type, String title) {
         // Fetch the current color given the configuration type. This assumes
         // it exists, otherwise, it's a bad error.
-        ColorConfigElement config = (ColorConfigElement)currentParams.getElement(type);
+        ColorConfigElement config =
+                (ColorConfigElement) currentParams.getElement(type);
         if (config == null) {
-            logger.info("Unable to find config element " + type);
+            LOGGER.info("Unable to find config element " + type);
             config = new HairColorConfigElement();
             config.setR(1.0f);
             config.setG(1.0f);
@@ -524,9 +556,10 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Make sure the name text field is not empty.
         final String newAvatarName = nameTextField.getText().trim();
-        if (newAvatarName == null || newAvatarName.equals("") == true) {
+        if ((newAvatarName == null) || newAvatarName.equals("")) {
             String msg = "Please enter an avatar name before saving.";
-            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -534,35 +567,39 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // XXX Workaround for bug in content repo XXX
         if (newAvatarName.indexOf(" ") != -1) {
             String msg = "The avatar name cannot include spaces, sorry!";
-            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // Check to see that the avatar name is not already taken. We only check
         // if the name has actually changed.
         AvatarSPI oldAvatar = registry.getAvatarByName(newAvatarName);
-        if (newAvatarName.equals(originalAvatarName) == false && oldAvatar != null) {
+        if (!newAvatarName.equals(originalAvatarName) && (oldAvatar != null)) {
             String msg = "The avatar name " + newAvatarName + " is already" +
                     " taken. Please enter anothr name.";
-            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // If we are not changing the name of the avatar, then we just save the
         // avatar, close the window and return. We do this in a thread to make
         // sure the UI does not block without indication.
-        if (newAvatarName.equals(originalAvatarName) == true) {
+        if (newAvatarName.equals(originalAvatarName)) {
 //            logger.warning("Original avatar name equals new avatar name, " + originalAvatarName);
             setBusy(true);
             new Thread() {
+
                 @Override
                 public void run() {
                     avatar.setAvatarParams(currentParams);
                     save(avatar);
                     registry.setAvatarInUse(avatar, false);
-                    
+
                     // Close the dialog in the AWT Event Thread
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
                             setBusy(false);
                             setVisible(false);
@@ -581,6 +618,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // all of this in a thread so that we do not block the GUI
         setBusy(true);
         new Thread() {
+
             @Override
             public void run() {
                 ImiAvatar newAvatar = ImiAvatar.createAvatar(newAvatarName);
@@ -588,14 +626,15 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
                 save(newAvatar);
                 registry.setAvatarInUse(newAvatar, false);
 
-                // Next, delete the old avatar and close the dialog. We only want to
-                // delete it if the old avatar is really new
+                // Next, delete the old avatar and close the dialog. We only
+                // want to delete it if the old avatar is really new
                 if (registry.getAvatarByName(originalAvatarName) != null) {
                     avatar.delete();
                 }
 
                 // Close the dialog in the AWT Event Thread
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         setBusy(false);
                         setVisible(false);
@@ -609,14 +648,16 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * Saves the current avatar to the system.
      */
     private void save(ImiAvatar avatar) {
-        
+
         // Talk to the IMI configuration manager and save it. It takes care
         // of adding it to the list of registered avatars.
-        ImiAvatarConfigManager m = ImiAvatarConfigManager.getImiAvatarConfigManager();
+        ImiAvatarConfigManager m =
+                ImiAvatarConfigManager.getImiAvatarConfigManager();
         try {
             m.saveAvatar(avatar);
         } catch (java.lang.Exception excp) {
-            logger.log(Level.WARNING, "Unable to save avatar " + avatar.getName(), excp);
+            LOGGER.log(Level.WARNING,
+                    "Unable to save avatar " + avatar.getName(), excp);
         }
     }
 
@@ -631,18 +672,22 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Update the avatar in the background thread.
         Runnable runner = new Runnable() {
+
             public void run() {
                 // Fetch the name of the avatar from the text field first for
                 // the loading messages and also the primary view cell
-                ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                ViewCell cell =
+                        ClientContextJME.getViewManager().getPrimaryViewCell();
                 String name = nameTextField.getText().trim();
 
                 // Ask the avatar to generate its character. If null, then
                 // clean up the loading message and cursor and return.
-                WlAvatarCharacter character = ImiAvatar.getAvatarCharacter(currentParams);
+                WlAvatarCharacter character =
+                        ImiAvatar.getAvatarCharacter(currentParams);
                 if (character == null) {
                     LoadingInfo.finishedLoading(cell.getCellID(), name);
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
                             setBusy(false);
                         }
@@ -656,11 +701,12 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
                 // Set the cursor in the AWT Event Thread.
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         setBusy(false);
                     }
                 });
-           }
+            }
         };
         new Thread(runner).start();
     }
@@ -670,10 +716,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * with or not
      */
     private void setBusy(boolean isBusy) {
-        if (isBusy == true) {
+        if (isBusy) {
             setCursor(waitCursor);
-        }
-        else {
+        } else {
             setCursor(normalCursor);
         }
         useButton.setEnabled(!isBusy);
@@ -749,12 +794,13 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         useButton = new javax.swing.JButton();
 
-        setTitle("Configure avatar");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("ImiAvatarDetailsJDialog.title")); // NOI18N
 
         namePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         namePanel.setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText("Name:");
+        nameLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.nameLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -770,19 +816,19 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         namePanel.add(nameTextField, gridBagConstraints);
 
-        genderLabel.setText("Gender:");
+        genderLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.genderLabel.text")); // NOI18N
         genderPanel.add(genderLabel);
 
-        femaleRadioButton.setText("Female");
+        femaleRadioButton.setText(bundle.getString("ImiAvatarDetailsJDialog.femaleRadioButton.text")); // NOI18N
         genderPanel.add(femaleRadioButton);
 
-        maleRadioButton.setText("Male");
+        maleRadioButton.setText(bundle.getString("ImiAvatarDetailsJDialog.maleRadioButton.text")); // NOI18N
         genderPanel.add(maleRadioButton);
 
         mainConfigPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         mainConfigPanel.setLayout(new java.awt.GridBagLayout());
 
-        hairLabel.setText("Hair:");
+        hairLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.hairLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -796,13 +842,14 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         mainConfigPanel.add(hairComboBox, gridBagConstraints);
 
-        hairButton.setText("Hair Color...");
+        hairButton.setText(bundle.getString("ImiAvatarDetailsJDialog.hairButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         mainConfigPanel.add(hairButton, gridBagConstraints);
 
-        headLabel.setText("Head:");
+        headLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.headLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -815,13 +862,14 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         mainConfigPanel.add(headComboBox, gridBagConstraints);
 
-        skinButton.setText("Skin Color...");
+        skinButton.setText(bundle.getString("ImiAvatarDetailsJDialog.skinButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         mainConfigPanel.add(skinButton, gridBagConstraints);
 
-        torsoLabel.setText("Torso:");
+        torsoLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.torsoLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -834,13 +882,14 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         mainConfigPanel.add(torsoComboBox, gridBagConstraints);
 
-        torsoButton.setText("Shirt Color...");
+        torsoButton.setText(bundle.getString("ImiAvatarDetailsJDialog.torsoButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         mainConfigPanel.add(torsoButton, gridBagConstraints);
 
-        jacketLabel.setText("Jacket:");
+        jacketLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.jacketLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -858,7 +907,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 3;
         mainConfigPanel.add(jacketBlankPanel, gridBagConstraints);
 
-        handsLabel.setText("Hands:");
+        handsLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.handsLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -878,7 +927,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 4;
         mainConfigPanel.add(handsBlankPanel, gridBagConstraints);
 
-        legsLabel.setText("Legs:");
+        legsLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.legsLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 5;
         mainConfigPanel.add(legsLabel, gridBagConstraints);
@@ -889,12 +938,13 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         mainConfigPanel.add(legsComboBox, gridBagConstraints);
 
-        pantsButton.setText("Pants Color...");
+        pantsButton.setText(bundle.getString("ImiAvatarDetailsJDialog.pantsButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         mainConfigPanel.add(pantsButton, gridBagConstraints);
 
-        feetLabel.setText("Feet:");
+        feetLabel.setText(bundle.getString("ImiAvatarDetailsJDialog.feetLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 6;
         mainConfigPanel.add(feetLabel, gridBagConstraints);
@@ -907,31 +957,32 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         mainConfigPanel.add(feetComboBox, gridBagConstraints);
 
-        shoeButton.setText("Shoe Color...");
+        shoeButton.setText(bundle.getString("ImiAvatarDetailsJDialog.shoeButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         mainConfigPanel.add(shoeButton, gridBagConstraints);
 
-        randomizeButton.setText("Randomize");
+        randomizeButton.setText(bundle.getString("ImiAvatarDetailsJDialog.randomizeButton.text")); // NOI18N
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ImiAvatarDetailsJDialog.cancelButton.text")); // NOI18N
         buttonPanel.add(cancelButton);
 
-        useButton.setText("Use");
+        useButton.setText(bundle.getString("ImiAvatarDetailsJDialog.useButton.text")); // NOI18N
         buttonPanel.add(useButton);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-            .add(genderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-            .add(mainConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+            .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+            .add(genderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+            .add(mainConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(randomizeButton)
-                .addContainerGap(194, Short.MAX_VALUE))
+                .addContainerGap(230, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(buttonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
@@ -953,7 +1004,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton cancelButton;

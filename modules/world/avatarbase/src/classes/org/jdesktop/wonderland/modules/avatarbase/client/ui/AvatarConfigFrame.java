@@ -43,15 +43,17 @@ import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
  *
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AvatarConfigFrame extends javax.swing.JFrame {
 
-    private static final Logger logger = Logger.getLogger(AvatarConfigFrame.class.getName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
-
+    private static final Logger LOGGER =
+            Logger.getLogger(AvatarConfigFrame.class.getName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
     // The image icons for the JList to display the avatar configurations
-    private Icon checkBoxIcon = null;
-    private Icon blankIcon = null;
+    private Icon checkBoxIcon;
+    private Icon blankIcon;
 
     /** Creates new form AvatarConfigFrame */
     public AvatarConfigFrame() {
@@ -60,11 +62,13 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         initComponents();
 
         // Initialize the icons that are used for the JList
-        URL url = AvatarListCellRenderer.class.getResource("resources/check_icon.png");
+        URL url = AvatarListCellRenderer.class.getResource(
+                "resources/check_icon.png");
         checkBoxIcon = new ImageIcon(url);
         blankIcon = new Icon() {
+
             public void paintIcon(Component c, Graphics g, int x, int y) {
-               // Do nothing
+                // Do nothing
             }
 
             public int getIconWidth() {
@@ -87,12 +91,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // avatars and update the JList appropriately.
         AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
         registry.addAvatarListener(new AvatarListener() {
+
             public void avatarAdded(AvatarSPI avatar) {
                 ((DefaultListModel) avatarList.getModel()).addElement(avatar);
             }
 
             public void avatarRemoved(AvatarSPI avatar) {
-                ((DefaultListModel) avatarList.getModel()).removeElement(avatar);
+                ((DefaultListModel) avatarList.getModel()).removeElement(
+                        avatar);
             }
         });
 
@@ -100,6 +106,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // the list. We do not need to do this in the AWT Event Thread because
         // repaint() just schedules something there
         registry.addAvatarInUseListener(new AvatarInUseListener() {
+
             public void avatarInUse(AvatarSPI avatar, boolean isLocal) {
                 avatarList.repaint();
             }
@@ -108,8 +115,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // Listen for when the selection of the list of avatar changes, so we
         // update the state of buttons
         avatarList.addListSelectionListener(new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting() == false) {
+                if (!e.getValueIsAdjusting()) {
                     updateButtonEnabled();
                 }
             }
@@ -153,7 +161,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         // Next, ask the selected avatar whether Customize and Delete is
         // supported
-        if (selected == true) {
+        if (selected) {
             AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
             customizeButton.setEnabled(avatar.canConfigure());
             deleteButton.setEnabled(avatar.canDelete());
@@ -161,11 +169,11 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         // Finally, we see if the select avatar is the one currently in use.
         // If so, do not enable the Use button
-        if (selected == true) {
+        if (selected) {
             AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
             AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
             AvatarSPI avatarInUse = registry.getAvatarInUse();
-            if (avatarInUse != null && avatarInUse.equals(avatar) == true) {
+            if ((avatarInUse != null) && avatarInUse.equals(avatar)) {
                 useButton.setEnabled(false);
             }
         }
@@ -186,7 +194,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         {
             // Fetch the avatar object from the list and fetch its name to use
             // as the label.
-            AvatarSPI avatar = (AvatarSPI)value;
+            AvatarSPI avatar = (AvatarSPI) value;
             String s = avatar.getName();
             setText(s);
 
@@ -194,21 +202,19 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             // in use.
             AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
             AvatarSPI avatarInUse = registry.getAvatarInUse();
-            
+
             // If the avatar configuration is currently selected, then we
             // want to place a checkbox next to the name.
-            if (avatar.equals(avatarInUse) == true) {
+            if (avatar.equals(avatarInUse)) {
                 setIcon(checkBoxIcon);
-            }
-            else {
+            } else {
                 setIcon(blankIcon);
             }
 
-            if (isSelected == true) {
+            if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
-            }
-            else {
+            } else {
                 setBackground(Color.white);
                 setForeground(Color.black);
             }
@@ -272,16 +278,17 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         setTitle(bundle.getString("Edit_Avatar")); // NOI18N
 
-        jLabel1.setText("My Avatars");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("AvatarConfigFrame.jLabel1.text")); // NOI18N
 
-        newButton.setText("New...");
+        newButton.setText(bundle.getString("AvatarConfigFrame.newButton.text")); // NOI18N
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
             }
         });
 
-        customizeButton.setText("Customize...");
+        customizeButton.setText(bundle.getString("AvatarConfigFrame.customizeButton.text")); // NOI18N
         customizeButton.setEnabled(false);
         customizeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -289,7 +296,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
-        deleteButton.setText("Delete");
+        deleteButton.setText(bundle.getString("AvatarConfigFrame.deleteButton.text")); // NOI18N
         deleteButton.setEnabled(false);
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -297,7 +304,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
-        useButton.setText("Use");
+        useButton.setText(bundle.getString("AvatarConfigFrame.useButton.text")); // NOI18N
         useButton.setEnabled(false);
         useButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -328,7 +335,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .addContainerGap(26, Short.MAX_VALUE))
         );
 
-        closeButton.setText("Close");
+        closeButton.setText(bundle.getString("AvatarConfigFrame.closeButton.text")); // NOI18N
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
@@ -396,7 +403,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // edit its configuration. Since the Customize button is only enabled
         // when an item is selected, we assume something is selected in the
         // list.
-        AvatarSPI avatar = (AvatarSPI)avatarList.getSelectedValue();
+        AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
         avatar.configure();
     }//GEN-LAST:event_customizeButtonActionPerformed
 
