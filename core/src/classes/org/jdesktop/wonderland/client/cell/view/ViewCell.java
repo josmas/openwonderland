@@ -55,10 +55,10 @@ public class ViewCell extends Cell {
     @Override
     protected void setStatus(CellStatus status,boolean increasing) {
         super.setStatus(status, increasing);
+
         switch(status) {
             case ACTIVE :
                 if (increasing) {
-
                     // TODO, check this is the local avatar
                     CellClientSession s = (CellClientSession)getCellCache().getSession();
                     if (s.getCellCacheConnection().getViewCellID().equals(getCellID()))
@@ -67,8 +67,12 @@ public class ViewCell extends Cell {
                 }
                 break;
             case INACTIVE :
-                if (!increasing)
+                if (!increasing) {
+                    CellClientSession s = (CellClientSession)getCellCache().getSession();
+                    if (s.getCellCacheConnection().getViewCellID().equals(getCellID()))
+                        s.getLocalAvatar().viewCellConfigured(null);
                     movableComp = null;
+                }
                 break;
         }
     }
