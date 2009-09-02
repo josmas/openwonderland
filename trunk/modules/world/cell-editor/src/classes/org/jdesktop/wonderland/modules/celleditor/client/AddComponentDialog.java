@@ -45,30 +45,28 @@ public class AddComponentDialog extends javax.swing.JDialog {
 
     /** A return status code - returned if Cancel button has been pressed */
     public static final int RET_CANCEL = 0;
+
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
+
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
-    private Cell cell;
 
     /* The table holding the list of components */
-    private JTable componentsTable;
+    private JTable componentsTable = null;
 
     /* A map of display names in the table to the component factories */
-    private Map<String, CellComponentFactorySPI> factoryMap =
-            new HashMap<String, CellComponentFactorySPI>();
+    private Map<String, CellComponentFactorySPI> factoryMap = new HashMap();
 
     /* The component factory selected to be added */
-    private CellComponentFactorySPI cellComponentFactorySPI;
+    private CellComponentFactorySPI cellComponentFactorySPI = null;
 
     /* The edit property frame displaying this dialog */
-    private CellPropertiesJFrame editframe;
+    private CellPropertiesJFrame editframe = null;
 
     /** Creates new form AddComponentDialog */
-    public AddComponentDialog(
-            CellPropertiesJFrame editframe, boolean modal, Cell cell) {
+    public AddComponentDialog(CellPropertiesJFrame editframe, boolean modal, Cell cell) {
         super(editframe, modal);
-        this.cell = cell;
         this.editframe = editframe;
         initComponents();
 
@@ -81,7 +79,6 @@ public class AddComponentDialog extends javax.swing.JDialog {
         // enable the OK button (or not)
         ListSelectionModel selectionModel = componentsTable.getSelectionModel();
         selectionModel.addListSelectionListener(new ListSelectionListener() {
-
             public void valueChanged(ListSelectionEvent e) {
                 boolean isEnabled = componentsTable.getSelectedRow() != -1;
                 okButton.setEnabled(isEnabled);
@@ -118,7 +115,7 @@ public class AddComponentDialog extends javax.swing.JDialog {
         // on the set and remove from the list of factories.
         CellServerState state = editframe.getCellServerState();
         Iterator<CellComponentFactorySPI> it = factories.iterator();
-        while (it.hasNext()) {
+        while (it.hasNext() == true) {
             CellComponentFactorySPI spi = it.next();
             Class clazz = spi.getDefaultCellComponentServerState().getClass();
             if (state.getComponentServerState(clazz) != null) {
@@ -128,12 +125,9 @@ public class AddComponentDialog extends javax.swing.JDialog {
 
         // Put all of the factories into a list and sort based upon the display
         // name
-        List<CellComponentFactorySPI> factoryList =
-                new LinkedList<CellComponentFactorySPI>(factories);
+        List<CellComponentFactorySPI> factoryList = new LinkedList(factories);
         Comparator nameComparator = new Comparator<CellComponentFactorySPI>() {
-
-            public int compare(
-                    CellComponentFactorySPI o1, CellComponentFactorySPI o2) {
+            public int compare(CellComponentFactorySPI o1, CellComponentFactorySPI o2) {
                 return o1.getDisplayName().compareTo(o2.getDisplayName());
             }
         };
@@ -235,8 +229,7 @@ public class AddComponentDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         // Fetch the component factory based upon the selected comopnent
         int row = componentsTable.getSelectedRow();
-        String displayName =
-                (String) componentsTable.getModel().getValueAt(row, 0);
+        String displayName = (String) componentsTable.getModel().getValueAt(row, 0);
         cellComponentFactorySPI = factoryMap.get(displayName);
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
@@ -256,11 +249,13 @@ public class AddComponentDialog extends javax.swing.JDialog {
         setVisible(false);
         dispose();
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JScrollPane capabilityScrollPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
+
     private int returnStatus = RET_CANCEL;
 }

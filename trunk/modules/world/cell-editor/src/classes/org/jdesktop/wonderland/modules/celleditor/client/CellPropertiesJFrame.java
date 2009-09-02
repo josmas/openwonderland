@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTree;
@@ -95,34 +96,37 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-public class CellPropertiesJFrame
-        extends javax.swing.JFrame implements CellPropertiesEditor {
+public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor {
 
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
+
     private static final Logger LOGGER =
             Logger.getLogger(CellPropertiesJFrame.class.getName());
-    private List<PropertiesFactorySPI> factoryList;
-    private Cell selectedCell;
-    private CellServerState selectedCellServerState;
-    private PropertiesFactorySPI cellProperties;
-    private DefaultListModel listModel;
-    private DefaultMutableTreeNode treeRoot;
-    private CellStatusChangeListener cellListener;
-    private TreeSelectionListener treeListener;
-    private DefaultMutableTreeNode dragOverTreeNode;
-    private Set<Class> dirtyPanelSet = new HashSet<Class>();
-    private StateUpdates stateUpdates;
+
+    private List<PropertiesFactorySPI> factoryList = null;
+    private Cell selectedCell = null;
+    private CellServerState selectedCellServerState = null;
+    private PropertiesFactorySPI cellProperties = null;
+    private DefaultListModel listModel = null;
+    private DefaultMutableTreeNode treeRoot = null;
+    private CellStatusChangeListener cellListener = null;
+    private TreeSelectionListener treeListener = null;
+    private DefaultMutableTreeNode dragOverTreeNode = null;
+    private Set<Class> dirtyPanelSet = new HashSet();
+    private StateUpdates stateUpdates = null;
+
     // A Map from the Cell to its node in the tree. All access to this Map must
     // happen in the AWT Event Thread to insure synchronized access.
-    private Map<Cell, DefaultMutableTreeNode> cellNodes;
+    private Map<Cell, DefaultMutableTreeNode> cellNodes = null;
+
     // The two standard panels for all Cells: Basic and Position
-    private PropertiesFactorySPI basicPropertiesFactory;
-    private PropertiesFactorySPI positionPropertiesFactory;
+    private PropertiesFactorySPI basicPropertiesFactory = null;
+    private PropertiesFactorySPI positionPropertiesFactory = null;
 
     /** Constructor */
     public CellPropertiesJFrame() {
-        factoryList = new LinkedList<PropertiesFactorySPI>();
+        factoryList = new LinkedList();
         stateUpdates = new StateUpdates();
 
         // Initialize the GUI components
@@ -132,8 +136,7 @@ public class CellPropertiesJFrame
         // selections on the list to display the appropriate panel
         listModel = new DefaultListModel();
         capabilityList.setModel(listModel);
-        capabilityList.addListSelectionListener(
-                new CapabilityListSelectionListener());
+        capabilityList.addListSelectionListener(new CapabilityListSelectionListener());
 
         // Create and add a basic panel for all cells as a special case.
         basicPropertiesFactory = new BasicJPanel();
@@ -145,7 +148,7 @@ public class CellPropertiesJFrame
 
         // Set up all of the stuff we need to the tree to display Cells
         treeRoot = new DefaultMutableTreeNode(BUNDLE.getString("World_Root"));
-        cellNodes = new HashMap<Cell, DefaultMutableTreeNode>();
+        cellNodes = new HashMap();
         ((DefaultTreeModel) cellHierarchyTree.getModel()).setRoot(treeRoot);
         cellHierarchyTree.setCellRenderer(new CellTreeRenderer());
 
@@ -153,11 +156,8 @@ public class CellPropertiesJFrame
         // listener gets added when the dialog is made visible. We need to do
         // all of this in the AWT even thread.
         cellListener = new CellStatusChangeListener() {
-
-            public void cellStatusChanged(
-                    final Cell cell, final CellStatus status) {
+            public void cellStatusChanged(final Cell cell, final CellStatus status) {
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         DefaultMutableTreeNode node = cellNodes.get(cell);
                         if (status == CellStatus.DISK) {
@@ -184,7 +184,8 @@ public class CellPropertiesJFrame
                                         node);
                                 cellNodes.remove(cell);
                             }
-                        } else if (status == CellStatus.RENDERING) {
+                        }
+                        else if (status == CellStatus.RENDERING) {
                             // If the node does not exist, then create it
                             if (node == null) {
                                 LOGGER.info("CELL IS RENDERING CREATING NODE " +
@@ -199,7 +200,6 @@ public class CellPropertiesJFrame
 
         // Listen to selections on the tree and change the selected Cell.
         treeListener = new TreeSelectionListener() {
-
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode selectedNode =
                         (DefaultMutableTreeNode) cellHierarchyTree.getLastSelectedPathComponent();
@@ -207,10 +207,12 @@ public class CellPropertiesJFrame
                     Object userObject = selectedNode.getUserObject();
                     if (userObject instanceof Cell) {
                         setSelectedCell((Cell) userObject);
-                    } else {
+                    }
+                    else {
                         setSelectedCell(null);
                     }
-                } else {
+                }
+                else {
                     setSelectedCell(null);
                 }
             }
@@ -230,10 +232,9 @@ public class CellPropertiesJFrame
         // Listen for when the window is closing. If so, see if there are any
         // changes to the properties and ask if the user wants to apply
         addWindowListener(new WindowAdapter() {
-
             @Override
             public void windowClosing(WindowEvent e) {
-                if (!dirtyPanelSet.isEmpty()) {
+                if (dirtyPanelSet.isEmpty() == false) {
                     int result = JOptionPane.showConfirmDialog(
                             CellPropertiesJFrame.this,
                             BUNDLE.getString("Apply_Close_Message"),
@@ -262,16 +263,15 @@ public class CellPropertiesJFrame
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
-        if (visible) {
+        if (visible == true) {
             // Add the listener for the JTree for Cell status changes
-            CellManager.getCellManager().addCellStatusChangeListener(
-                    cellListener);
+            CellManager.getCellManager().addCellStatusChangeListener(cellListener);
             updateTreeGUI();
             updateGUI();
-        } else {
+        }
+        else {
             // Remove the listener for the JTree for Cell status changes
-            CellManager.getCellManager().removeCellStatusChangeListener(
-                    cellListener);
+            CellManager.getCellManager().removeCellStatusChangeListener(cellListener);
         }
     }
 
@@ -286,7 +286,7 @@ public class CellPropertiesJFrame
         // Properties. If so, then prompt the user whether these should be
         // applies first. If so, then apply, otherwise restore the values so
         // the GUI is in a clean state.
-        if (!dirtyPanelSet.isEmpty()) {
+        if (dirtyPanelSet.isEmpty() == false) {
             int result = JOptionPane.showConfirmDialog(this,
                     BUNDLE.getString("Apply_Switch_Message"),
                     BUNDLE.getString("Apply_Title"),
@@ -294,7 +294,8 @@ public class CellPropertiesJFrame
                     JOptionPane.QUESTION_MESSAGE);
             if (result == JOptionPane.YES_OPTION) {
                 applyValues();
-            } else {
+            }
+            else {
                 restoreValues();
             }
         }
@@ -333,7 +334,7 @@ public class CellPropertiesJFrame
 
         // Update the panel set based upon the elements in the server state
         updatePanelSet();
-        if (!isVisible()) {
+        if (isVisible() == true) {
             updateGUI();
         }
 
@@ -344,7 +345,8 @@ public class CellPropertiesJFrame
         // keep the same tab selected.
         if (listModel.getSize() > oldSelectedIndex && oldSelectedIndex != -1) {
             capabilityList.setSelectedIndex(oldSelectedIndex);
-        } else {
+        }
+        else {
             // Set the initial selected capability to "Basic"
             capabilityList.setSelectedIndex(0);
         }
@@ -395,8 +397,7 @@ public class CellPropertiesJFrame
     /**
      * @inheritDoc()
      */
-    public void addToUpdateList(
-            CellComponentServerState cellComponentServerState) {
+    public void addToUpdateList(CellComponentServerState cellComponentServerState) {
         stateUpdates.cellComponentServerStateSet.add(cellComponentServerState);
     }
 
@@ -418,18 +419,19 @@ public class CellPropertiesJFrame
      * @inheritDoc()
      */
     public void setPanelDirty(Class clazz, boolean isDirty) {
+        
         // Either add or remove the Class depending upon whether it is dirty
-        if (!isDirty) {
+        if (isDirty == true) {
             dirtyPanelSet.add(clazz);
-        } else {
+        }
+        else {
             dirtyPanelSet.remove(clazz);
         }
 
         // Enable/disable the Ok/Apply buttons depending upon whether the set
         // of dirty panels is empty or not
-        boolean enabled = !dirtyPanelSet.isEmpty();
-        applyButton.setEnabled(enabled);
-        restoreButton.setEnabled(enabled);
+        applyButton.setEnabled(dirtyPanelSet.isEmpty() == false);
+        restoreButton.setEnabled(dirtyPanelSet.isEmpty() == false);
     }
 
     /** This method is called from within the constructor to
@@ -625,16 +627,14 @@ public class CellPropertiesJFrame
     private void addCapabilityButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCapabilityButtonActionPerformed
         // Create a new AddComponentDialog and display. Wait for the dialog
         // to close
-        AddComponentDialog dialog =
-                new AddComponentDialog(this, true, selectedCell);
+        AddComponentDialog dialog = new AddComponentDialog(this, true, selectedCell);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
         // If the OK button was pressed on the dialog and we can fetch a valid
         // cell component factory, then try to add it on the server.
         CellComponentFactorySPI spi = dialog.getCellComponentFactorySPI();
-        if ((dialog.getReturnStatus() == AddComponentDialog.RET_OK) &&
-                (spi != null)) {
+        if (dialog.getReturnStatus() == AddComponentDialog.RET_OK && spi != null) {
             addComponent(spi);
         }
     }//GEN-LAST:event_addCapabilityButtonActionPerformed
@@ -670,7 +670,7 @@ public class CellPropertiesJFrame
 
         public void valueChanged(ListSelectionEvent e) {
             // Check to see if the value is still changing and if so, ignore
-            if (e.getValueIsAdjusting()) {
+            if (e.getValueIsAdjusting() == true) {
                 return;
             }
 
@@ -697,7 +697,8 @@ public class CellPropertiesJFrame
             // property sheet is non-null.
             if (cellProperties == null) {
                 removeCapabilityButton.setEnabled(index >= 2);
-            } else {
+            }
+            else {
                 removeCapabilityButton.setEnabled(index >= 3);
             }
 
@@ -718,7 +719,7 @@ public class CellPropertiesJFrame
             // Fetch the Class for the factory and see if it is either in the
             // cell or cell component dirty list
             Class clazz = factory.getClass();
-            if (dirtyPanelSet.contains(clazz)) {
+            if (dirtyPanelSet.contains(clazz) == true) {
 //                logger.warning("Dirty set contains " + clazz.getName());
                 factory.apply();
             }
@@ -889,8 +890,7 @@ public class CellPropertiesJFrame
         factoryList.add(positionPropertiesFactory);
 
         // If the cell properties panel exists, add an entry for it
-        if ((cellProperties != null) &&
-                (cellProperties.getPropertiesJPanel() != null)) {
+        if (cellProperties != null && cellProperties.getPropertiesJPanel() != null) {
             listModel.addElement(cellProperties.getDisplayName());
             factoryList.add(cellProperties);
             cellProperties.setCellPropertiesEditor(this);
@@ -921,11 +921,9 @@ public class CellPropertiesJFrame
      * Adds an individual component panel to the set of panels, given the
      * cell component factory and the component server state.
      */
-    private void addComponentToPanelSet(
-            CellComponentFactorySPI spi, CellComponentServerState state) {
-        // FircellServerStatest, since this is a new panel since the server
-        // state was fetched, add the component server state to the cell server
-        // state.
+    private void addComponentToPanelSet(CellComponentFactorySPI spi, CellComponentServerState state) {
+        // Since this is a new panel since the server state was fetched, add
+        // the component server state to the cell server state.
         Class clazz = state.getClass();
         selectedCellServerState.addComponentServerState(state);
 
@@ -977,7 +975,8 @@ public class CellPropertiesJFrame
             CellServerComponentResponseMessage cscrm =
                     (CellServerComponentResponseMessage) response;
             addComponentToPanelSet(spi, cscrm.getCellComponentServerState());
-        } else if (response instanceof ErrorMessage) {
+        }
+        else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog
             LOGGER.log(Level.WARNING, "Unable to add component to the server",
                     ((ErrorMessage) response).getErrorCause());
@@ -1051,13 +1050,12 @@ public class CellPropertiesJFrame
      */
     private class StateUpdates {
 
-        public CellServerState cellServerState;
-        public Set<CellComponentServerState> cellComponentServerStateSet;
+        public CellServerState cellServerState = null;
+        public Set<CellComponentServerState> cellComponentServerStateSet = null;
 
         /** Default constructor */
         public StateUpdates() {
-            cellComponentServerStateSet =
-                    new HashSet<CellComponentServerState>();
+            cellComponentServerStateSet = new HashSet();
         }
 
         /**
@@ -1097,7 +1095,8 @@ public class CellPropertiesJFrame
             DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) value;
             if (treeNode == dragOverTreeNode) {
                 setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            } else {
+            }
+            else {
                 setBorder(null);
             }
 
@@ -1126,13 +1125,12 @@ public class CellPropertiesJFrame
             // Fetch the location over which we are dragging and find
             // the tree node corresponding to that position.
             Point location = dtde.getLocation();
-            TreePath path = cellHierarchyTree.getPathForLocation(
-                    location.x, location.y);
+            TreePath path = cellHierarchyTree.getPathForLocation(location.x, location.y);
             if (path == null) {
                 dragOverTreeNode = null;
-            } else {
-                dragOverTreeNode =
-                        (DefaultMutableTreeNode) path.getLastPathComponent();
+            }
+            else {
+                dragOverTreeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
             }
             cellHierarchyTree.repaint();
         }
@@ -1181,9 +1179,8 @@ public class CellPropertiesJFrame
 
             // Check to make sure the cellID String is properly formed. If not,
             // then log an error and return
-            if ((cellIDString == null) || !cellIDString.startsWith("CellID@")) {
-                LOGGER.warning(
-                        "Invalid Cell ID from drag and drop " + cellIDString);
+            if (cellIDString == null || cellIDString.startsWith("CellID@") == false) {
+                LOGGER.warning("Invalid Cell ID from drag and drop " + cellIDString);
                 return;
             }
 
@@ -1200,12 +1197,10 @@ public class CellPropertiesJFrame
 
             // Fetch the client-side Cell cache and find the Cell with the
             // dropped CellID
-            WonderlandSession session =
-                    LoginManager.getPrimary().getPrimarySession();
+            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
             CellCache cache = ClientContext.getCellCache(session);
             if (cache == null) {
-                LOGGER.warning(
-                        "Unable to find Cell cache for session " + session);
+                LOGGER.warning("Unable to find Cell cache for session " + session);
                 return;
             }
             Cell draggedCell = cache.getCell(cellID);
@@ -1225,7 +1220,7 @@ public class CellPropertiesJFrame
             if (userObject instanceof Cell) {
                 parentCellID = ((Cell) userObject).getCellID();
                 newParent = (Cell) userObject;
-                if (draggedCell.equals(newParent)) {
+                if (draggedCell.equals(newParent) == true) {
                     // User dropped cell on itself, return !
                     return;
                 }
@@ -1326,7 +1321,6 @@ public class CellPropertiesJFrame
         // This is used in the drag and drop mechanism to figure out which
         // Cell is being dragged.
         DefaultMutableTreeNode ret = new DefaultMutableTreeNode(cell) {
-
             @Override
             public String toString() {
                 Cell cell = (Cell) getUserObject();
@@ -1351,6 +1345,7 @@ public class CellPropertiesJFrame
             createJTreeNode(child);
         }
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCapabilityButton;
     private javax.swing.JButton applyButton;

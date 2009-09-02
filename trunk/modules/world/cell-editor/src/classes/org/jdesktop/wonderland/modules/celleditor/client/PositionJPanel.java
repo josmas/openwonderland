@@ -50,28 +50,30 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
 
     private static Logger logger = Logger.getLogger(PositionJPanel.class.getName());
+
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
-    private CellPropertiesEditor editor;
-    private MovableComponent movableComponent;
+
+    private CellPropertiesEditor editor = null;
+    private MovableComponent movableComponent = null;
 
     /* Various listener on the Cell and Swing JSpinners */
-    private ComponentChangeListener componentListener;
-    private TransformChangeListener transformListener;
-    private ChangeListener translationListener;
-    private ChangeListener rotationListener;
-    private ChangeListener scaleListener;
+    private ComponentChangeListener componentListener = null;
+    private TransformChangeListener transformListener = null;
+    private ChangeListener translationListener = null;
+    private ChangeListener rotationListener = null;
+    private ChangeListener scaleListener = null;
 
     /* Models for the Swing JSpinners */
-    private SpinnerNumberModel xTranslationModel;
-    private SpinnerNumberModel yTranslationModel;
-    private SpinnerNumberModel zTranslationModel;
-    private SpinnerNumberModel xScaleModel;
-    private SpinnerNumberModel yScaleModel;
-    private SpinnerNumberModel zScaleModel;
-    private SpinnerNumberModel xRotationModel;
-    private SpinnerNumberModel yRotationModel;
-    private SpinnerNumberModel zRotationModel;
+    private SpinnerNumberModel xTranslationModel = null;
+    private SpinnerNumberModel yTranslationModel = null;
+    private SpinnerNumberModel zTranslationModel = null;
+    private SpinnerNumberModel xScaleModel = null;
+    private SpinnerNumberModel yScaleModel = null;
+    private SpinnerNumberModel zScaleModel = null;
+    private SpinnerNumberModel xRotationModel = null;
+    private SpinnerNumberModel yRotationModel = null;
+    private SpinnerNumberModel zRotationModel = null;
 
     /*
      * This boolean indicates whether the values of the spinners are being
@@ -79,16 +81,16 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
      * received from the Cell. In such a case, we do not want to generate a
      * new message to the movable component
      */
-    private boolean setLocal;
+    private boolean setLocal = false;
 
     /*
      * The original values when the properties sheet is first set to a Cell.
      * These original values will be used when the cancel() method is invoked,
      * to revert any changes.
      */
-    private Vector3f originalTranslation;
-    private Quaternion originalRotation;
-    private Vector3f originalScaling;
+    private Vector3f originalTranslation = null;
+    private Quaternion originalRotation = null;
+    private Vector3f originalScaling = null;
 
     /**
      * Default constructor, creates the GUI and sets up the JSpinners with the
@@ -148,9 +150,8 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         // 'setLocal' is set always in the AWT Event Thread, the same thread
         // as this listener.
         translationListener = new ChangeListener() {
-
             public void stateChanged(ChangeEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     updateTranslation();
                 }
             }
@@ -162,9 +163,8 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         // Listen for changes to the rotation values and update the cell as a
         // result. See the comments above for 'translationListener' too.
         rotationListener = new ChangeListener() {
-
             public void stateChanged(ChangeEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     updateRotation();
                 }
             }
@@ -176,9 +176,8 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         // Listen for changes to the scale values and update the cell as a
         // result. See the comments above for 'translationListener' too.
         scaleListener = new ChangeListener() {
-
             public void stateChanged(ChangeEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     updateScale();
                 }
             }
@@ -190,11 +189,8 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         // Create a listener for changes in the components on a Cell. This is
         // used to fetch the movable component if it is added.
         componentListener = new ComponentChangeListener() {
-
-            public void componentChanged(
-                    Cell cell, ChangeType type, CellComponent component) {
-                if ((type == ChangeType.ADDED) &&
-                        (component instanceof MovableComponent)) {
+            public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
+                if (type == ChangeType.ADDED && component instanceof MovableComponent) {
                     movableComponent = (MovableComponent) component;
                     translationXTF.setEnabled(true);
                     translationYTF.setEnabled(true);
@@ -213,10 +209,8 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         // being set programmatically so they do not spawn extra messages to the
         // movable component.
         transformListener = new TransformChangeListener() {
-
             public void transformChanged(Cell cell, ChangeSource source) {
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         try {
                             setLocalChanges(true);
@@ -431,7 +425,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         y = (float) Math.toRadians(y);
         z = (float) Math.toRadians(z);
 
-        Quaternion newRotation = new Quaternion(new float[]{x, y, z});
+        Quaternion newRotation = new Quaternion(new float[] { x, y, z });
         if (movableComponent != null) {
             Cell cell = editor.getCell();
             CellTransform cellTransform = cell.getLocalTransform();
@@ -462,6 +456,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
      * always regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

@@ -51,10 +51,12 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
     private static final Logger LOGGER =
             Logger.getLogger(PaletteClientPlugin.class.getName());
+
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
-    private JMenuItem editorMI;
-    private WeakReference<CellPropertiesJFrame> cellPropertiesFrameRef;
+
+    private JMenuItem editorMI = null;
+    private WeakReference<CellPropertiesJFrame> cellPropertiesFrameRef = null;
 
     @Override
     public void initialize(ServerSessionManager loginInfo) {
@@ -63,17 +65,15 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // becomes primary.
         editorMI = new JMenuItem(BUNDLE.getString("Cell_Editor"));
         editorMI.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 CellPropertiesJFrame frame = getCellPropertiesJFrame();
-                if (!frame.isVisible()) {
+                if (frame.isVisible() == false) {
                     frame.setSelectedCell(null);
                     frame.setSize(800, 650);
                     frame.setVisible(true);
                 }
             }
         });
-
 
         super.initialize(loginInfo);
     }
@@ -97,10 +97,10 @@ public class PaletteClientPlugin extends BaseClientPlugin
      * @inheritDoc()
      */
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-
-        return new ContextMenuItem[]{
+        return new ContextMenuItem[] {
                     new SimpleContextMenuItem(BUNDLE.getString("Properties..."),
-                    null, new PropertiesListener()),};
+                    null, new PropertiesListener())
+        };
     }
 
     /**
@@ -108,14 +108,12 @@ public class PaletteClientPlugin extends BaseClientPlugin
      * necessary
      */
     private CellPropertiesJFrame getCellPropertiesJFrame() {
-        if ((cellPropertiesFrameRef == null) ||
-                (cellPropertiesFrameRef.get() == null)) {
-            CellPropertiesJFrame cellPropertiesFrame =
-                    new CellPropertiesJFrame();
-            cellPropertiesFrameRef = new WeakReference<CellPropertiesJFrame>(
-                    cellPropertiesFrame);
+        if (cellPropertiesFrameRef == null || cellPropertiesFrameRef.get() == null) {
+            CellPropertiesJFrame cellPropertiesFrame = new CellPropertiesJFrame();
+            cellPropertiesFrameRef = new WeakReference(cellPropertiesFrame);
             return cellPropertiesFrame;
-        } else {
+        }
+        else {
             return cellPropertiesFrameRef.get();
         }
     }
