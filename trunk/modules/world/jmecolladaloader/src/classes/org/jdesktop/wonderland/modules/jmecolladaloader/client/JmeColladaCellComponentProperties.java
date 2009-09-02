@@ -15,9 +15,9 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -31,12 +31,16 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeCol
 /**
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(JmeColladaCellComponentServerState.class)
-public class JmeColladaCellComponentProperties extends JPanel implements PropertiesFactorySPI {
+public class JmeColladaCellComponentProperties
+        extends JPanel implements PropertiesFactorySPI {
 
-    private CellPropertiesEditor editor = null;
-    private String originalInfo = null;
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/jmecolladaloader/client/Bundle");
+    private CellPropertiesEditor editor;
+    private String originalInfo;
 
     /** Creates new form SampleComponentProperties */
     public JmeColladaCellComponentProperties() {
@@ -51,7 +55,7 @@ public class JmeColladaCellComponentProperties extends JPanel implements Propert
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Model Info (Collada)";
+        return BUNDLE.getString("Model_Info_Collada");
     }
 
     /**
@@ -73,10 +77,11 @@ public class JmeColladaCellComponentProperties extends JPanel implements Propert
      */
     public void open() {
         CellServerState state = editor.getCellServerState();
-        CellComponentServerState compState =
-                state.getComponentServerState(JmeColladaCellComponentServerState.class);
+        CellComponentServerState compState = state.getComponentServerState(
+                JmeColladaCellComponentServerState.class);
         if (state != null) {
-            originalInfo = ((JmeColladaCellComponentServerState) compState).getModel();
+            originalInfo =
+                    ((JmeColladaCellComponentServerState) compState).getModel();
             urlTF.setText(originalInfo);
         }
     }
@@ -94,8 +99,8 @@ public class JmeColladaCellComponentProperties extends JPanel implements Propert
     public void apply() {
         // Fetch the latest from the info text field and set it.
         CellServerState state = editor.getCellServerState();
-        CellComponentServerState compState =
-                state.getComponentServerState(JmeColladaCellComponentServerState.class);
+        CellComponentServerState compState = state.getComponentServerState(
+                JmeColladaCellComponentServerState.class);
         // Model is read only
 //        ((JmeColladaCellComponentServerState)compState).setModel(urlTF.getText());
         editor.addToUpdateList(compState);
@@ -114,6 +119,7 @@ public class JmeColladaCellComponentProperties extends JPanel implements Propert
      * or clean indications to the cell properties editor.
      */
     class InfoTextFieldListener implements DocumentListener {
+
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -127,12 +133,10 @@ public class JmeColladaCellComponentProperties extends JPanel implements Propert
         }
 
         private void checkDirty() {
-            String name = urlTF.getText();
-            if (editor != null && name.equals(originalInfo) == false) {
-                editor.setPanelDirty(JmeColladaCellComponentProperties.class, true);
-            }
-            else if (editor != null) {
-                editor.setPanelDirty(JmeColladaCellComponentProperties.class, false);
+            if (editor != null) {
+                String name = urlTF.getText();
+                editor.setPanelDirty(JmeColladaCellComponentProperties.class,
+                        !name.equals(originalInfo));
             }
         }
     }
@@ -174,7 +178,6 @@ public class JmeColladaCellComponentProperties extends JPanel implements Propert
                 .addContainerGap(252, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField urlTF;
