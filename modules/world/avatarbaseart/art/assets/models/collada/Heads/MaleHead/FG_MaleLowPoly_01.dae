@@ -2,7 +2,7 @@
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
   <asset>
     <contributor>
-      <author>ckendall</author>
+      <author>IMIUser</author>
       <authoring_tool>COLLADA Maya2009</authoring_tool>
       <comments>ColladaMaya export options: bakeTransforms=1;exportPolygonMeshes=1;bakeLighting=0;isSampling=0;
 curveConstrainSampling=0;removeStaticCurves=1;exportCameraAsLookat=0;
@@ -10,12 +10,14 @@ exportLights=1;exportCameras=1;exportJointsAndSkin=1;
 exportAnimations=1;exportTriangles=1;exportInvisibleNodes=0;
 exportNormals=1;exportTexCoords=1;
 exportVertexColors=1;exportVertexColorsAnimation=0;exportTangents=0;
-exportTexTangents=0;exportConstraints=1;exportPhysics=1;exportXRefs=1;
-dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
-      <source_data>file:///Users/ckendall/Documents/IMI/Avatar/SVN/Heads/MaleHead/FG_Male01LowPoly.mb</source_data>
+exportTexTangents=0;
+exportConstraints=1;exportPhysics=1;
+exportXRefs=1;dereferenceXRefs=1;
+cameraXFov=0;cameraYFov=1</comments>
+      <source_data>file:///Users/IMIUser/Desktop/AlBackup/ZG/maya/Wonderland/scenes/FG_Male01LowPoly.mb</source_data>
     </contributor>
-    <created>2009-04-17T22:28:20Z</created>
-    <modified>2009-04-17T22:28:20Z</modified>
+    <created>2009-08-21T18:28:58</created>
+    <modified>2009-08-21T18:28:58</modified>
     <unit name="centimeter" meter="0.01"/>
     <up_axis>Y_UP</up_axis>
   </asset>
@@ -31,6 +33,12 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
     </material>
     <material id="blinn5" name="blinn5">
       <instance_effect url="#blinn5-fx"/>
+    </material>
+    <material id="pasted__HairBase" name="pasted__HairBase">
+      <instance_effect url="#pasted__HairBase-fx"/>
+    </material>
+    <material id="pasted__HairBase1" name="pasted__HairBase1">
+      <instance_effect url="#pasted__HairBase1-fx"/>
     </material>
   </library_materials>
   <library_effects>
@@ -289,19 +297,148 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
         </technique>
       </profile_COMMON>
     </effect>
+    <effect id="pasted__HairBase-fx">
+      <profile_COMMON>
+        <newparam sid="pasted__file2-surface">
+          <surface type="2D">
+            <init_from>pasted__file2</init_from>
+            <format>A8R8G8B8</format>
+          </surface>
+        </newparam>
+        <newparam sid="pasted__file2-sampler">
+          <sampler2D>
+            <source>pasted__file2-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="pasted__file2-sampler" texcoord="CHANNEL2">
+                <extra>
+                  <technique profile="MAYA">
+                    <blend_mode>NONE</blend_mode>
+                  </technique>
+                </extra>
+              </texture>
+            </diffuse>
+            <specular>
+              <color>0.0625 0.0625 0.0625 1</color>
+            </specular>
+            <shininess>
+              <float>0.09998</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <reflectivity>
+              <float>0.5</float>
+            </reflectivity>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+          <extra>
+            <technique profile="COLLADA">
+              <bump>
+                <texture texture="pasted__file3-sampler" texcoord="CHANNEL1">
+                  <extra>
+                    <technique profile="MAX3D">
+                      <amount>1</amount>
+                      <bumpInterp>1</bumpInterp>
+                    </technique>
+                    <technique profile="MAYA">
+                      <blend_mode>NONE</blend_mode>
+                    </technique>
+                  </extra>
+                </texture>
+              </bump>
+            </technique>
+          </extra>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="pasted__HairBase1-fx">
+      <profile_COMMON>
+        <newparam sid="pasted__file2-surface">
+          <surface type="2D">
+            <init_from>pasted__file2</init_from>
+            <format>A8R8G8B8</format>
+          </surface>
+        </newparam>
+        <newparam sid="pasted__file2-sampler">
+          <sampler2D>
+            <source>pasted__file2-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="pasted__file2-sampler" texcoord="CHANNEL2">
+                <extra>
+                  <technique profile="MAYA">
+                    <blend_mode>NONE</blend_mode>
+                  </technique>
+                </extra>
+              </texture>
+            </diffuse>
+            <specular>
+              <color>0.0625 0.0625 0.0625 1</color>
+            </specular>
+            <shininess>
+              <float>0.09998</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <reflectivity>
+              <float>0.5</float>
+            </reflectivity>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+          <extra>
+            <technique profile="COLLADA">
+              <bump>
+                <texture texture="pasted__file3-sampler" texcoord="CHANNEL1">
+                  <extra>
+                    <technique profile="MAX3D">
+                      <amount>1</amount>
+                      <bumpInterp>1</bumpInterp>
+                    </technique>
+                    <technique profile="MAYA">
+                      <blend_mode>NONE</blend_mode>
+                    </technique>
+                  </extra>
+                </texture>
+              </bump>
+            </technique>
+          </extra>
+        </technique>
+      </profile_COMMON>
+    </effect>
   </library_effects>
   <library_images>
-    <image id="file15" name="file15">
-      <init_from>../../../scenes/DefaultSkeletons/Male/Teeth.png</init_from>
-      <extra>
-        <technique profile="MAYA">
-          <dgnode_type>kFile</dgnode_type>
-          <image_sequence>0</image_sequence>
-        </technique>
-      </extra>
-    </image>
     <image id="file17" name="file17">
-      <init_from>./EyeShadow.png</init_from>
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/SVN/Heads/MaleHead/EyeShadow.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -310,7 +447,7 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="skin_loFile" name="skin_loFile">
-      <init_from>./FG_MaleHead01_D.png</init_from>
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/SVN/Heads/MaleHead/FG_MaleHead01_D.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -319,7 +456,7 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="file16" name="file16">
-      <init_from>./FG_MaleHead01_N.png</init_from>
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/SVN/Heads/MaleHead/FG_MaleHead01_N.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -328,7 +465,34 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="file14" name="file14">
-      <init_from>./New_eye_hi.png</init_from>
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/SVN/Heads/MaleHead/New_eye_hi.png</init_from>
+      <extra>
+        <technique profile="MAYA">
+          <dgnode_type>kFile</dgnode_type>
+          <image_sequence>0</image_sequence>
+        </technique>
+      </extra>
+    </image>
+    <image id="pasted__file2" name="pasted__file2">
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/TexturesShared/Hair/HairBaseBrown.png</init_from>
+      <extra>
+        <technique profile="MAYA">
+          <dgnode_type>kFile</dgnode_type>
+          <image_sequence>0</image_sequence>
+        </technique>
+      </extra>
+    </image>
+    <image id="pasted__file3" name="pasted__file3">
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/TexturesShared/Hair/HairBaseBrown_NRM.png</init_from>
+      <extra>
+        <technique profile="MAYA">
+          <dgnode_type>kFile</dgnode_type>
+          <image_sequence>0</image_sequence>
+        </technique>
+      </extra>
+    </image>
+    <image id="file15" name="file15">
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/scenes/DefaultSkeletons/Male/Teeth.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -872,270 +1036,105 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
           <node id="leftUpLegRoll" name="leftUpLegRoll" sid="leftUpLegRoll" type="JOINT">
             <matrix sid="transform">1 0 0 0 0 1 0 0.0354838 0 0 1 0 0 0 0 1</matrix>
             <node id="leftLeg" name="leftLeg" sid="leftLeg" type="JOINT">
-              <matrix sid="transform">-0.0623882 0.146085 0.987303 0 -0.0240408 0.988723 -0.147814 0.451146 -0.997762 -0.0329574 -0.0581727 0 0 0 0 1</matrix>
+              <matrix sid="transform">-0.0623882 0.146083 0.987303 0 -0.0240408 0.988723 -0.147812 0.451146 -0.997762 -0.0329573 -0.0581727 0 0 0 0 1</matrix>
               <node id="leftLegRoll" name="leftLegRoll" sid="leftLegRoll" type="JOINT">
                 <matrix sid="transform">1 0 0 0 0 1 0 0.270278 0 0 1 0 0 0 0 1</matrix>
                 <node id="leftFoot" name="leftFoot" sid="leftFoot" type="JOINT">
-                  <matrix sid="transform">-0.976148 0.178665 0.123346 0 -0.0317781 0.444435 -0.895247 0.157319 -0.214769 -0.877813 -0.428157 0 0 0 0 1</matrix>
+                  <matrix sid="transform">-0.976148 0.178665 0.123346 0 -0.0317779 0.444436 -0.895247 0.157319 -0.214769 -0.877813 -0.428158 0 0 0 0 1</matrix>
                   <node id="leftFootBall" name="leftFootBall" sid="leftFootBall" type="JOINT">
                     <matrix sid="transform">1 0 0 0 0 1 0 0.142812 0 0 1 0 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>0</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
-                  <extra>
-                    <technique profile="MAYA">
-                      <segment_scale_compensate>0</segment_scale_compensate>
-                    </technique>
-                  </extra>
                 </node>
-                <extra>
-                  <technique profile="MAYA">
-                    <segment_scale_compensate>0</segment_scale_compensate>
-                  </technique>
-                </extra>
               </node>
-              <extra>
-                <technique profile="MAYA">
-                  <segment_scale_compensate>0</segment_scale_compensate>
-                </technique>
-              </extra>
             </node>
-            <extra>
-              <technique profile="MAYA">
-                <segment_scale_compensate>0</segment_scale_compensate>
-              </technique>
-            </extra>
           </node>
-          <extra>
-            <technique profile="MAYA">
-              <segment_scale_compensate>0</segment_scale_compensate>
-            </technique>
-          </extra>
         </node>
         <node id="Spine" name="Spine" sid="Spine" type="JOINT">
           <matrix sid="transform">1 0 0 0 0 0.936894 0.349613 0.0990201 0 -0.349613 0.936894 -0.0131686 0 0 0 1</matrix>
           <node id="Spine1" name="Spine1" sid="Spine1" type="JOINT">
-            <matrix sid="transform">1 0 0 0 0 0.946557 -0.322536 0.217933 0 0.322536 0.946557 0 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 0 0 0.946557 -0.322535 0.217933 0 0.322535 0.946557 0 0 0 0 1</matrix>
             <node id="Spine2" name="Spine2" sid="Spine2" type="JOINT">
-              <matrix sid="transform">-0.643972 0.764387 -0.0318379 0 -0.0219931 0.0231019 0.999491 0.166685 0.764733 0.644344 0.00193421 0 0 0 0 1</matrix>
+              <matrix sid="transform">-0.643972 0.764387 -0.0318379 0 -0.0219931 0.0231019 0.999491 0.166685 0.764733 0.644344 0.00193425 0 0 0 0 1</matrix>
               <node id="leftShoulder" name="leftShoulder" sid="leftShoulder" type="JOINT">
-                <matrix sid="transform">0.474834 -0.811772 -0.339939 0.0504089 0.879313 0.421528 0.221637 0.108747 -0.0366245 -0.404154 0.913958 0.0024922 0 0 0 1</matrix>
+                <matrix sid="transform">0.474834 -0.811772 -0.33994 0.0504089 0.879313 0.421528 0.221637 0.108747 -0.0366245 -0.404154 0.913958 0.0024922 0 0 0 1</matrix>
                 <node id="leftArm" name="leftArm" sid="leftArm" type="JOINT">
                   <matrix sid="transform">0.957882 0.286305 0.0221841 0.028769 -0.264876 0.910739 -0.316853 0.208466 -0.11092 0.297631 0.948215 0.0281198 0 0 0 1</matrix>
                   <node id="leftArmRoll" name="leftArmRoll" sid="leftArmRoll" type="JOINT">
                     <matrix sid="transform">1 0 0 0 0 0.999982 -0.00607722 0.134072 0 0.00607722 0.999982 0 0 0 0 1</matrix>
                     <node id="leftForeArm" name="leftForeArm" sid="leftForeArm" type="JOINT">
-                      <matrix sid="transform">0.917267 0.396651 0.0359076 0 -0.397262 0.917632 0.0115771 0.116725 -0.0283579 -0.0248841 0.999288 0 0 0 0 1</matrix>
+                      <matrix sid="transform">0.917267 0.396651 0.0359075 0 -0.397262 0.917632 0.0115773 0.116725 -0.0283577 -0.0248841 0.999288 0 0 0 0 1</matrix>
                       <node id="leftForeArmRoll" name="leftForeArmRoll" sid="leftForeArmRoll" type="JOINT">
-                        <matrix sid="transform">0.999844 0.017607 0.00116228 0 -0.0175735 0.999548 -0.0243731 0.091423 -0.00159089 0.0243489 0.999702 0 0 0 0 1</matrix>
+                        <matrix sid="transform">0.999844 0.017607 0.00116215 0 -0.0175735 0.999548 -0.0243731 0.091423 -0.00159076 0.0243489 0.999702 0 0 0 0 1</matrix>
                         <node id="leftHand" name="leftHand" sid="leftHand" type="JOINT">
-                          <matrix sid="transform">0.603164 0.785194 0.140231 0 -0.795885 0.604059 0.0409712 0.154105 -0.0525377 -0.13632 0.989271 0 0 0 0 1</matrix>
+                          <matrix sid="transform">0.603163 0.785194 0.140232 0 -0.795885 0.604059 0.0409713 0.154105 -0.0525378 -0.136321 0.989271 0 0 0 0 1</matrix>
                           <node id="leftHandThumb1" name="leftHandThumb1" sid="leftHandThumb1" type="JOINT">
-                            <matrix sid="transform">0.99903 0.0429406 0.00977515 0 -0.0433532 0.99796 0.0468686 0.0570735 -0.00774264 -0.0472469 0.998853 0 0 0 0 1</matrix>
+                            <matrix sid="transform">0.99903 0.0429406 0.00977514 0 -0.0433532 0.99796 0.0468684 0.0570735 -0.00774263 -0.0472467 0.998853 0 0 0 0 1</matrix>
                             <node id="leftHandThumb2" name="leftHandThumb2" sid="leftHandThumb2" type="JOINT">
-                              <matrix sid="transform">0.995087 -0.0938227 -0.0315987 0 0.0965313 0.990361 0.0993292 0.0324522 0.0219748 -0.101891 0.994553 0 0 0 0 1</matrix>
+                              <matrix sid="transform">0.995087 -0.0938228 -0.0315987 0 0.0965314 0.990361 0.0993292 0.0324522 0.0219748 -0.101892 0.994553 0 0 0 0 1</matrix>
                               <node id="leftHandThumb3" name="leftHandThumb3" sid="leftHandThumb3" type="JOINT">
-                                <matrix sid="transform">0.999944 0.00998078 0.00356634 0 -0.0100445 0.999782 0.0183153 0.0248349 -0.00338276 -0.0183501 0.999826 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999944 0.0099808 0.00356635 0 -0.0100445 0.999782 0.0183152 0.0248349 -0.00338277 -0.01835 0.999826 0 0 0 0 1</matrix>
                                 <node id="leftHandThumb4" name="leftHandThumb4" sid="leftHandThumb4" type="JOINT">
-                                  <matrix sid="transform">0.061978 0.000606533 0.998077 0 0.939853 -0.33659 -0.0581579 0.0193938 0.335908 0.941651 -0.0214313 0 0 0 0 1</matrix>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
+                                  <matrix sid="transform">0.061978 0.00060652 0.998077 0 0.939853 -0.336591 -0.0581579 0.0193938 0.335908 0.941651 -0.0214312 0 0 0 0 1</matrix>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
-                            <extra>
-                              <technique profile="MAYA">
-                                <segment_scale_compensate>0</segment_scale_compensate>
-                              </technique>
-                            </extra>
                           </node>
                           <node id="leftPalm" name="leftPalm" sid="leftPalm" type="JOINT">
                             <matrix sid="transform">0.83938 -0.541608 0.0458451 -0.0183081 0.535079 0.808532 -0.244881 0.0240374 0.0955622 0.230079 0.968469 0.00447475 0 0 0 1</matrix>
                             <node id="leftHandIndex1" name="leftHandIndex1" sid="leftHandIndex1" type="JOINT">
-                              <matrix sid="transform">0.996333 -0.0853059 -0.00660376 0 0.0852562 0.983311 0.160719 0.0652803 -0.0072167 -0.160692 0.986978 0 0 0 0 1</matrix>
+                              <matrix sid="transform">0.996333 -0.0853059 -0.00660395 0 0.0852563 0.983311 0.160719 0.0652803 -0.00721651 -0.160692 0.986978 0 0 0 0 1</matrix>
                               <node id="leftHandIndex2" name="leftHandIndex2" sid="leftHandIndex2" type="JOINT">
-                                <matrix sid="transform">0.999995 0.00302397 0.000240305 0 -0.00302452 0.999993 0.00232472 0.0383072 -0.000233274 -0.00232544 0.999997 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999995 0.00302405 0.000240132 0 -0.0030246 0.999993 0.00232466 0.0383072 -0.000233101 -0.00232537 0.999997 0 0 0 0 1</matrix>
                                 <node id="leftHandIndex3" name="leftHandIndex3" sid="leftHandIndex3" type="JOINT">
-                                  <matrix sid="transform">0.999438 0.0333641 0.00317174 0 -0.0334084 0.999327 0.0151178 0.0265332 -0.00266522 -0.0152152 0.999881 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">0.999438 0.033364 0.00317179 0 -0.0334083 0.999327 0.0151177 0.0265332 -0.00266527 -0.0152151 0.999881 0 0 0 0 1</matrix>
                                   <node id="leftHandIndex4" name="leftHandIndex4" sid="leftHandIndex4" type="JOINT">
-                                    <matrix sid="transform">-0.0579916 -0.00199578 0.998315 0 0.998317 0 0.0579916 0.0195287 0 0.999998 0.00199624 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">-0.0579917 -0.00199566 0.998315 0 0.998317 0 0.0579917 0.0195287 0 0.999998 0.00199611 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
                             <node id="leftHandMiddle1" name="leftHandMiddle1" sid="leftHandMiddle1" type="JOINT">
-                              <matrix sid="transform">0.943733 -0.330482 -0.0122002 -0.0235474 0.329529 0.936619 0.11898 0.0617939 -0.0278936 -0.116305 0.992822 -0.00316963 0 0 0 1</matrix>
+                              <matrix sid="transform">0.943733 -0.330482 -0.0122004 -0.0235474 0.329529 0.936619 0.118979 0.0617939 -0.0278934 -0.116305 0.992822 -0.00316963 0 0 0 1</matrix>
                               <node id="leftHandMiddle2" name="leftHandMiddle2" sid="leftHandMiddle2" type="JOINT">
-                                <matrix sid="transform">0.999999 0.00149626 0 0 -0.00149626 0.999999 0 0.0370735 0 0 1 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999999 0.00149589 0 0 -0.00149589 0.999999 0 0.0370735 0 0 1 0 0 0 0 1</matrix>
                                 <node id="leftHandMiddle3" name="leftHandMiddle3" sid="leftHandMiddle3" type="JOINT">
-                                  <matrix sid="transform">1 0 0 0 0 0.999991 -0.00433765 0.0308753 0 0.00433765 0.999991 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">1 0 0 0 0 0.999991 -0.00433753 0.0308753 0 0.00433753 0.999991 0 0 0 0 1</matrix>
                                   <node id="leftHandMiddle4" name="leftHandMiddle4" sid="leftHandMiddle4" type="JOINT">
-                                    <matrix sid="transform">-0.0110298 -0.000262984 0.999939 0 0.999939 0.000154253 0.0110299 0.0217283 -0.000157144 1 0.000261267 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">-0.0110297 -0.000262982 0.999939 0 0.999939 0.000154332 0.0110297 0.0217283 -0.000157223 1 0.000261264 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
                             <node id="leftHandRing1" name="leftHandRing1" sid="leftHandRing1" type="JOINT">
-                              <matrix sid="transform">0.79417 -0.60638 -0.0399667 -0.0390281 0.605531 0.784079 0.136206 0.051837 -0.0512558 -0.132372 0.989874 -0.00197567 0 0 0 1</matrix>
+                              <matrix sid="transform">0.79417 -0.60638 -0.0399669 -0.0390281 0.605531 0.784079 0.136206 0.051837 -0.0512555 -0.132372 0.989874 -0.00197567 0 0 0 1</matrix>
                               <node id="leftHandRing2" name="leftHandRing2" sid="leftHandRing2" type="JOINT">
-                                <matrix sid="transform">0.999392 0.0347956 0.00229377 0 -0.0347956 0.999394 0 0.0343398 -0.00229357 0 0.999997 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999392 0.0347953 0.00229381 0 -0.0347953 0.999394 0 0.0343398 -0.00229361 0 0.999997 0 0 0 0 1</matrix>
                                 <node id="leftHandRing3" name="leftHandRing3" sid="leftHandRing3" type="JOINT">
-                                  <matrix sid="transform">1 0 0 0 0 0.999999 0.00117752 0.0239669 0 -0.00117752 0.999999 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">1 0 0 0 0 0.999999 0.00117758 0.0239669 0 -0.00117758 0.999999 0 0 0 0 1</matrix>
                                   <node id="leftHandRing4" name="leftHandRing4" sid="leftHandRing4" type="JOINT">
-                                    <matrix sid="transform">0.0105449 -0.000462477 0.999944 0 0.999944 0 -0.0105448 0.021516 0 1 0.000463222 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">0.0105448 -0.000462371 0.999944 0 0.999944 0 -0.0105447 0.021516 0 1 0.000463115 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
                             <node id="leftHandPinky1" name="leftHandPinky1" sid="leftHandPinky1" type="JOINT">
-                              <matrix sid="transform">0.563784 -0.823828 -0.0587867 -0.051724 0.822979 0.554346 0.124117 0.0359694 -0.0696626 -0.118355 0.990525 -0.0043085 0 0 0 1</matrix>
+                              <matrix sid="transform">0.563784 -0.823828 -0.0587865 -0.051724 0.822979 0.554347 0.124117 0.0359694 -0.0696626 -0.118355 0.990525 -0.0043085 0 0 0 1</matrix>
                               <node id="leftHandPinky2" name="leftHandPinky2" sid="leftHandPinky2" type="JOINT">
-                                <matrix sid="transform">0.998587 0.0529998 0.00383853 0 -0.0530038 0.998594 0.000965632 0.0238873 -0.00378195 -0.00116772 0.999992 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.998587 0.0529998 0.00383837 0 -0.0530038 0.998594 0.000965718 0.0238873 -0.00378179 -0.0011678 0.999992 0 0 0 0 1</matrix>
                                 <node id="leftHandPinky3" name="leftHandPinky3" sid="leftHandPinky3" type="JOINT">
-                                  <matrix sid="transform">0.999873 0.0158846 0.00117397 0 -0.0158863 0.999873 0.0014395 0.0209142 -0.00115096 -0.00145796 0.999998 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">0.999873 0.0158845 0.00117381 0 -0.0158861 0.999873 0.00143965 0.0209142 -0.0011508 -0.00145811 0.999998 0 0 0 0 1</matrix>
                                   <node id="leftHandPinky4" name="leftHandPinky4" sid="leftHandPinky4" type="JOINT">
-                                    <matrix sid="transform">-0.0164896 -0.0054376 0.999849 0 0.999864 -0.0002248 0.0164887 0.0180777 0.000135108 0.999985 0.00544056 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">-0.0164896 -0.0054376 0.999849 0 0.999864 -0.000224756 0.0164887 0.0180777 0.000135064 0.999985 0.00544057 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
-                            <extra>
-                              <technique profile="MAYA">
-                                <segment_scale_compensate>0</segment_scale_compensate>
-                              </technique>
-                            </extra>
                           </node>
-                          <extra>
-                            <technique profile="MAYA">
-                              <segment_scale_compensate>0</segment_scale_compensate>
-                            </technique>
-                          </extra>
                         </node>
-                        <extra>
-                          <technique profile="MAYA">
-                            <segment_scale_compensate>0</segment_scale_compensate>
-                          </technique>
-                        </extra>
                       </node>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>0</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
-                  <extra>
-                    <technique profile="MAYA">
-                      <segment_scale_compensate>0</segment_scale_compensate>
-                    </technique>
-                  </extra>
                 </node>
-                <extra>
-                  <technique profile="MAYA">
-                    <segment_scale_compensate>0</segment_scale_compensate>
-                  </technique>
-                </extra>
               </node>
               <node id="Neck" name="Neck" sid="Neck" type="JOINT">
                 <matrix sid="transform">0.643971 0.129747 -0.753967 0.0503968 -0.764387 0.150132 -0.627035 0.0464721 0.0318382 0.980115 0.195858 0.0963778 0 0 0 1</matrix>
@@ -1147,515 +1146,185 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
                       <matrix sid="transform">1 0 0 0 0 1 0 -0.0223616 0 0 1 -0.039394 0 0 0 1</matrix>
                       <node id="Tongue1" name="Tongue1" sid="Tongue1" type="JOINT">
                         <matrix sid="transform">1 0 0 0 0 -0.493653 0.869659 0.00575543 0 -0.869659 -0.493653 -0.0317246 0 0 0 1</matrix>
-                        <extra>
-                          <technique profile="MAYA">
-                            <segment_scale_compensate>0</segment_scale_compensate>
-                          </technique>
-                        </extra>
                       </node>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="LowerLip_Adjust" name="LowerLip_Adjust" sid="LowerLip_Adjust" type="JOINT">
                       <matrix sid="transform">-1 0 0 0 0 0.985514 0.169594 -0.0240809 0 0.169594 -0.985514 -0.09125 0 0 0 1</matrix>
                       <node id="leftLowerLip" name="leftLowerLip" sid="leftLowerLip" type="JOINT">
                         <matrix sid="transform">-1 0 0 0.0139858 0 0.985514 0.169594 0.004 0 0.169594 -0.985514 0.00367424 0 0 0 1</matrix>
-                        <extra>
-                          <technique profile="MAYA">
-                            <segment_scale_compensate>0</segment_scale_compensate>
-                          </technique>
-                        </extra>
                       </node>
                       <node id="rightLowerLip" name="rightLowerLip" sid="rightLowerLip" type="JOINT">
                         <matrix sid="transform">-1 0 0 -0.0139847 0 0.985514 0.169594 0.00426804 0 0.169594 -0.985514 0.00367415 0 0 0 1</matrix>
-                        <extra>
-                          <technique profile="MAYA">
-                            <segment_scale_compensate>0</segment_scale_compensate>
-                          </technique>
-                        </extra>
                       </node>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>1</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>0</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="leftCheek" name="leftCheek" sid="leftCheek" type="JOINT">
                     <matrix sid="transform">1 0 0 -0.0541804 0 1 0 -0.0147919 0 0 1 -0.116958 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>0</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="rightCheek" name="rightCheek" sid="rightCheek" type="JOINT">
                     <matrix sid="transform">1 0 0 0.0541797 0 1 0 -0.0147887 0 0 1 -0.116957 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>0</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="EyeL_Adjust" name="EyeL_Adjust" sid="EyeL_Adjust" type="JOINT">
                     <matrix sid="transform">-1 0 0 -0.0352214 0 0.985514 0.169593 0.0135066 0 0.169593 -0.985514 -0.0880709 0 0 0 1</matrix>
                     <node id="leftOuterBrow" name="leftOuterBrow" sid="leftOuterBrow" type="JOINT">
                       <matrix sid="transform">-1 0 0 0.0261344 0 0.985514 0.169594 0.0201979 0 0.169594 -0.985514 0.0109017 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="leftEyeLid" name="leftEyeLid" sid="leftEyeLid" type="JOINT">
                       <matrix sid="transform">-1 0 0 0.0011591 0 0.985514 0.169594 -0.000897753 0 0.169594 -0.985514 0.0171642 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="leftInnerBrow" name="leftInnerBrow" sid="leftInnerBrow" type="JOINT">
                       <matrix sid="transform">-1 0 0 -0.0146786 0 0.985514 0.169594 0.0211601 0 0.169594 -0.985514 0.0330079 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="leftEye" name="leftEye" sid="leftEye" type="JOINT">
                       <matrix sid="transform">-1 0 0 0 0 0.985514 0.169594 0.000492154 0 0.169594 -0.985514 0.0101338 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>1</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="Nose_Adjust" name="Nose_Adjust" sid="Nose_Adjust" type="JOINT">
                     <matrix sid="transform">0 0 -1 0 -0.995665 0.0930121 0 -0.0153504 0.0930121 0.995665 0 -0.135603 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>1</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="UpperLip_Adjust" name="UpperLip_Adjust" sid="UpperLip_Adjust" type="JOINT">
                     <matrix sid="transform">0 0 -1 0 -0.998411 0.0563518 0 -0.0445715 0.0563518 0.998411 0 -0.133612 0 0 0 1</matrix>
                     <node id="leftUpperLip" name="leftUpperLip" sid="leftUpperLip" type="JOINT">
                       <matrix sid="transform">0 -0.998411 0.0563518 0.0017803 0 0.0563518 0.998411 -0.00686137 -1 0 0 0.0138742 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="leftOuterLip" name="leftOuterLip" sid="leftOuterLip" type="JOINT">
                       <matrix sid="transform">0 -0.998411 0.0563518 0.0169683 0 0.0563518 0.998411 0.0126998 -1 0 0 0.0387873 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="rightUpperLip" name="rightUpperLip" sid="rightUpperLip" type="JOINT">
                       <matrix sid="transform">0 -0.998411 0.0563518 0.00177672 0 0.0563518 0.998411 -0.00686054 -1 0 0 -0.0138732 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="rightOuterLip" name="rightOuterLip" sid="rightOuterLip" type="JOINT">
                       <matrix sid="transform">0 -0.998411 0.0563518 0.0169643 0 0.0563518 0.998411 0.0127005 -1 0 0 -0.0387864 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>1</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="LeftEar_Adjust" name="LeftEar_Adjust" sid="LeftEar_Adjust" type="JOINT">
                     <matrix sid="transform">-1 0 0 -0.0883913 0 0.985514 0.169593 -0.0189299 0 0.169593 -0.985514 -0.01147 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>1</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="EyeR_Adjust" name="EyeR_Adjust" sid="EyeR_Adjust" type="JOINT">
                     <matrix sid="transform">-1 0 0 0.0352214 0 0.985514 -0.169593 0.0133581 0 -0.169593 -0.985514 -0.0881948 0 0 0 1</matrix>
                     <node id="rightOuterBrow" name="rightOuterBrow" sid="rightOuterBrow" type="JOINT">
                       <matrix sid="transform">-1 0 0 -0.0261344 0 0.985514 -0.169593 0.0228031 0 -0.169593 -0.985514 0.00337648 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="rightEyeLid" name="rightEyeLid" sid="rightEyeLid" type="JOINT">
                       <matrix sid="transform">-1 0 0 -0.0011591 0 0.985514 -0.169593 0.00500946 0 -0.169593 -0.985514 0.0163354 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="rightInnerBrow" name="rightInnerBrow" sid="rightInnerBrow" type="JOINT">
                       <matrix sid="transform">-1 0 0 0.0146786 0 0.985514 -0.169593 0.0310973 0 -0.169593 -0.985514 0.02389 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
                     <node id="rightEye" name="rightEye" sid="rightEye" type="JOINT">
                       <matrix sid="transform">-1 0 0 0 0 0.985514 -0.169593 0.0039785 0 -0.169593 -0.985514 0.00923838 0 0 0 1</matrix>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>1</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="RightEar_Adjust" name="RightEar_Adjust" sid="RightEar_Adjust" type="JOINT">
                     <matrix sid="transform">-1 0 0 0.0883913 0 0.985514 -0.169593 -0.0189289 0 -0.169593 -0.985514 -0.0114698 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>1</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
                   <node id="HairAttach" name="HairAttach" sid="HairAttach" type="JOINT">
-                    <matrix sid="transform">-1 0 0 0 0 0.241527 0.970394 0.023 0 0.970394 -0.241527 0.004 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>1</segment_scale_compensate>
-                      </technique>
-                    </extra>
+                    <matrix sid="transform">1 0 0 0.00163796 0 0.998836 -0.0482254 -0.00148921 0 0.0482254 0.998836 0.0110612 0 0 0 1</matrix>
                   </node>
-                  <extra>
-                    <technique profile="MAYA">
-                      <segment_scale_compensate>0</segment_scale_compensate>
-                    </technique>
-                  </extra>
                 </node>
-                <extra>
-                  <technique profile="MAYA">
-                    <segment_scale_compensate>0</segment_scale_compensate>
-                  </technique>
-                </extra>
               </node>
               <node id="rightShoulder" name="rightShoulder" sid="rightShoulder" type="JOINT">
-                <matrix sid="transform">-0.894263 0.432501 0.115052 0.115558 -0.447155 -0.874157 -0.189477 0.0314161 0.0186245 -0.220888 0.975121 0.00571208 0 0 0 1</matrix>
+                <matrix sid="transform">-0.894263 0.432501 0.115052 0.115558 -0.447155 -0.874157 -0.189477 0.0314161 0.0186244 -0.220888 0.975121 0.00571208 0 0 0 1</matrix>
                 <node id="rightArm" name="rightArm" sid="rightArm" type="JOINT">
-                  <matrix sid="transform">0.988684 -0.149565 -0.0115921 0 0.144972 0.972464 -0.182477 0.212311 0.038565 0.178731 0.983142 0 0 0 0 1</matrix>
+                  <matrix sid="transform">0.988684 -0.149565 -0.0115922 0 0.144972 0.972464 -0.182477 0.212311 0.0385651 0.178732 0.983142 0 0 0 0 1</matrix>
                   <node id="rightArmRoll" name="rightArmRoll" sid="rightArmRoll" type="JOINT">
                     <matrix sid="transform">1 0 0 0 0 0.999981 -0.00609568 0.134071 0 0.00609568 0.999981 0 0 0 0 1</matrix>
                     <node id="rightForeArm" name="rightForeArm" sid="rightForeArm" type="JOINT">
-                      <matrix sid="transform">0.917268 -0.396649 -0.0358956 0 0.397259 0.917634 0.0115597 0.116724 0.0283539 -0.0248633 0.999289 0 0 0 0 1</matrix>
+                      <matrix sid="transform">0.917268 -0.396649 -0.0358955 0 0.397259 0.917634 0.0115597 0.116724 0.0283538 -0.0248632 0.999289 0 0 0 0 1</matrix>
                       <node id="rightForeArmRoll" name="rightForeArmRoll" sid="rightForeArmRoll" type="JOINT">
-                        <matrix sid="transform">0.999844 -0.0176135 -0.00116324 0 0.0175801 0.999551 -0.0242811 0.0914235 0.00159039 0.0242569 0.999704 0 0 0 0 1</matrix>
+                        <matrix sid="transform">0.999844 -0.0176135 -0.00116323 0 0.0175801 0.999551 -0.0242811 0.0914235 0.00159038 0.0242569 0.999704 0 0 0 0 1</matrix>
                         <node id="rightHand" name="rightHand" sid="rightHand" type="JOINT">
-                          <matrix sid="transform">0.603166 -0.785202 -0.140174 0 0.79588 0.604073 0.0408678 0.154105 0.0525857 -0.136212 0.989283 0 0 0 0 1</matrix>
+                          <matrix sid="transform">0.603166 -0.785202 -0.140174 0 0.79588 0.604073 0.0408679 0.154105 0.0525858 -0.136212 0.989283 0 0 0 0 1</matrix>
                           <node id="rightHandThumb1" name="rightHandThumb1" sid="rightHandThumb1" type="JOINT">
-                            <matrix sid="transform">0.99903 -0.0429385 -0.00977006 0 0.0433507 0.997961 0.0468402 0.0570727 0.00773889 -0.0472183 0.998855 0 0 0 0 1</matrix>
+                            <matrix sid="transform">0.99903 -0.0429385 -0.00977001 0 0.0433506 0.997961 0.0468404 0.0570727 0.00773883 -0.0472185 0.998855 0 0 0 0 1</matrix>
                             <node id="rightHandThumb2" name="rightHandThumb2" sid="rightHandThumb2" type="JOINT">
-                              <matrix sid="transform">0.995089 0.0938036 0.0316056 0 -0.096518 0.99034 0.0995585 0.032452 -0.0219614 -0.10212 0.99453 0 0 0 0 1</matrix>
+                              <matrix sid="transform">0.995089 0.0938036 0.0316055 0 -0.096518 0.99034 0.0995581 0.032452 -0.0219613 -0.10212 0.99453 0 0 0 0 1</matrix>
                               <node id="rightHandThumb3" name="rightHandThumb3" sid="rightHandThumb3" type="JOINT">
-                                <matrix sid="transform">0.999944 -0.00998914 -0.00357168 0 0.0100532 0.99978 0.0183868 0.0248358 0.00338723 -0.0184217 0.999825 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999944 -0.00998921 -0.00357165 0 0.0100533 0.99978 0.0183869 0.0248358 0.00338719 -0.0184217 0.999825 0 0 0 0 1</matrix>
                                 <node id="rightHandThumb4" name="rightHandThumb4" sid="rightHandThumb4" type="JOINT">
-                                  <matrix sid="transform">0.0619574 0.000606492 0.998079 0 -0.939787 0.336779 0.0581342 0.019395 -0.336097 -0.941583 0.0214359 0 0 0 0 1</matrix>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
+                                  <matrix sid="transform">0.0619574 0.0006065 0.998079 0 -0.939787 0.336779 0.0581342 0.019395 -0.336097 -0.941584 0.0214359 0 0 0 0 1</matrix>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
-                            <extra>
-                              <technique profile="MAYA">
-                                <segment_scale_compensate>0</segment_scale_compensate>
-                              </technique>
-                            </extra>
                           </node>
                           <node id="rightPalm" name="rightPalm" sid="rightPalm" type="JOINT">
                             <matrix sid="transform">0.839383 0.541601 -0.0458777 0.0183082 -0.535081 0.808537 -0.244859 0.0240376 -0.0955223 0.230079 0.968473 0.00447401 0 0 0 1</matrix>
                             <node id="rightHandIndex1" name="rightHandIndex1" sid="rightHandIndex1" type="JOINT">
-                              <matrix sid="transform">0.996333 0.0853034 0.00661116 0 -0.0852539 0.983288 0.160864 0.0652803 0.00722162 -0.160838 0.986954 0 0 0 0 1</matrix>
+                              <matrix sid="transform">0.996333 0.0853034 0.00661112 0 -0.0852539 0.983288 0.160865 0.0652803 0.00722166 -0.160838 0.986954 0 0 0 0 1</matrix>
                               <node id="rightHandIndex2" name="rightHandIndex2" sid="rightHandIndex2" type="JOINT">
-                                <matrix sid="transform">0.999995 -0.00301426 -0.000240636 0 0.00301479 0.999993 0.0022585 0.0383074 0.000233826 -0.00225922 0.999997 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999995 -0.00301423 -0.000240435 0 0.00301476 0.999993 0.00225844 0.0383074 0.000233625 -0.00225916 0.999997 0 0 0 0 1</matrix>
                                 <node id="rightHandIndex3" name="rightHandIndex3" sid="rightHandIndex3" type="JOINT">
-                                  <matrix sid="transform">0.999439 -0.0333452 -0.0031559 0 0.0333881 0.999334 0.0147072 0.0265337 0.00266338 -0.0148043 0.999887 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">0.999439 -0.0333453 -0.00315612 0 0.0333883 0.999334 0.0147071 0.0265337 0.0026636 -0.0148043 0.999887 0 0 0 0 1</matrix>
                                   <node id="rightHandIndex4" name="rightHandIndex4" sid="rightHandIndex4" type="JOINT">
-                                    <matrix sid="transform">-0.0579667 -0.00199337 0.998317 0 -0.998318 -0.000324022 -0.0579675 0.0195275 0.000439027 -0.999998 -0.00197124 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">-0.0579671 -0.00199347 0.998317 0 -0.998318 -0.000324086 -0.0579679 0.0195275 0.000439097 -0.999998 -0.00197133 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
                             <node id="rightHandMiddle1" name="rightHandMiddle1" sid="rightHandMiddle1" type="JOINT">
-                              <matrix sid="transform">0.943733 0.330482 0.0122209 0.0235477 -0.329528 0.936604 0.119098 0.0617943 0.0279136 -0.116424 0.992807 -0.00316707 0 0 0 1</matrix>
+                              <matrix sid="transform">0.943733 0.330482 0.012221 0.0235477 -0.329528 0.936604 0.119098 0.0617943 0.0279135 -0.116424 0.992807 -0.00316707 0 0 0 1</matrix>
                               <node id="rightHandMiddle2" name="rightHandMiddle2" sid="rightHandMiddle2" type="JOINT">
-                                <matrix sid="transform">0.999999 -0.00149398 0 0 0.00149398 0.999999 0 0.0370733 0 0 1 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999999 -0.00149401 0 0 0.00149401 0.999999 0 0.0370733 0 0 1 0 0 0 0 1</matrix>
                                 <node id="rightHandMiddle3" name="rightHandMiddle3" sid="rightHandMiddle3" type="JOINT">
-                                  <matrix sid="transform">1 0 0 0 0 0.999991 -0.00424874 0.0308754 0 0.00424874 0.999991 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">1 0 0 0 0 0.999991 -0.00424904 0.0308754 0 0.00424904 0.999991 0 0 0 0 1</matrix>
                                   <node id="rightHandMiddle4" name="rightHandMiddle4" sid="rightHandMiddle4" type="JOINT">
-                                    <matrix sid="transform">-0.0110324 -0.000263228 0.999939 0 -0.999939 0 -0.0110324 0.0217282 0 -1 -0.000262768 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">-0.0110324 -0.000263146 0.999939 0 -0.999939 0 -0.0110324 0.0217282 0 -1 -0.000262685 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
                             <node id="rightHandRing1" name="rightHandRing1" sid="rightHandRing1" type="JOINT">
-                              <matrix sid="transform">0.794168 0.60638 0.0399943 0.039028 -0.605529 0.784064 0.136302 0.051837 0.0512928 -0.132465 0.98986 -0.00197235 0 0 0 1</matrix>
+                              <matrix sid="transform">0.794169 0.60638 0.0399945 0.039028 -0.605529 0.784064 0.136302 0.051837 0.0512927 -0.132465 0.98986 -0.00197235 0 0 0 1</matrix>
                               <node id="rightHandRing2" name="rightHandRing2" sid="rightHandRing2" type="JOINT">
-                                <matrix sid="transform">0.999392 -0.034793 -0.00229889 0 0.0347933 0.999395 0 0.0343398 0.00229504 -0.000150604 0.999997 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.999392 -0.0347927 -0.00229879 0 0.034793 0.999395 0 0.0343398 0.00229495 -0.000150301 0.999997 0 0 0 0 1</matrix>
                                 <node id="rightHandRing3" name="rightHandRing3" sid="rightHandRing3" type="JOINT">
-                                  <matrix sid="transform">1 0 0 0 0 0.999999 0.00100359 0.0239671 0 -0.00100359 0.999999 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">1 0 0 0 0 0.999999 0.00100346 0.0239671 0 -0.00100346 0.999999 0 0 0 0 1</matrix>
                                   <node id="rightHandRing4" name="rightHandRing4" sid="rightHandRing4" type="JOINT">
-                                    <matrix sid="transform">0.0105446 -0.000463586 0.999944 0 -0.999944 0 0.0105446 0.0215168 0 -1 -0.000464578 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">0.0105447 -0.000463748 0.999944 0 -0.999944 0 0.0105447 0.0215168 0 -1 -0.000464744 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
                             <node id="rightHandPinky1" name="rightHandPinky1" sid="rightHandPinky1" type="JOINT">
-                              <matrix sid="transform">0.563776 0.823834 0.0587801 0.0517243 -0.82298 0.554333 0.124171 0.0359691 0.0697129 -0.11838 0.990518 -0.00431137 0 0 0 1</matrix>
+                              <matrix sid="transform">0.563776 0.823834 0.0587799 0.0517243 -0.822981 0.554332 0.124171 0.0359691 0.0697128 -0.11838 0.990518 -0.00431137 0 0 0 1</matrix>
                               <node id="rightHandPinky2" name="rightHandPinky2" sid="rightHandPinky2" type="JOINT">
-                                <matrix sid="transform">0.998587 -0.0530097 -0.00383701 0 0.0530137 0.998593 0.000930779 0.0238868 0.00378227 -0.00113288 0.999992 0 0 0 0 1</matrix>
+                                <matrix sid="transform">0.998587 -0.05301 -0.00383701 0 0.0530139 0.998593 0.000930957 0.0238868 0.00378226 -0.00113306 0.999992 0 0 0 0 1</matrix>
                                 <node id="rightHandPinky3" name="rightHandPinky3" sid="rightHandPinky3" type="JOINT">
-                                  <matrix sid="transform">0.999873 -0.015877 -0.0011714 0 0.0158786 0.999873 0.00136906 0.0209144 0.00114951 -0.00138748 0.999998 0 0 0 0 1</matrix>
+                                  <matrix sid="transform">0.999873 -0.015877 -0.0011716 0 0.0158786 0.999873 0.00136909 0.0209144 0.00114972 -0.00138752 0.999998 0 0 0 0 1</matrix>
                                   <node id="rightHandPinky4" name="rightHandPinky4" sid="rightHandPinky4" type="JOINT">
-                                    <matrix sid="transform">-0.0164854 -0.00543696 0.999849 0 -0.999864 0.000110882 -0.016485 0.0180771 0 -0.999985 -0.00543805 0 0 0 0 1</matrix>
-                                    <extra>
-                                      <technique profile="MAYA">
-                                        <segment_scale_compensate>0</segment_scale_compensate>
-                                      </technique>
-                                    </extra>
+                                    <matrix sid="transform">-0.0164856 -0.00543717 0.999849 0 -0.999864 0.000110854 -0.0164852 0.0180771 0 -0.999985 -0.00543826 0 0 0 0 1</matrix>
                                   </node>
-                                  <extra>
-                                    <technique profile="MAYA">
-                                      <segment_scale_compensate>0</segment_scale_compensate>
-                                    </technique>
-                                  </extra>
                                 </node>
-                                <extra>
-                                  <technique profile="MAYA">
-                                    <segment_scale_compensate>0</segment_scale_compensate>
-                                  </technique>
-                                </extra>
                               </node>
-                              <extra>
-                                <technique profile="MAYA">
-                                  <segment_scale_compensate>0</segment_scale_compensate>
-                                </technique>
-                              </extra>
                             </node>
-                            <extra>
-                              <technique profile="MAYA">
-                                <segment_scale_compensate>0</segment_scale_compensate>
-                              </technique>
-                            </extra>
                           </node>
-                          <extra>
-                            <technique profile="MAYA">
-                              <segment_scale_compensate>0</segment_scale_compensate>
-                            </technique>
-                          </extra>
                         </node>
-                        <extra>
-                          <technique profile="MAYA">
-                            <segment_scale_compensate>0</segment_scale_compensate>
-                          </technique>
-                        </extra>
                       </node>
-                      <extra>
-                        <technique profile="MAYA">
-                          <segment_scale_compensate>0</segment_scale_compensate>
-                        </technique>
-                      </extra>
                     </node>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>0</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
-                  <extra>
-                    <technique profile="MAYA">
-                      <segment_scale_compensate>0</segment_scale_compensate>
-                    </technique>
-                  </extra>
                 </node>
-                <extra>
-                  <technique profile="MAYA">
-                    <segment_scale_compensate>0</segment_scale_compensate>
-                  </technique>
-                </extra>
               </node>
-              <extra>
-                <technique profile="MAYA">
-                  <segment_scale_compensate>0</segment_scale_compensate>
-                </technique>
-              </extra>
             </node>
-            <extra>
-              <technique profile="MAYA">
-                <segment_scale_compensate>0</segment_scale_compensate>
-              </technique>
-            </extra>
           </node>
-          <extra>
-            <technique profile="MAYA">
-              <segment_scale_compensate>0</segment_scale_compensate>
-            </technique>
-          </extra>
         </node>
         <node id="rightUpLeg" name="rightUpLeg" sid="rightUpLeg" type="JOINT">
-          <matrix sid="transform">0.000116527 0.0240888 0.99971 -0.0926186 0 -0.99971 0.0240888 -0.0951092 1 0 -0.000116549 -0.0205238 0 0 0 1</matrix>
+          <matrix sid="transform">0.000116527 0.0240887 0.99971 -0.0926186 0 -0.99971 0.0240887 -0.0951092 1 0 -0.000116524 -0.0205238 0 0 0 1</matrix>
           <node id="rightUpLegRoll" name="rightUpLegRoll" sid="rightUpLegRoll" type="JOINT">
             <matrix sid="transform">1 0 0 0 0 1 0 0.0354823 0 0 1 0 0 0 0 1</matrix>
             <node id="rightLeg" name="rightLeg" sid="rightLeg" type="JOINT">
-              <matrix sid="transform">-0.0623182 -0.146088 -0.987307 0 0.0240418 0.988723 -0.147815 0.451146 0.997767 -0.0329482 -0.0581032 0 0 0 0 1</matrix>
+              <matrix sid="transform">-0.0623182 -0.146086 -0.987307 0 0.0240418 0.988723 -0.147813 0.451146 0.997767 -0.0329481 -0.0581033 0 0 0 0 1</matrix>
               <node id="rightLegRoll" name="rightLegRoll" sid="rightLegRoll" type="JOINT">
                 <matrix sid="transform">1 0 0 0 0 1 0 0.270278 0 0 1 0 0 0 0 1</matrix>
                 <node id="rightFoot" name="rightFoot" sid="rightFoot" type="JOINT">
-                  <matrix sid="transform">-0.976147 -0.178667 -0.123348 0 0.0317785 0.444437 -0.895246 0.157318 0.214772 -0.877812 -0.428158 0 0 0 0 1</matrix>
+                  <matrix sid="transform">-0.976147 -0.178667 -0.123348 0 0.0317783 0.444438 -0.895246 0.157318 0.214772 -0.877811 -0.428159 0 0 0 0 1</matrix>
                   <node id="rightFootBall" name="rightFootBall" sid="rightFootBall" type="JOINT">
                     <matrix sid="transform">1 0 0 0 0 1 0 0.142812 0 0 1 0 0 0 0 1</matrix>
-                    <extra>
-                      <technique profile="MAYA">
-                        <segment_scale_compensate>0</segment_scale_compensate>
-                      </technique>
-                    </extra>
                   </node>
-                  <extra>
-                    <technique profile="MAYA">
-                      <segment_scale_compensate>0</segment_scale_compensate>
-                    </technique>
-                  </extra>
                 </node>
-                <extra>
-                  <technique profile="MAYA">
-                    <segment_scale_compensate>0</segment_scale_compensate>
-                  </technique>
-                </extra>
               </node>
-              <extra>
-                <technique profile="MAYA">
-                  <segment_scale_compensate>0</segment_scale_compensate>
-                </technique>
-              </extra>
             </node>
-            <extra>
-              <technique profile="MAYA">
-                <segment_scale_compensate>0</segment_scale_compensate>
-              </technique>
-            </extra>
           </node>
-          <extra>
-            <technique profile="MAYA">
-              <segment_scale_compensate>0</segment_scale_compensate>
-            </technique>
-          </extra>
         </node>
-        <extra>
-          <technique profile="MAYA">
-            <segment_scale_compensate>0</segment_scale_compensate>
-          </technique>
-        </extra>
       </node>
       <node id="humanIK1" name="humanIK1" type="NODE">
         <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
@@ -1669,46 +1338,46 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
           <matrix sid="transform">1 0 0 -0.0848046 0 1 0 0.101392 0 0 1 -0.0829897 0 0 0 1</matrix>
         </node>
         <node id="LeftHandEff" name="LeftHandEff" type="NODE">
-          <matrix sid="transform">1 0 0 0.730434 0 1 0 1.49117 0 0 1 0.0257916 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 0 0.730434 0 1 0 1.49117 0 0 1 0.0257917 0 0 0 1</matrix>
           <node id="LeftHandThumb1Eff" name="LeftHandThumb1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 0.0396153 0 1 0 -0.0316902 0 0 1 0.123337 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 0.0396153 0 1 0 -0.0316901 0 0 1 0.123337 0 0 0 1</matrix>
           </node>
           <node id="LeftHandIndex1Eff" name="LeftHandIndex1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 0.143629 0 1 0 -0.0012288 0 0 1 0.107747 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 0.143629 0 1 0 -0.00122862 0 0 1 0.107747 0 0 0 1</matrix>
           </node>
           <node id="LeftHandMiddle1Eff" name="LeftHandMiddle1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 0.171515 0 1 0 -0.000981906 0 0 1 0.0702012 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 0.171515 0 1 0 -0.000981855 0 0 1 0.0702012 0 0 0 1</matrix>
           </node>
           <node id="LeftHandRing1Eff" name="LeftHandRing1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 0.16912 0 1 0 -0.00269279 0 0 1 0.0253426 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 0.16912 0 1 0 -0.00269275 0 0 1 0.0253426 0 0 0 1</matrix>
           </node>
           <node id="LeftHandPinky1Eff" name="LeftHandPinky1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 0.14651 0 1 0 -0.00562354 0 0 1 -0.0140843 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 0.14651 0 1 0 -0.00562352 0 0 1 -0.0140843 0 0 0 1</matrix>
           </node>
         </node>
         <node id="RightHandEff" name="RightHandEff" type="NODE">
-          <matrix sid="transform">1 0 0 -0.730434 0 1 0 1.49116 0 0 1 0.0257906 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 0 -0.730434 0 1 0 1.49116 0 0 1 0.0257905 0 0 0 1</matrix>
           <node id="RightHandThumb1Eff" name="RightHandThumb1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 -0.039615 0 1 0 -0.03169 0 0 1 0.123338 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 -0.039615 0 1 0 -0.0316899 0 0 1 0.123338 0 0 0 1</matrix>
           </node>
           <node id="RightHandIndex1Eff" name="RightHandIndex1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 -0.143629 0 1 0 -0.00121996 0 0 1 0.107747 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 -0.143629 0 1 0 -0.00121991 0 0 1 0.107747 0 0 0 1</matrix>
           </node>
           <node id="RightHandMiddle1Eff" name="RightHandMiddle1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 -0.171515 0 1 0 -0.000980425 0 0 1 0.0702012 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 -0.171515 0 1 0 -0.000980732 0 0 1 0.0702012 0 0 0 1</matrix>
           </node>
           <node id="RightHandRing1Eff" name="RightHandRing1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 -0.16912 0 1 0 -0.00269003 0 0 1 0.0253426 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 -0.16912 0 1 0 -0.00268999 0 0 1 0.0253426 0 0 0 1</matrix>
           </node>
           <node id="RightHandPinky1Eff" name="RightHandPinky1Eff" type="NODE">
-            <matrix sid="transform">1 0 0 -0.14651 0 1 0 -0.00562003 0 0 1 -0.0140844 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 -0.14651 0 1 0 -0.00562 0 0 1 -0.0140844 0 0 0 1</matrix>
           </node>
         </node>
         <node id="LeftLegEff" name="LeftLegEff" type="NODE">
-          <matrix sid="transform">1 0 0 0.0808965 0 1 0 0.524383 0 0 1 -0.0205236 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 0 0.0808965 0 1 0 0.524383 0 0 1 -0.020524 0 0 0 1</matrix>
         </node>
         <node id="RightLegEff" name="RightLegEff" type="NODE">
-          <matrix sid="transform">1 0 0 -0.0808969 0 1 0 0.524383 0 0 1 -0.0205246 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 0 -0.0808969 0 1 0 0.524383 0 0 1 -0.0205241 0 0 0 1</matrix>
         </node>
         <node id="LeftForeArmEff" name="LeftForeArmEff" type="NODE">
           <matrix sid="transform">1 0 0 0.499282 0 1 0 1.50956 0 0 1 -0.0548428 0 0 0 1</matrix>
@@ -1723,10 +1392,10 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
           <matrix sid="transform">1 0 0 0.250088 0 1 0 1.52823 0 0 1 -0.0335904 0 0 0 1</matrix>
         </node>
         <node id="RightArmEff" name="RightArmEff" type="NODE">
-          <matrix sid="transform">1 0 0 -0.250088 0 1 0 1.52823 0 0 1 -0.0335904 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 0 -0.250088 0 1 0 1.52823 0 0 1 -0.0335903 0 0 0 1</matrix>
         </node>
         <node id="HeadEff" name="HeadEff" type="NODE">
-          <matrix sid="transform">1 0 0 0 0 1 0 1.79132 0 0 1 -0.00809345 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 0 0 0 1 0 1.79132 0 0 1 -0.00809346 0 0 0 1</matrix>
         </node>
         <node id="LeftUpLegEff" name="LeftUpLegEff" type="NODE">
           <matrix sid="transform">1 0 0 0.0926186 0 1 0 1.01087 0 0 1 -0.0205237 0 0 0 1</matrix>
@@ -1867,6 +1536,9 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
             </technique_common>
           </bind_material>
         </instance_controller>
+      </node>
+      <node id="group" name="group" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
       </node>
     </visual_scene>
   </library_visual_scenes>
