@@ -15,14 +15,12 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.celleditor.client;
 
+import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
@@ -34,12 +32,16 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 /**
  *
  * @author Paul Byrne
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(CellPhysicsPropertiesComponentServerState.class)
-public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel implements PropertiesFactorySPI {
+public class CellPhysicsPropertiesComponentProperties
+        extends JPanel implements PropertiesFactorySPI {
 
-    private CellPropertiesEditor editor = null;
-    private float originalMass = 0f;
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
+    private CellPropertiesEditor editor;
+    private float originalMass;
 
     /** Creates new form SampleComponentProperties */
     public CellPhysicsPropertiesComponentProperties() {
@@ -48,7 +50,6 @@ public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel
 
         // Listen for changes to the Spinner
         massSpinner.getModel().addChangeListener(new SpinnerChangeListener());
-        
     }
 
     /**
@@ -62,7 +63,7 @@ public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Physics Properties";
+        return BUNDLE.getString("Physics_Properties");
     }
 
     /**
@@ -77,9 +78,14 @@ public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel
      * @inheritDoc()
      */
     public <T extends CellServerState> void updateGUI(T cellServerState) {
-        CellComponentServerState state = cellServerState.getComponentServerState(CellPhysicsPropertiesComponentServerState.class);
+        CellComponentServerState state =
+                cellServerState.getComponentServerState(
+                CellPhysicsPropertiesComponentServerState.class);
         if (state != null) {
-            originalMass = ((CellPhysicsPropertiesComponentServerState) state).getPhyiscsProperties(CellPhysicsPropertiesComponentServerState.DEFAULT_NAME).getMass();
+            originalMass =
+                    ((CellPhysicsPropertiesComponentServerState) state).getPhyiscsProperties(
+                    CellPhysicsPropertiesComponentServerState.DEFAULT_NAME).
+                    getMass();
             massSpinner.getModel().setValue(originalMass);
             return;
         }
@@ -88,23 +94,29 @@ public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
+    public <T extends CellServerState> void getCellServerState(
+            T cellServerState) {
         // Figure out whether there already exists a server state for the
         // component.
-        CellPhysicsPropertiesComponentServerState state = (CellPhysicsPropertiesComponentServerState) cellServerState.getComponentServerState(CellPhysicsPropertiesComponentServerState.class);
+        CellPhysicsPropertiesComponentServerState state =
+                (CellPhysicsPropertiesComponentServerState) cellServerState.getComponentServerState(
+                CellPhysicsPropertiesComponentServerState.class);
         if (state == null) {
             state = new CellPhysicsPropertiesComponentServerState();
         }
 
-        PhysicsProperties p = state.getPhyiscsProperties(CellPhysicsPropertiesComponentServerState.DEFAULT_NAME);
-        if (p==null) {
+        PhysicsProperties p = state.getPhyiscsProperties(
+                CellPhysicsPropertiesComponentServerState.DEFAULT_NAME);
+        if (p == null) {
             p = new PhysicsProperties();
-            state.addPhysicsProperties(CellPhysicsPropertiesComponentServerState.DEFAULT_NAME, p);
+            state.addPhysicsProperties(
+                    CellPhysicsPropertiesComponentServerState.DEFAULT_NAME, p);
         }
 
-        System.err.println("getCellServerState "+state.getPhyiscsProperties(CellPhysicsPropertiesComponentServerState.DEFAULT_NAME));
+        System.err.println("getCellServerState " + state.getPhyiscsProperties(
+                CellPhysicsPropertiesComponentServerState.DEFAULT_NAME));
 
-        p.setMass(((Float)massSpinner.getModel().getValue()).floatValue());
+        p.setMass(((Float) massSpinner.getModel().getValue()).floatValue());
         cellServerState.addComponentServerState(state);
     }
 
@@ -137,13 +149,14 @@ public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel
      * or clean indications to the cell properties editor.
      */
     class SpinnerChangeListener implements ChangeListener {
+
         private void checkDirty() {
-            float mass = ((Float)massSpinner.getModel().getValue()).floatValue();
-            if (editor != null && mass!=originalMass) {
-                editor.setPanelDirty(CellPhysicsPropertiesComponentProperties.class, true);
-            }
-            else if (editor != null) {
-                editor.setPanelDirty(CellPhysicsPropertiesComponentProperties.class, false);
+            if (editor != null) {
+                Object value = massSpinner.getModel().getValue();
+                float mass = ((Float) value).floatValue();
+                editor.setPanelDirty(
+                        CellPhysicsPropertiesComponentProperties.class,
+                        mass != originalMass);
             }
         }
 
@@ -165,11 +178,12 @@ public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel
         massSpinner = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
 
-        jLabel1.setText("Mass:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("CellPhysicsPropertiesComponentProperties.jLabel1.text")); // NOI18N
 
         massSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), null, null, Float.valueOf(0.5f)));
 
-        jLabel2.setText("Kg");
+        jLabel2.setText(bundle.getString("CellPhysicsPropertiesComponentProperties.jLabel2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -182,24 +196,19 @@ public class CellPhysicsPropertiesComponentProperties extends javax.swing.JPanel
                 .add(massSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
-                .addContainerGap(232, Short.MAX_VALUE))
+                .addContainerGap(215, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel1))
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
                     .add(massSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel2)))
-                .addContainerGap(258, Short.MAX_VALUE))
+                    .add(jLabel2))
+                .addContainerGap(247, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

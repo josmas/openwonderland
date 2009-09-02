@@ -24,12 +24,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.basic.BasicListUI.ListSelectionHandler;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
@@ -39,29 +39,34 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * A dialog box so that users can dynamically add a component.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AddComponentDialog extends javax.swing.JDialog {
+
     /** A return status code - returned if Cancel button has been pressed */
     public static final int RET_CANCEL = 0;
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
-
-    private Cell cell = null;
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
+    private Cell cell;
 
     /* The table holding the list of components */
     private JTable componentsTable;
 
     /* A map of display names in the table to the component factories */
-    private Map<String, CellComponentFactorySPI> factoryMap = new HashMap();
+    private Map<String, CellComponentFactorySPI> factoryMap =
+            new HashMap<String, CellComponentFactorySPI>();
 
     /* The component factory selected to be added */
-    private CellComponentFactorySPI cellComponentFactorySPI = null;
+    private CellComponentFactorySPI cellComponentFactorySPI;
 
     /* The edit property frame displaying this dialog */
-    private CellPropertiesJFrame editframe = null;
+    private CellPropertiesJFrame editframe;
 
     /** Creates new form AddComponentDialog */
-    public AddComponentDialog(CellPropertiesJFrame editframe, boolean modal, Cell cell) {
+    public AddComponentDialog(
+            CellPropertiesJFrame editframe, boolean modal, Cell cell) {
         super(editframe, modal);
         this.cell = cell;
         this.editframe = editframe;
@@ -76,21 +81,25 @@ public class AddComponentDialog extends javax.swing.JDialog {
         // enable the OK button (or not)
         ListSelectionModel selectionModel = componentsTable.getSelectionModel();
         selectionModel.addListSelectionListener(new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent e) {
-               boolean isEnabled = componentsTable.getSelectedRow() != -1;
-               okButton.setEnabled(isEnabled);
+                boolean isEnabled = componentsTable.getSelectedRow() != -1;
+                okButton.setEnabled(isEnabled);
             }
         });
 
     }
 
-    /** @return the return status of this dialog - one of RET_OK or RET_CANCEL */
+    /**
+     * @return the return status of this dialog - one of RET_OK or RET_CANCEL
+     */
     public int getReturnStatus() {
         return returnStatus;
     }
 
     /**
      * Returns the cell component factory of the component to add
+     * @return the cell component factory of the component to add
      */
     public CellComponentFactorySPI getCellComponentFactorySPI() {
         return cellComponentFactorySPI;
@@ -101,14 +110,15 @@ public class AddComponentDialog extends javax.swing.JDialog {
      */
     private JTable createTable() {
         // Fetch the set of components and form a 2D array of table entries
-        CellComponentRegistry registry = CellComponentRegistry.getCellComponentRegistry();
+        CellComponentRegistry registry =
+                CellComponentRegistry.getCellComponentRegistry();
         Set<CellComponentFactorySPI> factories = registry.getAllCellFactories();
 
         // Fetch the set of component property display names that are already
         // on the set and remove from the list of factories.
         CellServerState state = editframe.getCellServerState();
         Iterator<CellComponentFactorySPI> it = factories.iterator();
-        while (it.hasNext() == true) {
+        while (it.hasNext()) {
             CellComponentFactorySPI spi = it.next();
             Class clazz = spi.getDefaultCellComponentServerState().getClass();
             if (state.getComponentServerState(clazz) != null) {
@@ -118,9 +128,12 @@ public class AddComponentDialog extends javax.swing.JDialog {
 
         // Put all of the factories into a list and sort based upon the display
         // name
-        List<CellComponentFactorySPI> factoryList = new LinkedList(factories);
+        List<CellComponentFactorySPI> factoryList =
+                new LinkedList<CellComponentFactorySPI>(factories);
         Comparator nameComparator = new Comparator<CellComponentFactorySPI>() {
-            public int compare(CellComponentFactorySPI o1, CellComponentFactorySPI o2) {
+
+            public int compare(
+                    CellComponentFactorySPI o1, CellComponentFactorySPI o2) {
                 return o1.getDisplayName().compareTo(o2.getDisplayName());
             }
         };
@@ -138,7 +151,9 @@ public class AddComponentDialog extends javax.swing.JDialog {
         }
 
         // Create a table with the entry and table names
-        Object[] names = new Object[] { "Capability", "Description" };
+        Object[] names = new Object[]{
+            BUNDLE.getString("Capability"), BUNDLE.getString("Description")
+        };
         JTable table = new JTable(entries, names);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         return table;
@@ -164,7 +179,8 @@ public class AddComponentDialog extends javax.swing.JDialog {
             }
         });
 
-        okButton.setText("OK");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle"); // NOI18N
+        okButton.setText(bundle.getString("AddComponentDialog.okButton.text")); // NOI18N
         okButton.setEnabled(false);
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -172,14 +188,14 @@ public class AddComponentDialog extends javax.swing.JDialog {
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("AddComponentDialog.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Select Capabilities to Add from the List Below:");
+        jLabel1.setText(bundle.getString("AddComponentDialog.jLabel1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -219,7 +235,8 @@ public class AddComponentDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         // Fetch the component factory based upon the selected comopnent
         int row = componentsTable.getSelectedRow();
-        String displayName = (String)componentsTable.getModel().getValueAt(row, 0);
+        String displayName =
+                (String) componentsTable.getModel().getValueAt(row, 0);
         cellComponentFactorySPI = factoryMap.get(displayName);
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
@@ -239,13 +256,11 @@ public class AddComponentDialog extends javax.swing.JDialog {
         setVisible(false);
         dispose();
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JScrollPane capabilityScrollPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
-
     private int returnStatus = RET_CANCEL;
 }

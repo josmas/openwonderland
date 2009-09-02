@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
+import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -29,26 +30,29 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * A property sheet to edit the basic attributes of a cell
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
 
-    private CellPropertiesEditor editor = null;
-    private String originalCellName = null;
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
+    private CellPropertiesEditor editor;
+    private String originalCellName;
 
     /** Creates new form BasicJPanel */
     public BasicJPanel() {
         initComponents();
 
         // Listen for changes in the entry for the text field
-        cellNameTextField.getDocument().addDocumentListener(new NameTextFieldListener());
+        cellNameTextField.getDocument().addDocumentListener(
+                new NameTextFieldListener());
     }
-
 
     /**
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Basic";
+        return BUNDLE.getString("Basic");
     }
 
     /**
@@ -106,7 +110,7 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
         // Update the server-side state for the Cell.
         String name = cellNameTextField.getText();
         CellServerState cellServerState = editor.getCellServerState();
-        ((CellServerState)cellServerState).setName(name);
+        ((CellServerState) cellServerState).setName(name);
         editor.addToUpdateList(cellServerState);
     }
 
@@ -115,6 +119,7 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
      * or clean indications to the cell properties editor.
      */
     class NameTextFieldListener implements DocumentListener {
+
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -129,10 +134,9 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
 
         private void checkDirty() {
             String name = cellNameTextField.getText();
-            if (editor != null && name.equals(originalCellName) == false) {
+            if ((editor != null) && !name.equals(originalCellName)) {
                 editor.setPanelDirty(BasicJPanel.class, true);
-            }
-            else if (editor != null) {
+            } else if (editor != null) {
                 editor.setPanelDirty(BasicJPanel.class, false);
             }
         }
@@ -154,15 +158,16 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
         jLabel3 = new javax.swing.JLabel();
         cellClassLabel = new javax.swing.JLabel();
 
-        jLabel1.setText("Cell ID:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("BasicJPanel.jLabel1.text")); // NOI18N
 
-        jLabel2.setText("Cell Name:");
+        jLabel2.setText(bundle.getString("BasicJPanel.jLabel2.text")); // NOI18N
 
-        cellIDLabel.setText("<none>");
+        cellIDLabel.setText(bundle.getString("BasicJPanel.cellIDLabel.text")); // NOI18N
 
-        jLabel3.setText("Cell Class:");
+        jLabel3.setText(bundle.getString("BasicJPanel.jLabel3.text")); // NOI18N
 
-        cellClassLabel.setText("<none>");
+        cellClassLabel.setText(bundle.getString("BasicJPanel.cellClassLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -181,8 +186,8 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
                             .add(jLabel2))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cellClassLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-                            .add(cellNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))))
+                            .add(cellClassLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                            .add(cellNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -203,8 +208,6 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
                 .addContainerGap(376, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel cellClassLabel;
     private javax.swing.JLabel cellIDLabel;

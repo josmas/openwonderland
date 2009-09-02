@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.component.state.CellPhysicsPropertiesComponentServerState;
@@ -27,26 +28,35 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
  * The cell component factory for the sample cell component.
  * 
  * @author Paul Byrne
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellComponentFactory
-public class CellPhysicsPropertiesComponentFactory implements CellComponentFactorySPI {
+public class CellPhysicsPropertiesComponentFactory
+        implements CellComponentFactorySPI {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
 
     public String getDisplayName() {
-        return "Physics Properties Component";
+        return BUNDLE.getString("Physics_Properties_Component");
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
-        CellPhysicsPropertiesComponentServerState state = new CellPhysicsPropertiesComponentServerState();
-        PhysicsProperties prop = state.getPhyiscsProperties(CellPhysicsPropertiesComponentServerState.DEFAULT_NAME);
-        if (prop==null) {
+        CellPhysicsPropertiesComponentServerState state =
+                new CellPhysicsPropertiesComponentServerState();
+        PhysicsProperties prop = state.getPhyiscsProperties(
+                CellPhysicsPropertiesComponentServerState.DEFAULT_NAME);
+        if (prop == null) {
             prop = new PhysicsProperties();
-            state.addPhysicsProperties(CellPhysicsPropertiesComponentServerState.DEFAULT_NAME, prop);
+            state.addPhysicsProperties(
+                    CellPhysicsPropertiesComponentServerState.DEFAULT_NAME,
+                    prop);
         }
         prop.setMass(2f);
-        return (T)state;
+        return (T) state;
     }
 
     public String getDescription() {
-        return "Physics Properties Component";
+        return BUNDLE.getString("Physics_Properties_Component");
     }
 }
