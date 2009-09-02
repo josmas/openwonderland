@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.celleditor.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
@@ -41,25 +42,31 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * under "Tools"
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @Plugin
 @ContextMenuFactory
 public class PaletteClientPlugin extends BaseClientPlugin
-        implements ContextMenuFactorySPI
-{
-    private JMenuItem editorMI = null;
-    private WeakReference<CellPropertiesJFrame> cellPropertiesFrameRef = null;
+        implements ContextMenuFactorySPI {
+
+    private static final Logger LOGGER =
+            Logger.getLogger(PaletteClientPlugin.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
+    private JMenuItem editorMI;
+    private WeakReference<CellPropertiesJFrame> cellPropertiesFrameRef;
 
     @Override
     public void initialize(ServerSessionManager loginInfo) {
         // Create the Palette menu and the Cell submenu and dialog that lets
         // users create new cells.  The menu will be added when our server
         // becomes primary.
-        editorMI = new JMenuItem("Cell Editor");
+        editorMI = new JMenuItem(BUNDLE.getString("Cell_Editor"));
         editorMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 CellPropertiesJFrame frame = getCellPropertiesJFrame();
-                if (frame.isVisible() == false) {
+                if (!frame.isVisible()) {
                     frame.setSelectedCell(null);
                     frame.setSize(800, 650);
                     frame.setVisible(true);
@@ -91,9 +98,9 @@ public class PaletteClientPlugin extends BaseClientPlugin
      */
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
 
-        return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
-        };
+        return new ContextMenuItem[]{
+                    new SimpleContextMenuItem(BUNDLE.getString("Properties..."),
+                    null, new PropertiesListener()),};
     }
 
     /**
@@ -101,12 +108,14 @@ public class PaletteClientPlugin extends BaseClientPlugin
      * necessary
      */
     private CellPropertiesJFrame getCellPropertiesJFrame() {
-        if (cellPropertiesFrameRef == null || cellPropertiesFrameRef.get() == null) {
-            CellPropertiesJFrame cellPropertiesFrame = new CellPropertiesJFrame();
-            cellPropertiesFrameRef = new WeakReference(cellPropertiesFrame);
+        if ((cellPropertiesFrameRef == null) ||
+                (cellPropertiesFrameRef.get() == null)) {
+            CellPropertiesJFrame cellPropertiesFrame =
+                    new CellPropertiesJFrame();
+            cellPropertiesFrameRef = new WeakReference<CellPropertiesJFrame>(
+                    cellPropertiesFrame);
             return cellPropertiesFrame;
-        }
-        else {
+        } else {
             return cellPropertiesFrameRef.get();
         }
     }
@@ -126,7 +135,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
                 frame.setSize(800, 650);
                 frame.setVisible(true);
             } catch (IllegalStateException excp) {
-                Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);
+                LOGGER.log(Level.WARNING, null, excp);
             }
         }
     }
