@@ -146,7 +146,9 @@ public class WonderlandHUDManager extends HUDManager implements HUDEventListener
      * {@inheritDoc}
      */
     public void relayout(HUD hud) {
-        // TODO: notify event listeners!
+        if (layout != null) {
+            layout.relayout();
+        }
     }
 
     /**
@@ -242,7 +244,7 @@ public class WonderlandHUDManager extends HUDManager implements HUDEventListener
     }
 
     private void hudResized(HUD hud) {
-        logger.info("resizing HUD: " + hud);
+        logger.fine("resizing HUD: " + hud);
 
         if ((hud != null) && huds.containsValue(hud)) {
             relayout(hud);
