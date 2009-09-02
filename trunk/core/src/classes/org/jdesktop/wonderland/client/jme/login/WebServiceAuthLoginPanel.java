@@ -40,16 +40,18 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLog
 /**
  *
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
             Logger.getLogger(WebServiceAuthLoginPanel.class.getName());
     private UserPasswordLoginControl control;
     private List<ValidityListener> listeners;
 
     /** Creates new form NoAuthLoginPanel */
-    public WebServiceAuthLoginPanel(String serverURL, UserPasswordLoginControl control) {
+    public WebServiceAuthLoginPanel(
+            String serverURL, UserPasswordLoginControl control) {
         this.control = control;
 
         initComponents();
@@ -129,7 +131,7 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
             storeCredentials(username);
             return null;
         } catch (LoginFailureException lfe) {
-            logger.log(Level.WARNING, "Login failed", lfe);
+            LOGGER.log(Level.WARNING, "Login failed", lfe);
             return lfe.getMessage();
         }
     }
@@ -150,7 +152,7 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
             props.list(new PrintWriter(outWriter));
             outWriter.close();
         } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error writing login data", ioe);
+            LOGGER.log(Level.WARNING, "Error writing login data", ioe);
         }
     }
 
@@ -168,7 +170,7 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
             props.load(inReader);
             setUsername(props.getProperty("username"));
         } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error reading login data", ioe);
+            LOGGER.log(Level.WARNING, "Error reading login data", ioe);
         }
     }
 
@@ -191,13 +193,14 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         setOpaque(false);
 
         naServerLabel.setFont(new java.awt.Font("Dialog", 1, 13));
-        naServerLabel.setText("Server:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
+        naServerLabel.setText(bundle.getString("WebServiceAuthLoginPanel.naServerLabel.text")); // NOI18N
 
         naFullNameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
-        naFullNameLabel.setText("Password:");
+        naFullNameLabel.setText(bundle.getString("WebServiceAuthLoginPanel.naFullNameLabel.text")); // NOI18N
 
         naUsernameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
-        naUsernameLabel.setText("Username:");
+        naUsernameLabel.setText(bundle.getString("WebServiceAuthLoginPanel.naUsernameLabel.text")); // NOI18N
 
         naServerField.setEditable(false);
         naServerField.setMinimumSize(new java.awt.Dimension(98, 22));
@@ -249,7 +252,6 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
     private void wsUsernameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_wsUsernameFieldKeyReleased
         notifyValidityListeners();
 }//GEN-LAST:event_wsUsernameFieldKeyReleased
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel naFullNameLabel;
     private javax.swing.JTextField naServerField;
@@ -258,5 +260,4 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
     private javax.swing.JPasswordField wsPasswordField;
     private javax.swing.JTextField wsUsernameField;
     // End of variables declaration//GEN-END:variables
-
 }
