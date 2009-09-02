@@ -49,42 +49,45 @@ import org.jdesktop.wonderland.utils.SystemPropertyUtil;
  * the server in a new classloader with all those jars loaded.
  * 
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class WebServerLauncher {
 
     // port to listen for killswitch connections
     private static final String WEBSERVER_KILLSWITCH_PROPERTY =
             "wonderland.webserver.killswitch";
-
     // the property to determine what class to launch
     private static final String WEBSERVER_LAUNCH_CLASS_PROPERTY =
             "wonderland.webserver.launch.class";
     private static final String WEBSERVER_LAUNCH_CLASS_DEFAULT =
             "org.jdesktop.wonderland.webserver.RunAppServer";
-
-    private static final Logger logger = 
+    private static final Logger LOGGER =
             Logger.getLogger(WebServerLauncher.class.getName());
-
     private static LauncherClassLoader classLoader;
 
+    /**
+     * runs the WebServerLauncher
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         // before we do anything, ready the default properties
         try {
-            InputStream is = WebServerLauncher.class.getResourceAsStream("/web-default.properties");
+            InputStream is = WebServerLauncher.class.getResourceAsStream(
+                    "/web-default.properties");
             Properties props = new Properties();
             props.load(is);
-            
+
             // copy properties into System properties only if they don't already
             // exist.  The means that people can override the defaults by
             // passing an argument like "-Dmy.prop=xxxx" at the command line.
             for (Object prop : props.keySet()) {
                 if (!System.getProperties().containsKey(prop)) {
-                    System.setProperty((String) prop, 
-                                       props.getProperty((String) prop));
+                    System.setProperty((String) prop,
+                            props.getProperty((String) prop));
                 }
             }
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Error loading default properties", ex);
+            LOGGER.log(Level.SEVERE, "Error loading default properties", ex);
             System.exit(-1);
         }
 
@@ -97,38 +100,42 @@ public class WebServerLauncher {
         }
 
         // create the log directory
-        File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
-        if (!logDir.mkdirs()) { 
-            System.err.println("[WebServerLauncher] error creating log directory " +
-                               logDir + ".  Logging may not work.");
+        File logDir = new File(SystemPropertyUtil.getProperty(
+                "wonderland.log.dir"));
+        if (!logDir.exists() && !logDir.mkdirs()) {
+            System.err.println("[WebServerLauncher] error creating log " +
+                    "directory " + logDir + ".  Logging may not work.");
         }
         // now load in the logging configuration
         if (System.getProperty("java.util.logging.config.file") == null &&
-                System.getProperty("java.util.logging.config.class") == null) 
-        { 
+                System.getProperty("java.util.logging.config.class") == null) {
             try {
                 InputStream logConfig;
-           
+
                 // substitute the wonderland log directory for the token
                 // %w in the FileHandler path
                 Properties p = new Properties();
-                p.load(WebServerLauncher.class.getResourceAsStream("/web-logging.properties"));
-                String filePattern = p.getProperty("java.util.logging.FileHandler.pattern");
+                p.load(WebServerLauncher.class.getResourceAsStream(
+                        "/web-logging.properties"));
+                String filePattern = p.getProperty(
+                        "java.util.logging.FileHandler.pattern");
                 if (filePattern != null && filePattern.contains("%w")) {
                     p.setProperty("java.util.logging.FileHandler.pattern",
-                                  filePattern.replaceAll("%w", logDir.getPath()));
-                    File tmpLog = File.createTempFile("wonderlandlog", ".properties");
+                            filePattern.replaceAll("%w", logDir.getPath()));
+                    File tmpLog = File.createTempFile(
+                            "wonderlandlog", ".properties");
                     p.store(new FileOutputStream(tmpLog), null);
-                    
+
                     logConfig = new FileInputStream(tmpLog);
                 } else {
                     // nothing to substitute, just read the file directly
-                    logConfig = WebServerLauncher.class.getResourceAsStream("/web-logging.properties");
+                    logConfig = WebServerLauncher.class.getResourceAsStream(
+                            "/web-logging.properties");
                 }
-            
+
                 LogManager.getLogManager().readConfiguration(logConfig);
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error setting up log config", ioe);
+                LOGGER.log(Level.WARNING, "Error setting up log config", ioe);
             }
         }
 
@@ -139,7 +146,8 @@ public class WebServerLauncher {
         }
 
         // start the killswitch
-        String killSwitchStr = System.getProperty(WEBSERVER_KILLSWITCH_PROPERTY);
+        String killSwitchStr =
+                System.getProperty(WEBSERVER_KILLSWITCH_PROPERTY);
         if (killSwitchStr != null) {
             KillSwitch ks = new KillSwitch(Integer.parseInt(killSwitchStr));
             new Thread(ks).start();
@@ -166,7 +174,7 @@ public class WebServerLauncher {
             List<URL> urls = new ArrayList<URL>();
             for (File jar : webDir.listFiles()) {
                 URL u = jar.toURI().toURL();
-                logger.fine("Adding URL " + u);
+                LOGGER.fine("Adding URL " + u);
 
                 urls.add(u);
             }
@@ -177,8 +185,9 @@ public class WebServerLauncher {
             classLoader = new LauncherClassLoader(urls.toArray(new URL[0]));
             Thread.currentThread().setContextClassLoader(classLoader);
 
-            String launchClass = System.getProperty(WEBSERVER_LAUNCH_CLASS_PROPERTY,
-                                                    WEBSERVER_LAUNCH_CLASS_DEFAULT);
+            String launchClass = System.getProperty(
+                    WEBSERVER_LAUNCH_CLASS_PROPERTY,
+                    WEBSERVER_LAUNCH_CLASS_DEFAULT);
 
             Class c = classLoader.loadClass(launchClass);
             c.newInstance();
@@ -186,73 +195,83 @@ public class WebServerLauncher {
             // log that everything is started up
             System.out.println("-----------------------------------------------------------");
             System.out.println("Wonderland web server started successfully.");
-            System.out.println("Log files are in " + 
-                               SystemPropertyUtil.getProperty("wonderland.log.dir"));
-            
+            System.out.println("Log files are in " +
+                    SystemPropertyUtil.getProperty("wonderland.log.dir"));
+
             // get the port the web server is running on
             // TODO: get the host too
             System.out.println("Web server running on " +
-                               SystemPropertyUtil.getProperty(
-                                    Constants.WEBSERVER_URL_PROP));
+                    SystemPropertyUtil.getProperty(
+                    Constants.WEBSERVER_URL_PROP));
             System.out.println("-----------------------------------------------------------");
-        
+
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Error loading web server", ex);
+            LOGGER.log(Level.SEVERE, "Error loading web server", ex);
             System.out.println("Error " + ex + " starting web server");
             ex.printStackTrace();
             System.exit(-1);
         }
     }
 
+    /**
+     * returns the class loader
+     * @return the class loader
+     */
     public static LauncherClassLoader getClassLoader() {
         return classLoader;
     }
 
     private static void usage() {
         System.err.println("Usage: WebServerLauncher [-p port] [-d directory]" +
-                           " [properties file]");
+                " [properties file]");
         System.err.println(" -p port: the port number to run the server on");
         System.err.println(" -d directory: the directory to install Wonderland in");
         System.err.println(" props: a properties file that overrides default values");
     }
-    
+
     private static boolean parseArguments(String[] args) {
-        String port      = null;
+        String port = null;
         String directory = null;
         String propsFile = null;
-        
+
         Iterator<String> i = Arrays.asList(args).iterator();
-        while(i.hasNext()) {
+        while (i.hasNext()) {
             String s = i.next();
-            
+
             if (s.equalsIgnoreCase("-p")) {
-                if (!i.hasNext()) return false;
-                
+                if (!i.hasNext()) {
+                    return false;
+                }
+
                 port = i.next();
             } else if (s.equalsIgnoreCase("-d")) {
-                if (!i.hasNext()) return false;
-                
+                if (!i.hasNext()) {
+                    return false;
+                }
+
                 directory = i.next();
             } else if (s.trim().length() == 0) {
                 continue;
             } else {
-                if (i.hasNext()) return false;
-                
+                if (i.hasNext()) {
+                    return false;
+                }
+
                 propsFile = s;
             }
         }
-        
+
         // first load the properties file, if any
         if (propsFile != null) {
             try {
                 System.getProperties().load(new FileInputStream(propsFile));
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error reading props file " + propsFile,
-                           ioe);
+                LOGGER.log(Level.WARNING,
+                        "Error reading props file " + propsFile, ioe);
                 return false;
             }
         }
-        
+
         // override the port and directory if specified
         if (port != null) {
             System.setProperty(Constants.WEBSERVER_PORT_PROP, port);
@@ -272,8 +291,7 @@ public class WebServerLauncher {
      * @throws IOException if there is an error reading a version file
      */
     private static boolean compareVersions(File runDir)
-        throws IOException
-    {
+            throws IOException {
         // read the version from the jar file
         String jarVersion = getJarVersion();
 
@@ -285,8 +303,8 @@ public class WebServerLauncher {
             dirVersion = br.readLine();
         }
 
-        logger.warning("Comparing versions.  Jar file: " + jarVersion +
-                       " Directory: " + dirVersion);
+        LOGGER.warning("Comparing versions.  Jar file: " + jarVersion +
+                " Directory: " + dirVersion);
 
         // compare the values
         if (jarVersion == null || dirVersion == null) {
@@ -298,8 +316,7 @@ public class WebServerLauncher {
     }
 
     private static void writeVersion(File runDir)
-        throws IOException
-    {
+            throws IOException {
         String currentVersion = getJarVersion();
         if (currentVersion != null) {
             File versionFile = new File(runDir, "wonderland.version");
@@ -326,8 +343,7 @@ public class WebServerLauncher {
     }
 
     private static void extractWebserverJars(File webDir)
-        throws IOException
-    {
+            throws IOException {
         // figure out the set of files to add or remove
         List<String> addFiles = new ArrayList<String>();
         List<String> removeFiles = new ArrayList<String>();
@@ -336,14 +352,14 @@ public class WebServerLauncher {
 
         // remove files from the remove list
         for (String removeFile : removeFiles) {
-            logger.fine("Removing " + removeFile);
+            LOGGER.fine("Removing " + removeFile);
             File remove = new File(webDir, removeFile);
             remove.delete();
         }
 
         // add files from the add list
         for (String addFile : addFiles) {
-            logger.fine("Adding " + addFile);
+            LOGGER.fine("Adding " + addFile);
             String fullPath = "/webserver/" + addFile;
             RunUtil.extract(WebServerLauncher.class, fullPath, webDir);
         }
@@ -358,13 +374,18 @@ public class WebServerLauncher {
      * with weblib components.
      */
     public static class LauncherClassLoader extends URLClassLoader {
+
+        /**
+         * creates a new LauncherClassLoader
+         * @param urls the URLs from which to load classes and resources
+         */
         public LauncherClassLoader(URL[] urls) {
-            super (urls);
+            super(urls);
         }
 
         /**
          * Add a URL.  Note that URLs cannot be replaced or removed
-         * @param URL the URL to add
+         * @param url the URL to add
          */
         @Override
         public void addURL(URL url) {
@@ -375,6 +396,7 @@ public class WebServerLauncher {
     // listen on a particular socket, and exit the server if that
     // socket disconnects
     static class KillSwitch implements Runnable {
+
         private int port;
 
         public KillSwitch(int port) {
@@ -383,19 +405,20 @@ public class WebServerLauncher {
 
         public void run() {
             try {
-                logger.info("[Killswitch]: Initializing killswitch on port " + port);
+                LOGGER.info("[Killswitch]: Initializing killswitch on port " +
+                        port);
                 ServerSocket server = new ServerSocket(port);
                 Socket s = server.accept();
-                logger.info("[Killswitch]: accepted connection");
+                LOGGER.info("[Killswitch]: accepted connection");
                 while (s.getInputStream().read() != -1) {
                     // do nothing, just wait for the stream to close
                 }
             } catch (IOException ioe) {
                 // an error occured, just ignore it
-                logger.log(Level.WARNING, "Error in killswitch", ioe);
+                LOGGER.log(Level.WARNING, "Error in killswitch", ioe);
             } finally {
-                logger.warning("[Killswitch]: disconnected, server shutting " +
-                               "down!");
+                LOGGER.warning("[Killswitch]: disconnected, server shutting " +
+                        "down!");
                 System.exit(0);
             }
         }
