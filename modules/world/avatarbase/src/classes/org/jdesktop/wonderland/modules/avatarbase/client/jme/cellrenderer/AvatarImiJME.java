@@ -41,7 +41,7 @@ import imi.character.CharacterMotionListener;
 import imi.character.CharacterProcessor;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarController;
-//import imi.character.avatar.CollisionListener;
+import imi.character.avatar.AvatarCollisionListener;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
@@ -55,8 +55,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.CollisionComponent;
+import org.jdesktop.mtgame.CollisionInfo;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.JMECollisionDetails;
 import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
@@ -120,7 +122,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private Entity rootEntity = null;
 
     private CollisionChangeRequestListener collisionChangeRequestListener;
-//    private CollisionListener collisionListener = null;
+    private AvatarCollisionListener collisionListener = null;
     
     /** Collection of listeners **/
     private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners
@@ -646,8 +648,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         collisionChangeRequestListener.setCollisionController(controller);
         AvatarController ac = (AvatarController)avatar.getContext().getController();
         ac.setCollisionController(controller);
-//        collisionListener = new WLCollisionListener();
-//        ac.addCollisionListener(collisionListener);
+        collisionListener = new WLCollisionListener();
+        ac.addCollisionListener(collisionListener);
     }
 
 
@@ -896,10 +898,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 this.collisionController = collisionController;
                 if (collisionController!=null) {
                     if (evt!=null) {
-                        collisionController.setCollisionEnabled(evt.isCollisionEnabled());
+                        collisionController.setCollisionResponseEnabled(evt.isCollisionResponseEnabled());
                         collisionController.setGravityEnabled(evt.isGravityEnabled());
                     } else {
-                        collisionController.setCollisionEnabled(false);
+                        collisionController.setCollisionResponseEnabled(true);
                         collisionController.setGravityEnabled(true);
                     }
                 }
@@ -920,26 +922,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             synchronized(this) {
                 evt = (AvatarCollisionChangeRequestEvent) evtIn;
                 if (collisionController!=null) {
-                    collisionController.setCollisionEnabled(evt.isCollisionEnabled());
+                    collisionController.setCollisionEnabled(evt.isCollisionResponseEnabled());
                     collisionController.setGravityEnabled(evt.isGravityEnabled());
                 }
             }
         }
     }
 
-//    class WLCollisionListener implements CollisionListener {
-//
-//        public void processCollision(TriangleCollisionResults tcr) {
-//            for (int i=0; i<tcr.getNumber(); i++) {
-//                ArrayList<Integer> tris = tcr.getCollisionData(i).getSourceTris();
-//                if (tris.size() != 0) {
-//                    TriMesh mesh = (TriMesh)tcr.getCollisionData(i).getSourceMesh();
-//                    System.err.println("Collision ");
-//                    // get entity
-//                    // post event
-//                }
-//            }
-//        }
-//
-//    }
+    class WLCollisionListener implements AvatarCollisionListener {
+
+        public void processCollision(CollisionInfo collisionInfo) {
+            JMECollisionDetails cd = (JMECollisionDetails)collisionInfo.get(0);
+            logger.info("Collided with: " + cd.getReportedNode() + " on entity: " + cd.getEntity());
+            ClientContextJME.getInputManager().postEvent(new AvatarCollisionEvent(collisionInfo), cd.getEntity());
+        }
+
+    }
 }

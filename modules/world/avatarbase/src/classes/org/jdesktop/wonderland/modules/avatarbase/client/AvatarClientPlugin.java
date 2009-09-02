@@ -124,7 +124,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
     private boolean menusAdded = false;
 
     // Menu items for the collision & gravity check boxes
-    private JCheckBoxMenuItem collisionEnabledMI = null;
+    private JCheckBoxMenuItem collisionResponseEnabledMI = null;
     private JCheckBoxMenuItem gravityEnabledMI = null;
 
     // The avatar configuration menu item
@@ -253,14 +253,14 @@ public class AvatarClientPlugin extends BaseClientPlugin
         });
 
         // Check box to set collision enabled
-        collisionEnabledMI = new JCheckBoxMenuItem(bundle.getString("Avatar_Collision_Enabled"));
-        collisionEnabledMI.setSelected(false); // TODO should be set by server
-        collisionEnabledMI.addActionListener(new ActionListener() {
+        collisionResponseEnabledMI = new JCheckBoxMenuItem(bundle.getString("Avatar_Collision_Response_Enabled"));
+        collisionResponseEnabledMI.setSelected(true); // TODO should be set by server
+        collisionResponseEnabledMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                boolean isCollision = collisionEnabledMI.isSelected();
+                boolean isCollisionResponse = collisionResponseEnabledMI.isSelected();
                 boolean isGravity = gravityEnabledMI.isSelected();
                 ClientContext.getInputManager().postEvent(
-                        new AvatarCollisionChangeRequestEvent(isCollision, isGravity));
+                        new AvatarCollisionChangeRequestEvent(isCollisionResponse, isGravity));
             }
         });
 
@@ -269,10 +269,10 @@ public class AvatarClientPlugin extends BaseClientPlugin
         gravityEnabledMI.setSelected(true); // TODO should be set by server
         gravityEnabledMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                boolean isCollision = collisionEnabledMI.isSelected();
+                boolean isCollisionResponse = collisionResponseEnabledMI.isSelected();
                 boolean isGravity = gravityEnabledMI.isSelected();
                 ClientContext.getInputManager().postEvent(
-                        new AvatarCollisionChangeRequestEvent(isCollision, isGravity));
+                        new AvatarCollisionChangeRequestEvent(isCollisionResponse, isGravity));
             }
         });
 
@@ -293,6 +293,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
                     ClientContext.getUserDirectory(bundle.getString("AvatarCache")))));
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to form avatar base URL", excp);
+        } catch(Exception e) {
+            logger.log(Level.SEVERE,"Exception, are you using JDK 5 ?", e);
         }
 
         // Initialize the AvatarSystem after we set up caching
@@ -356,7 +358,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
         if (menusAdded == true) {
             MainFrame frame = JmeClientMain.getFrame();
             frame.removeFromWindowMenu(gestureMI);
-            frame.removeFromToolsMenu(collisionEnabledMI);
+            frame.removeFromToolsMenu(collisionResponseEnabledMI);
             frame.removeFromToolsMenu(gravityEnabledMI);
             frame.removeFromEditMenu(avatarConfigMI);
             
@@ -464,7 +466,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
             MainFrame frame = JmeClientMain.getFrame();
             frame.addToWindowMenu(gestureMI, 0);
             frame.addToToolsMenu(gravityEnabledMI, -1);
-            frame.addToToolsMenu(collisionEnabledMI, -1);
+            frame.addToToolsMenu(collisionResponseEnabledMI, -1);
             frame.addToEditMenu(avatarConfigMI, 0);
 
             if (frame instanceof MainFrameImpl) { // Only until the MainFrame interface gets this method
