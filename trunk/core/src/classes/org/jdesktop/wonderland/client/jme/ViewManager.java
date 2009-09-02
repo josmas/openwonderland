@@ -229,9 +229,11 @@ public class ViewManager implements ViewPropertiesListener {
      * 
      * @param cell ViewCell to register
      */
-    public void register(ViewCell cell) {
-        System.err.println(cell.getCellCache());
-        sessionViewCells.put(cell.getCellCache().getSession(), cell);
+    public void register(ViewCell cell, WonderlandSession session) {
+        if (cell==null)
+            sessionViewCells.remove(session);
+        else
+            sessionViewCells.put(session, cell);
     }
 
     /**
@@ -250,7 +252,10 @@ public class ViewManager implements ViewPropertiesListener {
      * @param cell
      */
     public void setPrimaryViewCell(ViewCell cell) {
-        attach(cell);
+        if (cell==null)
+            detach();
+        else
+            attach(cell);
         ViewCell oldViewCell = primaryViewCell;
         primaryViewCell = cell;
 
