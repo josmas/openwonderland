@@ -133,6 +133,10 @@ public abstract class EventDistributor implements Runnable {
 	inputQueue.add(new EntrySwingEnterExit(event, entity));
     }
 
+    void enqueueEvent(Event event, Entity entity) {
+        inputQueue.add(new EntrySwingEnterExit(event, entity));
+    }
+
     /**
      * The run loop of the thread.
      */

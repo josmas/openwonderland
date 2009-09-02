@@ -384,7 +384,7 @@ public abstract class InputManager
     public void focusGained(FocusEvent e) {
         mainWindowHasFocus = true;
         FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
-        eventDistributor.enqueueEvent(event, null);
+        eventDistributor.enqueueEvent(event, (PickInfo)null);
     }
 
     /**
@@ -395,7 +395,7 @@ public abstract class InputManager
     public void focusLost(FocusEvent e) {
         mainWindowHasFocus = false;
         FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
-        eventDistributor.enqueueEvent(event, null);
+        eventDistributor.enqueueEvent(event, (PickInfo)null);
     }
 
     /** 
@@ -579,6 +579,16 @@ public abstract class InputManager
      */
     public void postEvent (Event event) {
 	eventDistributor.enqueueEvent(event);
+    }
+
+    /**
+     * Inject an event, with an associated entity into the system
+     * 
+     * @param event
+     * @param entity
+     */
+    public void postEvent(Event event, Entity entity) {
+        eventDistributor.enqueueEvent(event, entity);
     }
 
     /* NOTE: I've decided not to implement an entity variant of postEvent at this time. */
