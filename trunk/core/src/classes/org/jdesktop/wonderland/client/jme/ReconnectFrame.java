@@ -28,23 +28,23 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 /**
  *
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ReconnectFrame extends javax.swing.JDialog implements Runnable {
-    private static final Logger logger =
-            Logger.getLogger(ReconnectFrame.class.getName());
 
+    private static final Logger LOGGER =
+            Logger.getLogger(ReconnectFrame.class.getName());
     private JmeClientMain main;
     private ServerSessionManager mgr;
-
     private Thread reconnectThread;
 
     /** Creates new form ReconnectFrame */
     public ReconnectFrame(JmeClientMain main, ServerSessionManager mgr) {
-        super (main.getFrame().getFrame(), false);
-        
+        super(main.getFrame().getFrame(), false);
+
         this.main = main;
         this.mgr = mgr;
-        
+
         initComponents();
 
         reconnectThread = new Thread(this, "Reconnect to server");
@@ -64,17 +64,18 @@ public class ReconnectFrame extends javax.swing.JDialog implements Runnable {
 
             main.loadServer(mgr.getServerURL());
         } catch (IOException ex) {
-            logger.log(Level.WARNING, "Error reconnecting to server " +
-                       mgr.getServerURL(), ex);
+            LOGGER.log(Level.WARNING, "Error reconnecting to server " +
+                    mgr.getServerURL(), ex);
             String msg = "Unable to reconnect to server: \n" +
-                         ex.getMessage();
+                    ex.getMessage();
 
-            JOptionPane.showMessageDialog(this, msg, "Error connecting to server",
-                                          JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, msg,
+                    "Error connecting to server", JOptionPane.ERROR_MESSAGE);
         } catch (InterruptedException ie) {
             // all done
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     ReconnectFrame.this.setVisible(false);
                     ReconnectFrame.this.dispose();
@@ -96,11 +97,12 @@ public class ReconnectFrame extends javax.swing.JDialog implements Runnable {
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Reconnect to server");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/Bundle"); // NOI18N
+        setTitle(bundle.getString("ReconnectFrame.title")); // NOI18N
 
-        jLabel1.setText("Server disconnected.  Attempting to reconnect...");
+        jLabel1.setText(bundle.getString("ReconnectFrame.jLabel1.text")); // NOI18N
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ReconnectFrame.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -116,7 +118,7 @@ public class ReconnectFrame extends javax.swing.JDialog implements Runnable {
                 .add(jLabel1)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(224, Short.MAX_VALUE)
+                .addContainerGap(386, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addContainerGap())
         );
@@ -136,10 +138,8 @@ public class ReconnectFrame extends javax.swing.JDialog implements Runnable {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         reconnectThread.interrupt();
     }//GEN-LAST:event_cancelButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
-
 }
