@@ -28,41 +28,53 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 
 /**
  * The cell factory for the sample cell.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
 public class MicrophoneCellFactory implements CellFactorySPI {
 
+    private final static Logger LOGGER =
+            Logger.getLogger(MicrophoneCellFactory.class.getName());
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
+
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
         // Create a setup with some default values
-        MicrophoneCellServerState cellServerState = new MicrophoneCellServerState();
+        MicrophoneCellServerState cellServerState =
+                new MicrophoneCellServerState();
         cellServerState.setName("MICROPHONE");
         cellServerState.setMicrophoneName("MICROPHONE");
-        cellServerState.setFullVolumeArea(new FullVolumeArea("BOX", 11.0, 11.0, 11.0));
-	
+        cellServerState.setFullVolumeArea(
+                new FullVolumeArea("BOX", 11.0, 11.0, 11.0));
+
         Vector3f origin = new Vector3f(0F, 0F, 0F);
 
-	cellServerState.setActiveArea(new ActiveArea(origin, "BOX", 2., 2., 2.));
+        cellServerState.setActiveArea(
+                new ActiveArea(origin, "BOX", 2., 2., 2.));
 
-        Logger.getLogger(MicrophoneCellFactory.class.getName()).warning("MICROPHONE!!!!");
+        LOGGER.warning("MICROPHONE!!!!");
         return (T) cellServerState;
     }
 
     public String getDisplayName() {
-        return "Microphone";
+        return BUNDLE.getString("Microphone");
     }
 
     public Image getPreviewImage() {
-        URL url = MicrophoneCellFactory.class.getResource("resources/microphone_preview.png");
+        URL url = MicrophoneCellFactory.class.getResource(
+                "resources/microphone_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
