@@ -43,9 +43,10 @@ public class SasXrwProvider extends SasProvider {
     protected void cleanup () {
         super.cleanup();
 
-        // TODO: low: workaround for bug 205. This is draconian. Is there something else better? 
+        // TODO: low: workaround for bug 205. This is draconian. Is there something else better?
+        // TODO: is there any reason this doesn't just call AppXrwMaster.shutdownAllApps()?
         try {
-            Runtime.getRuntime().exec("pkill -9 Xvfb");
+            Runtime.getRuntime().exec("pkill -9 Xvfb-xremwin");
         } catch (Exception e) {}
 
         logger.warning("SasXrwProvider: cleaned up app processes.");

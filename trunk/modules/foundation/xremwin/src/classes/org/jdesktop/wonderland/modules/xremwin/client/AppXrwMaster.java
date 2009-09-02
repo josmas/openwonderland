@@ -353,7 +353,7 @@ public class AppXrwMaster
 
             // TODO: low: workaround for bug 205. This is draconian. Is there something else better? 
             try {
-                Runtime.getRuntime().exec("pkill -9 Xvfb");
+                Runtime.getRuntime().exec("pkill -9 Xvfb-xremwin");
             } catch (Exception e) {}
         }
     }

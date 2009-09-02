@@ -121,20 +121,13 @@ public class WindowSystemXrw
 
         String topDir = System.getProperty("user.dir");
 
-        String[] cmdAndArgs = new String[3];
+        String[] cmdAndArgs = new String[2];
         cmdAndArgs[0] = topDir + "/bin/runxremwin";
         cmdAndArgs[1] = displayName;
-        if ("SunOS".equals(System.getProperty("os.name"))) {
-            // Solaris
-            cmdAndArgs[2] = topDir + "/bin/solaris";
-        } else {
-            // Linux
-            cmdAndArgs[2] = topDir + "/bin/linux";
-        }
+
         AppXrw.logger.info("cmdAndArgs for " + appInstanceName);
         AppXrw.logger.info("cmdAndArgs[0] = " + cmdAndArgs[0]);
         AppXrw.logger.info("cmdAndArgs[1] = " + cmdAndArgs[1]);
-        AppXrw.logger.info("cmdAndArgs[2] = " + cmdAndArgs[2]);
 
         String processName = "Xremwin server for " + appInstanceName;
         xServerReporter = ProcessReporterFactory.getFactory().create(processName);
