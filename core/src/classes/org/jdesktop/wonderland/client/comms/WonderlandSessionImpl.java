@@ -431,12 +431,10 @@ public class WonderlandSessionImpl implements WonderlandSession {
     }
    
     public void addSessionStatusListener(SessionStatusListener listener) {
-        System.out.println("Add listener " + listener + " to " + this);
         sessionStatusListeners.add(listener);
     }
     
     public void removeSessionStatusListener(SessionStatusListener listener) {
-        System.out.println("Remove listener " + listener + " from " + this);
         sessionStatusListeners.remove(listener);
     }
    
