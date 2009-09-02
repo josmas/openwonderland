@@ -118,19 +118,23 @@ public class PresenceManagerClient extends BaseConnection implements
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
-        cellID = localAvatar.getViewCell().getCellID();
+        if (localAvatar==null || localAvatar.getViewCell()==null) {
+            logger.severe("TODO - implement PresenceManagerClient.viewConfigured for a null view cell");
+        } else {
+            cellID = localAvatar.getViewCell().getCellID();
 
-        String callID = CallID.getCallID(cellID);
+            String callID = CallID.getCallID(cellID);
 
-        SoftphoneControlImpl.getInstance().setCallID(callID);
+            SoftphoneControlImpl.getInstance().setCallID(callID);
 
-	presenceInfo = new PresenceInfo(cellID, session.getID(), session.getUserID(), callID);
+            presenceInfo = new PresenceInfo(cellID, session.getID(), session.getUserID(), callID);
 
-	pm.addPresenceInfo(presenceInfo);
+            pm.addPresenceInfo(presenceInfo);
 
-        session.send(this, new ClientConnectMessage());
+            session.send(this, new ClientConnectMessage());
 
-        logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
+            logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
+        }
     }
 
     @Override

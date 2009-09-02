@@ -330,18 +330,22 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void viewConfigured(LocalAvatar localAvatar) {
         cell = localAvatar.getViewCell();
-        CellID cellID = cell.getCellID();
+        if (cell==null) {
+            logger.severe("TODO - Implement AudioManager.viewConfigured for the case when the primary view cell disconnects");
+        } else {
+            CellID cellID = cell.getCellID();
 
-        /*
-         * We require the PresenceManager so by the time we get here,
-         * our presenceInfo has to be available.
-         */
-        presenceInfo = pm.getPresenceInfo(cellID);
+            /*
+             * We require the PresenceManager so by the time we get here,
+             * our presenceInfo has to be available.
+             */
+            presenceInfo = pm.getPresenceInfo(cellID);
 
-        logger.fine("[AudioManagerClient] view configured for cell " +
-                cellID + " presence: " + presenceInfo + " from " + pm);
+            logger.fine("[AudioManagerClient] view configured for cell " +
+                    cellID + " presence: " + presenceInfo + " from " + pm);
 
-        connectSoftphone();
+            connectSoftphone();
+        }
     }
 
     public void connectSoftphone() {
