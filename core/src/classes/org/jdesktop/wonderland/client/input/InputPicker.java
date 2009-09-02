@@ -424,7 +424,7 @@ public abstract class InputPicker {
 	    // Pick miss. Send it along without pick info.
 	    logger.finest("Picker: pick miss");
 	    event = (MouseEvent3D) createWonderlandEvent(awtEvent);
-	    eventDistributor.enqueueEvent(event, null);
+	    eventDistributor.enqueueEvent(event, (PickInfo)null);
 	    return;
 	}
 	logger.fine("Picker: pick hit: destPickInfo = " + destPickInfo);
