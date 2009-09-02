@@ -225,24 +225,24 @@ public class JmeClientMain {
             }
         });
 
-        JMenuItem physicsMI = new JCheckBoxMenuItem(
-                BUNDLE.getString("Physics Enabled"));
-        physicsMI.setEnabled(false);
-        physicsMI.setSelected(false);
-        physicsMI.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(
-                        curSession.getSessionManager(), "Default");
-                if (phySystem instanceof JBulletPhysicsSystem) {
-                    ((JBulletPhysicsSystem) phySystem).setStarted(
-                            ((JCheckBoxMenuItem) e.getSource()).isSelected());
-                } else {
-                    LOGGER.severe("Unsupported physics system " + phySystem);
-                }
-            }
-        });
-        frame.addToEditMenu(physicsMI, 3);
+//        JMenuItem physicsMI = new JCheckBoxMenuItem(
+//                BUNDLE.getString("Physics Enabled"));
+//        physicsMI.setEnabled(false);
+//        physicsMI.setSelected(false);
+//        physicsMI.addActionListener(new ActionListener() {
+//
+//            public void actionPerformed(ActionEvent e) {
+//                PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(
+//                        curSession.getSessionManager(), "Default");
+//                if (phySystem instanceof JBulletPhysicsSystem) {
+//                    ((JBulletPhysicsSystem) phySystem).setStarted(
+//                            ((JCheckBoxMenuItem) e.getSource()).isSelected());
+//                } else {
+//                    LOGGER.severe("Unsupported physics system " + phySystem);
+//                }
+//            }
+//        });
+//        frame.addToEditMenu(physicsMI, 3);
 
         // connect to the default server
         try {
