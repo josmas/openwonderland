@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.containercell.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -26,21 +27,25 @@ import org.jdesktop.wonderland.modules.containercell.common.ContainerComponentSe
  * The cell component factory for the container cell component.
  * 
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellComponentFactory
 public class ContainerComponentFactory implements CellComponentFactorySPI {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/containercell/client/Bundle");
+
     public String getDisplayName() {
-        return "Container";
+        return BUNDLE.getString("Container");
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
-        ContainerComponentServerState state = new ContainerComponentServerState();
-        return (T)state;
+        ContainerComponentServerState state =
+                new ContainerComponentServerState();
+        return (T) state;
     }
 
     public String getDescription() {
-        return "A cell with a container component will request that newly " +
-               "created cells be created as children of it";
+        return BUNDLE.getString("Container_Description");
     }
 }
