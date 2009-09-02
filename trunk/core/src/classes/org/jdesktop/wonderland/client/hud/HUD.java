@@ -130,7 +130,7 @@ public interface HUD extends HUDObject {
 
     /**
      * Creates a new HUD message with the specified configuration
-     * @param message the message to display
+     * @param text the message to display
      * @param type the dialog type: INFO, WARNING, ERROR, or QUERY
      * @param buttons which buttons to display: NONE, OK, OK_CANCEL
      * @return a new HUD message component

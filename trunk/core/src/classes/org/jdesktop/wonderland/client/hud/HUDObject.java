@@ -229,7 +229,7 @@ public interface HUDObject extends HUDEventSource {
 
     /**
      * Sets the visibility of the HUD object in-world after a specified time
-     * @param worldVisible if true, shows the HUD object in world, otherwise hides
+     * @param visible if true, shows the HUD object in world, otherwise hides
      * the HUD object
      * @param when the visibility of the object will change after when
      * milliseconds
