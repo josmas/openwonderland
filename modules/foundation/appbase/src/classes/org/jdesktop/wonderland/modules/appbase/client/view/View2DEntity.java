@@ -964,8 +964,10 @@ public abstract class View2DEntity implements View2D {
                 geometryNode.setSize(width, height);
                 geometryNode.setTexCoords(widthRatio, heightRatio);
                 ClientContextJME.getWorldManager().addToUpdateList(viewNode);
+                
+                userResizeFrameUpdate(width, height, userResizeNewSize);
             }
-        }, null);
+        }, null, true);
     }
 
     public synchronized void userResizeFinish () {
@@ -973,6 +975,44 @@ public abstract class View2DEntity implements View2D {
         // TODO: for now, only support non-continuous resize. That is, only perform
         // the actual window resize at the end of the drag operation.
         window.userSetSize(userResizeNewSize.width, userResizeNewSize.height);
+    }
+
+    protected void userResizeFrameUpdate (float width3D, float height3D, Dimension newSize) {
+    }
+
+    public void updateViewSizeOnly (int x, int y, int width, int height, 
+                                    float newViewWidth3D, float newViewHeight3D,
+                                    Dimension parentViewNewSize) {
+        final Vector3f trans = new Vector3f();
+
+        trans.x = offset.x;
+        trans.y = offset.y;
+
+        if (type != Type.PRIMARY && type != Type.UNKNOWN && parent != null) {
+
+            // Convert pixel offset to local coords and add it in
+            // TODO: does the width/height need to include the scroll bars?
+            Vector2f pixelScale = getPixelScaleCurrent();
+            Dimension parentSize = parent.getSizeApp();
+            trans.y += parentViewNewSize.height * pixelScale.y / 2f;
+            trans.y -= y * pixelScale.y / 2f;
+        }
+
+        final float width3D = getPixelScaleCurrent().x * width;
+        final float height3D = getPixelScaleCurrent().y * height;
+
+        Image image = getWindow().getTexture().getImage();
+        final float widthRatio = (float)width / image.getWidth();
+        final float heightRatio = (float)height / image.getHeight();
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                geometryNode.setLocalTranslation(trans);
+                geometryNode.setSize(width3D, height3D);
+                geometryNode.setTexCoords(widthRatio, heightRatio);
+                ClientContextJME.getWorldManager().addToUpdateList(viewNode);
+            }
+        }, null);
     }
 
     /** TODO: NOTYET

@@ -46,6 +46,7 @@ import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import javax.swing.SwingUtilities;
+import java.awt.Dimension;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -85,6 +86,8 @@ public class FrameHeaderSwing
 
     /** The mouse press point in local coordinates. */
     private Vector2f dragStartLocal;
+
+    private int x, y, width, height;
 
     /**
      * Create a new instance of FrameHeaderSwing.
@@ -169,31 +172,40 @@ public class FrameHeaderSwing
      */
     public void update() throws InstantiationException {
         updateLayout();
+        headerWindow.setPixelOffset(x, y);
+        headerWindow.setSize(width, height);
+    }
+
+    public void update(float newWidth3D, float newHeight3D, Dimension newSize) throws InstantiationException {
+        updateLayout(newWidth3D, newHeight3D);
+        frameView.updateViewSizeOnly(x, y, width, height, newWidth3D, newHeight3D, newSize);
+    }
+
+    protected void updateLayout() {
+        updateLayout(view.getDisplayerLocalWidth(), view.getDisplayerLocalHeight());         
     }
 
     /** {@inheritDoc} */
-    protected void updateLayout() {
+    protected void updateLayout(float newWidth3D, float newHeight3D) {
         Vector2f pixelScale = view.getPixelScale();
+
 
         // Get the preferred height
         Component embeddedComp = headerWindow.getComponent();
         int preferredHeight = embeddedComp.getPreferredSize().height;
 
         // Calculate size. This is essentially the same as for FrameSide TOP, but converted to pixels.
-        float innerWidth = view.getDisplayerLocalWidth();
-        float innerHeight = view.getDisplayerLocalHeight();
+        float innerWidth = newWidth3D;
+        float innerHeight = newHeight3D;
         float sideThickness = Frame2DCell.SIDE_THICKNESS;
-        int width = (int) ((innerWidth + 2f * sideThickness) / pixelScale.x);
-        int height = preferredHeight;
+        width = (int) ((innerWidth + 2f * sideThickness) / pixelScale.x);
+        height = preferredHeight;
 
         // Calculate the pixel offset of the upper-left of the header relative to the 
         // upper-left of the view. Note that we need to calculate x so that the header
         // left side aligns with the left side of the frame.
-        int x = (int) (-sideThickness / pixelScale.x);
-        int y = -height;
-
-        headerWindow.setPixelOffset(x, y);
-        headerWindow.setSize(width, height);
+        x = (int) (-sideThickness / pixelScale.x);
+        y = -height;
     }
 
     /**
