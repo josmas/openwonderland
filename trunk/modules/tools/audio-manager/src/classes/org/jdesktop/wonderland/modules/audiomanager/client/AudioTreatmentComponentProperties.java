@@ -47,7 +47,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+
     private CellPropertiesEditor editor;
+
     private String originalGroupId;
     private String originalFileTreatments;
     private String originalUrlTreatments;
@@ -57,6 +59,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private double originalFullVolumeAreaPercent;
     private boolean originalDistanceAttenuated;
     private int originalFalloff;
+
     private SpinnerNumberModel fullVolumeAreaPercentModel;
     private SpinnerNumberModel extentRadiusModel;
     private double extentRadius = 0;
@@ -69,8 +72,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         URL url = AudioTreatmentComponentProperties.class.getResource(
                 "resources/AudioCapabilitiesDiagram.png");
+
         ImageIcon icon = new ImageIcon(
                 Toolkit.getDefaultToolkit().createImage(url));
+
         AudioCapabilitiesLabel.setIcon(icon);
 
         AudioCapabilitiesLabel.setVisible(true);
@@ -130,18 +135,20 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
-        CellServerState cellServerState = editor.getCellServerState();
-        AudioTreatmentComponentServerState state =
-                (AudioTreatmentComponentServerState) cellServerState.getComponentServerState(
+        CellServerState state = editor.getCellServerState();
+
+        AudioTreatmentComponentServerState compState =
+                (AudioTreatmentComponentServerState) state.getComponentServerState(
                 AudioTreatmentComponentServerState.class);
+
         if (state == null) {
             return;
         }
 
-        originalGroupId = state.getGroupId();
+        originalGroupId = compState.getGroupId();
         audioGroupIdTextField.setText(originalGroupId);
 
-        String[] treatmentList = state.getTreatments();
+        String[] treatmentList = compState.getTreatments();
 
         originalFileTreatments = "";
         originalUrlTreatments = "";
@@ -150,12 +157,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             String treatment = treatmentList[i];
 
             if (treatment.indexOf("://") > 0) {
-                if (treatment.indexOf("file://") < 0) {
-                    originalUrlTreatments += treatment + " ";
-                } else {
+                if (treatment.indexOf("file://") >= 0) {
                     originalFileTreatments += treatment + " ";
+                } else {
+                    originalUrlTreatments += treatment + " ";
                 }
-            }
+            } else {
+                originalFileTreatments += treatment + " ";
+	    }
         }
 
         originalFileTreatments = originalFileTreatments.trim();
@@ -166,10 +175,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         urlTextField.setText(originalUrlTreatments);
 
-        originalVolume = VolumeUtil.getClientVolume(state.getVolume());
+        originalVolume = VolumeUtil.getClientVolume(compState.getVolume());
         volumeSlider.setValue(originalVolume);
 
-        originalPlayWhen = state.getPlayWhen();
+        originalPlayWhen = compState.getPlayWhen();
         playWhen = originalPlayWhen;
 
         switch (originalPlayWhen) {
@@ -186,21 +195,21 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 break;
         }
 
-        originalExtentRadius = state.getExtent();
+        originalExtentRadius = compState.getExtent();
         extentRadius = originalExtentRadius;
         extentRadiusSpinner.setValue(originalExtentRadius);
 
         extentRadiusSpinner.setEnabled(true);
         extentRadiusSpinner.setValue((Double) extentRadius);
 
-        originalFullVolumeAreaPercent = state.getFullVolumeAreaPercent();
+        originalFullVolumeAreaPercent = compState.getFullVolumeAreaPercent();
         fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
 
-        originalDistanceAttenuated = state.getDistanceAttenuated();
+        originalDistanceAttenuated = compState.getDistanceAttenuated();
         distanceAttenuated = originalDistanceAttenuated;
         distanceAttenuatedRadioButton.setSelected(originalDistanceAttenuated);
 
-        originalFalloff = (int) state.getFalloff();
+        originalFalloff = (int) compState.getFalloff();
         falloffSlider.setValue(originalFalloff);
 
         if (originalDistanceAttenuated == true) {
@@ -223,15 +232,17 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     public void apply() {
         // Figure out whether there already exists a server state for the
         // component.
-        CellServerState cellServerState = editor.getCellServerState();
-        AudioTreatmentComponentServerState state =
-                (AudioTreatmentComponentServerState) cellServerState.getComponentServerState(
+        CellServerState state = editor.getCellServerState();
+
+        AudioTreatmentComponentServerState compState =
+                (AudioTreatmentComponentServerState) state.getComponentServerState(
                 AudioTreatmentComponentServerState.class);
+
         if (state == null) {
             return;
         }
 
-        state.setGroupId(audioGroupIdTextField.getText());
+        compState.setGroupId(audioGroupIdTextField.getText());
 
         String treatments = fileTextField.getText();
 
@@ -252,15 +263,15 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         }
 
         // Update the component state, add to the list of updated states
-        state.setTreatments(treatments.split(" "));
-        state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
-        state.setPlayWhen(playWhen);
-        state.setExtent((Double) extentRadiusModel.getValue());
-        state.setFullVolumeAreaPercent(
+        compState.setTreatments(treatments.split(" "));
+        compState.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
+        compState.setPlayWhen(playWhen);
+        compState.setExtent((Double) extentRadiusModel.getValue());
+        compState.setFullVolumeAreaPercent(
                 (Double) fullVolumeAreaPercentModel.getValue());
-        state.setDistanceAttenuated(distanceAttenuated);
-        state.setFalloff(falloffSlider.getValue());
-        editor.addToUpdateList(state);
+        compState.setDistanceAttenuated(distanceAttenuated);
+        compState.setFalloff(falloffSlider.getValue());
+        editor.addToUpdateList(compState);
     }
 
     /**
