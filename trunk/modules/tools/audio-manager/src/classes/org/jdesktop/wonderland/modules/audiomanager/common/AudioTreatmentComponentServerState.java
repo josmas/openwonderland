@@ -53,6 +53,9 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlElement(name="playWhen")
     private PlayWhen playWhen = PlayWhen.ALWAYS;
 
+    @XmlElement(name="playOnce")
+    private boolean playOnce = false; 
+
     @XmlElement(name="extent")
     private double extent = 10;
 
@@ -103,6 +106,15 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlTransient
     public PlayWhen getPlayWhen() {
 	return playWhen;
+    }
+
+    public void setPlayOnce(boolean playOnce) {
+	this.playOnce = playOnce;
+    }
+
+    @XmlTransient
+    public boolean getPlayOnce() {
+	return playOnce;
     }
 
     public void setExtent(double extent) {

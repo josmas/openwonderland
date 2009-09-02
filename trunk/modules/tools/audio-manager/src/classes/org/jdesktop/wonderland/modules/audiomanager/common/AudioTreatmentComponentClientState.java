@@ -40,6 +40,8 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
 
     public PlayWhen playWhen;
 
+    public boolean playOnce;
+
     public double extent;
 
     public double fullVolumeAreaPercent;
@@ -70,6 +72,11 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     @XmlElement
     public PlayWhen getPlayWhen() {
         return playWhen;
+    }
+
+    @XmlElement
+    public boolean getPlayOnce() {
+        return playOnce;
     }
 
     @XmlElement
