@@ -25,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -106,7 +107,7 @@ public class HUDCellPalette extends javax.swing.JPanel {
          * {@inheritDoc}
          */
         @Override
-        public boolean canImport(TransferHandler.TransferSupport info) {
+        public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
             // the cell palette doesn't support import
             return false;
         }
