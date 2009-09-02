@@ -31,6 +31,7 @@ import com.sun.sgs.app.ManagedReference;
 
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.Serializable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,18 +52,21 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentDoneMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMenuChangeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import com.sun.voip.client.connector.CallStatus;
+import com.sun.voip.client.connector.CallStatusListener;
 
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
@@ -84,6 +88,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 import org.jdesktop.wonderland.common.checksums.Checksum;
 import org.jdesktop.wonderland.common.checksums.ChecksumList;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -91,8 +96,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author jprovino
  */
-public class AudioTreatmentComponentMO extends AudioParticipantComponentMO implements
-        ManagedCallStatusListener {
+public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
@@ -103,10 +107,17 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     private String[] treatments = new String[0];
     private double volume = 1;
     private PlayWhen playWhen = PlayWhen.ALWAYS;
+    private boolean playOnce = false;
     private double extent = 10;
     private double fullVolumeAreaPercent = 25;
     private boolean distanceAttenuated = true;
     private double falloff = 50;
+
+    /** the channel from that cell */
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelRef;
+
+    private CellID cellID;
 
     private static String serverURL;
 
@@ -121,6 +132,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
      */
     public AudioTreatmentComponentMO(CellMO cellMO) {
         super(cellMO);
+
+	cellID = cellMO.getCellID();
 
         // The AudioTreatment Component depends upon the Proximity Component.
         // We add this component as a dependency if it does not yet exist
@@ -142,7 +155,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         groupId = state.getGroupId();
 
 	if (groupId == null || groupId.length() == 0) {
-	    groupId = CallID.getCallID(cellRef.get().getCellID());
+	    groupId = CallID.getCallID(cellID);
 	}
 
         treatments = state.getTreatments();
@@ -150,6 +163,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	volume = state.getVolume();
 
 	playWhen = state.getPlayWhen();
+
+	playOnce = state.getPlayOnce();
 
 	extent = state.getExtent();
 
@@ -175,6 +190,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             state.setTreatments(treatments);
 	    state.setVolume(volume);
 	    state.setPlayWhen(playWhen);
+	    state.setPlayOnce(playOnce);
 	    state.setExtent(extent);
 	    state.setFullVolumeAreaPercent(fullVolumeAreaPercent);
 	    state.setDistanceAttenuated(distanceAttenuated);
@@ -199,6 +215,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	    state.treatments = treatments;
 	    state.volume = volume;
 	    state.playWhen = playWhen;
+	    state.playOnce = playOnce;
 	    state.extent = extent;
 	    state.fullVolumeAreaPercent = fullVolumeAreaPercent;
 	    state.distanceAttenuated = distanceAttenuated;
@@ -212,7 +229,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     public void setLive(boolean live) {
         super.setLive(live);
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO) cellRef.get().getComponent(ChannelComponentMO.class);
+        //ChannelComponentMO channelComponent = (ChannelComponentMO) cellRef.get().getComponent(ChannelComponentMO.class);
+
+        ChannelComponentMO channelComponent = channelRef.get();
 
         if (live == false) {
             channelComponent.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
@@ -289,7 +308,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
             String treatment = treatments[i];
 
-            String treatmentId = CallID.getCallID(cellRef.get().getCellID());
+            String treatmentId = CallID.getCallID(cellID);
 
 	    String pattern = "wlcontent://";
 
@@ -304,8 +323,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                 try {
                     path = path.replaceAll(" ", "%20");
 
-                    url = new URL(new URL(serverURL),
-                            "webdav/content/" + path);
+                    url = new URL(new URL(serverURL), "webdav/content/" + path);
 
                     treatment = url.toString();
                 } catch (MalformedURLException e) {
@@ -352,8 +370,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	    }
 
             setup.treatment = treatment;
-	    setup.managedListenerRef = 
-		AppContext.getDataManager().createReference((ManagedCallStatusListener) this);
+	    //setup.listener = new MyCallStatusListener(cellID, playOnce);
+
+	    vm.addCallStatusListener(new MyCallStatusListener(cellID, channelRef, playOnce), treatmentId);
 
             if (setup.treatment == null || setup.treatment.length() == 0) {
                 logger.warning("Invalid treatment '" + setup.treatment + "'");
@@ -564,16 +583,42 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	}
     }
 
-    public void callStatusChanged(CallStatus callStatus) {
-        String callId = callStatus.getCallId();
+    private static class MyCallStatusListener implements ManagedCallStatusListener {
 
-        switch (callStatus.getCode()) {
-            case CallStatus.ESTABLISHED:
+	private CellID cellID;
+	private boolean playOnce;
+        private ManagedReference<ChannelComponentMO> channelRef;
+
+	public MyCallStatusListener(CellID cellID, ManagedReference<ChannelComponentMO> channelRef,
+		boolean playOnce) {
+
+	    this.cellID = cellID;
+	    this.channelRef = channelRef;
+	    this.playOnce = playOnce;
+	}
+
+        public void callStatusChanged(CallStatus callStatus) {
+            String callId = callStatus.getCallId();
+
+	    System.out.println("Got status " + callStatus + " playOnce " + playOnce);
+
+            if (callId == null) {
+                logger.warning("No callId in callStatus:  " + callStatus);
+                return;
+            }
+
+            switch (callStatus.getCode()) {
+	    case CallStatus.ESTABLISHED:
                 break;
 
             case CallStatus.TREATMENTDONE:
-                break;
-        }
+	        if (playOnce == true) {
+		    System.out.println("TREATMENT DONE");
+
+		    channelRef.get().sendAll(null, new AudioTreatmentDoneMessage(cellID, callId));
+	        }
+            }
+	}
     }
 
     private AudioTreatmentProximityListener proximityListener;
@@ -585,7 +630,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         if (component == null) {
             logger.warning("The AudioTreatment Component does not have a " +
-                    "Proximity Component for Cell ID " + cellRef.get().getCellID());
+                    "Proximity Component for Cell ID " + cellID);
             return;
         }
 
