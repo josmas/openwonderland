@@ -278,7 +278,7 @@ public class HUDCellPalette extends javax.swing.JPanel {
 
             g2.setFont(font);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                           RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+                           RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g2.setColor(Color.DARK_GRAY);
 
             Rectangle2D maxBounds = metrics.getMaxCharBounds(g2);
