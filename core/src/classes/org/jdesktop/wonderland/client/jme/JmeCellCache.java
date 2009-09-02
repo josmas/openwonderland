@@ -45,7 +45,7 @@ public class JmeCellCache extends CellCacheBasicImpl {
     @Override
     public void setViewCell(ViewCell viewCell) {
         super.setViewCell(viewCell);
-        ClientContextJME.getViewManager().register(viewCell);
+        ClientContextJME.getViewManager().register(viewCell, getSession());
 
         // TODO this will not work for federation, need to determine primary view cell in a
         // higher level manager
