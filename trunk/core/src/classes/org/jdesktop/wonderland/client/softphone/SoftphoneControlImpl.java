@@ -479,6 +479,10 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         sendCommandToSoftphone("resumeRecordingReceivedAudio");
     }
 
+    public void stopRecordingReceivedAudio() {
+        sendCommandToSoftphone("stopRecordingReceivedAudio");
+    }
+
     public void sendCommandToSoftphone(String cmd) {
         if (softphoneOutputStream == null) {
 	    System.out.println("Unable to send command to softphone, output stream is null "

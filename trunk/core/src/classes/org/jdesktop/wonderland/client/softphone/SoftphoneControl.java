@@ -61,6 +61,8 @@ public interface SoftphoneControl {
 
     public void resumeRecordingReceivedAudio();
 
+    public void stopRecordingReceivedAudio();
+
     public void sendCommandToSoftphone(String cmd) throws IOException;
     
     public void runLineTest() throws IOException;
