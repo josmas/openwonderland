@@ -26,7 +26,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace pref="27" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="jLabel1" alignment="1" min="-2" max="-2" attributes="1"/>
                   <Component id="jLabel11" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -45,38 +45,39 @@
                           <Component id="proximityRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="ambientRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="distanceAttenuatedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="manualRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="55" max="32767" attributes="0"/>
-                                      <Component id="extentRadiusSpinner" min="-2" pref="51" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="fullVolumeAreaPercentSpinner" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="manualRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace pref="311" max="32767" attributes="0"/>
+                                              <Component id="extentRadiusSpinner" min="-2" pref="51" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="fullVolumeAreaPercentSpinner" min="-2" pref="50" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
                                   </Group>
+                                  <Component id="alwaysRadioButton" alignment="0" min="-2" pref="76" max="-2" attributes="0"/>
+                                  <Component id="urlTextField" alignment="0" pref="478" max="32767" attributes="1"/>
+                                  <Component id="fileTextField" alignment="0" pref="478" max="32767" attributes="1"/>
+                                  <Component id="audioGroupIdTextField" alignment="0" pref="478" max="32767" attributes="1"/>
+                                  <Component id="volumeSlider" alignment="0" pref="478" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="AudioCapabilitiesLabel" min="-2" pref="167" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="browseButton" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="playOnceCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="AudioCapabilitiesLabel" alignment="0" min="-2" pref="167" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Group type="102" alignment="0" attributes="1">
-                                      <Component id="alwaysRadioButton" min="-2" pref="76" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="playOnceCheckBox" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Component id="urlTextField" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="fileTextField" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="audioGroupIdTextField" alignment="0" pref="224" max="32767" attributes="1"/>
-                                  <Component id="volumeSlider" alignment="0" max="32767" attributes="1"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" pref="60" max="-2" attributes="0"/>
