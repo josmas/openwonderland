@@ -23,10 +23,20 @@
     <target name="clean">
         <!-- delete dist directory -->
         <delete dir="dist" failonerror="false"/>
-        
+ 
         <!-- clean sub-projects -->
         <ant antfile="foundation/build.xml" target="clean" inheritall="false"/> 
         <ant antfile="tools/build.xml" target="clean" inheritall="false"/> 
         <ant antfile="world/build.xml" target="clean" inheritall="false"/> 
+ 
+        <!-- delete leftover module dist directories. This will guarantee
+             that modules that have been deleted do not show up in our
+             builds due to leftover dist directories -->
+        <delete>
+            <fileset dir=".">
+                <include name="**/dist/*.jar"/>
+            </fileset>
+        </delete>
+
     </target>
 </project>
