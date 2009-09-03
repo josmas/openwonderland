@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.softphone;
 
+import java.util.ResourceBundle;
+
     /**
      * Different audio qualities
      */
@@ -26,6 +28,9 @@ public enum AudioQuality {
     VPN     (16000, 2, 16000, 1, "Normal (16k stereo)"),
     BEST    (44100, 2, 44100, 1, "High (44.1k stereo)");
     
+    private final ResourceBundle bundle = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/client/jme/resources/bundle");
+
     private final int sampleRate;
     private final int channels;
     private final int transmitSampleRate;
@@ -39,7 +44,7 @@ public enum AudioQuality {
         this.channels           = channels;
         this.transmitSampleRate = transmitSampleRate;
         this.transmitChannels   = transmitChannels;
-        this.description        = description;
+        this.description        = bundle.getString(description);
     }
     
     public int sampleRate() {
