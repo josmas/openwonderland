@@ -23,6 +23,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.PickInfo;
 import java.util.Iterator;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.EntityComponent;
@@ -181,17 +182,23 @@ public abstract class EventDistributor implements Runnable {
      * for global listeners are ignored.
      */
     protected void tryGlobalListeners (Event event) {
-        logger.info("tryGlobalListeners event = " + event);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("tryGlobalListeners event = " + event);
+        }
         synchronized (globalEventListeners) {
             Iterator<EventListener> it = globalEventListeners.iterator();
             while (it.hasNext()) {
 		EventListener listener = it.next();
 		if (listener.isEnabled()) {
-		    logger.info("Calling consume for listener " + listener);
+                    if (logger.isLoggable(Level.INFO)) {
+                        logger.info("Calling consume for listener " + listener);
+                    }
 		    Event distribEvent = createEventForGlobalListener(event);
 		    if (listener.consumesEvent(distribEvent)) {
-                        logger.info("CONSUMED event: " + event);
-                        logger.info("Consuming listener " + listener);
+                        if (logger.isLoggable(Level.INFO)) {
+                            logger.info("CONSUMED event: " + event);
+                            logger.info("Consuming listener " + listener);
+                        }
 			listener.postEvent(distribEvent);
 		    }
 		}
@@ -205,7 +212,9 @@ public abstract class EventDistributor implements Runnable {
      * and the OR of propagatesToUnder for all enabled listeners in propState.
      */
     protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState) {
-        logger.info("tryListenersForEntity, entity = " + entity + ", event = " + event);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("tryListenersForEntity, entity = " + entity + ", event = " + event);
+        }
         EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
         if (listeners == null || listeners.size() <= 0) {
             logger.info("Entity has no listeners");
@@ -217,23 +226,28 @@ public abstract class EventDistributor implements Runnable {
             while (it.hasNext()) {
             EventListener listener = it.next();
             if (listener.isEnabled()) {
-                logger.info("Calling consume for listener " + listener);
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("Calling consume for listener " + listener);
+                }
                 Event distribEvent = createEventForEntity(event, entity);
                 if (listener.consumesEvent(distribEvent)) {
-                    logger.info("CONSUMED event: " + event);
-                    logger.info("Consuming entity " + entity);
-                    logger.info("Consuming listener " + listener);
+                    if (logger.isLoggable(Level.INFO)) {
+                        logger.info("CONSUMED event: " + event);
+                        logger.info("Consuming entity " + entity);
+                        logger.info("Consuming listener " + listener);
+                    }
 		    listener.postEvent(distribEvent);
                 }
                 propState.toParent |= listener.propagatesToParent(distribEvent);
 		// TODO: someday: decommit for now
                 //propState.toUnder |= listener.propagatesToUnder(distribEvent);
-                logger.finer("Listener prop state, toParent = " + propState.toParent +
-                    ", toUnder = " + propState.toUnder);
+//                logger.finer("Listener prop state, toParent = " + propState.toParent +
+//                    ", toUnder = " + propState.toUnder);
             }
             }
         }
-        logger.fine("Cumulative prop state, toParent = " + propState.toParent + ", toUnder = " + propState.toUnder);
+        if (logger.isLoggable(Level.FINE))
+            logger.fine("Cumulative prop state, toParent = " + propState.toParent + ", toUnder = " + propState.toUnder);
     }
 
     /** 
@@ -249,7 +263,8 @@ public abstract class EventDistributor implements Runnable {
             // No more propagation to parents. We're done with this loop.
             break;
             }
-            logger.fine("Propagate to next parent");
+            if (logger.isLoggable(Level.FINE))
+                logger.fine("Propagate to next parent");
             entity = entity.getParent();
         }
     }
