@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -69,7 +70,7 @@ public class HUDObject2D implements HUDObject {
         listeners = new ConcurrentLinkedQueue();
         eventQueue = new ConcurrentLinkedQueue();
         bounds = new Rectangle2D.Double();
-        id = (int) (Math.random() * 10000);
+        id = new Random().nextInt(10000);
     }
 
     /**
@@ -539,7 +540,7 @@ public class HUDObject2D implements HUDObject {
 
             while (!eventQueue.isEmpty()) {
                 HUDEvent ev = (HUDEvent) eventQueue.remove();
-                HUDEventType type = ev.getEventType();
+                //HUDEventType type = ev.getEventType();
                 Iterator<HUDEventListener> iterator = listeners.iterator();
                 //int num = listeners.size();
                 //int i = 1;

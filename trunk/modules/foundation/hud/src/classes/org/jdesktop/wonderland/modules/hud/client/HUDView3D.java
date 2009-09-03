@@ -72,13 +72,15 @@ public class HUDView3D extends View2DEntity implements HUDView {
      * {@inheritDoc}
      */
     protected Entity getParentEntity() {
+        Entity parentEntity = null;
         Entity cellEntity = ((CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
-        switch (type) {
 
+        switch (type) {
             case UNKNOWN:
             case PRIMARY:
                 // Attach primaries directly to cell entity
-                return cellEntity;
+                parentEntity = cellEntity;
+                break;
             default:
                 // Attach non-primaries to the entity of their parent, if possible
                 if (parent == null) {
@@ -87,11 +89,14 @@ public class HUDView3D extends View2DEntity implements HUDView {
                     logger.warning("view = " + this);
                     logger.warning("view type = " + type);
                     // This is the best we can do
-                    return cellEntity;
+                    parentEntity = cellEntity;
                 } else {
-                    return parent.getEntity();
+                    parentEntity = parent.getEntity();
                 }
+                break;
         }
+
+        return parentEntity;
     }
 
     /**

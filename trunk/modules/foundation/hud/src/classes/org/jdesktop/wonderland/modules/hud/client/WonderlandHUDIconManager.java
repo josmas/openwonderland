@@ -54,8 +54,6 @@ public class WonderlandHUDIconManager extends WonderlandHUDComponentManager {
             // this is a component on the icon HUD
             super.addComponent(component);
             component.setVisible(true);
-        } else {
-            // this is a component on the window HUD
         }
     }
 
@@ -146,7 +144,6 @@ public class WonderlandHUDIconManager extends WonderlandHUDComponentManager {
             }
             icon = (HUDImageComponent) hud.createImageComponent(imageIcon);
             icon.setDecoratable(false);
-            final HUDImageComponent iconComponent = icon;
             icon.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {

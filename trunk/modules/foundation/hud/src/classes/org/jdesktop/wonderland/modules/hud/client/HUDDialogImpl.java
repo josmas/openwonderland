@@ -71,6 +71,8 @@ public class HUDDialogImpl extends javax.swing.JPanel {
                 messageLabel.setFont(dialogFont);
                 messageLabel.setForeground(DIALOG_COLOR);
                 break;
+            default:
+                break;
         }
         validate();
     }
@@ -94,6 +96,8 @@ public class HUDDialogImpl extends javax.swing.JPanel {
             case QUERY:
                 iconLabel.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/query24x24.png"))); // NOI18N
                 break;
+            default:
+                break;
         }
         validate();
     }
@@ -116,6 +120,8 @@ public class HUDDialogImpl extends javax.swing.JPanel {
             case OK_CANCEL:
                 okButton.setVisible(true);
                 cancelButton.setVisible(true);
+                break;
+            default:
                 break;
         }
         validate();
@@ -220,7 +226,7 @@ public class HUDDialogImpl extends javax.swing.JPanel {
      * @param listener a listener for dialog events
      */
     @Override
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         if (listeners == null) {
             listeners = new PropertyChangeSupport(this);
         }
@@ -232,7 +238,7 @@ public class HUDDialogImpl extends javax.swing.JPanel {
      * @param listener the listener to remove
      */
     @Override
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         if (listeners != null) {
             listeners.removePropertyChangeListener(listener);
         }
@@ -325,11 +331,11 @@ public class HUDDialogImpl extends javax.swing.JPanel {
 }//GEN-LAST:event_valueTextFieldActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        listeners.firePropertyChange("cancel", new String(""), null);
+        listeners.firePropertyChange("cancel", "", null);
 }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        listeners.firePropertyChange("ok", new String(""), new String(valueTextField.getText()));
+        listeners.firePropertyChange("ok", "", valueTextField.getText());
 }//GEN-LAST:event_okButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;

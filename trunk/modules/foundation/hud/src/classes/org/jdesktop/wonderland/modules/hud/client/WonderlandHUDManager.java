@@ -49,11 +49,11 @@ public class WonderlandHUDManager extends HUDManager implements HUDEventListener
     protected HUDLayoutManager layout;
     protected boolean visible;
 
-    protected enum visualState {
+    protected enum VisualState {
 
         MINIMIZED, NORMAL, MAXIMIZED
     };
-    protected static Map<String, HUD> huds = Collections.synchronizedMap(new HashMap());
+    protected final Map<String, HUD> huds = Collections.synchronizedMap(new HashMap());
 
     public WonderlandHUDManager(Canvas display) {
         this.display = display;
