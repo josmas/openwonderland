@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common.cell.security;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.common.security.Action;
 
 /**
@@ -24,10 +25,13 @@ import org.jdesktop.wonderland.common.security.Action;
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public class ComponentAction extends Action {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/common/cell/security/Bundle");
     private static final String NAME = "ChangeCellComponent";
 
     public ComponentAction() {
-        super (NAME, ModifyAction.class, "Change Components",
-               "Permission to add or remove components from this cell.");
+        super(NAME, ModifyAction.class, BUNDLE.getString("Change_Components"),
+                BUNDLE.getString("Change_Components_Description"));
     }
 }

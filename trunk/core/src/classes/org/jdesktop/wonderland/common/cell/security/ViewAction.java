@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common.cell.security;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.common.security.Action;
 
 /**
@@ -24,9 +25,13 @@ import org.jdesktop.wonderland.common.security.Action;
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public class ViewAction extends Action {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/common/cell/security/Bundle");
     private static final String NAME = "View";
 
     public ViewAction() {
-        super (NAME, null, "View", "Permission to view this cell.");
+        super(NAME, null, BUNDLE.getString("View"),
+                BUNDLE.getString("View_Description"));
     }
 }
