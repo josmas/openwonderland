@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <deployed-model>
     <version>1</version>
-    <modelURL>wla:///avatarbaseart/default-avatars/femaleCartoonAvatar.dae/femaleCartoonAvatar.dae.gz</modelURL>
+    <modelURL>wla://avatarbaseart/default-avatars/femaleCartoonAvatar.dae/femaleCartoonAvatar.dae.gz</modelURL>
     <loaderDataURL>wla://avatarbaseart/default-avatars/femaleCartoonAvatar.dae/femaleCartoonAvatar.dae.gz.ldr</loaderDataURL>
     <modelBGScale>
         <x>0.01</x>
