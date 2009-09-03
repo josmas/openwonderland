@@ -55,12 +55,13 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
         this.cm = cm;
 
         initComponents();
-        tableModel = new javax.swing.table.DefaultTableModel() {
-
-            String[] names = new String[]{
+        tableModel = new javax.swing.table.DefaultTableModel(
+            new Object[][] {},
+            new String[]{
                 BUNDLE.getString("Username"),
                 BUNDLE.getString("Owner")
-            };
+            }
+        ) {
             Class[] types = new Class[]{
                 String.class,
                 Boolean.class
@@ -69,11 +70,6 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
                 false,
                 true
             };
-
-            @Override
-            public String getColumnName(int column) {
-                return names[column];
-            }
 
             @Override
             public Class getColumnClass(int columnIndex) {

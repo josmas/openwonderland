@@ -51,12 +51,13 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         this.cm = cm;
 
         initComponents();
-        tableModel = new DefaultTableModel() {
-
-            String[] names = new String[]{
+        tableModel = new DefaultTableModel(
+            new Object [][] {},
+            new String [] {
                 BUNDLE.getString("Group_Name"),
                 BUNDLE.getString("Members")
-            };
+            }
+        ) {
             Class[] types = new Class[]{
                 String.class,
                 Integer.class
@@ -65,11 +66,6 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
                 false,
                 false
             };
-
-            @Override
-            public String getColumnName(int column) {
-                return names[column];
-            }
 
             @Override
             public Class getColumnClass(int columnIndex) {
