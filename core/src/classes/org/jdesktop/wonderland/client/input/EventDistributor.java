@@ -67,13 +67,14 @@ public abstract class EventDistributor implements Runnable {
     }
 
     /** 
-     * Used for SwingEnterExit3D events.
+     * Used for events which are posted directly to a known entity. InputManager.postEvent(event,entity)
+     * uses this as well as the internal SwingEnterExit3D events.
      * Note: this type of event has no pickInfo but has an entity./
      */
-    private static class EntrySwingEnterExit extends Entry {
+    private static class EntryPostEventToEntity extends Entry {
 	/** The entity. */
 	Entity entity;
-        EntrySwingEnterExit (Event event, Entity entity) {
+        EntryPostEventToEntity (Event event, Entity entity) {
 	    super(event, null);
 	    this.entity = entity;
 	}
@@ -130,11 +131,11 @@ public abstract class EventDistributor implements Runnable {
      * @param entity The event's entity.
      */
     void enqueueEvent (SwingEnterExitEvent3D event, Entity entity) {
-	inputQueue.add(new EntrySwingEnterExit(event, entity));
+	inputQueue.add(new EntryPostEventToEntity(event, entity));
     }
 
     void enqueueEvent(Event event, Entity entity) {
-        inputQueue.add(new EntrySwingEnterExit(event, entity));
+        inputQueue.add(new EntryPostEventToEntity(event, entity));
     }
 
     /**
@@ -145,9 +146,9 @@ public abstract class EventDistributor implements Runnable {
 	    try {
 		Entry entry = null;
                 entry = inputQueue.take();
-		if (entry instanceof EntrySwingEnterExit) {
-		    EntrySwingEnterExit esee = (EntrySwingEnterExit) entry;
-		    processSwingEnterExitEvent(esee.event, esee.entity);
+		if (entry instanceof EntryPostEventToEntity) {
+		    EntryPostEventToEntity epost = (EntryPostEventToEntity) entry;
+		    processPostEventToEntity(epost.event, epost.entity);
 		} else {
 		    processEvent(entry.event, entry.destPickInfo, entry.hitPickInfo);
 		}
@@ -167,12 +168,12 @@ public abstract class EventDistributor implements Runnable {
     protected abstract void processEvent (Event event, PickInfo destPickInfo, PickInfo hitPickInfo);
 
     /** 
-     * The responsibility for determining how to process individual swing enter/exit event types 
+     * The responsibility for determining how to process an event posted to a specific entity
      * is delegated to the subclass.
      * @param event The event to try to deliver to event listeners.
      * @param entity The entity associated with the event.
      */
-    protected abstract void processSwingEnterExitEvent (Event event, Entity entity);
+    protected abstract void processPostEventToEntity (Event event, Entity entity);
 
     /** 
      * Traverse the list of global listeners to see whether the event should be delivered to any of them. 
