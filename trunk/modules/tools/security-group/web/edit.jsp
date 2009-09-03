@@ -130,7 +130,7 @@
                         'onclick': 'removeMember(\'' + index + '\')' }).update("delete"));
     }
 
-    function submit() {
+    function submitForm() {
         // remove any groups with no name
         var remove = [];
         for (var i = 0; i < group.membersInternal.length; i++) {
@@ -175,6 +175,6 @@
 </table>
 
 <a href="/wonderland-web-front/admin?pageURL=/security-groups/security-groups/editor" target="_top">Cancel</a>
-<a href="javascript:void(0)" onclick="submit()">Update group</a>
+<a href="javascript:void(0)" onclick="submitForm()">Update group</a>
 </form>
 </body>
