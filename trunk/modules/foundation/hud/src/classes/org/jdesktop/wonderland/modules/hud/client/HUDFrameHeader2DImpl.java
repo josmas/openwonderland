@@ -47,7 +47,7 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         initComponents();
         addListeners();
         paint = new GradientPaint(0, 0, gradientStartColor,
-                0, getHeight(), gradientEndColor);
+                0, (int)getPreferredSize().getHeight(), gradientEndColor);
     }
 
     private void addListeners() {
