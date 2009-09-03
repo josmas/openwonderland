@@ -92,8 +92,6 @@ public class HUDView2D extends View2DEntity implements HUDView {
         logger.fine("attach view: " + view + "to: " + this);
         Entity e = view.getEntity();
         RenderComponent rcFrame = (RenderComponent) e.getComponent(RenderComponent.class);
-
-        GeometryNode node = this.getGeometryNode();
         rcFrame.setAttachPoint(this.getGeometryNode());
     }
 

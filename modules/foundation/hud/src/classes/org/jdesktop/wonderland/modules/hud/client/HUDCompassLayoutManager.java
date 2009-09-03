@@ -99,89 +99,82 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
     public Vector2f getLocation(HUDComponent component) {
         Vector2f location = new Vector2f();
 
-        if (component == null) {
-            return location;
-        }
+        if ((component != null) && (hudViewMap.get(component) != null)) {
+            // get HUD component's view width
+            HUDView2D view2d = (HUDView2D) hudViewMap.get(component);
+            float compWidth = view2d.getDisplayerLocalWidth();
+            float compHeight = view2d.getDisplayerLocalHeight();
 
-        HUDView2D view2d = (HUDView2D) hudViewMap.get(component);
+            // get the bounds of the HUD containing the component
+            int hudWidth = hud.getWidth();
+            int hudHeight = hud.getHeight();
 
-        if (view2d == null) {
-            return location;
-        }
+            // find the center of the HUD
+            float hudCenterX = hudWidth / 2f;
+            float hudCenterY = hudHeight / 2f;
 
-        // get HUD component's view width
-        float compWidth = view2d.getDisplayerLocalWidth();
-        float compHeight = view2d.getDisplayerLocalHeight();
+            if ((component.getPreferredLocation() != Layout.NONE) &&
+                    (component.getX() == 0) && (component.getY() == 0)) {
+                // just for initial placement of objects using compass layout
+                switch (component.getPreferredLocation()) {
+                    case NORTH:
+                        location.set(hudCenterX - compWidth / 2f, hudHeight - MIN_TOP_MARGIN - compHeight);
+                        break;
+                    case SOUTH:
+                        location.set(hudCenterX - compWidth / 2f, MIN_BOTTOM_MARGIN);
+                        break;
+                    case WEST:
+                        location.set(MIN_LEFT_MARGIN, hudCenterY - compHeight / 2f);
+                        break;
+                    case EAST:
+                        location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, hudCenterY - compHeight / 2f);
+                        break;
+                    case CENTER:
+                        location.set(hudCenterX - compWidth / 2f, hudCenterY - compHeight / 2f);
+                        break;
+                    case NORTHWEST:
+                        location.set(MIN_LEFT_MARGIN, hudHeight - MIN_TOP_MARGIN - compHeight);
+                        break;
+                    case NORTHEAST:
+                        location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, hudHeight - MIN_TOP_MARGIN - compHeight);
+                        break;
+                    case SOUTHWEST:
+                        location.set(MIN_LEFT_MARGIN, MIN_BOTTOM_MARGIN);
+                        break;
+                    case SOUTHEAST:
+                        location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, MIN_BOTTOM_MARGIN);
+                        break;
+                    default:
+                        logger.warning("unhandled layout type: " + component.getPreferredLocation());
+                        break;
+                }
+                // offset from the HUD origin
+                location.set(location.x + hud.getX(), location.y + hud.getY());
+            } else {
+                // just use the component's current location, but constrain the
+                // position of the component to fit the bounds of the HUD
+                int x = component.getX();
+                int y = component.getY();
 
-        // get the bounds of the HUD containing the component
-        int hudWidth = hud.getWidth();
-        int hudHeight = hud.getHeight();
-
-        // find the center of the HUD
-        float hudCenterX = hudWidth / 2f;
-        float hudCenterY = hudHeight / 2f;
-
-        if ((component.getPreferredLocation() != Layout.NONE) &&
-                (component.getX() == 0) && (component.getY() == 0)) {
-            // just for initial placement of objects using compass layout
-            switch (component.getPreferredLocation()) {
-                case NORTH:
-                    location.set(hudCenterX - compWidth / 2f, hudHeight - MIN_TOP_MARGIN - compHeight);
-                    break;
-                case SOUTH:
-                    location.set(hudCenterX - compWidth / 2f, MIN_BOTTOM_MARGIN);
-                    break;
-                case WEST:
-                    location.set(MIN_LEFT_MARGIN, hudCenterY - compHeight / 2f);
-                    break;
-                case EAST:
-                    location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, hudCenterY - compHeight / 2f);
-                    break;
-                case CENTER:
-                    location.set(hudCenterX - compWidth / 2f, hudCenterY - compHeight / 2f);
-                    break;
-                case NORTHWEST:
-                    location.set(MIN_LEFT_MARGIN, hudHeight - MIN_TOP_MARGIN - compHeight);
-                    break;
-                case NORTHEAST:
-                    location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, hudHeight - MIN_TOP_MARGIN - compHeight);
-                    break;
-                case SOUTHWEST:
-                    location.set(MIN_LEFT_MARGIN, MIN_BOTTOM_MARGIN);
-                    break;
-                case SOUTHEAST:
-                    location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, MIN_BOTTOM_MARGIN);
-                    break;
-                default:
-                    logger.warning("unhandled layout type: " + component.getPreferredLocation());
-                    break;
+                if (x < hud.getX() + MIN_LEFT_MARGIN) {
+                    x = hud.getX() + MIN_LEFT_MARGIN;
+                } else if (x + compWidth > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
+                    x = (int) (hud.getX() + hudWidth - MIN_RIGHT_MARGIN - compWidth);
+                }
+                if (y < hud.getY() + MIN_BOTTOM_MARGIN) {
+                    y = hud.getY() + MIN_BOTTOM_MARGIN;
+                } else if (y + compHeight > hud.getY() + hudHeight - MIN_TOP_MARGIN) {
+                    y = (int) (hud.getY() + hudHeight - MIN_TOP_MARGIN - compHeight);
+                }
+                location.set(x, y);
             }
-            // offset from the HUD origin
-            location.set(location.x + hud.getX(), location.y + hud.getY());
-        } else {
-            // just use the component's current location, but constrain the
-            // position of the component to fit the bounds of the HUD
-            int x = component.getX();
-            int y = component.getY();
 
-            if (x < hud.getX() + MIN_LEFT_MARGIN) {
-                x = hud.getX() + MIN_LEFT_MARGIN;
-            } else if (x + compWidth > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
-                x = (int) (hud.getX() + hudWidth - MIN_RIGHT_MARGIN - compWidth);
+            Vector2f currentPosition = positionMap.get(component);
+            Vector2f newPosition = new Vector2f((location.x - hud.getX()) / hudWidth, (location.y - hud.getY()) / hudHeight);
+
+            if ((currentPosition == null) || (Math.abs(currentPosition.x - newPosition.x) > 0.03) || (Math.abs(currentPosition.y - newPosition.y) > 0.03)) {
+                positionMap.put(component, newPosition);
             }
-            if (y < hud.getY() + MIN_BOTTOM_MARGIN) {
-                y = hud.getY() + MIN_BOTTOM_MARGIN;
-            } else if (y + compHeight > hud.getY() + hudHeight - MIN_TOP_MARGIN) {
-                y = (int) (hud.getY() + hudHeight - MIN_TOP_MARGIN - compHeight);
-            }
-            location.set(x, y);
-        }
-
-        Vector2f currentPosition = positionMap.get(component);
-        Vector2f newPosition = new Vector2f((location.x - hud.getX()) / hudWidth, (location.y - hud.getY()) / hudHeight);
-
-        if ((currentPosition == null) || (Math.abs(currentPosition.x - newPosition.x) > 0.03) || (Math.abs(currentPosition.y - newPosition.y) > 0.03)) {
-            positionMap.put(component, newPosition);
         }
 
         return location;

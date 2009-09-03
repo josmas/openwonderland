@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -346,7 +345,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             frameView.setVisibleApp(visible);
             frameView.setVisibleUser(visible);
 
-            if (!visible && (frameView != null)) {
+            if (!visible) {
                 // frame needs removing
                 logger.fine("removing frame");
                 view.detachView(view);
@@ -420,64 +419,61 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public void setTransparency(HUDView2D view, final float transparency) {
-        if (view == null) {
-            logger.warning("no view, unable to set transparency");
-            return;
-        }
+        if (view != null) {
+            GeometryNode node = view.getGeometryNode();
 
-        GeometryNode node = view.getGeometryNode();
-
-        if (!(node.getChild(0) instanceof TexturedQuad)) {
-            logger.warning("can't find quad for view, unable to set transparency");
-            return;
-        }
-        final TexturedQuad quad = (TexturedQuad) node.getChild(0);
-
-        RenderUpdater updater = new RenderUpdater() {
-
-            public void update(Object arg0) {
-                WorldManager wm = (WorldManager) arg0;
-
-                BlendState as = (BlendState) wm.getRenderManager().createRendererState(RenderState.StateType.Blend);
-                // activate blending
-                as.setBlendEnabled(true);
-                // set the source function
-                as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-                // set the destination function
-                as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-                // disable test
-                as.setTestEnabled(false);
-                // activate the blend state
-                as.setEnabled(true);
-
-                // assign the blender state to the node
-                quad.setRenderState(as);
-                quad.updateRenderState();
-
-                MaterialState ms = (MaterialState) quad.getRenderState(RenderState.StateType.Material);
-                if (ms == null) {
-                    ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-                    quad.setRenderState(ms);
-                }
-
-                if (ms != null) {
-                    ColorRGBA diffuse = ms.getDiffuse();
-                    diffuse.a = 1.0f - transparency;
-                    ms.setDiffuse(diffuse);
-                } else {
-                    logger.warning("quad has no material state, unable to set transparency");
-                    return;
-                }
-
-                ColorRGBA color = quad.getDefaultColor();
-                color.a = transparency;
-                quad.setDefaultColor(color);
-
-                wm.addToUpdateList(quad);
+            if (!(node.getChild(0) instanceof TexturedQuad)) {
+                logger.warning("can't find quad for view, unable to set transparency");
+                return;
             }
-        };
-        WorldManager wm = ClientContextJME.getWorldManager();
-        wm.addRenderUpdater(updater, wm);
+            final TexturedQuad quad = (TexturedQuad) node.getChild(0);
+
+            RenderUpdater updater = new RenderUpdater() {
+
+                public void update(Object arg0) {
+                    WorldManager wm = (WorldManager) arg0;
+
+                    BlendState as = (BlendState) wm.getRenderManager().createRendererState(RenderState.StateType.Blend);
+                    // activate blending
+                    as.setBlendEnabled(true);
+                    // set the source function
+                    as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+                    // set the destination function
+                    as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+                    // disable test
+                    as.setTestEnabled(false);
+                    // activate the blend state
+                    as.setEnabled(true);
+
+                    // assign the blender state to the node
+                    quad.setRenderState(as);
+                    quad.updateRenderState();
+
+                    MaterialState ms = (MaterialState) quad.getRenderState(RenderState.StateType.Material);
+                    if (ms == null) {
+                        ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                        quad.setRenderState(ms);
+                    }
+
+                    if (ms != null) {
+                        ColorRGBA diffuse = ms.getDiffuse();
+                        diffuse.a = 1.0f - transparency;
+                        ms.setDiffuse(diffuse);
+                    } else {
+                        logger.warning("quad has no material state, unable to set transparency");
+                        return;
+                    }
+
+                    ColorRGBA color = quad.getDefaultColor();
+                    color.a = transparency;
+                    quad.setDefaultColor(color);
+
+                    wm.addToUpdateList(quad);
+                }
+            };
+            WorldManager wm = ClientContextJME.getWorldManager();
+            wm.addRenderUpdater(updater, wm);
+        }
     }
 
     public void setTransparency(HUDComponent2D component, final float transparency) {
@@ -491,62 +487,54 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.info("hiding HUD component on HUD: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
-        if (state == null) {
-            return;
-        }
-        if (!state.isVisible()) {
-            return;
-        }
 
-        HUDView2D view = state.getView();
+        if ((state != null) && (state.isVisible())) {
+            HUDView2D view = state.getView();
 
-        if (view != null) {
-            logger.fine("hiding HUD view");
-            view.setVisibleApp(false, false);
-            view.setVisibleUser(false);
-        } else {
-            logger.warning("attempt to set HUD invisible with no HUD view");
+            if (view != null) {
+                logger.fine("hiding HUD view");
+                view.setVisibleApp(false, false);
+                view.setVisibleUser(false);
+            } else {
+                logger.warning("attempt to set HUD invisible with no HUD view");
+            }
+
+            showFrame(component, false);
         }
-
-        showFrame(component, false);
     }
 
     protected void componentWorldVisible(HUDComponent2D component) {
         logger.info("showing HUD component in world: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
-        if (state == null) {
-            return;
-        }
-        if (state.isWorldVisible()) {
-            return;
-        }
 
-        Cell cell = component.getCell();
-        if (cell != null) {
-            // can only create world views of HUD components that are
-            // associated with a cell
-            HUDView3D worldView = state.getWorldView();
+        if ((state != null) && (!state.isWorldVisible())) {
+            Cell cell = component.getCell();
+            if (cell != null) {
+                // can only create world views of HUD components that are
+                // associated with a cell
+                HUDView3D worldView = state.getWorldView();
 
-            if (worldView == null) {
-                if (worldDisplayer == null) {
-                    logger.fine("creating new world displayer");
-                    worldDisplayer = new HUDView3DDisplayer(cell);
+                if (worldView == null) {
+                    if (worldDisplayer == null) {
+                        logger.fine("creating new world displayer");
+                        worldDisplayer = new HUDView3DDisplayer(cell);
+                    }
+
+                    logger.fine("creating new in-world view");
+                    worldView = worldDisplayer.createView(state.getWindow());
+                    worldView.setPixelScale(worldPixelScale);
+                    state.setWorldView(worldView);
                 }
 
-                logger.fine("creating new in-world view");
-                worldView = worldDisplayer.createView(state.getWindow());
+                logger.fine("displaying in-world view");
+                worldView.setOrtho(false, false);
                 worldView.setPixelScale(worldPixelScale);
-                state.setWorldView(worldView);
+                worldView.setVisibleApp(true);
+                worldView.setVisibleUser(true, false);
+                componentMovedWorld(component);
+                worldView.update();
             }
-
-            logger.fine("displaying in-world view");
-            worldView.setOrtho(false, false);
-            worldView.setPixelScale(worldPixelScale);
-            worldView.setVisibleApp(true);
-            worldView.setVisibleUser(true, false);
-            componentMovedWorld(component);
-            worldView.update();
         }
     }
 
@@ -554,22 +542,18 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.info("hiding HUD component in world: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
-        if (state == null) {
-            return;
-        }
-        if (!state.isWorldVisible()) {
-            return;
-        }
 
-        HUDView3D worldView = state.getWorldView();
+        if ((state != null) && (state.isWorldVisible())) {
+            HUDView3D worldView = state.getWorldView();
 
-        if (worldView != null) {
-            logger.fine("hiding in-world view");
-            worldView.setVisibleApp(false);
-            worldView.setVisibleUser(false, false);
-            worldView.update();
-        } else {
-            logger.warning("attempt to set world invisible with no world view");
+            if (worldView != null) {
+                logger.fine("hiding in-world view");
+                worldView.setVisibleApp(false);
+                worldView.setVisibleUser(false, false);
+                worldView.update();
+            } else {
+                logger.warning("attempt to set world invisible with no world view");
+            }
         }
     }
 
@@ -751,6 +735,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         switch (event.getEventType()) {
             case RESIZED:
                 relayout();
+                break;
+            default:
                 break;
         }
     }

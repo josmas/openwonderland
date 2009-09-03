@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUDDialog.BUTTONS;
@@ -35,7 +34,6 @@ public class HUDMessageComponent extends HUDComponent2D implements HUDMessage {
 
     private static final Logger logger = Logger.getLogger(HUDMessageComponent.class.getName());
     private HUDDialogImpl dialogImpl;
-    private Font messageFont;
 
     public HUDMessageComponent() {
         super();

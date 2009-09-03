@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import com.jme.math.Vector2f;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -94,13 +95,7 @@ public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
     public Vector2f getLocation(HUDComponent component) {
         Vector2f location = new Vector2f();
 
-        if (!hudViewMap.containsKey(component)) {
-            return location;
-        }
-
-        HUDView2D view = (HUDView2D) hudViewMap.get(component);
-
-        if (component != null) {
+        if ((component != null) && (hudViewMap.containsKey(component))) {
             location.set((float) component.getLocation().getX(),
                     (float) component.getLocation().getY());
         }
@@ -122,7 +117,7 @@ public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
         // components are positioned absolutely
     }
 
-    public class HUDComponentComparator implements Comparator {
+    public static final class HUDComponentComparator implements Comparator, Serializable {
 
         public int compare(Object o1, Object o2) {
             int r = 0;

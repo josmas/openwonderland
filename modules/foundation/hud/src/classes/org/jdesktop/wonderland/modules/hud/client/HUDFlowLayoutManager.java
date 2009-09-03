@@ -76,54 +76,46 @@ public class HUDFlowLayoutManager extends HUDAbsoluteLayoutManager {
     public Vector2f getLocation(HUDComponent component) {
         Vector2f location = new Vector2f();
 
-        // no component specified
-        if (component == null) {
-            return location;
+        if ((component != null) && (hudViewMap.get(component) != null)) {
+            // get HUD component's view width
+            HUDView2D view2d = (HUDView2D) hudViewMap.get(component);
+            float compWidth = view2d.getDisplayerLocalWidth();
+            float compHeight = view2d.getDisplayerLocalHeight();
+
+            // get the bounds of the HUD containing the component
+            int hudWidth = hud.getWidth();
+            int hudHeight = hud.getHeight();
+
+            location = positionMap.get(component);
+            if (location == null) {
+                // component is new, place it in the next position in the linear flow
+                location = new Vector2f(nextX, nextY);
+                // next free position in flow layout
+                nextX += compWidth + X_GAP;
+            }
+
+            int x = (int) location.x;
+            int y = (int) location.y;
+
+            if (x < hud.getX() + MIN_LEFT_MARGIN) {
+                x = hud.getX() + MIN_LEFT_MARGIN;
+            } else if (x + compWidth > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
+                // start a new row, above this one
+                x = MIN_LEFT_MARGIN;
+                y += compHeight + Y_GAP;
+            }
+            if (y < hud.getY() + MIN_BOTTOM_MARGIN) {
+                y = hud.getY() + MIN_BOTTOM_MARGIN;
+            } else if (y + compHeight > hud.getY() + hudHeight - MIN_TOP_MARGIN) {
+                y = (int) (hud.getY() + hudHeight - MIN_TOP_MARGIN - compHeight);
+            }
+
+            // adjusted location to fit bounds of HUD
+            location.set(x, y);
+
+            // remember the position of the component
+            positionMap.put(component, location);
         }
-
-        // component has no view
-        HUDView2D view2d = (HUDView2D) hudViewMap.get(component);
-        if (view2d == null) {
-            return location;
-        }
-
-        // get HUD component's view width
-        float compWidth = view2d.getDisplayerLocalWidth();
-        float compHeight = view2d.getDisplayerLocalHeight();
-
-        // get the bounds of the HUD containing the component
-        int hudWidth = hud.getWidth();
-        int hudHeight = hud.getHeight();
-
-        location = positionMap.get(component);
-        if (location == null) {
-            // component is new, place it in the next position in the linear flow
-            location = new Vector2f(nextX, nextY);
-            // next free position in flow layout
-            nextX += compWidth + X_GAP;
-        }
-
-        int x = (int) location.x;
-        int y = (int) location.y;
-
-        if (x < hud.getX() + MIN_LEFT_MARGIN) {
-            x = hud.getX() + MIN_LEFT_MARGIN;
-        } else if (x + compWidth > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
-            // start a new row, above this one
-            x = MIN_LEFT_MARGIN;
-            y += compHeight + Y_GAP;
-        }
-        if (y < hud.getY() + MIN_BOTTOM_MARGIN) {
-            y = hud.getY() + MIN_BOTTOM_MARGIN;
-        } else if (y + compHeight > hud.getY() + hudHeight - MIN_TOP_MARGIN) {
-            y = (int) (hud.getY() + hudHeight - MIN_TOP_MARGIN - compHeight);
-        }
-
-        // adjusted location to fit bounds of HUD
-        location.set(x, y);
-
-        // remember the position of the component
-        positionMap.put(component, location);
 
         return location;
     }
