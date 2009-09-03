@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
+import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 
 /**
  * The cell factory for the portal cell.
@@ -57,6 +58,7 @@ public class PortalCellFactory implements CellFactorySPI {
                 new Quaternion(1f, 0f, 0f, 0.7854f),
                 new Vector3f(0.01f, 0.01f, 0.01f),
                 null);
+        cellState.addComponentServerState(new PortalComponentServerState());
 
         //PositionComponentServerState pcs = new PositionComponentServerState();
         //pcs.setBounds(new BoundingSphere(2.0f, new Vector3f(0f, 0f, 0f)));
