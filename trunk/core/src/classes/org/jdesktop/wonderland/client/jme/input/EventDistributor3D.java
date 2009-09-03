@@ -174,7 +174,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
         tryGlobalListeners(event);
     }
 
-    protected void processSwingEnterExitEvent(Event event, Entity entity) {
+    protected void processPostEventToEntity (Event event, Entity entity) {
         logger.fine("Distributor: received event = " + event + ", entity = " + entity);
 
         tryGlobalListeners(event);
