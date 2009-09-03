@@ -35,10 +35,10 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.input.AvatarCollisionEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarCollisionEvent;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 
 /**
