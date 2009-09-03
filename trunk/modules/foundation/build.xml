@@ -16,9 +16,6 @@
         <file name="sasxremwin/build.xml"/>
         
         <file name="jeditortest/build.xml"/>
-        <file name="swingexample/build.xml"/>
-        <file name="swingmenutest/build.xml"/>
-        <file name="swingtest/build.xml"/>
         <file name="swingwhiteboard/build.xml"/>
     </filelist>
  
