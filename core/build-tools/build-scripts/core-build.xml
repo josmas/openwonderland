@@ -80,6 +80,9 @@
             <fileset dir="${build.classes.dir}/">
                 <include name="org/jdesktop/wonderland/common/**"/>
             </fileset>
+            <fileset dir="src/classes">
+                <include name="org/jdesktop/wonderland/common/cell/security/**/*.properties"/>
+            </fileset>
          </jar>
     </target>
      

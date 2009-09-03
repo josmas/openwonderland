@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common.cell.security;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.common.security.Action;
 
 /**
@@ -24,10 +25,14 @@ import org.jdesktop.wonderland.common.security.Action;
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public class ChildrenAction extends Action {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/common/cell/security/Bundle");
     private static final String NAME = "ChangeCellChildren";
 
     public ChildrenAction() {
-        super (NAME, ModifyAction.class, "Add/Remove Cell Children",
-               "Permission to add or remove cell children from this cell.");
+        super(NAME, ModifyAction.class,
+                BUNDLE.getString("ChangeCellChildren_DisplayName"),
+                BUNDLE.getString("ChangeCellChildren_Description"));
     }
 }
