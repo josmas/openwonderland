@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 public class ReconnectDialog implements Runnable {
 
     private static final Logger LOGGER =
-            Logger.getLogger(ReconnectFrame.class.getName());
+            Logger.getLogger(ReconnectDialog.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/client/jme/Bundle");
     private JmeClientMain main;
