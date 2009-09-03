@@ -11,6 +11,7 @@
     <!-- classpath for building client -->
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/../jmecolladaloader/build/client/jmecolladaloader-client.jar"/>
+        <path location="${current.dir}/../avatarbase/build/client/avatarbase-client.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,
