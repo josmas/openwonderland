@@ -1208,6 +1208,16 @@ public abstract class View2DEntity implements View2D {
             case ATTACHED_TO_ENTITY:
                 if (parentEntity != null) {
                     logger.fine("Remove entity " + entity + " from parent entity " + parentEntity);
+
+                    /* TODO: 597: I thought this might fix it. But it breaks resize. The frame
+                       disappears after a resize
+                    if (hasFrame()) {
+                        logger.fine("Detach frame");
+                        detachFrame();
+                        changeMask |= CHANGED_DECORATED;
+                    }
+                    */
+
                     RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                     sgChangeAttachPointSetAddEntity(rc, null, null, null);
                     parentEntity.removeEntity(entity);

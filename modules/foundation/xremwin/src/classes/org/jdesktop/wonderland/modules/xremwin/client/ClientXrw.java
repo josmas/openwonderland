@@ -257,7 +257,7 @@ public abstract class ClientXrw implements Runnable {
      */
     public void run() {
 
-        while (serverConnected && !stop) {
+        while (serverConnected && !stop && serverProxy != null) {
 
             // Read message type from the server.
             ServerMessageType msgType = serverProxy.getMessageType();
