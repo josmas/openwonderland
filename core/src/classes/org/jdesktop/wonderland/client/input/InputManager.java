@@ -444,6 +444,24 @@ public abstract class InputManager
 	eventDistributor.removeGlobalEventListener(listener);
     }
 
+    /**
+     * Add an event listener to the specified entity
+     * @param listener
+     * @param entity
+     */
+    public void addEventListener(EventListener listener, Entity entity) {
+        listener.addToEntity(entity);
+    }
+
+    /**
+     * Remove an event listener from the specified entity
+     * @param listener
+     * @param entity
+     */
+    public void removeEventListener(EventListener listener, Entity entity) {
+        listener.removeFromEntity(entity);
+    }
+
     /** 
      * Specify the camera component to be used for picking.
      *
