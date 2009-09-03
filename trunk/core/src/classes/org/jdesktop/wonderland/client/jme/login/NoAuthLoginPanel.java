@@ -193,20 +193,20 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
         setOpaque(false);
 
-        naServerLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        naServerLabel.setFont(naServerLabel.getFont().deriveFont(naServerLabel.getFont().getStyle() | java.awt.Font.BOLD));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         naServerLabel.setText(bundle.getString("NoAuthLoginPanel.naServerLabel.text")); // NOI18N
 
-        naFullNameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        naFullNameLabel.setFont(naFullNameLabel.getFont().deriveFont(naFullNameLabel.getFont().getStyle() | java.awt.Font.BOLD));
         naFullNameLabel.setText(bundle.getString("NoAuthLoginPanel.naFullNameLabel.text")); // NOI18N
 
-        naUsernameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        naUsernameLabel.setFont(naUsernameLabel.getFont().deriveFont(naUsernameLabel.getFont().getStyle() | java.awt.Font.BOLD));
         naUsernameLabel.setText(bundle.getString("NoAuthLoginPanel.naUsernameLabel.text")); // NOI18N
 
         naServerField.setEditable(false);
         naServerField.setMinimumSize(new java.awt.Dimension(98, 22));
 
-        naUsernameField.setFont(new java.awt.Font("Dialog", 0, 13));
+        naUsernameField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         naUsernameField.setMinimumSize(new java.awt.Dimension(98, 22));
         naUsernameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -228,10 +228,10 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
                     .add(naServerLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(naServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(naFullNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(naServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 274, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
