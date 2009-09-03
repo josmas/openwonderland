@@ -464,6 +464,21 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         sendCommandToSoftphone("transmitChannels=" + quality.transmitChannels());
     }
 
+    public void recordReceivedAudio(String recordingPath)
+            throws IOException {
+
+        sendCommandToSoftphone("recordReceivedAudio="
+            + recordingPath);
+    }
+
+    public void pauseRecordingReceivedAudio() {
+        sendCommandToSoftphone("pauseRecordingReceivedAudio");
+    }
+
+    public void resumeRecordingReceivedAudio() {
+        sendCommandToSoftphone("resumeRecordingReceivedAudio");
+    }
+
     public void sendCommandToSoftphone(String cmd) {
         if (softphoneOutputStream == null) {
 	    System.out.println("Unable to send command to softphone, output stream is null "

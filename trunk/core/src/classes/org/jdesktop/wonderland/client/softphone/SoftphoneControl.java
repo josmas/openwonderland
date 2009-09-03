@@ -55,6 +55,12 @@ public interface SoftphoneControl {
 
     public void setAudioQuality(AudioQuality quality) throws IOException;
 
+    public void recordReceivedAudio(String recordingPath) throws IOException;
+
+    public void pauseRecordingReceivedAudio();
+
+    public void resumeRecordingReceivedAudio();
+
     public void sendCommandToSoftphone(String cmd) throws IOException;
     
     public void runLineTest() throws IOException;
