@@ -489,19 +489,26 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 		+ cmd);
             return;
         }
+
         synchronized(softphoneOutputStream) {
             logger.finest("SoftphoneControl sending command to softphone:  " + cmd);
 
             try {
+		if (cmd.equals("Shutdown")) {
+	    	    shuttingDown = true;
+		}
+
                 byte bytes[] = (cmd+"\n").getBytes();
                 softphoneOutputStream.write(bytes);
                 softphoneOutputStream.flush();
             } catch (IOException e) {
-                e.printStackTrace();
-                //softphoneOutputStream = null;
+		if (shuttingDown == false) {
+                    e.printStackTrace();
+                    //softphoneOutputStream = null;
 
-		System.out.println("SoftphoneControl exception:  " + e.getMessage());
-		System.out.println("IS RUNNING? " + isRunning());
+		    System.out.println("SoftphoneControl exception:  " + e.getMessage());
+		    System.out.println("IS RUNNING? " + isRunning());
+		}
 
 		//close(
                 //    "There was an error trying to use the software phone.  "
@@ -772,6 +779,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         
     }
 
+    private boolean shuttingDown;
     private boolean closed;
 
     private void close(final String failureMessage) {
