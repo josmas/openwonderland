@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import org.jdesktop.wonderland.client.jme.input.AvatarCollisionEvent;
 import com.jme.bounding.BoundingSphere;
 import com.jme.intersection.TriangleCollisionResults;
 import java.io.IOException;
@@ -922,7 +923,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             synchronized(this) {
                 evt = (AvatarCollisionChangeRequestEvent) evtIn;
                 if (collisionController!=null) {
-                    collisionController.setCollisionEnabled(evt.isCollisionResponseEnabled());
+                    collisionController.setCollisionResponseEnabled(evt.isCollisionResponseEnabled());
                     collisionController.setGravityEnabled(evt.isGravityEnabled());
                 }
             }
@@ -933,7 +934,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         public void processCollision(CollisionInfo collisionInfo) {
             JMECollisionDetails cd = (JMECollisionDetails)collisionInfo.get(0);
-            logger.info("Collided with: " + cd.getReportedNode() + " on entity: " + cd.getEntity());
+            if (logger.isLoggable(Level.INFO))
+                logger.info("Collided with: " + cd.getReportedNode() + " on entity: " + cd.getEntity());
             ClientContextJME.getInputManager().postEvent(new AvatarCollisionEvent(collisionInfo), cd.getEntity());
         }
 
