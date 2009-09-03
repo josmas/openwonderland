@@ -14,9 +14,6 @@
         <file name="xremwin/build.xml"/>
         <file name="sas/build.xml"/>
         <file name="sasxremwin/build.xml"/>
-        
-        <file name="jeditortest/build.xml"/>
-        <file name="swingwhiteboard/build.xml"/>
     </filelist>
  
     <!-- build and package all subprojects -->
