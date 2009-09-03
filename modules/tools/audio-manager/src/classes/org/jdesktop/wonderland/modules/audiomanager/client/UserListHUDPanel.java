@@ -79,8 +79,12 @@ public class UserListHUDPanel
 
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+
     private static final Logger LOGGER =
             Logger.getLogger(UserListHUDPanel.class.getName());
+
+    private static final int DEFAULT_SLIDER_VOLUME = 5;
+
     private Cell cell;
     private ChannelComponent channelComp;
     private PresenceManager pm;
@@ -484,7 +488,7 @@ public class UserListHUDPanel
         volumeSlider.setPaintLabels(true);
         volumeSlider.setPaintTicks(true);
         volumeSlider.setSnapToTicks(true);
-        volumeSlider.setValue(5);
+        volumeSlider.setValue(DEFAULT_SLIDER_VOLUME);
         volumeSlider.setMinimumSize(new java.awt.Dimension(36, 85));
         volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -734,12 +738,14 @@ public class UserListHUDPanel
                 voiceChatButton.setEnabled(true);
             }
 
-            if (presenceInfo != null) {
-                Integer v = volumeChangeMap.get(presenceInfo);
+            if (info != null) {
+                Integer v = volumeChangeMap.get(info);
 
                 if (v != null) {
                     volumeSlider.setValue(v.intValue());
-                }
+                } else {
+                    volumeSlider.setValue(DEFAULT_SLIDER_VOLUME);
+		}
             }
         } else {
             // multiple users
@@ -747,7 +753,7 @@ public class UserListHUDPanel
             text = MessageFormat.format(text, selectedValues.length);
             volumeLabel.setText(text);
             volumeSlider.setEnabled(true);
-            volumeSlider.setValue(5);
+            volumeSlider.setValue(DEFAULT_SLIDER_VOLUME);
             textChatButton.setEnabled(false);
             voiceChatButton.setEnabled(true);
             panelToggleButton.setIcon(downIcon);
