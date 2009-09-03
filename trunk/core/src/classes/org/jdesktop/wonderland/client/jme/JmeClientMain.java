@@ -22,22 +22,18 @@ import com.jme.math.Vector3f;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Interpolators;
 import com.sun.scenario.animation.TimingTarget;
-import java.awt.event.ActionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CameraComponent;
@@ -47,7 +43,6 @@ import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsManager;
-import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
@@ -383,11 +378,8 @@ public class JmeClientMain {
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
-                                ReconnectFrame rf = new ReconnectFrame(
+                                ReconnectDialog rf = new ReconnectDialog(
                                         JmeClientMain.this, mgr);
-                                rf.pack();
-                                rf.setLocationRelativeTo(
-                                        JmeClientMain.getFrame().getFrame());
                                 rf.setVisible(true);
                             }
                         });
