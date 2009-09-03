@@ -707,6 +707,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         serverPanel.setPreferredSize(new java.awt.Dimension(692, 35));
 
+        serverLabel.setFont(serverLabel.getFont());
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
         serverLabel.setText(bundle.getString("Location:")); // NOI18N
 
@@ -730,7 +731,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             .add(serverPanelLayout.createSequentialGroup()
                 .add(serverLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(serverField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                .add(serverField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(goButton))
         );
