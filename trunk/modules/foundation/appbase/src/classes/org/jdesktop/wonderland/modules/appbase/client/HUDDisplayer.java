@@ -66,6 +66,7 @@ public class HUDDisplayer implements View2DDisplayer {
         if (window instanceof WindowSwingHeader) return null;
 
         HUDComponent component = mainHUD.createComponent(window);
+        component.setName(app.getName());
         component.setPreferredLocation(Layout.CENTER);
         hudComponents.add(component);
 
