@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.runner.Runner.Status;
 public abstract class BaseRemoteRunner implements RemoteRunner {
     private static final Logger logger =
             Logger.getLogger(BaseRemoteRunner.class.getName());
-    private static final String SERVICE = "wonderland-web-remote-runner/services/";
+    private static final String SERVICE = "wonderland-web-remote-runner/services/runner/";
     
     private final Set<RunnerStatusListener> statusListeners =
             new CopyOnWriteArraySet<RunnerStatusListener>();
