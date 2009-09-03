@@ -44,6 +44,9 @@ class Gui2DResizeCorner extends Gui2DSide {
     /** The associated resize corner component */
     protected FrameResizeCorner resizeCorner;
 
+    /** Whether the mouse is over the resize corner. */
+    private boolean mouseIsInside;
+
     /** 
      * Create a new instance of Gui2DResizeCorner.
      *
@@ -96,9 +99,23 @@ class Gui2DResizeCorner extends Gui2DSide {
         public void commitEvent(Event event) {
             MouseEvent3D me3d = (MouseEvent3D) event;
 
+            if (me3d instanceof MouseEnterExitEvent3D) {
+                mouseIsInside = ((MouseEnterExitEvent3D) me3d).isEnter();
+            }
+
             // Process change control event even if not enabled
             if (Gui2D.isChangeControlEvent((MouseEvent)me3d.getAwtEvent())) {
+
+                boolean prevHasControl = view.getWindow().getApp().getControlArb().hasControl();
+
                 super.commitEvent(event);
+                
+                // Note: cannot check the control arb directly for whether it has control
+                // because the above commitEvent does an invokeLater (this is asynchronous).
+                if (!prevHasControl) {
+                    resizeCorner.setMouseInside(mouseIsInside);
+                }
+                return;
             }
 
             // Do nothing if not enabled
@@ -108,7 +125,7 @@ class Gui2DResizeCorner extends Gui2DSide {
 
             if (me3d instanceof MouseEnterExitEvent3D &&
                 view.getWindow().getApp().getControlArb().hasControl()) {
-                resizeCorner.setMouseInside(((MouseEnterExitEvent3D) me3d).isEnter());
+                resizeCorner.setMouseInside(mouseIsInside);
             }
 
             super.commitEvent(event);
