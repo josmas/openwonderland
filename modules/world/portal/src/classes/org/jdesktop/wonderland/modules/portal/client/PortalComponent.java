@@ -24,15 +24,21 @@ import com.jme.math.Vector3f;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarCollisionEvent;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 
 /**
@@ -53,6 +59,7 @@ public class PortalComponent extends CellComponent
 
     @UsesCellComponent
     private ProximityComponent prox;
+    private CollisionListener collisionListener = null;
 
     public PortalComponent(Cell cell) {
         super(cell);
@@ -79,11 +86,19 @@ public class PortalComponent extends CellComponent
         };
 
         if (increasing && status == CellStatus.ACTIVE) {
-            System.out.println("[PortalComponent] add prox listener: " + bounds[0]);
-            prox.addProximityListener(this, bounds);
+//            System.out.println("[PortalComponent] add prox listener: " + bounds[0]);
+//            prox.addProximityListener(this, bounds);
         } else if (!increasing && status == CellStatus.INACTIVE) {
-            System.out.println("[PortalComponent] remove prox listener");
+//            System.out.println("[PortalComponent] remove prox listener");
             prox.removeProximityListener(this);
+        } else if (status==CellStatus.VISIBLE) {
+            if (increasing) {
+                collisionListener = new CollisionListener();
+                Entity ent = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+                ClientContextJME.getInputManager().addEventListener(collisionListener, ent);
+            } else {
+                ClientContextJME.getInputManager().removeEventListener(collisionListener, ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity());
+            }
         }
     }
 
@@ -91,7 +106,10 @@ public class PortalComponent extends CellComponent
                               BoundingVolume proximityVolume, int proximityIndex)
     {
         System.out.println("[PortalComponent] trigger!");
+        teleport();
+    }
 
+    private void teleport() {
         // teleport in a separate thread, since we don't know which one we
         // are called on
         Thread t = new Thread(new Runnable() {
@@ -108,5 +126,17 @@ public class PortalComponent extends CellComponent
             }
         }, "Teleporter");
         t.start();
+    }
+
+    class CollisionListener extends EventClassListener {
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{AvatarCollisionEvent.class};
+        }
+
+        @Override
+        public void commitEvent(Event event) {
+            teleport();
+        }
     }
 }
