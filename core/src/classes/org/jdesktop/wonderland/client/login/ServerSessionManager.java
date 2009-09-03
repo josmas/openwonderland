@@ -22,12 +22,14 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
@@ -61,6 +63,9 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 public class ServerSessionManager {
     private static final Logger logger =
             Logger.getLogger(ServerSessionManager.class.getName());
+
+    private static final ResourceBundle BUNDLE =  ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/client/login/bundle");
 
     /** where on the server to find the details object */
     private static final String DETAILS_URL =
@@ -627,7 +632,7 @@ public class ServerSessionManager {
      * @return the classloader setup with this server's URLs
      */
     private ScannedClassLoader setupClassLoader(String serverURL) {
-        fireConnecting("Creating classloader");
+        fireConnecting(BUNDLE.getString("Creating classloader"));
 
         // TODO: use the serverURL
         ModulePluginList list = ModuleUtils.fetchPluginJars(serverURL);
@@ -671,8 +676,10 @@ public class ServerSessionManager {
         while (it.hasNext()) {
             ClientPlugin plugin = it.next();
 
-            fireConnecting("Initialize plugin: " +
-                           plugin.getClass().getSimpleName());
+            String message = BUNDLE.getString("Initialize plugin");
+            message = MessageFormat.format(
+                    message, plugin.getClass().getSimpleName());
+            fireConnecting(message);
 
             // check with the filter to see if we should load this plugin
             if (LoginManager.getPluginFilter().shouldInitialize(this, plugin)) {
@@ -934,7 +941,8 @@ public class ServerSessionManager {
         public void authenticate(String username, String fullname)
             throws LoginFailureException
         {
-            fireConnecting("Sending authentication details...");
+            fireConnecting(BUNDLE.getString(
+                    "Sending authentication details..."));
             try {
                 AuthenticationService authService =
                         AuthenticationManager.login(getAuthInfo(), username,
@@ -966,7 +974,8 @@ public class ServerSessionManager {
         public void authenticate(String username, String password)
             throws LoginFailureException
         {
-            fireConnecting("Sending authentication details...");
+            fireConnecting(BUNDLE.getString(
+                    "Sending authentication details..."));
             try {
                 AuthenticationService authService =
                         AuthenticationManager.login(getAuthInfo(), username,
