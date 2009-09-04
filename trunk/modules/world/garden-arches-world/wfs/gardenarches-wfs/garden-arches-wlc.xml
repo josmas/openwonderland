@@ -1,43 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model-cell>
-    <name>14</name>
+    <name>garden_arches</name>
     <metadata/>
-    <jme-collada-cell-component>
-        <model>wla://garden-arches/walled_garden_2_noexplode.kmz/models/walled_garden_2_noexplode.dae.gz</model>
-        <model-translation>
-            <x>-130</x>
-            <y>-13</y>
-            <z>230</z>
-        </model-translation>
-        <model-scale>
-            <x>0.08</x>
-            <y>0.08</y>
-            <z>0.08</z>
-        </model-scale>
-        <model-rotation>
-            <x>-1.0</x>
-            <y>0.0</y>
-            <z>0.0</z>
-            <angle>1.570796251296997</angle>
-        </model-rotation>
-        <model-loader-classname>org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader</model-loader-classname>
-    </jme-collada-cell-component>
     <position-component>
         <translation>
-            <x>-9.680023193359375</x>
-            <y>13.699996948242188</y>
-            <z>19.000015258789062</z>
+            <x>-9.680023</x>
+            <y>0.0</y>
+            <z>19.000015</z>
         </translation>
         <bounds>
-            <type>BOX</type>
-            <x>139</x>
-            <y>13</y>
-            <z>247</z>
+            <type>SPHERE</type>
+            <x>283.8292236328125</x>
+            <y>1.0</y>
+            <z>1.0</z>
         </bounds>
         <scale>
-            <x>1</x>
-            <y>1</y>
-            <z>1</z>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
         </scale>
         <rotation>
             <x>1.0</x>
@@ -46,4 +26,7 @@
             <angle>0.0</angle>
         </rotation>
     </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://garden-arches/walled_garden_2_noexplode.kmz/walled_garden_2_noexplode.kmz.dep</deployedModelURL>
+    </model-cell-component>
 </model-cell>
