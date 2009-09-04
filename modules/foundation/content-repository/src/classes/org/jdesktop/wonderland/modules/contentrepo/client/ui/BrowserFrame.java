@@ -225,6 +225,7 @@ public class BrowserFrame extends javax.swing.JFrame {
 
         setTitle("Content Repository Browser");
 
+        fileList.setFont(fileList.getFont());
         fileList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
@@ -232,6 +233,7 @@ public class BrowserFrame extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(fileList);
 
+        downloadButton.setFont(downloadButton.getFont());
         downloadButton.setText("Download...");
         downloadButton.setEnabled(false);
         downloadButton.addActionListener(new java.awt.event.ActionListener() {
@@ -240,10 +242,13 @@ public class BrowserFrame extends javax.swing.JFrame {
             }
         });
 
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel1.setText("Directory:");
 
+        dirNameLabel.setFont(dirNameLabel.getFont());
         dirNameLabel.setText("directory name");
 
+        uploadButton.setFont(uploadButton.getFont());
         uploadButton.setText("Upload");
         uploadButton.setEnabled(false);
         uploadButton.addActionListener(new java.awt.event.ActionListener() {
@@ -252,6 +257,7 @@ public class BrowserFrame extends javax.swing.JFrame {
             }
         });
 
+        browseButton.setFont(browseButton.getFont());
         browseButton.setText("Browse...");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -260,21 +266,30 @@ public class BrowserFrame extends javax.swing.JFrame {
         });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Selected File"));
+        jPanel1.setFont(jPanel1.getFont());
 
+        jLabel2.setFont(jLabel2.getFont());
         jLabel2.setText("Type:");
 
+        jLabel3.setFont(jLabel3.getFont());
         jLabel3.setText("Size:");
 
+        jLabel4.setFont(jLabel4.getFont());
         jLabel4.setText("Modified:");
 
+        modifiedLabel.setFont(modifiedLabel.getFont());
         modifiedLabel.setText("modified");
 
+        sizeLabel.setFont(sizeLabel.getFont());
         sizeLabel.setText("size");
 
+        typeLabel.setFont(typeLabel.getFont());
         typeLabel.setText("type");
 
+        jLabel5.setFont(jLabel5.getFont());
         jLabel5.setText("URL:");
 
+        urlLabel.setFont(urlLabel.getFont());
         urlLabel.setText("url");
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -284,17 +299,17 @@ public class BrowserFrame extends javax.swing.JFrame {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel4)
-                    .add(jLabel3)
-                    .add(jLabel2)
-                    .add(jLabel5))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel4)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel5))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(urlLabel)
                     .add(typeLabel)
                     .add(sizeLabel)
                     .add(modifiedLabel))
-                .addContainerGap(55, Short.MAX_VALUE))
+                .addContainerGap(67, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -317,6 +332,7 @@ public class BrowserFrame extends javax.swing.JFrame {
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
+        mkdirButton.setFont(mkdirButton.getFont());
         mkdirButton.setText("New Directory");
         mkdirButton.setEnabled(false);
         mkdirButton.addActionListener(new java.awt.event.ActionListener() {
@@ -325,6 +341,7 @@ public class BrowserFrame extends javax.swing.JFrame {
             }
         });
 
+        deleteButton.setFont(deleteButton.getFont());
         deleteButton.setText("Delete");
         deleteButton.setEnabled(false);
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
@@ -350,17 +367,23 @@ public class BrowserFrame extends javax.swing.JFrame {
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, fileTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, mkdirButton)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(mkdirButton)
+                            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(browseButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
+                                .add(uploadButton)
+                                .add(3, 3, 3))
+                            .add(layout.createSequentialGroup()
+                                .add(deleteButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(uploadButton))
-                            .add(downloadButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-                            .add(deleteButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .add(downloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {fileTF, mkdirTF}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -373,9 +396,9 @@ public class BrowserFrame extends javax.swing.JFrame {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deleteButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(downloadButton))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(deleteButton)
+                            .add(downloadButton)))
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
                 .add(2, 2, 2)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -384,8 +407,8 @@ public class BrowserFrame extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(fileTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(browseButton)
-                    .add(uploadButton))
+                    .add(uploadButton)
+                    .add(browseButton))
                 .addContainerGap())
         );
 
