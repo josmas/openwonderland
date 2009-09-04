@@ -66,8 +66,8 @@ public class App2DCellRendererJME extends App2DCellRenderer {
         acrjRootNode.setRenderState(lightState);
 
         // For debug
-        //ClientContext.getInputManager().addGlobalEventListener(new SceneGraphPrinter());
-        //ClientContext.getInputManager().addGlobalEventListener(new OrthoPrinter());
+        //ClientContextJME.getInputManager().addGlobalEventListener(new SceneGraphPrinter());
+        //ClientContextJME.getInputManager().addGlobalEventListener(new OrthoPrinter());
     }
 
     // For debug
