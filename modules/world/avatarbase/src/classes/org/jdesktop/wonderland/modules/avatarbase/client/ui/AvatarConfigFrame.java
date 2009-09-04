@@ -49,11 +49,13 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
     private static final Logger LOGGER =
             Logger.getLogger(AvatarConfigFrame.class.getName());
+
     private static final ResourceBundle bundle = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
+
     // The image icons for the JList to display the avatar configurations
-    private Icon checkBoxIcon;
-    private Icon blankIcon;
+    private Icon checkBoxIcon = null;
+    private Icon blankIcon = null;
 
     /** Creates new form AvatarConfigFrame */
     public AvatarConfigFrame() {
@@ -62,11 +64,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         initComponents();
 
         // Initialize the icons that are used for the JList
-        URL url = AvatarListCellRenderer.class.getResource(
-                "resources/check_icon.png");
+        URL url = AvatarListCellRenderer.class.getResource("resources/check_icon.png");
         checkBoxIcon = new ImageIcon(url);
         blankIcon = new Icon() {
-
             public void paintIcon(Component c, Graphics g, int x, int y) {
                 // Do nothing
             }
@@ -91,7 +91,6 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // avatars and update the JList appropriately.
         AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
         registry.addAvatarListener(new AvatarListener() {
-
             public void avatarAdded(AvatarSPI avatar) {
                 ((DefaultListModel) avatarList.getModel()).addElement(avatar);
             }
@@ -106,7 +105,6 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // the list. We do not need to do this in the AWT Event Thread because
         // repaint() just schedules something there
         registry.addAvatarInUseListener(new AvatarInUseListener() {
-
             public void avatarInUse(AvatarSPI avatar, boolean isLocal) {
                 avatarList.repaint();
             }
@@ -115,7 +113,6 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // Listen for when the selection of the list of avatar changes, so we
         // update the state of buttons
         avatarList.addListSelectionListener(new ListSelectionListener() {
-
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     updateButtonEnabled();
@@ -139,7 +136,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             listModel.addElement(defaultAvatar);
             avatarSet.remove(defaultAvatar);
         }
-
+        
         // Next add all of the other avatars
         for (AvatarSPI avatar : avatarSet) {
             listModel.addElement(avatar);
@@ -161,7 +158,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         // Next, ask the selected avatar whether Customize and Delete is
         // supported
-        if (selected) {
+        if (selected == true) {
             AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
             customizeButton.setEnabled(avatar.canConfigure());
             deleteButton.setEnabled(avatar.canDelete());
@@ -169,7 +166,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         // Finally, we see if the select avatar is the one currently in use.
         // If so, do not enable the Use button
-        if (selected) {
+        if (selected == true) {
             AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
             AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
             AvatarSPI avatarInUse = registry.getAvatarInUse();
@@ -205,7 +202,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
             // If the avatar configuration is currently selected, then we
             // want to place a checkbox next to the name.
-            if (avatar.equals(avatarInUse)) {
+            if (avatar.equals(avatarInUse) == true) {
                 setIcon(checkBoxIcon);
             } else {
                 setIcon(blankIcon);
@@ -395,7 +392,20 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // of configurations. Since the Delete button is only enabled when an
         // item is selected, we assume something is selected in the list.
         AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
+        String avatarName = avatar.getName();
         avatar.delete();
+
+        // If the deleted avatar is currently the avatar in use, then reset to
+        // the default avatar.
+        AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
+        if (registry.isAvatarInUse(avatarName) == true) {
+            AvatarSPI defaultAvatar = registry.getDefaultAvatar();
+            if (defaultAvatar == null) {
+                LOGGER.warning("Unable to reset avatar to default, none exists.");
+                return;
+            }
+            registry.setAvatarInUse(defaultAvatar, false);
+        }
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void customizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customizeButtonActionPerformed
@@ -428,6 +438,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         // again
         setVisible(false);
     }//GEN-LAST:event_closeButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList avatarList;
     private javax.swing.JScrollPane avatarListScrollPane;

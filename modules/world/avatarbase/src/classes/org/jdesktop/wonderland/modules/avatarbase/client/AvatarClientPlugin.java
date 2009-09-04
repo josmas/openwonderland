@@ -21,12 +21,8 @@ import com.jme.math.Vector3f;
 import imi.camera.CameraModels;
 import imi.camera.ChaseCamModel;
 import imi.camera.ChaseCamState;
-//import imi.character.AvatarSystem;
 import imi.character.AvatarSystem;
 import imi.character.avatar.Avatar;
-import imi.character.behavior.CharacterBehaviorManager;
-import imi.character.behavior.GoTo;
-import imi.character.statemachine.GameContext;
 import imi.repository.Repository;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,6 +33,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
@@ -48,8 +46,11 @@ import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -88,7 +89,10 @@ public class AvatarClientPlugin extends BaseClientPlugin
         implements AvatarLoaderStateListener, ViewManagerListener {
 
     private static Logger logger = Logger.getLogger(AvatarClientPlugin.class.getName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
+
+    private static final ResourceBundle bundle =
+            ResourceBundle.getBundle("org/jdesktop/wonderland/modules/" +
+            "avatarbase/client/resources/Bundle");
 
     // A map of a session and the loader for that session
     private Map<ServerSessionManager, AvatarSessionLoader> loaderMap = null;
@@ -129,6 +133,12 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
     // The avatar configuration menu item
     private JMenuItem avatarConfigMI = null;
+
+    // Indicates that the avatar has already been set once the primary view
+    // has been set, so that is does not happen more than once. We synchronized
+    // on the mutex
+    private Lock isAvatarSetMutex = new ReentrantLock();
+    private Boolean isAvatarSet = false;
 
     /**
      * {@inheritDoc]
@@ -338,23 +348,10 @@ public class AvatarClientPlugin extends BaseClientPlugin
      */
     @Override
     protected void deactivate() {
-        // Fetch the loader from the currently known list and unload it
-        AvatarSessionLoader loader = loaderMap.get(getSessionManager());
-        if (loader != null) {
-            loader.removeAvatarLoaderStateListener(this);
-            loader.unload();
-            loaderMap.remove(getSessionManager());
-        }
-        
-        ViewManager.getViewManager().removeViewManagerListener(this);
 
-        // Remove the listener for changes in avatar in use
-        if (inUseListener != null) {
-            AvatarRegistry.getAvatarRegistry().removeAvatarInUseListener(inUseListener);
-            inUseListener = null;
-        }
-
-        // remove menus
+        // First remove the menus. This will prevent users from taking action
+        // upon the avatar in the (small) chance they do while the session is
+        // being deactivated.
         if (menusAdded == true) {
             MainFrame frame = JmeClientMain.getFrame();
             frame.removeFromWindowMenu(gestureMI);
@@ -379,6 +376,27 @@ public class AvatarClientPlugin extends BaseClientPlugin
                 frame.removeFromEditMenu(avatarSettingsMI);
             }
             menusAdded = false;
+        }
+
+        // Next, remove the listener for changes in avatar in use. This will
+        // prevent the avatar from being updated while the avatars are removed
+        // from the system.
+        if (inUseListener != null) {
+            AvatarRegistry.getAvatarRegistry().removeAvatarInUseListener(inUseListener);
+            inUseListener = null;
+        }
+
+        // Stop listening for primary view changes.
+        ViewManager.getViewManager().removeViewManagerListener(this);
+
+        // Finally, fetch the avatar session loader for the session just ended
+        // and unload all of the avatars from the system. This will remove the
+        // avatars one-by-one.
+        AvatarSessionLoader loader = loaderMap.get(getSessionManager());
+        if (loader != null) {
+            loader.removeAvatarLoaderStateListener(this);
+            loader.unload();
+            loaderMap.remove(getSessionManager());
         }
     }
 
@@ -410,88 +428,136 @@ public class AvatarClientPlugin extends BaseClientPlugin
             avatarCellRenderer.removeAvatarChangedListener(avatarChangedListener);
         }
 
+        // If the new primary view cell is null, then just return here
+        if (newViewCell == null) {
+            return;
+        }
 
+        logger.info("Primary view Cell Changes from " + oldViewCell +
+                " to " + newViewCell + " " + newViewCell.getName());
+        
+        // Fetch the cell renderer for the new primary view Cell. It should
+        // be of type AvatarImiJME. If not, log a warning and return
+        CellRenderer rend = newViewCell.getCellRenderer(RendererType.RENDERER_JME);
+        if (!(rend instanceof AvatarImiJME)) {
+            logger.warning("Cell renderer for view " + newViewCell.getName() +
+                    " is not of type AvatarImiJME.");
+            return;
+        }
 
-        if (newViewCell!=null) {
-            logger.info("Primary view Cell Changes to " + newViewCell.getName());
-
-            // Fetch the cell renderer for the new primary view Cell. It should
-            // be of type AvatarImiJME. If not, log a warning and return
-            CellRenderer rend = newViewCell.getCellRenderer(RendererType.RENDERER_JME);
-            if (!(rend instanceof AvatarImiJME)) {
-                logger.warning("Cell renderer for view " + newViewCell.getName() +
-                        " is not of type AvatarImiJME.");
-                return;
-            }
-
-
-            // set the current avatar
-            avatarCellRenderer = (AvatarImiJME) rend;
-
-            // start listener for new changes. This is used for the chase camera.
-            avatarCellRenderer.addAvatarChangedListener(avatarChangedListener);
-
-            // Set the state of the chase camera from the current avatar in the
-            // cell renderer.
-            if (camState != null) {
-                camState.setTargetCharacter(avatarCellRenderer.getAvatarCharacter());
-                camModel.reset(camState);
-            }
-
-            // Initialize the avatar control panel (test) with the current avatar
-            // character.
-    //        if (testPanelRef != null && testPanelRef.get() != null) {
-    //            testPanelRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
-    //        }
-
-            // Initialize the gesture HUD panel with the current avatar character.
-            if (gestureHUDRef != null && gestureHUDRef.get() != null) {
-                gestureHUDRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
-            }
-
-            // We also want to listen (if we aren't doing so already) for when the
-            // avatar in-use has changed.
-            if (inUseListener == null) {
-                inUseListener = new AvatarInUseListener() {
-                    public void avatarInUse(AvatarSPI avatar, boolean isLocal) {
-                        refreshAvatarInUse(newViewCell, isLocal);
-                    }
-                };
-                AvatarRegistry.getAvatarRegistry().addAvatarInUseListener(inUseListener);
-            }
-
-            // Once the avatar loader is ready and the primary view has been set,
-            // we tell the avatar cell component to set it's avatar in use.
-            refreshAvatarInUse(newViewCell, false);
-
-            // Finally, enable the menu items to allow avatar configuration. We
-            // do this after the view cell is set, so we know we have an avatar
-            // in the world.
-            if (menusAdded == false) {
-                MainFrame frame = JmeClientMain.getFrame();
-                frame.addToWindowMenu(gestureMI, 0);
-                frame.addToToolsMenu(gravityEnabledMI, -1);
-                frame.addToToolsMenu(collisionResponseEnabledMI, -1);
-                frame.addToEditMenu(avatarConfigMI, 0);
-
-                if (frame instanceof MainFrameImpl) { // Only until the MainFrame interface gets this method
-                    ((MainFrameImpl) frame).addToCameraChoices(chaseCameraMI, 3);
+        // We also want to listen (if we aren't doing so already) for when the
+        // avatar in-use has changed.
+        if (inUseListener == null) {
+            inUseListener = new AvatarInUseListener() {
+                public void avatarInUse(AvatarSPI avatar, boolean isLocal) {
+                    refreshAvatarInUse(newViewCell, isLocal);
                 }
-                else {
-                    frame.addToViewMenu(chaseCameraMI, 3);
-                }
+            };
+            AvatarRegistry.getAvatarRegistry().addAvatarInUseListener(inUseListener);
+        }
 
-                // Add the avatar control (test) if it exists
-                if (avatarControlsMI != null) {
-                    frame.addToWindowMenu(avatarControlsMI, 0);
-                }
+        // set the current avatar
+        avatarCellRenderer = (AvatarImiJME) rend;
 
-                // Add the avatar instrumentation settings if it exists
-                if (avatarSettingsMI != null) {
-                    frame.addToEditMenu(avatarSettingsMI, 1);
+        // start listener for new changes. This is used for the chase camera.
+        avatarCellRenderer.addAvatarChangedListener(avatarChangedListener);
+
+        // Set the state of the chase camera from the current avatar in the
+        // cell renderer.
+        if (camState != null) {
+            camState.setTargetCharacter(avatarCellRenderer.getAvatarCharacter());
+            camModel.reset(camState);
+        }
+
+        // Initialize the avatar control panel (test) with the current avatar
+        // character.
+        //        if (testPanelRef != null && testPanelRef.get() != null) {
+        //            testPanelRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
+        //        }
+
+        // Initialize the gesture HUD panel with the current avatar character.
+        if (gestureHUDRef != null && gestureHUDRef.get() != null) {
+            gestureHUDRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
+        }
+
+        // We also want to listen (if we aren't doing so already) for when the
+        // avatar in-use has changed.
+        if (inUseListener == null) {
+            inUseListener = new AvatarInUseListener() {
+                public void avatarInUse(AvatarSPI avatar, boolean isLocal) {
+                    refreshAvatarInUse(newViewCell, isLocal);
                 }
-                menusAdded = true;
+            };
+            AvatarRegistry.getAvatarRegistry().addAvatarInUseListener(inUseListener);
+        }
+
+        // Once the avatar loader is ready and the primary view has been set,
+        // we tell the avatar cell component to set it's avatar in use. We can
+        // only do this after we know the AvatarConfigComponent is on the View
+        // Cell. We therefore add a listener, but also check immediately whether
+        // the component exists. The handleSetAvatar() method makes sure that
+        // the call to refresh() only happens once.
+        isAvatarSet = false;
+        newViewCell.addComponentChangeListener(new ComponentChangeListener() {
+            public void componentChanged(Cell cell, ChangeType type,
+                    CellComponent component) {
+                AvatarConfigComponent c =
+                        cell.getComponent(AvatarConfigComponent.class);
+                if (type == ChangeType.ADDED && c != null) {
+                    handleSetAvatar((ViewCell)cell);
+                }
             }
+        });
+        if (newViewCell.getComponent(AvatarConfigComponent.class) != null) {
+            handleSetAvatar(newViewCell);
+        }
+
+        // Finally, enable the menu items to allow avatar configuration. We
+        // do this after the view cell is set, so we know we have an avatar
+        // in the world.
+        if (menusAdded == false) {
+            MainFrame frame = JmeClientMain.getFrame();
+            frame.addToWindowMenu(gestureMI, 0);
+            frame.addToToolsMenu(gravityEnabledMI, -1);
+            frame.addToToolsMenu(collisionResponseEnabledMI, -1);
+            frame.addToEditMenu(avatarConfigMI, 0);
+
+            if (frame instanceof MainFrameImpl) { // Only until the MainFrame interface gets this method
+                ((MainFrameImpl) frame).addToCameraChoices(chaseCameraMI, 3);
+            }
+            else {
+                frame.addToViewMenu(chaseCameraMI, 3);
+            }
+
+            // Add the avatar control (test) if it exists
+            if (avatarControlsMI != null) {
+                frame.addToWindowMenu(avatarControlsMI, 0);
+            }
+
+            // Add the avatar instrumentation settings if it exists
+            if (avatarSettingsMI != null) {
+                frame.addToEditMenu(avatarSettingsMI, 1);
+            }
+            menusAdded = true;
+        }
+    }
+
+    /**
+     * Handles when the primary view has been set and the view cell contains an
+     * AvatarConfigComponent. This insures that the refresh() avatar is only
+     * called once.
+     */
+    private void handleSetAvatar(ViewCell viewCell) {
+        // We synchronize on 'isAvatarSet' and only call refresh() if the value
+        // is false.
+        isAvatarSetMutex.lock();
+        try {
+            if (isAvatarSet == false) {
+                isAvatarSet = true;
+                refreshAvatarInUse(viewCell, false);
+            }
+        } finally {
+            isAvatarSetMutex.unlock();
         }
     }
 
@@ -500,6 +566,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
      * current primary view cell.
      */
     public synchronized void refreshAvatarInUse(ViewCell viewCell, boolean isLocal) {
+
         // Once the avatar loader is ready and the primary view has been set,
         // we tell the avatar cell component to set it's avatar in use.
         AvatarConfigComponent configComponent = viewCell.getComponent(AvatarConfigComponent.class);

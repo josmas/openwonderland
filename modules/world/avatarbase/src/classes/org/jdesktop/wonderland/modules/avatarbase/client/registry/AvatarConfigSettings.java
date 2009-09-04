@@ -39,8 +39,10 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement(name="avatar-config-settings")
 public class AvatarConfigSettings implements Serializable {
 
-    // The name of the "default" avatar to use (in case none is set)
-    private static final String DEFAULT_NAME = "Default";
+    // The name of the "default" avatar to use (in case none is set). Perhaps
+    // not the best way to do this -- the name here needs to be kept in sync
+    // with the default avatar names in BasicAvatarFactory.java.
+    public static final String DEFAULT_NAME = "Cartoon (Male)";
     
     // The name of the avatar configuration current in-use
     @XmlElement(name="avatar-in-use")

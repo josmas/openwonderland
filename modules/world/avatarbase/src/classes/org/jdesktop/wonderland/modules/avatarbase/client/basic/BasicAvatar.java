@@ -25,20 +25,31 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 /**
  * The most basic avatar available in the system, a simple COLLADA model that
  * cannot be deleted/configured and serves as the "default" avatar.
+ * <p>
+ * This avatar takes a relative URL of a ".dep" file (deployed model) from a
+ * common base URL that describes the avatar.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class BasicAvatar implements AvatarSPI {
 
+    // The name of the avatar that appears in the list of all avatars
+    private String avatarName = null;
+
+    // The relative URL of the avatar .dep file
+    private String avatarURL = null;
+
     /** Default constructor */
-    public BasicAvatar() {
+    public BasicAvatar(String avatarName, String avatarURL) {
+        this.avatarName = avatarName;
+        this.avatarURL = avatarURL;
     }
 
     /**
      * {@inheritDoc}
      */
     public String getName() {
-        return "Default";
+        return avatarName;
     }
 
     /**
@@ -80,6 +91,6 @@ public class BasicAvatar implements AvatarSPI {
      * {@inheritDoc}
      */
     public AvatarConfigInfo getAvatarConfigInfo(ServerSessionManager session) {
-        return null;
+        return new AvatarConfigInfo(avatarURL, BasicAvatarLoaderFactory.class.getName());
     }
 }

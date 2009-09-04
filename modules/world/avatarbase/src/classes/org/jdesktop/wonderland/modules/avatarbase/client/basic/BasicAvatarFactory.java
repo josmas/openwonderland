@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.basic;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.annotation.AvatarFactory;
@@ -30,19 +32,53 @@ import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarFact
 @AvatarFactory
 public class BasicAvatarFactory implements AvatarFactorySPI {
 
+    // The set of basic avatars
+    private static Set<BasicAvatar> basicAvatarSet = null;
+
+    // A hard-coded list of relative URLs of the basic avatar artwork
+    private static String AVATARS[][] = {
+        {
+            "Cartoon (Male)",
+            "default-avatars/maleCartoonAvatar.dae/maleCartoonAvatar.dae.gz.dep"
+        },
+        {
+            "Cartoon (Female)",
+            "default-avatars/femaleCartoonAvatar.dae/femaleCartoonAvatar.dae.gz.dep"
+        },
+//        {
+//            "Toy (Male)",
+//            "default-avatars/maleToyAvatar.dae/maleToyAvatar.dae.gz.dep"
+//        },
+//        {
+//            "Toy (Female)",
+//            "default-avatars/femaleToyAvatar.dae/femaleToyAvatar.dae.gz.dep"
+//        }
+    };
+    
     /**
      * {@inheritDoc}
      */
     public void registerAvatars(ServerSessionManager session) {
-        // Register the basic avatar as the default
+        // Create the set of basic avatars from the hard-coded list of URLs
         AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
-        registry.registerAvatar(new BasicAvatar(), true);
+        basicAvatarSet = new HashSet();
+        for (int i = 0; i < AVATARS.length; i++) {
+            BasicAvatar avatar = new BasicAvatar(AVATARS[i][0], AVATARS[i][1]);
+            basicAvatarSet.add(avatar);
+            registry.registerAvatar(avatar, i == 0);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void unregisterAvatars(ServerSessionManager session) {
-        // Do nothing
+        // Look through and unregistry all of the basic avatars
+        AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
+        for (BasicAvatar avatar : basicAvatarSet) {
+            registry.unregisterAvatar(avatar);
+        }
+        basicAvatarSet.clear();
+        basicAvatarSet = null;
     }
 }

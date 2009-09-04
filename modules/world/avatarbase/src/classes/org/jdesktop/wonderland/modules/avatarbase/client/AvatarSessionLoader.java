@@ -74,7 +74,6 @@ public class AvatarSessionLoader {
      */
     public void setState(State state) {
         synchronized (currentState) {
-            logger.info("Setting state to " + state);
             currentState = state;
             fireAvatarLoaderStateEvent(state);
         }

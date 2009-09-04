@@ -46,34 +46,32 @@ import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureList
 /**
  * A palette of cell types available to create in the world.
  * 
- * @author  Jordan Slott <jslott@dev.java.net>
- * @author  Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-public class CellPalette
-        extends javax.swing.JFrame implements ListSelectionListener {
+public class CellPalette extends javax.swing.JFrame implements ListSelectionListener {
 
     private final static Logger LOGGER =
             Logger.getLogger(CellPalette.class.getName());
 
     /* A map of cell display names and their cell factories */
-    private Map<String, CellFactorySPI> cellFactoryMap =
-            new HashMap<String, CellFactorySPI>();
+    private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
     /* The "No Preview Available" image */
-    private Image noPreviewAvailableImage;
+    private Image noPreviewAvailableImage = null;
 
     /* The handler for the drag source for the preview image */
-    private PaletteDragGestureListener gestureListener;
+    private PaletteDragGestureListener gestureListener = null;
 
     /* The listener for changes in the list of registered Cell factories */
-    private CellRegistryListener cellListener;
+    private CellRegistryListener cellListener = null;
 
     /* The drag support from the preview label */
-    private DragSource dragSource;
+    private DragSource dragSource = null;
 
     /* The drag gesture recognizers for the cell palette */
-    private DragGestureRecognizer previewRecognizer;
-    private DragGestureRecognizer listRecognizer;
+    private DragGestureRecognizer previewRecognizer = null;
+    private DragGestureRecognizer listRecognizer = null;
 
     /** Creates new form CellPalette */
     public CellPalette() {
@@ -97,12 +95,10 @@ public class CellPalette
         // factories, to be used in setVisible(). When the list changes we
         // simply do a fresh update of all values.
         cellListener = new CellRegistryListener() {
-
             public void cellRegistryChanged() {
                 // Since this is not happening (necessarily) in the AWT Event
                 // Thread, we should put it in one
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         updateListValues();
                     }
@@ -117,10 +113,11 @@ public class CellPalette
         // changes to the list of registered Cell factories any time after we
         // make it (in)visible.
         CellRegistry cellRegistry = CellRegistry.getCellRegistry();
-        if (visible) {
+        if (visible == true) {
             updateListValues();
             cellRegistry.addCellRegistryListener(cellListener);
-        } else {
+        }
+        else {
             cellRegistry.removeCellRegistryListener(cellListener);
         }
 
@@ -217,7 +214,6 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         final String cellDisplayName = (String) cellList.getSelectedValue();
         final CellFactorySPI factory = cellFactoryMap.get(cellDisplayName);
         new Thread(new Runnable() {
-
             public void run() {
                 CellServerState setup = factory.getDefaultCellServerState(null);
 
@@ -247,7 +243,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             // and populate the list.
             CellRegistry registry = CellRegistry.getCellRegistry();
             Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
-            List<String> listNames = new LinkedList<String>();
+            List<String> listNames = new LinkedList();
 
             // Loop through each cell factory we find. Insert the cell names
             // into a list. Ignore any factories without a cell name.
@@ -327,7 +323,8 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 // Pass the necessary information for drag and drop
                 gestureListener.cellFactory = cellFactory;
                 gestureListener.previewImage = previewImage;
-            } else {
+            }
+            else {
                 ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
                 previewLabel.setIcon(icon);
 
@@ -343,7 +340,8 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                         dragSource.createDefaultDragGestureRecognizer(
                         previewLabel, DnDConstants.ACTION_COPY_OR_MOVE,
                         gestureListener);
-            } else {
+            }
+            else {
                 previewRecognizer.setComponent(previewLabel);
             }
 
@@ -353,11 +351,13 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 listRecognizer =
                         dragSource.createDefaultDragGestureRecognizer(cellList,
                         DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
-            } else {
+            }
+            else {
                 listRecognizer.setComponent(cellList);
             }
         }
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList cellList;
     private javax.swing.JScrollPane cellScrollPane;
