@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.mtgame.RenderUpdater;
@@ -102,7 +103,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public Window2D createWindow(HUDComponent component) {
-        logger.fine("creating window for HUD component: " + component);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("creating window for HUD component: " + component);
+        }
 
         Window2D window = null;
 
@@ -127,7 +130,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
      * {@inheritDoc}
      */
     public void addComponent(final HUDComponent component) {
-        logger.fine("adding HUD component to component manager: " + component);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("adding HUD component to component manager: " + component);
+        }
 
         HUDComponentState state = new HUDComponentState(component);
         HUDComponent2D component2D = (HUDComponent2D) component;
@@ -147,11 +152,15 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 MouseEnterExitEvent3D mouseEvent = (MouseEnterExitEvent3D) event;
                 switch (mouseEvent.getID()) {
                     case MouseEvent.MOUSE_ENTERED:
-                        logger.finest("mouse entered component: " + component);
+                        if (logger.isLoggable(Level.FINEST)) {
+                            logger.finest("mouse entered component: " + component);
+                        }
                         setFocused(component, true);
                         break;
                     case MouseEvent.MOUSE_EXITED:
-                        logger.finest("mouse exited component: " + component);
+                        if (logger.isLoggable(Level.FINEST)) {
+                            logger.finest("mouse exited component: " + component);
+                        }
                         setFocused(component, false);
                         break;
                     default:
@@ -168,7 +177,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
      * {@inheritDoc}
      */
     public void removeComponent(HUDComponent component) {
-        logger.fine("removing HUD component from component manager: " + component);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("removing HUD component from component manager: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
@@ -207,7 +218,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public void addFrameHeader(HUDComponent component) {
-        logger.fine("adding frame header to HUD component: " + component);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("adding frame header to HUD component: " + component);
+        }
 
         HUDComponentState state = hudStateMap.get(component);
 
@@ -248,7 +261,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public void removeFrameHeader(HUDComponent component) {
-        logger.fine("removing frame header from HUD component: " + component);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("removing frame header from HUD component: " + component);
+        }
 
         HUDComponentState state = hudStateMap.get(component);
 
@@ -278,7 +293,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public void actionPerformed(ActionEvent e) {
-        logger.fine("action performed: " + e);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("action performed: " + e);
+        }
 
         if (e.getActionCommand().equals("close")) {
             logger.info("close action performed: " + e);
@@ -294,7 +311,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public void mouseDragged(MouseEvent e) {
-        logger.finest("mouse dragged to: " + e.getPoint());
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("mouse dragged to: " + e.getPoint());
+        }
+
         HUDComponent component = (HUDComponent) e.getSource();
         if (component instanceof HUDFrameHeader2D) {
             HUDComponent hudComponent = hudFrameMap.get((HUDFrameHeader2D) component);
@@ -325,7 +345,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     private void showFrame(HUDComponent2D component, boolean visible) {
-        logger.fine("show frame for: " + component + ": " + visible);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("show frame for: " + component + ": " + visible);
+        }
+
         if (component.getDecoratable() == true) {
             HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
             HUDView2D view = state.getView();
@@ -353,7 +376,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentVisible(HUDComponent2D component) {
-        logger.info("showing HUD component on HUD: " + component);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("showing HUD component on HUD: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
@@ -482,7 +507,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentInvisible(HUDComponent2D component) {
-        logger.info("hiding HUD component on HUD: " + component);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("hiding HUD component on HUD: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
@@ -502,7 +529,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentWorldVisible(HUDComponent2D component) {
-        logger.info("showing HUD component in world: " + component);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("showing HUD component in world: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
@@ -535,7 +564,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentWorldInvisible(HUDComponent2D component) {
-        logger.info("hiding HUD component in world: " + component);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("hiding HUD component in world: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
@@ -554,7 +585,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentMoved(HUDComponent2D component) {
-        logger.finest("moving component to: " + component.getX() + ", " + component.getY());
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("moving component to: " + component.getX() + ", " + component.getY());
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state == null) {
@@ -570,7 +603,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentMovedWorld(HUDComponent2D component) {
-        logger.finest("moving HUD component in world: " + component);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("moving HUD component in world: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state == null) {
@@ -586,7 +621,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentResized(final HUDComponent2D component) {
-        logger.finest("resizing HUD component: " + component);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("resizing HUD component: " + component);
+        }
 
         final HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state == null) {
@@ -595,9 +632,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         final HUDView2D view = state.getView();
         if (view != null) {
-//            SwingUtilities.invokeLater(new Runnable() {
-//
-//                public void run() {
             view.setSizeApp(component.getSize());
             if (component.getDecoratable()) {
                 HUDView2D frameView = state.getFrameView();
@@ -608,13 +642,13 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                     frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * component.getSize().height / 2)));
                 }
             }
-//                }
-//            });
         }
     }
 
     protected void componentViewChanged(HUDComponent2D component) {
-        logger.fine("changing HUD component view: " + component);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.fine("changing HUD component view: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state == null) {
@@ -634,7 +668,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentMinimized(final HUDComponent2D component) {
-        logger.info("minimizing HUD component: " + component);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("minimizing HUD component: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
@@ -644,7 +680,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentMaximized(HUDComponent2D component) {
-        logger.info("maximizing HUD component: " + component);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("maximizing HUD component: " + component);
+        }
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state != null) {
@@ -653,11 +691,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     protected void componentClosed(HUDComponent2D component) {
-        logger.info("closing HUD component: " + component);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("closing HUD component: " + component);
+        }
     }
 
     protected void componentTransparencyChanged(HUDComponent2D component) {
-        //logger.fine("changing transparency of: " + component);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("changing transparency of: " + component);
+        }
+
         float transparency = component.getTransparency();
         setTransparency(component, transparency);
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
@@ -741,7 +784,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
      * {@inheritDoc}
      */
     public void HUDObjectChanged(HUDEvent event) {
-        logger.fine("HUD object changed: " + event);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("HUD object changed: " + event);
+        }
         if (event.getObject() instanceof HUDComponent2D) {
             handleHUDComponentChanged(event);
         } else if (event.getObject() instanceof HUD) {
