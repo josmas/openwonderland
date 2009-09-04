@@ -298,6 +298,7 @@ public class PresenceManagerConnectionHandler implements
     	    
 	    WonderlandClientID clientID =
                CommsManagerFactory.getCommsManager().getWonderlandClientID(presenceInfo.clientID);
+
             if (clientID != null) {
                 sender.send(clientID, new PlayerInRangeMessage(playerInRange.getId(), isInRange));
             }

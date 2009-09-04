@@ -79,6 +79,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.Vo
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatTransientMemberMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
@@ -189,8 +190,14 @@ public class AudioManagerClient extends BaseConnection implements
         listeners.remove(listener);
     }
 
-    public void notifyMemberChangeListeners(
+    private void notifyMemberChangeListeners(
             String group, PresenceInfo member, boolean added) {
+	
+        notifyMemberChangeListeners(group, member, added, false);
+    }
+
+    private void notifyMemberChangeListeners(
+            String group, PresenceInfo member, boolean added, boolean isTransient) {
         logger.fine("Member change for group " + group +
                 " member " + member + " added " + added);
         ArrayList<MemberChangeListener> listeners =
@@ -202,11 +209,11 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         for (MemberChangeListener listener : listeners) {
-            listener.memberChange(member, added);
+            listener.memberChange(member, added, isTransient);
         }
     }
 
-    public void notifyMemberChangeListeners(
+    private void notifyMemberChangeListeners(
             String group, PresenceInfo[] members) {
         ArrayList<MemberChangeListener> listeners =
                 memberChangeListeners.get(group);
@@ -654,6 +661,11 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
+        if (message instanceof VoiceChatTransientMemberMessage) {
+	    transientMemberAdded((VoiceChatTransientMemberMessage) message);
+	    return;
+	}
+
         if (message instanceof ConeOfSilenceEnterExitMessage) {
             coneOfSilenceEnterExit((ConeOfSilenceEnterExitMessage) message);
             return;
@@ -1010,18 +1022,14 @@ public class AudioManagerClient extends BaseConnection implements
         PresenceInfo info = pm.getPresenceInfo(playerID);
 
         if (info == null) {
-            String waring = "No PresenceInfo for " + playerID;
-            logger.warning(waring);
-            System.out.println("playerInRange:  " + waring);
+            logger.warning("No PresenceInfo for " + playerID);
             return;
         }
 
         PresenceInfo userInRangeInfo = pm.getPresenceInfo(playerInRangeID);
 
         if (userInRangeInfo == null) {
-            String warning = "No PresenceInfo for " + playerInRangeID;
-            logger.warning(warning);
-            System.out.println("inRange user " + warning);
+            logger.warning("No PresenceInfo for " + playerInRangeID);
             return;
         }
 
@@ -1029,6 +1037,17 @@ public class AudioManagerClient extends BaseConnection implements
         return;
     }
 
+    private void transientMemberAdded(VoiceChatTransientMemberMessage message) {
+	PresenceInfo info = pm.getPresenceInfo(message.getCallID());
+	
+	if (info == null) {
+	    logger.warning("No presence info for callID " + message.getCallID());
+	    return;
+	}
+
+	notifyMemberChangeListeners(message.getGroup(), info, message.getIsAdded(), true);
+    }
+	    
     public ConnectionType getConnectionType() {
         return AudioManagerConnectionType.CONNECTION_TYPE;
     }
