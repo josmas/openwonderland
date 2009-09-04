@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -93,8 +94,16 @@ class KmzLoader extends JmeColladaLoader {
         }
 
         try {
-            logger.warning("kmzloader.importModel() "+modelURL.toExternalForm());
-            File f = new File(modelURL.getFile());
+            File f = null;
+            try {
+                // Use the URI.getPath() to decode any escaped characters ie %20
+                URI uri = modelURL.toURI();
+                String path = uri.getPath();
+                f = new File(path);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, "Error processing url "+modelURL.toExternalForm(), ex);
+                return null;
+            }
             if (f==null) {
                 logger.warning("Unable to get file for model "+modelURL.toExternalForm());
                 JOptionPane.showMessageDialog(null, "Unable to get file for model "+modelURL.toExternalForm(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -105,9 +114,9 @@ class KmzLoader extends JmeColladaLoader {
                 return null;
             }
 
-         ZipFile zipFile = null;
-         ZipEntry docKmlEntry = null;
-         try {
+            ZipFile zipFile = null;
+            ZipEntry docKmlEntry = null;
+            try {
                 zipFile = new ZipFile(f);
                 docKmlEntry = zipFile.getEntry("doc.kml");
             } catch(ZipException ze) {
