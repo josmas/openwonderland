@@ -55,10 +55,13 @@ public class RunXAppDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+        appNameLabel.setFont(appNameLabel.getFont());
         appNameLabel.setText("App Name:");
 
-        commandLabel.setText("Command");
+        commandLabel.setFont(commandLabel.getFont());
+        commandLabel.setText("Command:");
 
+        rememberCheckBox.setFont(rememberCheckBox.getFont());
         rememberCheckBox.setText("Add entry to the Cell Palette");
 
         runButton.setText("Run");
@@ -84,21 +87,18 @@ public class RunXAppDialog extends javax.swing.JDialog {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(commandLabel)
-                            .add(appNameLabel))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, commandLabel)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, appNameLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(commandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
-                            .add(appNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 269, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(rememberCheckBox)
-                        .addContainerGap(160, Short.MAX_VALUE))
+                            .add(appNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                            .add(commandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                            .add(rememberCheckBox)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(runButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelButton)
-                        .add(116, 116, 116))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(runButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -117,7 +117,7 @@ public class RunXAppDialog extends javax.swing.JDialog {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(runButton)
                     .add(cancelButton))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
