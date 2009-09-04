@@ -93,11 +93,15 @@ public abstract class AppXrw extends AppConventional {
 
         // Note: we may not always receive explicit DestroyWindow messages
         // for all windows. So destroy any that are left over.
+        LinkedList<WindowXrw> toRemove = new LinkedList<WindowXrw>();
         for (int wid : widToWindow.keySet()) {
             WindowXrw window = widToWindow.get(wid);
             if (window != null) {
-                window.cleanup();
+                toRemove.add(window);
             }
+        }
+        for (WindowXrw window : toRemove) {
+            window.cleanup();
         }
         widToWindow.clear();
 
