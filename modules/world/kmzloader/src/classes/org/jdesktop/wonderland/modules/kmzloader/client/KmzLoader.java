@@ -93,7 +93,13 @@ class KmzLoader extends JmeColladaLoader {
         }
 
         try {
+            logger.warning("kmzloader.importModel() "+modelURL.toExternalForm());
             File f = new File(modelURL.getFile());
+            if (f==null) {
+                logger.warning("Unable to get file for model "+modelURL.toExternalForm());
+                JOptionPane.showMessageDialog(null, "Unable to get file for model "+modelURL.toExternalForm(), "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
             ZipFile zipFile = new ZipFile(f);
             ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
 
