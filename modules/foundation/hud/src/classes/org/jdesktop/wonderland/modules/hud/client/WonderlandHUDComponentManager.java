@@ -77,8 +77,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     protected HUDLayoutManager layout;
     // displays HUD components on the glass
     protected HUDView2DDisplayer hudDisplayer;
-    // displays HUD components in-world, associated with some cell
-    protected HUDView3DDisplayer worldDisplayer;
     //
     protected HUDApp2D hudApp;
     protected Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
@@ -516,10 +514,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 HUDView3D worldView = state.getWorldView();
 
                 if (worldView == null) {
-                    if (worldDisplayer == null) {
-                        logger.fine("creating new world displayer");
-                        worldDisplayer = new HUDView3DDisplayer(cell);
-                    }
+                    logger.fine("creating new world displayer");
+                    HUDView3DDisplayer worldDisplayer = new HUDView3DDisplayer(cell);
 
                     logger.fine("creating new in-world view");
                     worldView = worldDisplayer.createView(state.getWindow());
