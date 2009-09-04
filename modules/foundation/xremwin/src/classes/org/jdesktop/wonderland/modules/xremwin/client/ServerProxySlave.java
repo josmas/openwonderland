@@ -376,6 +376,9 @@ class ServerProxySlave implements ServerProxy {
     }
 
     public Proto.ServerMessageType getMessageType() {
+        if (bufQueue == null) {
+            return Proto.ServerMessageType.SERVER_DISCONNECT;
+        }
         int msgCode = (int) bufQueue.nextByte();
         AppXrw.logger.info("msgCode = " + msgCode);
         Proto.ServerMessageType msgType = Proto.ServerMessageType.values()[msgCode];
