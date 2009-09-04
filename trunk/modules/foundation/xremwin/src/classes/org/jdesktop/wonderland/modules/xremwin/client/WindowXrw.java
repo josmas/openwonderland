@@ -48,8 +48,6 @@ public class WindowXrw extends WindowConventional {
      * transient for. TODO: write code that uses this.
      */
     private WindowXrw winTransientFor;
-    /** A temporary buffer used by syncSlavePixels. */
-    private byte[] tmpPixelBytes;
     /** The screen position of this window */
     private Point scrPos = new Point(0, 0);
 
@@ -284,12 +282,7 @@ public class WindowXrw extends WindowConventional {
      * @param slaveID The slave to which to send the window pixels.
      */
     public void syncSlavePixels(BigInteger slaveID) {
-
-        // Resize temporary buffer (if necessary)
-        int numBytes = getWidth() * getHeight() * 4;
-        if (tmpPixelBytes == null || tmpPixelBytes.length < numBytes) {
-            tmpPixelBytes = new byte[numBytes];
-        }
+        byte[] tmpPixelBytes = new byte[getWidth() * getHeight() * 4];
 
         // Get pixels in a byte array
         getPixelBytes(tmpPixelBytes, 0, 0, getWidth(), getHeight());
@@ -339,5 +332,4 @@ public class WindowXrw extends WindowConventional {
         client.windowSetSize(this, width, height);
         setSize(width, height);
     }
-
 }
