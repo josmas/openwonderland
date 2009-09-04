@@ -106,7 +106,6 @@ public class ImiAvatarConfigManager {
                 if (node instanceof ContentResource) {
                     ImiAvatar avatar = new ImiAvatar((ContentResource) node);
                     localAvatars.put(avatar.getName(), avatar);
-                    registry.registerAvatar(avatar, false);
                 }
             }
         } catch (ContentRepositoryException excp) {
@@ -134,6 +133,32 @@ public class ImiAvatarConfigManager {
     }
 
     /**
+     * Registers the known local avatars with the avatar registry.
+     */
+    public void registerAvatars() {
+        AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
+        synchronized (localAvatars) {
+            for (String avatarName : localAvatars.keySet()) {
+                ImiAvatar avatar = localAvatars.get(avatarName);
+                registry.registerAvatar(avatar, false);
+            }
+        }
+    }
+
+    /**
+     * Unregisters the known local avatars with the avatar registry.
+     */
+    public void unregisterAvatars() {
+        AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
+        synchronized (localAvatars) {
+            for (String avatarName : localAvatars.keySet()) {
+                ImiAvatar avatar = localAvatars.get(avatarName);
+                registry.unregisterAvatar(avatar);
+            }
+        }
+    }
+
+    /**
      * Returns the URL representing the configuration file for the given avatar
      * on the given server.
      *
@@ -148,15 +173,6 @@ public class ImiAvatarConfigManager {
         ServerSyncThread t = null;
         synchronized (avatarConfigServers) {
             t = avatarConfigServers.get(session);
-        }
-
-        // XXX DEBUG CODE
-        // Check for NULL, since we are getting an NPE here
-        // XXX DEBUG CODE
-        if (t == null || avatar == null) {
-            logger.warning("Invalid Null here t=" + t + ", avatar="+ avatar);
-            logger.warning("Session=" + session.toString());
-            logger.warning("Avatar config servers=" + avatarConfigServers.toString());
         }
         return t.getAvatarServerURL(avatar);
     }

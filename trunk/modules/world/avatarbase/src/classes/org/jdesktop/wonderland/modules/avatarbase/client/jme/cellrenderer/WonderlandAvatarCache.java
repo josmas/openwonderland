@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -40,6 +41,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
 
     /** Logger ref **/
     private static final Logger logger = Logger.getLogger(WonderlandAvatarCache.class.getName());
+
     /** The folder we will be searching for and storing cache files in. **/
     private File cacheFolder = null;
 
@@ -97,9 +99,10 @@ public class WonderlandAvatarCache implements CacheBehavior {
         if (cacheFile != null && cacheFile.exists()) {
             try {
                 result = new FileInputStream(cacheFile);
-            } catch (FileNotFoundException ex) {
-                logger.severe("Although the cache file exists, a FileNotFoundException" +
-                        "was thrown.");
+            } catch (FileNotFoundException excp) {
+                logger.log(Level.WARNING,
+                        "Error reading cache file " + cacheFile.getAbsoluteFile(),
+                        excp);
             }
         }
         return result;
@@ -117,9 +120,10 @@ public class WonderlandAvatarCache implements CacheBehavior {
         if (cacheFile != null) {
             try {
                 result = new FileOutputStream(cacheFile);
-            } catch (FileNotFoundException ex) {
-                logger.severe("Although the cache file exists, a FileNotFoundException" +
-                        "was thrown.");
+            } catch (FileNotFoundException excp) {
+                logger.log(Level.WARNING,
+                        "Error reading cache file " + cacheFile.getAbsoluteFile(),
+                        excp);
             }
         }
         return result;
@@ -145,14 +149,20 @@ public class WonderlandAvatarCache implements CacheBehavior {
         // If the URL points to a local file, check the last modified time
         if (location.getProtocol().equalsIgnoreCase("file")) {
             try {
-                localFile = new File(location.toURI());
-            } catch (URISyntaxException ex) {
-                logger.severe("Unable to form a file object from the URI");
+                // For the URL, replace the spaces with %20 so that the toURI() method
+                // below does not fail.
+                String fixedURI = encodeSpaces(location.toExternalForm());
+                localFile = new File(new URI(fixedURI));
+            } catch (URISyntaxException excp) {
+                logger.log(Level.WARNING,
+                        "Unable to form a file object from the URI " +
+                        location.toExternalForm(), excp);
             }
         }
 
         // Use the URL as a String to determine the file name
         String urlString = location.toExternalForm();
+        logger.info("URL STRING " + urlString);
         String hashFileName = MD5HashUtils.getStringFromHash(urlString.getBytes());
         File result = new File(cacheFolder, hashFileName);
 
@@ -208,4 +218,21 @@ public class WonderlandAvatarCache implements CacheBehavior {
     public void loadCachePackage(InputStream arg0) {
         // Do nothing
     }
+
+    /**
+     * Replaces all of the spaces (' ') in a URI string with '%20'
+     */
+    public static String encodeSpaces(String uri) {
+        StringBuilder sb = new StringBuilder(uri);
+        int index = 0;
+        while ((index = sb.indexOf(" ", index )) != -1) {
+            // If we find a space at position 'index', then replace the space
+            // and update the value of 'index'. The value of 'index' should be
+            // the next character after the replaced '%20', which is index + 3
+            sb.replace(index, index + 1, "%20");
+            index += 3;
+        }
+        return sb.toString();
+    }
+
 }

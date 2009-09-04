@@ -41,6 +41,7 @@ public class ImiAvatarFactory implements AvatarFactorySPI {
         // Add the server to the manager for all IMI avatars. This will wait
         // until the initial synchronization has been completed.
         ImiAvatarConfigManager m = ImiAvatarConfigManager.getImiAvatarConfigManager();
+        m.registerAvatars();
         try {
             m.addServerAndSync(session);
         } catch (InterruptedException excp) {
@@ -55,6 +56,7 @@ public class ImiAvatarFactory implements AvatarFactorySPI {
     public void unregisterAvatars(ServerSessionManager session) {
         // Remove the server from the manager for all IMI avatars.
         ImiAvatarConfigManager m = ImiAvatarConfigManager.getImiAvatarConfigManager();
+        m.unregisterAvatars();
         m.removeServer(session);
     }
 }

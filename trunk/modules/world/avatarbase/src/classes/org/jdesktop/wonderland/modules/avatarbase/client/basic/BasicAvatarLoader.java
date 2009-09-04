@@ -18,9 +18,7 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.basic;
 
 import com.jme.scene.Spatial;
-import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterParams;
 import imi.character.MaleAvatarParams;
 import imi.scene.PMatrix;
@@ -35,7 +33,8 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderSPI;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
@@ -50,6 +49,13 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
 
     private static Logger logger = Logger.getLogger(BasicAvatarLoader.class.getName());
 
+    // The default avatar model to use if a null configuration URL is given
+    private static final String DEFAULT_URL =
+            "default-avatars/maleCartoonAvatar.dae/maleCartoonAvatar.dae.gz.dep";
+
+    // The base URL of where to find all of the avatar assets
+    private static final String BASE_URL = "wla://avatarbaseart/";
+    
     /**
      * {@inheritDoc}
      */
@@ -59,12 +65,18 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
         WorldManager wm = ClientContextJME.getWorldManager();
         CharacterParams attributes = new MaleAvatarParams(userName);
 
-        // Formulate the base URL for all IMI avatar assets
+        // Formulate the configuration URL to load the info. If null, then use
+        // some default.
+        String avatarURL = DEFAULT_URL;
+        if (info != null && info.getAvatarConfigURL() != null) {
+            avatarURL = info.getAvatarConfigURL();
+        }
+
+        // Formulate the base URL for all default avatar assets. Annotate it
+        // with the server:port of the primary session.
         String baseURL = null;
         try {
-            ServerSessionManager manager = avatarCell.getCellCache().getSession().getSessionManager();
-            String serverHostAndPort = manager.getServerNameAndPort();
-            URL tmpURL = AssetUtils.getAssetURL("wla://avatarbaseart/", serverHostAndPort);
+            URL tmpURL = AssetUtils.getAssetURL(BASE_URL, avatarCell);
             baseURL = tmpURL.toExternalForm();
         } catch (MalformedURLException ex) {
             logger.log(Level.WARNING, "Unable to form base url", ex);
@@ -87,38 +99,36 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
                 new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
 
         // Load the avatar as a static Collada model.
-        Spatial spatial = null;
-        try {
-            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-            ResourceLocator resourceLocator = new RelativeResourceLocator(url, avatarCell);
-
-            ResourceLocatorTool.addThreadResourceLocator(
-                    ResourceLocatorTool.TYPE_TEXTURE,
-                    resourceLocator);
-            spatial = (Spatial) BinaryImporter.getInstance().load(url);
-            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
-        } catch (IOException excp) {
-            logger.log(Level.WARNING, "Unable to load avatar character", excp);
-            return avatar;
-        }
-
-//        // Load the avatar using the new collada loading manager
 //        Spatial spatial = null;
 //        try {
-//            URL url = new URL(baseURL + "maleCartoonAvatar.dae/maleCartoonAvatar.dae.gz.dep");
-//            DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
-//            spatial = dm.getModelLoader().loadDeployedModel(dm);
-//            spatial.setLocalScale(0.053f);
-//            spatial.setLocalTranslation(0.0f, 1.7f, 0.0f);
-//            spatial.setLocalRotation(new Quaternion().fromAngleAxis(
-//                    (float)Math.toRadians(-90f), new Vector3f(1.0f, 0.0f, 0.0f)));
-//        } catch (MalformedURLException excp) {
-//            logger.log(Level.WARNING, "Unable to for .dep URL", excp);
-//            return null;
+//            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
+//            ResourceLocator resourceLocator = new RelativeResourceLocator(url, avatarCell);
+//
+//            ResourceLocatorTool.addThreadResourceLocator(
+//                    ResourceLocatorTool.TYPE_TEXTURE,
+//                    resourceLocator);
+//            spatial = (Spatial) BinaryImporter.getInstance().load(url);
+//            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 //        } catch (IOException excp) {
-//            logger.log(Level.WARNING, "Error loading avatar model", excp);
-//            return null;
+//            logger.log(Level.WARNING, "Unable to load avatar character", excp);
+//            return avatar;
 //        }
+
+//        // Load the avatar using the new collada loading manager
+        Spatial spatial = null;
+        try {
+            URL url = new URL(baseURL + avatarURL);
+            DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
+            spatial = dm.getModelLoader().loadDeployedModel(dm);
+            spatial.setLocalScale(0.053f);
+            spatial.setLocalTranslation(0.0f, 1.7f, 0.0f);
+        } catch (MalformedURLException excp) {
+            logger.log(Level.WARNING, "Unable to for .dep URL", excp);
+            return null;
+        } catch (IOException excp) {
+            logger.log(Level.WARNING, "Error loading avatar model", excp);
+            return null;
+        }
         
         //checkBounds(placeHolder);
         //placeHolder.updateModelBound();

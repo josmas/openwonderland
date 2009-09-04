@@ -25,9 +25,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.PrimaryServerListener;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
@@ -49,46 +46,48 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-public class AvatarRegistry implements PrimaryServerListener {
+public class AvatarRegistry {
 
     private static final Logger LOGGER =
             Logger.getLogger(AvatarRegistry.class.getName());
+
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
+
     // A map and set of all avatars, including the "default" avatar
-    private Map<String, AvatarSPI> avatarMap;
-    private Set<AvatarSPI> avatarSet;
+    private Map<String, AvatarSPI> avatarMap = null;
+    private Set<AvatarSPI> avatarSet = null;
+
     // The special "default" avatar, null if none
-    private AvatarSPI defaultAvatar;
+    private AvatarSPI defaultAvatar = null;
+
     // The set of configuration settings for the avatar system (e.g. the current
     // avatar in use).
-    private AvatarConfigSettings settings;
+    private AvatarConfigSettings settings = null;
+
     // Returns the base directory (content collection) that stores all avatar
     // related configuration information localy
-    private ContentCollection avatarCollection;
+    private ContentCollection avatarCollection = null;
+
     // A list of listeners for changes to the avatars and the current avatar
     // in use
-    private Set<AvatarListener> listenerSet = new HashSet<AvatarListener>();
-    private Set<AvatarInUseListener> inUseListenerSet =
-            new HashSet<AvatarInUseListener>();
+    private Set<AvatarListener> listenerSet = new HashSet();
+    private Set<AvatarInUseListener> inUseListenerSet = new HashSet();
 
     /** Default constructor */
     public AvatarRegistry() {
-        avatarMap = new HashMap<String, AvatarSPI>();
-        avatarSet = new HashSet<AvatarSPI>();
+        avatarMap = new HashMap();
+        avatarSet = new HashSet();
 
         // Fetch the local content repository to store all avatar-related
         // configuration information.
         // XXX This should really be re-done for every primary session because
         // the login name can change.
-        ContentCollection localContent =
-                ContentRepositoryRegistry.getInstance().getLocalRepository();
+        ContentCollection localContent = ContentRepositoryRegistry.getInstance().getLocalRepository();
         try {
-            avatarCollection =
-                    (ContentCollection) localContent.getChild("avatars");
+            avatarCollection = (ContentCollection) localContent.getChild("avatars");
             if (avatarCollection == null) {
-                avatarCollection = (ContentCollection) localContent.createChild(
-                        "avatars", Type.COLLECTION);
+                avatarCollection = (ContentCollection) localContent.createChild("avatars", Type.COLLECTION);
             }
         } catch (ContentRepositoryException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -102,11 +101,6 @@ public class AvatarRegistry implements PrimaryServerListener {
             LOGGER.log(Level.INFO, "Unable to load avatar settings", excp);
             settings = new AvatarConfigSettings();
         }
-
-        // Listen for changes to the server. We will need to clear out the
-        // avatars whenever we connect to a new server, in case the login
-        // information changes
-        LoginManager.addPrimaryServerListener(this);
     }
 
     /**
@@ -114,7 +108,6 @@ public class AvatarRegistry implements PrimaryServerListener {
      * on the first execution of AvatarRegistry.getAvatarRegistry().
      */
     private static class AvatarRegistryHolder {
-
         private final static AvatarRegistry registry = new AvatarRegistry();
     }
 
@@ -158,7 +151,7 @@ public class AvatarRegistry implements PrimaryServerListener {
         synchronized (this) {
             avatarMap.put(avatar.getName(), avatar);
             avatarSet.add(avatar);
-            if (isDefault) {
+            if (isDefault == true) {
                 defaultAvatar = avatar;
             }
             fireAvatarAddedListener(avatar);
@@ -182,13 +175,6 @@ public class AvatarRegistry implements PrimaryServerListener {
             if (defaultAvatar == avatar) {
                 defaultAvatar = null;
             }
-
-            // If this avatar is the current avatar in use, then reset the
-            // current avatar in use
-            if (avatar.getName().equals(settings.getAvatarNameInUse())) {
-                settings.setAvatarNameInUse(defaultAvatar.getName());
-                fireAvatarInUseListener(defaultAvatar, false);
-            }
         }
     }
 
@@ -200,7 +186,7 @@ public class AvatarRegistry implements PrimaryServerListener {
      */
     public Set<AvatarSPI> getAllAvatars() {
         synchronized (this) {
-            return new HashSet<AvatarSPI>(avatarSet);
+            return new HashSet(avatarSet);
         }
     }
 
@@ -237,6 +223,16 @@ public class AvatarRegistry implements PrimaryServerListener {
     }
 
     /**
+     * Returns true if the given avatar name is the one in-use, false if not.
+     *
+     * @param avatarName The name of the avatar
+     * @return True if the avatar name is currently in use, false if not
+     */
+    public boolean isAvatarInUse(String avatarName) {
+        return avatarName.equals(settings.getAvatarNameInUse()) == true;
+    }
+    
+    /**
      * Returns the current avatar in use, or null if there is none.
      *
      * @return The current avatar in use (or null)
@@ -265,28 +261,11 @@ public class AvatarRegistry implements PrimaryServerListener {
             while (true) {
                 String avatarName = BUNDLE.getString("NewAvatar");
                 avatarName = MessageFormat.format(avatarName, i);
-                if (!avatarMap.containsKey(avatarName)) {
+                if (avatarMap.containsKey(avatarName) == false) {
                     return avatarName;
                 }
                 i++;
             }
-        }
-    }
-
-    /**
-     * Notification that the primary server has changed. Update our maps/sets
-     * accordingly.
-     *
-     * @param server the new primary server (may be null)
-     */
-    public void primaryServer(ServerSessionManager server) {
-        // Make a copy of the set of avatars. Remove them. We need to make a
-        // copy to avoid concurrent modification exceptions.
-        Set<AvatarSPI> tmpSet = new HashSet<AvatarSPI>(avatarSet);
-        for (AvatarSPI avatar : tmpSet) {
-            avatarSet.remove(avatar);
-            avatarMap.remove(avatar.getName());
-            fireAvatarRemovedListener(avatar);
         }
     }
 
@@ -378,7 +357,6 @@ public class AvatarRegistry implements PrimaryServerListener {
      * avatars.
      */
     public interface AvatarListener {
-
         /**
          * An avatar has been added.
          *
@@ -398,7 +376,6 @@ public class AvatarRegistry implements PrimaryServerListener {
      * A listener indicates that a change in the avatar currently in use
      */
     public interface AvatarInUseListener {
-
         /**
          * Indicates that a new avatar is in use. The 'isLocal' parameter tells
          * whether the change should only be uplodated locally.
