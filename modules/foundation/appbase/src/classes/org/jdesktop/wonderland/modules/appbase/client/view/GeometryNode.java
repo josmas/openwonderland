@@ -139,43 +139,29 @@ public abstract class GeometryNode extends Node {
                 return null;
             }
         }
-        logger.fine("point = " + point);
+        logger.fine("world point = " + point);
 
-        // First calculate the actual coordinates of the corners of the view in world coords.
+        // The first thing we do is transform the point into local coords
+        // TODO: perf: avoid doing a matrix invert every time
+        Matrix4f local2World = getLocalToWorldMatrix(null);
+        Matrix4f world2Local = local2World.invert();
+        Vector3f pointLocal = world2Local.mult(point, new Vector3f()); 
+        logger.fine("local point = " + pointLocal);
+
+        // First calculate the actual coordinates of the top left corner of the view in local coords.
         float width = view.getDisplayerLocalWidth();
         float height = view.getDisplayerLocalHeight();
         Vector3f topLeftLocal = new Vector3f(-width / 2f, height / 2f, 0f);
-        Vector3f topRightLocal = new Vector3f(width / 2f, height / 2f, 0f);
-        Vector3f bottomLeftLocal = new Vector3f(-width / 2f, -height / 2f, 0f);
-        Vector3f bottomRightLocal = new Vector3f(width / 2f, -height / 2f, 0f);
         logger.fine("topLeftLocal = " + topLeftLocal);
-        logger.fine("topRightLocal = " + topRightLocal);
-        logger.fine("bottomLeftLocal = " + bottomLeftLocal);
-        logger.fine("bottomRightLocal = " + bottomRightLocal);
-        Matrix4f local2World = getLocalToWorldMatrix(null); // TODO: prealloc
-        Vector3f topLeft = local2World.mult(topLeftLocal, new Vector3f()); // TODO:prealloc
-        Vector3f topRight = local2World.mult(topRightLocal, new Vector3f()); // TODO:prealloc
-        Vector3f bottomLeft = local2World.mult(bottomLeftLocal, new Vector3f()); // TODO:prealloc
-        Vector3f bottomRight = local2World.mult(bottomRightLocal, new Vector3f()); // TODO:prealloc
-        logger.fine("topLeft (world) = " + topLeft);
-        logger.fine("topRight (world) = " + topRight);
-        logger.fine("bottomLeft (world) = " + bottomLeft);
-        logger.fine("bottomRight (world) = " + bottomRight);
 
         // Now calculate the x and y coords relative to the view
-
-        float widthWorld = topRight.x - topLeft.x;
-        float heightWorld = topLeft.y - bottomLeft.y;
-        logger.fine("widthWorld = " + widthWorld);
-        logger.fine("heightWorld = " + heightWorld);
-
-        float x = point.x - topLeft.x;
-        float y = (topLeft.y - point.y);
+        float x = pointLocal.x - topLeftLocal.x;
+        float y = (topLeftLocal.y - pointLocal.y);
         logger.fine("x = " + x);
         logger.fine("y = " + y);
 
-        x /= widthWorld;
-        y /= heightWorld;
+        x /= width;
+        y /= height;
         logger.fine("x pct = " + x);
         logger.fine("y pct = " + y);
 
