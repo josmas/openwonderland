@@ -134,6 +134,8 @@ public class AddHUDPanel
         addHUDComponent.addEventListener(new HUDEventListener() {
 
             public void HUDObjectChanged(HUDEvent e) {
+		//System.out.println("GOT EVENT " + e);
+
                 if (e.getEventType().equals(HUDEventType.CLOSED)) {
                     leave();
                 }

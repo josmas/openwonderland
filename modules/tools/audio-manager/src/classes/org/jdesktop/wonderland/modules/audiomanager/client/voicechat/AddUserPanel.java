@@ -241,8 +241,6 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    	        if (info.equals(myPresenceInfo) == false) {
                             addToUserList(info);
 		        }
-
-		        addBystanders(info);  // add bystanders
 		    } else if (invitedMembers.contains(info)) {
 	    	        if (info.equals(myPresenceInfo) == false) {
                             addToUserList(info);
@@ -250,32 +248,6 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		    }
 		}
 	    }
-	}
-    }
-
-    private void addBystanders(PresenceInfo member) {
-	logger.fine("Add bystanders for " + member);
-
-	if (chatType.equals(ChatType.PUBLIC) == false) {
-	    logger.fine("Chat type not public");
-	    return;
-	}
-
-	CopyOnWriteArrayList<PresenceInfo> bystanders = usersInRangeMap.get(member.userID.getUsername());
-
-	if (bystanders == null) {
-	    logger.fine("No bystanders");
-	    dumpu();
-	    return;
-	}
-	    
-	for (PresenceInfo bystander : bystanders) {
-	    if (members.contains(bystander)) {
-		logger.fine("bystander is a member " + bystander);
-		continue;
-	    }
-
-	    addToUserList(bystander, true);
 	}
     }
 
@@ -487,28 +459,18 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void addToUserList(final PresenceInfo info) {
-	addToUserList(info, false);
-    }
-
-    private void addToUserList(final PresenceInfo info, final boolean isBystander) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-		addToUserListLater(info, isBystander);
+		addToUserListLater(info);
             }
         });
     }
 
-    private void addToUserListLater(PresenceInfo info, boolean isBystander) {
+    private void addToUserListLater(PresenceInfo info) {
         removeFromUserListLater(info);
 
         String displayName = NameTagNode.getDisplayName(info.usernameAlias,
                 info.isSpeaking, info.isMuted);
-
-	if (isBystander) {
-	    displayName = BYSTANDER_SYMBOL + displayName;
-
-	    logger.fine("Adding bystander " + displayName + " FOR " + info);
-	}
 
         addElementLater(info, displayName);
     }
@@ -586,7 +548,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		        break;
 		    }
 		}
-		addToUserList(presenceInfo, false);
+		addToUserList(presenceInfo);
 		break;
 
 	    case USER_REMOVED:
@@ -604,7 +566,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		    break;
 		}
 
-		addToUserList(presenceInfo, false);
+		addToUserList(presenceInfo);
 		break;
 
 	    case USER_REMOVED:
@@ -708,13 +670,15 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
     private CopyOnWriteArrayList<PresenceInfo> members = new CopyOnWriteArrayList();
     private CopyOnWriteArrayList<PresenceInfo> invitedMembers = new CopyOnWriteArrayList();
+    private CopyOnWriteArrayList<PresenceInfo> transientMembers = new CopyOnWriteArrayList();
 
-    public void memberChange(PresenceInfo presenceInfo, boolean added) {
+    public void memberChange(PresenceInfo presenceInfo, boolean added, boolean isTransientMember) {
 	synchronized (invitedMembers) {
 	    invitedMembers.remove(presenceInfo);
 	}
 
-	logger.fine("member change:  " + presenceInfo + " added " + added + " mode " + addHUDPanel.getMode());
+	logger.fine("member change:  " + presenceInfo + " added " + added + " mode " + addHUDPanel.getMode()
+	    + " isTransient " + isTransientMember);
 
 	if (added) {
 	    synchronized (members) {
@@ -722,9 +686,19 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		    members.add(presenceInfo);
 	        }
 	    }
+	    if (isTransientMember) {
+	    	synchronized (transientMembers) {
+		    transientMembers.remove(presenceInfo);
+		    transientMembers.add(presenceInfo);
+		}
+	    }
 	} else {
 	    synchronized (members) {
 	        members.remove(presenceInfo);
+	    }
+
+	    synchronized (transientMembers) {
+		transientMembers.remove(presenceInfo);
 	    }
 
 	    synchronized (members) {
@@ -822,6 +796,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	if (isInRange) {
 	    if (usersInRange.contains(userInRange)) {
+		updateUserList();
 		return;
 	    }
 
@@ -882,7 +857,12 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	    if (isMember || addHUDPanel.getMode().equals(Mode.INITIATE) || addHUDPanel.getMode().equals(Mode.ADD)) {
                 renderer.setFont(font);
-                renderer.setForeground(Color.BLACK);
+
+		if (transientMembers.contains(info)) {
+                    renderer.setForeground(Color.RED);
+		} else {
+                    renderer.setForeground(Color.BLACK);
+		}
             } else {
                 renderer.setFont(font);
                 renderer.setForeground(Color.LIGHT_GRAY);
