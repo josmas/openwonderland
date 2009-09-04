@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
-import java.lang.reflect.InvocationTargetException;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.image.Texture;
@@ -308,7 +307,6 @@ public class ImportSessionFrame extends javax.swing.JFrame {
         loadingDialogPanel.add(jLabel4, new java.awt.GridBagConstraints());
 
         setTitle(bundle.getString("ImportSessionFrame.title")); // NOI18N
-        getContentPane().add(jLabel6, java.awt.BorderLayout.CENTER);
 
         editB.setText(bundle.getString("ImportSessionFrame.editB.text")); // NOI18N
         editB.setEnabled(false);
@@ -341,37 +339,41 @@ public class ImportSessionFrame extends javax.swing.JFrame {
             .add(eastPLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(eastPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(removeB)
+                    .add(importModelB)
                     .add(editB)
-                    .add(importModelB))
+                    .add(removeB))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        eastPLayout.linkSize(new java.awt.Component[] {editB, removeB}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         eastPLayout.setVerticalGroup(
             eastPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(eastPLayout.createSequentialGroup()
-                .add(34, 34, 34)
+                .add(29, 29, 29)
                 .add(importModelB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(editB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(removeB)
-                .addContainerGap(218, Short.MAX_VALUE))
+                .addContainerGap(183, Short.MAX_VALUE))
         );
 
-        getContentPane().add(eastP, java.awt.BorderLayout.EAST);
-
         centerP.setOpaque(false);
-        centerP.setPreferredSize(new java.awt.Dimension(600, 362));
         centerP.setVerifyInputWhenFocusTarget(false);
 
+        jLabel5.setFont(jLabel5.getFont());
         jLabel5.setText(bundle.getString("ImportSessionFrame.jLabel5.text")); // NOI18N
 
         targetServerSelector.setRenderer(new LoginManagerRenderer());
 
+        modelListL.setFont(modelListL.getFont().deriveFont(modelListL.getFont().getStyle() | java.awt.Font.BOLD));
         modelListL.setText(bundle.getString("ImportSessionFrame.modelListL.text")); // NOI18N
 
+        targetNameL.setFont(targetNameL.getFont());
         targetNameL.setText(bundle.getString("ImportSessionFrame.targetNameL.text")); // NOI18N
 
+        descriptionL.setFont(descriptionL.getFont());
         descriptionL.setText(bundle.getString("ImportSessionFrame.descriptionL.text")); // NOI18N
 
         targetModuleTF.setText(bundle.getString("ImportSessionFrame.targetModuleTF.text")); // NOI18N
@@ -390,28 +392,22 @@ public class ImportSessionFrame extends javax.swing.JFrame {
             .add(centerPLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
                     .add(centerPLayout.createSequentialGroup()
-                        .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(centerPLayout.createSequentialGroup()
-                                .add(targetNameL)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 259, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(centerPLayout.createSequentialGroup()
-                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jLabel5)
-                                    .add(descriptionL))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                        .add(264, 264, 264))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
-                    .add(centerPLayout.createSequentialGroup()
-                        .add(modelListL)
-                        .addContainerGap(562, Short.MAX_VALUE))))
+                        .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel5)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, descriptionL)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, targetNameL))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 259, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(modelListL))
+                .addContainerGap())
         );
 
-        centerPLayout.linkSize(new java.awt.Component[] {descriptionL, jLabel5, targetNameL}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        centerPLayout.linkSize(new java.awt.Component[] {jLabel5, targetNameL}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         centerPLayout.linkSize(new java.awt.Component[] {descriptionTF, targetModuleTF, targetServerSelector}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
@@ -421,7 +417,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(modelListL)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(targetNameL)
@@ -434,10 +430,8 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel5)
                     .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(39, 39, 39))
+                .addContainerGap())
         );
-
-        getContentPane().add(centerP, java.awt.BorderLayout.CENTER);
 
         deployToServerB.setText(bundle.getString("ImportSessionFrame.deployToServerB.text")); // NOI18N
         deployToServerB.setToolTipText(bundle.getString("ImportSessionFrame.deployToServerB.toolTipText")); // NOI18N
@@ -489,11 +483,11 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 .add(saveAsSrcB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(saveAsModuleB)
-                .add(55, 55, 55)
-                .add(okB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(cancelButton)
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(okB)
+                .addContainerGap())
         );
         southPLayout.setVerticalGroup(
             southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -508,8 +502,6 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        getContentPane().add(southP, java.awt.BorderLayout.SOUTH);
-
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -522,8 +514,6 @@ public class ImportSessionFrame extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 351, Short.MAX_VALUE)
         );
-
-        getContentPane().add(jPanel1, java.awt.BorderLayout.WEST);
 
         jMenu1.setText(bundle.getString("ImportSessionFrame.jMenu1.text")); // NOI18N
         jMenu1.setEnabled(false);
@@ -547,6 +537,40 @@ public class ImportSessionFrame extends javax.swing.JFrame {
         jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(centerP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                                .add(0, 0, 0)
+                                .add(eastP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jLabel6))
+                        .addContainerGap())
+                    .add(southP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jLabel6)
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 351, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(eastP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(centerP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                        .add(0, 0, 0)
+                        .add(southP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+        );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
