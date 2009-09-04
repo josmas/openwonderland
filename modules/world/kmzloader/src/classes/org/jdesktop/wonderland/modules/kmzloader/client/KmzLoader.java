@@ -99,9 +99,21 @@ class KmzLoader extends JmeColladaLoader {
                 logger.warning("Unable to get file for model "+modelURL.toExternalForm());
                 JOptionPane.showMessageDialog(null, "Unable to get file for model "+modelURL.toExternalForm(), "Error", JOptionPane.ERROR_MESSAGE);
                 return null;
+            } else if (!f.canRead()) {
+                logger.warning("Can not read file "+f.getAbsolutePath());
+                JOptionPane.showMessageDialog(null, "Unable to read file "+f.getAbsolutePath()+"\nPlease check file permissions", "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
             }
-            ZipFile zipFile = new ZipFile(f);
-            ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
+
+         ZipFile zipFile = null;
+         ZipEntry docKmlEntry = null;
+         try {
+                zipFile = new ZipFile(f);
+                docKmlEntry = zipFile.getEntry("doc.kml");
+            } catch(ZipException ze) {
+                logger.log(Level.WARNING,"Got a ZipException trying to open file "+f.getAbsolutePath(), ze);
+                return null;
+            }
 
             KmlParser parser = new KmlParser();
             InputStream in = zipFile.getInputStream(docKmlEntry);
