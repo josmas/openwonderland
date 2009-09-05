@@ -847,6 +847,14 @@ public abstract class View2DEntity implements View2D {
         return (Vector2f) offset.clone();
     }
 
+    /** Called for children to mark them as changed when the parent view size changes. */
+    private void changeOffsetSelfAndChildren () {
+        changeMask |= CHANGED_OFFSET;
+        for (View2DEntity childView : children) {
+            childView.changeOffsetSelfAndChildren();
+        }
+    }
+
     /** {@inheritDoc} */
     public synchronized void setPixelOffset(Point pixelOffset) {
         setPixelOffset(pixelOffset, true);
@@ -993,7 +1001,7 @@ public abstract class View2DEntity implements View2D {
             // Convert pixel offset to local coords and add it in
             // TODO: does the width/height need to include the scroll bars?
             Vector2f pixelScale = getPixelScaleCurrent();
-            Dimension parentSize = parent.getSizeApp();
+            Dimension parentSize = parent.getSizeApp();  // TODO: is this now unused?
             trans.y += parentViewNewSize.height * pixelScale.y / 2f;
             trans.y -= y * pixelScale.y / 2f;
         }
@@ -1510,6 +1518,13 @@ public abstract class View2DEntity implements View2D {
 
             userTransformCellReplaced = false;
             userTransformCellChangedLocalOnly = false;
+        }
+
+        // Changing the 3D size of the app can change the offset of children, such as headers.
+        if ((changeMask & (CHANGED_SIZE_APP | CHANGED_PIXEL_SCALE)) != 0) { 
+            for (View2DEntity childView : children) {
+                childView.changeOffsetSelfAndChildren();
+            }
         }
 
         sgProcessChanges();
