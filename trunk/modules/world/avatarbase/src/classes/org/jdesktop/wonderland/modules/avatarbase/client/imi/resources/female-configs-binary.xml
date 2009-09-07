@@ -9,59 +9,50 @@
     <!-- HEADS -->
     <heads>
         <name>Female C Head</name>
-        <description>Female C Head</description>
+        <description>Caucasian</description>
         <model>assets/models/collada/Heads/Binary/FemaleCHead.bhf</model>
     </heads>
     <heads>
         <name>Asian Head</name>
-        <description>Asian Head</description>
+        <description>Asian</description>
         <model>assets/models/collada/Heads/Binary/AsianFemaleHead.bhf</model>
     </heads>
     <heads>
         <name>AA Head</name>
-        <description>AA Head</description>
+        <description>African American</description>
         <model>assets/models/collada/Heads/Binary/FemaleAAHead.bhf</model>
     </heads>
-    <heads>
-        <name>FaceGen High-Poly Head</name>
-        <description>FaceGen High-Poly Head</description>
-        <model>assets/models/collada/Heads/Binary/FemaleHi.bhf</model>
-    </heads>
-    <heads>
-        <name>FaceGen High-Poly Head 2</name>
-        <description>FaceGen High-Poly Head 2</description>
-        <model>assets/models/collada/Heads/Binary/FemaleHi2.bhf</model>
-    </heads>
+   
     <heads>
         <name>Female Hispanic Head</name>
-        <description>Female Hispanic Head</description>
+        <description>Hispanic</description>
         <model>assets/models/collada/Heads/Binary/FemaleHispanicHead.bhf</model>
     </heads>
-    <heads>
-        <name>Female AF Head</name>
-        <description>Female AF Head</description>
-        <model>assets/models/collada/Heads/Binary/FG_Female_AF_Head02.bhf</model>
-    </heads>
+    
+    <!-- ALERT: Removed FG_Female_AF_Head02.bhf -->
+  
     <heads>
         <name>FaceGen High-Poly Head 01</name>
-        <description>FaceGen High-Poly Head 01</description>
+        <description>June (high poly)</description>
         <model>assets/models/collada/Heads/Binary/FG_Female01HighPoly.bhf</model>
     </heads>
+    
+     <!-- ALERT: Added Head -->
+    <heads>
+        <name>FaceGen Low-Poly Head 01</name>
+        <description>June (low poly)</description>
+        <model>assets/models/collada/Heads/Binary/FG_Female01LowPoly.bhf</model>
+    </heads>
+    
     <heads>
         <name>FaceGen High-Poly Head 02</name>
-        <description>FaceGen High-Poly Head 02</description>
+        <description>April (high poly)</description>
         <model>assets/models/collada/Heads/Binary/FG_Female02HighPoly.bhf</model>
     </heads>
-    <heads>
-        <name>Female Head 01</name>
-        <description>Female Head 01</description>
-        <model>assets/models/collada/Heads/Binary/FG_FemaleHead01.bhf</model>
-    </heads>
-    <heads>
-        <name>Female Low-Poly Head</name>
-        <description>Female Low-Poly Head</description>
-        <model>assets/models/collada/Heads/Binary/FG_FemaleLowPoly_01.bhf</model>
-    </heads>
+    
+    <!-- ALERT: Removed FG_FemaleHead01.bhf -->
+    <!-- ALERT: Removed /FG_FemaleLowPoly_01.bhf -->
+
 
     <!-- HAIR -->
     <hair>
@@ -82,7 +73,7 @@
     </hair>
     <hair>
         <name>L_BunShape</name>
-        <description>Left Bun</description>
+        <description>Large Bun</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>L_BunShape</shapes>
     </hair>
@@ -100,13 +91,13 @@
     </hair>
     <hair>
         <name>L_PonyTailShape</name>
-        <description>Pony Tail</description>
+        <description>Long Pony Tail</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>L_PonyTailShape</shapes>
     </hair>
     <hair>
         <name>M_PonyTailShape</name>
-        <description>Media Pony Tail</description>
+        <description>Medium Pony Tail</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>M_PonyTailShape</shapes>
     </hair>
@@ -160,7 +151,7 @@
     </hair>
     <hair>
         <name>Curly_Mid_PtShape</name>
-        <description>Curly Mid Part</description>
+        <description>Curly Center Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Curly_Mid_PtShape</shapes>
     </hair>
@@ -172,73 +163,70 @@
     </hair>
     <hair>
         <name>Med_Pt_BangzShape</name>
-        <description>Med_Pt_BangzShape</description>
+        <description>Medium Bangs</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Med_Pt_BangzShape</shapes>
     </hair>
     <hair>
         <name>Med_pt_CenterShape</name>
-        <description>Med_pt_CenterShape</description>
+        <description>Medium Center Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Med_pt_CenterShape</shapes>
     </hair>
     <hair>
         <name>Med_Curly_BangzShape</name>
-        <description>Med_Curly_BangzShape</description>
+        <description>Medium Curly Bangs</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Med_Curly_BangzShape</shapes>
     </hair>
     <hair>
         <name>Med_AfricanWBangzShape</name>
-        <description>Med_AfricanWBangzShape</description>
+        <description>Medium African Bangs</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Med_AfricanWBangzShape</shapes>
     </hair>
     <hair>
         <name>Med_African_Pt_RShape</name>
-        <description>Med_African_Pt_RShape</description>
+        <description>Medium African Right Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Med_African_Pt_RShape</shapes>
     </hair>
     <hair>
-        <name>Med_AfricanPT_CenterShape</name>
-        <description>Med_AfricanPT_CenterShape</description>
-        <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
-        <shapes>Med_AfricanPT_CenterShape</shapes>
-    </hair>
-    <hair>
         <name>Med_African_Pt_LShape</name>
-        <description>Med_African_Pt_LShape</description>
+        <description>Medium African Left Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Med_African_Pt_LShape</shapes>
     </hair>
     <hair>
+        <name>Med_AfricanPT_CenterShape</name>
+        <description>Medium African Center Part</description>
+        <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
+        <shapes>Med_AfricanPT_CenterShape</shapes>
+    </hair>
+    <hair>
         <name>Short_African_MessyShape</name>
-        <description>Short_African_MessyShape</description>
+        <description>Short African Messy</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Short_African_MessyShape</shapes>
     </hair>
-    <hair>
-        <name>short_AfricanPT_CenterShape</name>
-        <description>short_AfricanPT_CenterShape</description>
-        <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
-        <shapes>short_AfricanPT_CenterShape</shapes>
-    </hair>
+    
+    <!-- ALERT: Removed short_AfricanPT_CenterShape because it resulted in bald -->
+
     <hair>
         <name>Short_PT_RShape</name>
-        <description>Short_PT_RShape</description>
+        <description>Short Right Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Short_PT_RShape</shapes>
     </hair>
     <hair>
         <name>Short_PT_LShape</name>
-        <description>Short_PT_LShape</description>
+        <description>Short Left Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Short_PT_LShape</shapes>
     </hair>
     <hair>
         <name>Short_PT_CenterShape</name>
-        <description>Short_PT_CenterShape</description>
+        <description>Short Center Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Short_PT_CenterShape</shapes>
     </hair>
@@ -264,12 +252,15 @@
         <model>assets/models/collada/Clothing/FemaleClothing/FemaleSweaterCrew.dae</model>
         <shapes>SweaterShape</shapes>
     </torsos>
+    
+    <!-- ALERT: Should this Jacket be listed under Jackets? -->
     <torsos>
         <name>Jacket</name>
         <description>Jacket</description>
         <model>assets/models/collada/Clothing/FemaleClothing/FemaleJacket.dae</model>
         <shapes>Jacket1Shape</shapes>
     </torsos>
+    
     <torsos>
         <name>T Shirt</name>
         <description>T Shirt</description>
@@ -283,6 +274,7 @@
         <name>No Jacket</name>
         <description>No Jacket</description>
     </jackets>
+    
 
     <!-- FEET -->
     <feet>
@@ -304,6 +296,8 @@
         <shapes>FlipFlopsFemaleShape</shapes>
         <shapes>FemaleFeet_NudeShape</shapes>
     </feet>
+    
+    <!-- ALERT: ShoesShape doesn't exist; perhaps should be: FemaleFeet_NudeShape -->
     <feet>
         <name>Bare Feet</name>
         <description>Bare Feet</description>

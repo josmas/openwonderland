@@ -9,29 +9,40 @@
     <!-- HEADS -->
     <heads>
         <name>Male C Head</name>
-        <description>Male C Head</description>
+        <description>Caucasian</description>
         <model>assets/models/collada/Heads/Binary/MaleCHead.bhf</model>
     </heads>
     <heads>
         <name>FaceGen Medium-Poly Head 2</name>
-        <description>FaceGen Medium-Poly Head 2</description>
+        <description>African American (med poly)</description>
         <model>assets/models/collada/Heads/Binary/FG_MaleHead02Medium.bhf</model>
     </heads>
+    
+    <!-- ALERT: Added Head -->
+
     <heads>
-        <name>FaceGen Low-Poly Head</name>
-        <description>FaceGen Low-Poly Head</description>
-        <model>assets/models/collada/Heads/Binary/FG_MaleLowPoly_01.bhf</model>
+        <name>FaceGen Low-Poly Head2</name>
+        <description>African American (low poly)</description>
+        <model>assets/models/collada/Heads/Binary/FG_Male02LowPoly.bhf</model>
     </heads>
     <heads>
         <name>Black Head</name>
-        <description>Black Head</description>
+        <description>Dark</description>
         <model>assets/models/collada/Heads/Binary/blackHead.bhf</model>
     </heads>
     <heads>
         <name>Asian Head</name>
-        <description>Asian Head</description>
+        <description>Asian</description>
         <model>assets/models/collada/Heads/Binary/AsianHeadMale.bhf</model>
     </heads>
+    
+    <!-- ALERT: Added Head -->
+    
+    <heads>
+        <name>Middle Aged Guy</name>
+        <description>Middle Aged Guy</description>
+        <model>assets/models/collada/Heads/Binary/midAgeGuy.bhf</model>
+    </heads>    
 
     <!-- HAIR -->
     <hair>
@@ -51,6 +62,12 @@
         <shapes>Male_ChinLengthPartLeftShape</shapes>
     </hair>
     <hair>
+        <name>Male_ChinLengthPartRightShape</name>
+        <description>Chin Length Part Right</description>
+        <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
+        <shapes>Male_ChinLengthPartRightShape</shapes>
+    </hair>
+    <hair>
         <name>Male_SlickedBackShape</name>
         <description>Slicked Back</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
@@ -58,10 +75,18 @@
     </hair>
     <hair>
         <name>Male_PartLeftShape</name>
-        <description>Part Left</description>
+        <description>Short Part Left</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_PartLeftShape</shapes>
     </hair>
+    
+    <hair>
+        <name>Male_PartRightShape</name>
+        <description>Short Part Right</description>
+        <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
+        <shapes>Male_PartRightShape</shapes>
+    </hair>
+    
     <hair>
         <name>Male_ShortMessyShape</name>
         <description>Short Messy</description>
@@ -92,11 +117,13 @@
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_ShortRecedShape</shapes>
     </hair>
+    
+    <!-- ALERT: Changed shape name to match art geometry -->
     <hair>
-        <name>Male_Balding1Shape</name>
+        <name>Male_BaldingShape</name>
         <description>Balding</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
-        <shapes>Male_Balding1Shape</shapes>
+        <shapes>Male_BaldingShape</shapes>
     </hair>
     <hair>
         <name>Male_BaldPiccardShape</name>
@@ -116,18 +143,8 @@
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_SpikeyShape</shapes>
     </hair>
-    <hair>
-        <name>Male_ChinLengthPartRightShape</name>
-        <description>Chin Length Part Right</description>
-        <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
-        <shapes>Male_ChinLengthPartRightShape</shapes>
-    </hair>
-    <hair>
-        <name>Male_PartRightShape</name>
-        <description>Part Right</description>
-        <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
-        <shapes>Male_PartRightShape</shapes>
-    </hair>
+
+
 
     <!-- HANDS -->
     <hands>
@@ -178,6 +195,8 @@
         <shapes>TorsoNudeShape</shapes>
         <shapes>polySurfaceShape2</shapes>
     </torsos>
+    
+    <!-- ALERT: There's a MaleDressShirtSUIT.dae that's not used. Special case? I didn't add it -->
 
     <!-- JACKETS -->
     <jackets>
@@ -219,6 +238,9 @@
         <model>assets/models/collada/Clothing/MaleClothing/CowBoyBoot_CUT.dae</model>
         <shapes>CowBoyBootsShape</shapes>
     </feet>
+    
+    <!-- ALERT: There's a CowBoyBoot.dae that's not used. Special case? I didn't add it -->
+
     <feet>
         <name>Bare Feet</name>
         <description>Bare Feet</description>
