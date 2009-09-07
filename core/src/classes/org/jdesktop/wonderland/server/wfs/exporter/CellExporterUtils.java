@@ -125,7 +125,7 @@ public class CellExporterUtils {
 
         String cellName = (descriptor.getParentPath() == null) ? "" :
                                 descriptor.getParentPath().toString();
-        cellName += "/" + descriptor.getCellName();
+        cellName += "/" + descriptor.getCellUniqueName();
         logger.info("[WFS Exporter] Writing cell " + cellName + " to " +
                     url.toExternalForm());
 

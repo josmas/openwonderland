@@ -131,8 +131,7 @@ public class CreateWFSCellResource {
         // the file, which should be <Cell Name>-<Cell ID>.
         try {
             wfs.acquireOwnership();
-            String cellName = cellDescriptor.getCellName() + "-" +
-                    cellDescriptor.getCellID().toString();
+            String cellName = cellDescriptor.getCellUniqueName();
             WFSCell cell = wfsDirectory.addCell(cellName);
             if (cell == null) {
                 logger.warning("[WFS] Failed to create cell " + cellName +
