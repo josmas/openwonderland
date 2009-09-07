@@ -68,7 +68,7 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
             CallbackHandler cBH, Map opts)
             throws AuthException
     {
-        logger.warning("Configure WonderSAM");
+        logger.fine("Configure WonderSAM");
 
         this.requestPolicy = reqPolicy;
         this.resPolicy = resPolicy;
