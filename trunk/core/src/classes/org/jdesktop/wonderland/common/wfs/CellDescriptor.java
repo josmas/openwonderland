@@ -82,6 +82,16 @@ public class CellDescriptor {
         this.cellName = cellName;
     }
 
+    /**
+     * The unique name is a combination of the cell's name and its
+     * CellID.  These unique names are used to store the cell, and in
+     * places like the parent path.
+     */
+    @XmlTransient
+    public String getCellUniqueName() {
+        return getCellName() + "-" + getCellID();
+    }
+
     @XmlElementRef
     public CellPath getParentPath() {
         return cellParent;

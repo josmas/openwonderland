@@ -423,7 +423,7 @@ public class CellExportService extends AbstractService implements CellExportMana
                 // Form the new parent path for this cell to pass down. If this
                 // parent is at the root, then parentPath is null, so we need to
                 // check for this
-                String cellName = get.getCellDescriptor().getCellName();
+                String cellName = get.getCellDescriptor().getCellUniqueName();
                 CellPath thisPath = (entry.parentPath != null) ?
                     entry.parentPath.getChildPath(cellName) : new CellPath(cellName);
 
