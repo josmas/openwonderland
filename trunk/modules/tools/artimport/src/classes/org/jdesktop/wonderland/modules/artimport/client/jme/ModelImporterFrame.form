@@ -93,8 +93,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="scaleTF" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
-                                  <Component id="modelX3dTF" alignment="0" pref="313" max="32767" attributes="1"/>
-                                  <Component id="modelNameTF" alignment="0" pref="313" max="32767" attributes="1"/>
+                                  <Component id="modelX3dTF" alignment="0" pref="231" max="32767" attributes="1"/>
+                                  <Component id="modelNameTF" alignment="0" pref="231" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -162,7 +162,7 @@
                                   <Component id="translationZTF" min="-2" pref="100" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="6" max="32767" attributes="0"/>
+                          <EmptySpace pref="10" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace pref="30" max="32767" attributes="0"/>
@@ -412,7 +412,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="texturePrefixTF" pref="287" max="32767" attributes="1"/>
+                                      <Component id="texturePrefixTF" pref="244" max="32767" attributes="1"/>
                                   </Group>
                                   <Component id="jLabel30" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
