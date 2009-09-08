@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.affordances.client;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -69,10 +70,10 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
 
         // create HUD control
         affordanceHUD = mainHUD.createComponent(affordanceHUDPanel);
-        affordanceHUD.setName("Edit Component");
+        affordanceHUDPanel.setHUDComponent(affordanceHUD);
+        affordanceHUD.setName(BUNDLE.getString("Edit_Component_None_Selected"));
         affordanceHUD.setPreferredLocation(Layout.SOUTH);
         affordanceHUD.addEventListener(new HUDEventListener() {
-
             public void HUDObjectChanged(HUDEvent event) {
                 /**
                  * Handles when the affordance frame is closed
@@ -82,8 +83,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
                     // posting an event to the input system as such. Also tell
                     // the affordance panel it has closed
                     affordanceHUDPanel.closed();
-                    InputManager.inputManager().postEvent(
-                            new AffordanceRemoveEvent());
+                    InputManager.inputManager().postEvent(new AffordanceRemoveEvent());
                 }
             }
         });
@@ -109,7 +109,6 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
                 editItem.setEnabled(canMove(sc));
             } else {
                 Thread t = new Thread(new Runnable() {
-
                     public void run() {
                         editItem.setLabel(BUNDLE.getString("Edit..."));
                         editItem.setEnabled(canMove(sc));
@@ -153,6 +152,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     class EditContextListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
+
             // Display the affordance HUD Panel. We need to call HUD methods
             // on a thread OTHER than the AWT Event Thread.
             if (affordanceHUD == null) {
@@ -166,7 +166,6 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
             // Update the states of the HUD Swing components; we must do this
             // on the AWT Event Thread.
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     affordanceHUDPanel.setTranslationVisible(true);
                     affordanceHUDPanel.updateGUI();
