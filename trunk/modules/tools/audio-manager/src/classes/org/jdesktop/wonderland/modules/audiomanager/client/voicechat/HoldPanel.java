@@ -83,7 +83,7 @@ public class HoldPanel extends javax.swing.JPanel {
             }
         });
 
-        holdingUsersLabel.setText("one two three");
+        holdingUsersLabel.setText(" ");
         holdingUsersLabel.setName("holdingUsersLabel"); // NOI18N
 
         takeOffHoldButton.setText("Take Off Hold");
@@ -101,15 +101,14 @@ public class HoldPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(holdVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
-                        .addContainerGap())
+                    .add(holdVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(holdLabel)
-                            .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
+                            .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(takeOffHoldButton))))
+                        .add(takeOffHoldButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

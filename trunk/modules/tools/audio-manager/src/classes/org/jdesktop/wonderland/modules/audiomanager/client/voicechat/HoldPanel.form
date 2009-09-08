@@ -22,19 +22,17 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="holdVolumeSlider" pref="283" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="holdVolumeSlider" alignment="0" pref="318" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="holdLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="holdingUsersLabel" pref="186" max="32767" attributes="0"/>
+                          <Component id="holdingUsersLabel" pref="180" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="takeOffHoldButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -83,7 +81,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="holdingUsersLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="one two three"/>
+        <Property name="text" type="java.lang.String" value=" "/>
         <Property name="name" type="java.lang.String" value="holdingUsersLabel" noResource="true"/>
       </Properties>
     </Component>
