@@ -219,6 +219,11 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         entity.addComponent(RenderComponent.class, rc);
         importedModel.setEntity(entity);
         importedModel.setDeploymentBaseURL("wlcontent://users/" + loginInfo.getUsername() + "/art/");
+        String filename = file.getAbsolutePath();
+        filename = filename.substring(
+                filename.lastIndexOf(File.separatorChar) + 1);
+        filename = filename.substring(0, filename.lastIndexOf('.'));
+        importedModel.setWonderlandName(filename);
 
         DeployedModel deployedModel = loader.deployToModule(tmpDir, importedModel);
 
@@ -243,6 +248,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         ModelCellServerState cellState = (ModelCellServerState) deployedModel.getCellServerState();
         ModelCellComponentServerState compState = (ModelCellComponentServerState) cellState.getComponentServerState(ModelCellComponentServerState.class);
 //        compState.setDeployedModelURL("wlcontent://users/" + loginInfo.getUsername() + "/" + modelFile);
+        cellState.setName(importedModel.getWonderlandName());
 
         System.err.println("DEPLOYED DEP FILE "+compState.getDeployedModelURL());
 
