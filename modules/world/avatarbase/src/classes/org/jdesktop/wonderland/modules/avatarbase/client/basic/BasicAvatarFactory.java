@@ -45,14 +45,14 @@ public class BasicAvatarFactory implements AvatarFactorySPI {
             "Cartoon (Female)",
             "default-avatars/femaleCartoonAvatar.dae/femaleCartoonAvatar.dae.gz.dep"
         },
-//        {
-//            "Toy (Male)",
-//            "default-avatars/maleToyAvatar.dae/maleToyAvatar.dae.gz.dep"
-//        },
-//        {
-//            "Toy (Female)",
-//            "default-avatars/femaleToyAvatar.dae/femaleToyAvatar.dae.gz.dep"
-//        }
+        {
+            "Toy (Male)",
+            "default-avatars/maleToyAvatar.dae/maleToyAvatar.dae.gz.dep"
+        },
+        {
+            "Toy (Female)",
+            "default-avatars/femaleToyAvatar.dae/femaleToyAvatar.dae.gz.dep"
+        }
     };
     
     /**

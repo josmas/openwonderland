@@ -9,15 +9,15 @@
         <z>0.01</z>
     </modelBGScale>
     <modelBGTranslation>
-        <x>-0.006270537</x>
-        <y>-0.01736392</y>
-        <z>0.00327414</z>
+        <x>0.0</x>
+        <y>-0.021241628</y>
+        <z>8.8232965E-4</z>
     </modelBGTranslation>
     <modelBGRotation>
-        <x>-0.99999994</x>
+        <x>1.0</x>
         <y>0.0</y>
         <z>0.0</z>
-        <angle>1.5707964</angle>
+        <angle>0.0</angle>
     </modelBGRotation>
     <modelLoaderClassname>org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader</modelLoaderClassname>
 </deployed-model>
