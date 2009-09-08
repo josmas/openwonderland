@@ -226,6 +226,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_speakerPhoneRadioButtonActionPerformed
 
     private void BusyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BusyButtonActionPerformed
+	answered = true;
         session.send(client, new VoiceChatBusyMessage(group, caller, myPresenceInfo, chatType));
 
         incomingCallHUDComponent.setVisible(false);
