@@ -44,6 +44,11 @@ public class ReconnectDialog implements Runnable {
     private JOptionPane reconnectPane;
     private JDialog reconnectDialog;
 
+    /**
+     * creates a new ReconnectDialog
+     * @param main the main jme client
+     * @param mgr the server session manager
+     */
     public ReconnectDialog(JmeClientMain main, ServerSessionManager mgr) {
         this.main = main;
         this.mgr = mgr;
@@ -55,12 +60,19 @@ public class ReconnectDialog implements Runnable {
     }
 
     private void initComponents() {
-        reconnectPane = new JOptionPane(BUNDLE.getString("ATTEMPTING_TO_RECONNECT..."),
-                JOptionPane.WARNING_MESSAGE,
-                JOptionPane.DEFAULT_OPTION);
-        reconnectDialog = reconnectPane.createDialog(main.getFrame().getFrame(), BUNDLE.getString("SERVER_DISCONNECTED"));
+        reconnectPane = new JOptionPane(
+                BUNDLE.getString("ATTEMPTING_TO_RECONNECT..."),
+                JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION);
+        reconnectDialog = reconnectPane.createDialog(
+                JmeClientMain.getFrame().getFrame(),
+                BUNDLE.getString("SERVER_DISCONNECTED"));
     }
 
+    /**
+     * shows or hides this dialog
+     * @param visible if <tt>true</tt>, makes the dialog visible, otherwise
+     * hides the dialog
+     */
     public void setVisible(final boolean visible) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -84,11 +96,14 @@ public class ReconnectDialog implements Runnable {
 
             main.loadServer(mgr.getServerURL());
         } catch (IOException ex) {
-            LOGGER.warning("Error reconnecting to server " + mgr.getServerURL() + ": " + ex);
-            String msg = BUNDLE.getString("UNABLE_TO_RECONNECT_TO_SERVER:_") + "\n" + ex.getMessage();
+            LOGGER.warning("Error reconnecting to server " +
+                    mgr.getServerURL() + ": " + ex);
+            String msg = BUNDLE.getString("UNABLE_TO_RECONNECT_TO_SERVER:_") +
+                    "\n" + ex.getMessage();
 
-            JOptionPane.showMessageDialog(main.getFrame().getFrame(), msg,
-                    BUNDLE.getString("ERROR_CONNECTING_TO_SERVER"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(),
+                    msg, BUNDLE.getString("ERROR_CONNECTING_TO_SERVER"),
+                    JOptionPane.ERROR_MESSAGE);
         } catch (InterruptedException ie) {
             // all done
         } finally {
