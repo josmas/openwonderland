@@ -64,6 +64,16 @@ public interface AvatarSPI {
     public void configure();
 
     /**
+     * Returns true if the avatar is "high resolution" requiring the most
+     * advanced graphics card capabilities. It is generally up to the system
+     * to determine which graphics cards support "high resolution" avatars,
+     * but generally includes OpenGL 2.0 or greater.
+     *
+     * @return True if the avatar requires high-res graphics
+     */
+    public boolean isHighResolution();
+    
+    /**
      * Return the avatar configuration information used by other clients to
      * load the avatar on their systems.
      *

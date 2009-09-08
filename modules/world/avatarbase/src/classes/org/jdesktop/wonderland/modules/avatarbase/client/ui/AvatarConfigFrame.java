@@ -27,11 +27,16 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatar;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry.AvatarInUseListener;
@@ -379,11 +384,39 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void useButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useButtonActionPerformed
-        // Tell the server to use the selected avatar. Since the Use button is
-        // only enabled when an item is selected, we assume something is
-        // selected in the list.
+
+        // Find the selected avatar. If the avatar does not require high-res
+        // graphics, then simply set the avatar in use and return.
         AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
         AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
+        if (avatar.isHighResolution() == false) {
+            registry.setAvatarInUse(avatar, false);
+            return;
+        }
+
+        // Next check to see whether OpenGL 2.0 is supported on the system. If
+        // not, then display a dialog saying you cannot use the avatar.
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        String shaderCheck = System.getProperty("avatar.shaderCheck");
+        boolean shaderPass = true;
+
+        if (shaderCheck != null && shaderCheck.equals("true")) {
+            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
+        }
+        if (rm.supportsOpenGL20() == false || !shaderPass) {
+            String msg = "Unfortunately your system graphics does not" +
+                    " support the shaders which are required to use" +
+                    " this avatar";
+            String title = "Advanced Shaders Required";
+            JFrame frame = JmeClientMain.getFrame().getFrame();
+            JOptionPane.showMessageDialog(frame, msg, title, JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Tell the server to use the selected avatar. Since the Use button is
+        // only enabled when an item is selected, we assume something is
+        // selected in the list. At this point, we also know the graphics system
+        // supports the avatar, if high-res.
         registry.setAvatarInUse(avatar, false);
     }//GEN-LAST:event_useButtonActionPerformed
 
@@ -409,15 +442,62 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void customizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customizeButtonActionPerformed
+
+        // Find the selected avatar. If the avatar does not require high-res
+        // graphics, then go ahead and configure the avatar.
+        AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
+        if (avatar.isHighResolution() == false) {
+            avatar.configure();
+            return;
+        }
+
+        // Next check to see whether OpenGL 2.0 is supported on the system. If
+        // not, then display a dialog saying you cannot configure the avatar.
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        String shaderCheck = System.getProperty("avatar.shaderCheck");
+        boolean shaderPass = true;
+
+        if (shaderCheck != null && shaderCheck.equals("true")) {
+            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
+        }
+        if (rm.supportsOpenGL20() == false || !shaderPass) {
+            String msg = "Unfortunately your system graphics does not" +
+                    " support the shaders which are required to configure" +
+                    " this avatar";
+            String title = "Advanced Shaders Required";
+            JFrame frame = JmeClientMain.getFrame().getFrame();
+            JOptionPane.showMessageDialog(frame, msg, title, JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         // Fetch the currently selected avatar and display a dialog box to
         // edit its configuration. Since the Customize button is only enabled
         // when an item is selected, we assume something is selected in the
-        // list.
-        AvatarSPI avatar = (AvatarSPI) avatarList.getSelectedValue();
+        // list. At this point, we also know the graphics system supports the
+        // avatar, if high-res.
         avatar.configure();
     }//GEN-LAST:event_customizeButtonActionPerformed
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+
+        // First check to see whether OpenGL 2.0 is supported on the system. If
+        // not, then display a dialog saying you cannot create an avatar.
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        String shaderCheck = System.getProperty("avatar.shaderCheck");
+        boolean shaderPass = true;
+
+        if (shaderCheck != null && shaderCheck.equals("true")) {
+            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
+        }
+        if (rm.supportsOpenGL20() == false || !shaderPass) {
+            String msg = "Unfortunately your system graphics does not" +
+                    " support the shaders which are required to create" +
+                    " an avatar";
+            String title = "Advanced Shaders Required";
+            JFrame frame = JmeClientMain.getFrame().getFrame();
+            JOptionPane.showMessageDialog(frame, msg, title, JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         // Generate a new avatar, using the IMI avatar as a factory, since we
         // can only create new IMI avatars. (In the future, perhaps there should
