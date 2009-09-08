@@ -17,9 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client;
 
-import java.util.Dictionary;
+import java.text.MessageFormat;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -48,17 +50,23 @@ import org.jdesktop.wonderland.modules.affordances.client.cell.TranslateAffordan
  */
 public class AffordanceHUDPanel extends javax.swing.JPanel {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/affordances/client/resources/Bundle");
+    
     /* The detailed "position" panel to set the values by hand */
-    private PositionHUDPanel positionHUDPanel;
-    private static HUDComponent positionHUD;
+    private PositionHUDPanel positionHUDPanel = null;
+    private static HUDComponent positionHUD = null;
+
+    // The HUD component that displays this panel. This is needed to set the
+    // title of the HUD panel when the selection changes.
+    private HUDComponent affordanceHUD = null;
 
     /** Creates new form AffordanceHUDPanel */
     public AffordanceHUDPanel() {
         initComponents();
 
         // Paint the labels on the ticks properly from 1.0 to 5.0
-        Dictionary<Integer, JComponent> labels =
-                new Hashtable<Integer, JComponent>();
+        Hashtable<Integer, JComponent> labels = new Hashtable<Integer, JComponent>();
         labels.put(0, new JLabel("1.0"));
         labels.put(100, new JLabel("2.0"));
         labels.put(200, new JLabel("3.0"));
@@ -77,8 +85,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         mainHUD.addComponent(positionHUD);
 
         // Listen for selections to update the HUD panel
-        InputManager.inputManager().addGlobalEventListener(
-                new SelectionListener());
+        InputManager.inputManager().addGlobalEventListener(new SelectionListener());
     }
 
     /** This method is called from within the constructor to
@@ -222,6 +229,15 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
+     * Sets the HUD component that holds this panel.
+     *
+     * @param affordanceHUD The HUD component for this panel
+     */
+    public void setHUDComponent(HUDComponent affordanceHUD) {
+        this.affordanceHUD = affordanceHUD;
+    }
+
+    /**
      * Indicates that this HUD panel has been closed
      */
     public void closed() {
@@ -242,7 +258,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // Fetch the currently selected Cell. If none, then do nothing
         Cell cell = getSelectedCell();
         if (cell == null) {
-            //frame.setTitle("Edit Cell: <none selected>");
+            affordanceHUD.setName(BUNDLE.getString("Edit_Component_None_Selected"));
             translateToggleButton.setSelected(false);
             translateToggleButton.setEnabled(false);
             rotateToggleButton.setSelected(false);
@@ -255,7 +271,12 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         }
 
         // Set the name of the Cell label
-        //frame.setTitle("Edit Cell: " + cell.getName());
+        String name = BUNDLE.getString("Edit_Component");
+        name = MessageFormat.format(name, cell.getName());
+        affordanceHUD.setName(name);
+        Logger.getLogger(AffordanceHUDPanel.class.getName()).warning("Setting name to " + name);
+
+        // Enable all of the buttons on theHUD
         translateToggleButton.setEnabled(true);
         rotateToggleButton.setEnabled(true);
         resizeToggleButton.setEnabled(true);
@@ -263,8 +284,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
 
         // See if there is a translate component on the Cell. If so, then set
         // the toggle button state.
-        CellComponent component = cell.getComponent(
-                TranslateAffordanceCellComponent.class);
+        CellComponent component = cell.getComponent(TranslateAffordanceCellComponent.class);
         translateToggleButton.setSelected(component != null);
         translateToggleButton.repaint();
 
@@ -275,7 +295,8 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         if (component != null) {
             float size = ((AffordanceCellComponent) component).getSize();
             sizeSlider.setValue((int) ((size - 1.0f) * 100.0f));
-        } else {
+        }
+        else {
             sizeSlider.setValue(50);
         }
 
@@ -333,19 +354,19 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         }
 
         // See if there is already a translate component on the Cell.
-        CellComponent component = cell.getComponent(
-                TranslateAffordanceCellComponent.class);
+        CellComponent component = cell.getComponent(TranslateAffordanceCellComponent.class);
 
         // If we are selecting the translate toggle button, then add the
         // translate component if it is not already on there. Also, set its
         // size.
-        if (visible) {
+        if (visible == true) {
             if (component == null) {
                 component = new TranslateAffordanceCellComponent(cell);
                 cell.addComponent(component);
             }
             ((AffordanceCellComponent) component).setSize(getSliderSize());
-        } else {
+        }
+        else {
             // Otherwise if the remove exists, then remove it from the Cell
             if (component != null) {
                 ((AffordanceCellComponent) component).remove();
@@ -374,18 +395,18 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         }
 
         // See if there is already a rotate component on the Cell.
-        CellComponent component = cell.getComponent(
-                RotateAffordanceCellComponent.class);
+        CellComponent component = cell.getComponent(RotateAffordanceCellComponent.class);
 
         // If we are selecting the rotation toggle button, then add the rotate
         // component if it is not already on there. Also, set its size.
-        if (visible) {
+        if (visible == true) {
             if (component == null) {
                 component = new RotateAffordanceCellComponent(cell);
                 cell.addComponent(component);
             }
             ((AffordanceCellComponent) component).setSize(getSliderSize());
-        } else {
+        }
+        else {
             // Otherwise if the remove exists, then remove it from the Cell
             if (component != null) {
                 ((AffordanceCellComponent) component).remove();
@@ -414,18 +435,18 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         }
 
         // See if there is already a rotate component on the Cell.
-        CellComponent component = cell.getComponent(
-                ResizeAffordanceCellComponent.class);
+        CellComponent component = cell.getComponent(ResizeAffordanceCellComponent.class);
 
         // If we are selecting the resize toggle button, then add the resize
         // component if it is not already on there. Also, set its size.
-        if (visible) {
+        if (visible == true) {
             if (component == null) {
                 component = new ResizeAffordanceCellComponent(cell);
                 cell.addComponent(component);
             }
             ((AffordanceCellComponent) component).setSize(getSliderSize());
-        } else {
+        }
+        else {
             // Otherwise if the remove exists, then remove it from the Cell
             if (component != null) {
                 ((AffordanceCellComponent) component).remove();
@@ -499,7 +520,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
 
         @Override
         public Class[] eventClassesToConsume() {
-            return new Class[]{SelectionEvent.class};
+            return new Class[] { SelectionEvent.class };
         }
 
         @Override
@@ -507,13 +528,13 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
             // Update the GUI based upon the newly selected Entity and Cell. We
             // must do this in the AWT Event Thread
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     updateGUI();
                 }
             });
         }
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton detailsButton;
     private javax.swing.JLabel jLabel1;
