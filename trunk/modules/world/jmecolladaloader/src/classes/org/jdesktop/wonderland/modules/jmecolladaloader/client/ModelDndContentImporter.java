@@ -206,7 +206,6 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         }
         tmpDir = new File(tmpDir, file.getName());
         tmpDir.mkdirs();
-        System.err.println("DEPLOYING TO "+tmpDir);
 
         // Create a fake entity, which will be used to calculate the model offset
         // from the cell
@@ -242,17 +241,8 @@ public class ModelDndContentImporter implements ContentImporterSPI {
             Logger.getLogger(ModelDndContentImporter.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        URL tmpUrl = new URL(deployedModel.getModelURL());
-        String modelFile = "art" + tmpUrl.getPath();
-
         ModelCellServerState cellState = (ModelCellServerState) deployedModel.getCellServerState();
-        ModelCellComponentServerState compState = (ModelCellComponentServerState) cellState.getComponentServerState(ModelCellComponentServerState.class);
-//        compState.setDeployedModelURL("wlcontent://users/" + loginInfo.getUsername() + "/" + modelFile);
         cellState.setName(importedModel.getWonderlandName());
-
-        System.err.println("DEPLOYED DEP FILE "+compState.getDeployedModelURL());
-
-//        deployedModel.setModelURL(compState.getDeployedModelURL()); // Make everything consistent with the state
 
         return deployedModel;
     }
