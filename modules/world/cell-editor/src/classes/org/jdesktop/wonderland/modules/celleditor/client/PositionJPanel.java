@@ -83,6 +83,11 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
      */
     private boolean setLocal = false;
 
+    // True if changes have actually been made in this GUI. Initially this
+    // value is false. If the values change by an external source, it remains
+    // null.
+    private boolean isLocalChangesMade = false;
+
     /*
      * The original values when the properties sheet is first set to a Cell.
      * These original values will be used when the cancel() method is invoked,
@@ -152,6 +157,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         translationListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (setLocal == false) {
+                    isLocalChangesMade = true;
                     updateTranslation();
                 }
             }
@@ -165,6 +171,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         rotationListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (setLocal == false) {
+                    isLocalChangesMade = true;
                     updateRotation();
                 }
             }
@@ -178,6 +185,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         scaleListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (setLocal == false) {
+                    isLocalChangesMade = true;
                     updateScale();
                 }
             }
@@ -347,12 +355,18 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
 
         // We revert the values to when this property sheet was originally open
         // for the Cell. We only do this if we can find a movable component
-        // (which should be the case if we made any changes).
-        CellTransform transform = cell.getLocalTransform();
-        transform.setTranslation(originalTranslation);
-        transform.setScaling(originalScaling.x);
-        transform.setRotation(originalRotation);
-        movableComponent.localMoveRequest(transform);
+        // (which should be the case if we made any changes) AND if we have
+        // explictly made changes via the GUI. This second check is necessary
+        // because if a user edits the position via the affordances, and clicks
+        // off the Cell in the Cell Editor, it will revert the position, when
+        // not desired. (See Issue #688).
+        if (isLocalChangesMade == true) {
+            CellTransform transform = cell.getLocalTransform();
+            transform.setTranslation(originalTranslation);
+            transform.setScaling(originalScaling.x);
+            transform.setRotation(originalRotation);
+            movableComponent.localMoveRequest(transform);
+        }
     }
 
     /**
