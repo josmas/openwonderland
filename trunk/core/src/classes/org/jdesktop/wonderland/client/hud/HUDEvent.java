@@ -96,6 +96,10 @@ public class HUDEvent {
          */
         CHANGED_TRANSPARENCY,
         /**
+         * A HUD object's name changed
+         */
+        CHANGED_NAME,
+        /**
          * A HUD object has been closed
          */
         CLOSED
