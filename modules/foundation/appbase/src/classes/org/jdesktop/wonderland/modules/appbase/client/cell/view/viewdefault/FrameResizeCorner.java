@@ -226,6 +226,31 @@ public class FrameResizeCorner extends FrameComponent {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public void setForegroundColor(ColorRGBA color) {
+        if (horizBar != null) {
+            logger.fine("horiz color = " + color);
+            horizBar.setForegroundColor(color);
+        }
+        if (vertBar != null) {
+            logger.fine("vert color = " + color);
+            vertBar.setForegroundColor(color);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ColorRGBA getForegroundColor() {
+        if (horizBar != null) {
+            return horizBar.getForegroundColor();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Specify whether the mouse pointer is inside the close button.
      *
      * @param inside True if the mouse pointer is inside.

@@ -139,6 +139,26 @@ public class FrameSide extends FrameComponent {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public void setForegroundColor(ColorRGBA color) {
+        if (rect != null) {
+            rect.setForegroundColor(color);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ColorRGBA getForegroundColor() {
+        if (rect != null) {
+            return rect.getForegroundColor();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Calculate the desired layout, based on the view size.
      */
     protected void updateLayout() {

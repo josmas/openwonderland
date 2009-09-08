@@ -204,6 +204,26 @@ public class FrameCloseButton extends FrameComponent {
     /**
      * {@inheritDoc}
      */
+    public void setForegroundColor(ColorRGBA color) {
+        if (rect != null) {
+            rect.setForegroundColor(color);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ColorRGBA getForegroundColor() {
+        if (rect != null) {
+            return rect.getForegroundColor();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Spatial[] getSpatials() {
         if (rect == null) {

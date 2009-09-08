@@ -23,8 +23,6 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
@@ -42,9 +40,13 @@ public abstract class FrameComponent {
     /** The component name */
     protected String name;
     /** The color to display when the app has control. */
-    protected static final ColorRGBA HAS_CONTROL_COLOR = new ColorRGBA(0f, 0.9f, 0f, 1f);
+    protected static final ColorRGBA HAS_CONTROL_COLOR = new ColorRGBA(0.0f, 0.9f, 0.0f, 1f);
     /** The color to display when the app has control. */
-    protected static final ColorRGBA NO_CONTROL_COLOR = new ColorRGBA(0.9f, 0f, 0f, 1f);
+    protected static final ColorRGBA NO_CONTROL_COLOR = new ColorRGBA(0.9f, 0.0f, 0.0f, 1f);
+    /** The text color to display when the app has control. */
+    protected static final ColorRGBA HAS_CONTROL_FOREGROUND_COLOR = new ColorRGBA(0.0f, 0.0f, 0.0f, 1f);
+    /** The text color to display when the app has control. */
+    protected static final ColorRGBA NO_CONTROL_FOREGROUND_COLOR = new ColorRGBA(1.0f, 1.0f, 1.0f, 1f);
     /** The view of the window the frame encloses. */
     protected View2DCell view;
     /** The control arb of the app. */
@@ -258,8 +260,10 @@ public abstract class FrameComponent {
     protected void updateColor() {
         if (controlArb == null || controlArb.hasControl()) {
             setColor(HAS_CONTROL_COLOR);
+            setForegroundColor(HAS_CONTROL_FOREGROUND_COLOR);
         } else {
             setColor(NO_CONTROL_COLOR);
+            setForegroundColor(NO_CONTROL_FOREGROUND_COLOR);
         }
     }
 
@@ -274,6 +278,18 @@ public abstract class FrameComponent {
      * Get the background color of the component.
      */
     public abstract ColorRGBA getColor();
+
+    /**
+     * Set the foreground color of the component.
+     *
+     * @param color The new foreground color.
+     */
+    public abstract void setForegroundColor(ColorRGBA color);
+
+    /**
+     * Get the foreground color of the component.
+     */
+    public abstract ColorRGBA getForegroundColor();
 
     /**
      * Sets the localToCell translation of this component.

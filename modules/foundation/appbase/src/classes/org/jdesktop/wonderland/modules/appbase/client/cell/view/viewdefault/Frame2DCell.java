@@ -60,7 +60,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** The height of the header */
     public static final float HEADER_HEIGHT = /* 0.2f */ /*6.3f*/ 1.25f/3f;
     /** The thickness (in the plane of the frame) of the other parts of the border */
-    public static final float SIDE_THICKNESS = /*0.07f*/ /* 3.0f */ 0.75f/3f;
+    public static final float SIDE_THICKNESS = /*0.07f*/ /* 3.0f */ 0.75f/6f;
     /** The width of the resize corner - currently the same as a header height */
     public static final float RESIZE_CORNER_WIDTH = HEADER_HEIGHT;
     /** The height of the resize corner - currently the same as a header height */
