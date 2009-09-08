@@ -265,7 +265,7 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                         "to duplicate with id " + cellID);
                 return;
             }
-            Vector3f offset = new Vector3f(1, 1, 1);
+            Vector3f offset = new Vector3f(1, 0, 1);
             Vector3f origin = position.getTranslation();
             position.setTranslation(offset.add(origin));
             state.addComponentServerState(position);
