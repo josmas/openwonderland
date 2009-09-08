@@ -712,6 +712,20 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
+    protected void componentNameChanged(HUDComponent2D component) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("changing name of: " + component);
+        }
+
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+        if (state != null) {
+            HUDFrameHeader2D frameHeader = state.getFrame();
+            if (frameHeader != null) {
+                frameHeader.setTitle(component.getName());
+            }
+        }
+    }
+
     private void handleHUDComponentChanged(HUDEvent event) {
         HUDComponent2D comp = (HUDComponent2D) event.getObject();
 
@@ -760,6 +774,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 break;
             case CHANGED_TRANSPARENCY:
                 componentTransparencyChanged(comp);
+                break;
+            case CHANGED_NAME:
+                componentNameChanged(comp);
                 break;
             case CLOSED:
                 componentClosed(comp);

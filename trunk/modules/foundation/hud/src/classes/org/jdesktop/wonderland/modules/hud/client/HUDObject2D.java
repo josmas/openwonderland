@@ -78,6 +78,8 @@ public class HUDObject2D implements HUDObject {
      */
     public void setName(String name) {
         this.name = name;
+
+        notifyEventListeners(HUDEventType.CHANGED_NAME);
     }
 
     /**
