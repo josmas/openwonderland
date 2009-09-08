@@ -21,7 +21,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.LightState;
@@ -187,6 +186,20 @@ public class FrameRect extends FrameComponent {
         } else {
             return ms.getDiffuse();
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized void setForegroundColor(final ColorRGBA color) {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ColorRGBA getForegroundColor() {
+        return null;
     }
 
     /**

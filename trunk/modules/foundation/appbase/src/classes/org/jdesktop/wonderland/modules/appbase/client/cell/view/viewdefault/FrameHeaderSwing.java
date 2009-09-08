@@ -19,30 +19,22 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import com.jme.math.Vector2f;
 import com.jme.renderer.ColorRGBA;
-import java.util.LinkedList;
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventListener;
-import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
-import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import javax.swing.SwingUtilities;
@@ -65,6 +57,9 @@ public class FrameHeaderSwing
 
     /** The AWT background color of the header window. */
     private Color bkgdColor;
+
+    /** The AWT background color of the header window. */
+    private Color fgrdColor;
 
     /** The panel displayed in the frame. */
     private HeaderPanel headerPanel;
@@ -246,6 +241,25 @@ public class FrameHeaderSwing
                              bkgdColor.getAlpha()/255.0f);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void setForegroundColor(ColorRGBA color) {
+        fgrdColor = new Color(color.r, color.g, color.b, color.a);
+        if (headerPanel != null) {
+            headerPanel.setForeground(fgrdColor);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ColorRGBA getForegroundColor() {
+        return new ColorRGBA(fgrdColor.getRed()/255.0f,
+                             fgrdColor.getGreen()/255.0f,
+                             fgrdColor.getBlue()/255.0f,
+                             fgrdColor.getAlpha()/255.0f);
+    }
 
     public void	mouseClicked(MouseEvent e) {
         if (view == null) return;

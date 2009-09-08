@@ -30,12 +30,12 @@ public class HeaderPanel extends javax.swing.JPanel {
 
     public interface Container {
         // TODO: add call backs to FrameHeaderSwing
-        public void close ();
-    }
 
+        public void close();
+    }
     private Container container;
 
-    public void setContainer (Container container) {
+    public void setContainer(Container container) {
         this.container = container;
     }
 
@@ -44,6 +44,7 @@ public class HeaderPanel extends javax.swing.JPanel {
         initComponents();
 
         jButton1.addActionListener(new java.awt.event.ActionListener() {
+
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
@@ -59,56 +60,67 @@ public class HeaderPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jToolBar1 = new javax.swing.JToolBar();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        setMaximumSize(new java.awt.Dimension(32767, 29));
-        setMinimumSize(new java.awt.Dimension(50, 29));
+        jToolBar1.setRollover(true);
 
+        setMaximumSize(new java.awt.Dimension(32767, 24));
+        setMinimumSize(new java.awt.Dimension(50, 24));
+        setPreferredSize(new java.awt.Dimension(422, 24));
+
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD, jLabel1.getFont().getSize()+2));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/appbase/client/Bundle"); // NOI18N
         jLabel1.setText(bundle.getString("HeaderPanel.jLabel1.text")); // NOI18N
 
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | java.awt.Font.BOLD, jLabel2.getFont().getSize()+2));
         jLabel2.setText(bundle.getString("HeaderPanel.jLabel2.text")); // NOI18N
 
-        jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close.png"))); // NOI18N
+        jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10)); // NOI18N
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
+        jButton1.setMaximumSize(new java.awt.Dimension(24, 24));
+        jButton1.setMinimumSize(new java.awt.Dimension(24, 24));
+        jButton1.setPreferredSize(new java.awt.Dimension(24, 24));
+        jButton1.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(22, 22, 22)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(24, 24, 24)
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 202, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(48, 48, 48)
                 .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
-                .add(36, 36, 36)
-                .add(jButton1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButton1)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel2)
-                        .add(jLabel1)))
+                        .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void setBackground (final Color color) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
+    public void setBackground(final Color color) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
                 HeaderPanel.super.setBackground(color);
                 if (jLabel1 != null) {
                     jLabel1.setBackground(color);
@@ -124,9 +136,29 @@ public class HeaderPanel extends javax.swing.JPanel {
     }
 
     @Override
-    public void addMouseListener (final MouseListener listener) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
+    public void setForeground(final Color color) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                HeaderPanel.super.setForeground(color);
+                if (jLabel1 != null) {
+                    jLabel1.setForeground(color);
+                }
+                if (jLabel2 != null) {
+                    jLabel2.setForeground(color);
+                }
+                if (jButton1 != null) {
+                    jButton1.setForeground(color);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void addMouseListener(final MouseListener listener) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
                 HeaderPanel.super.addMouseListener(listener);
                 if (jLabel1 != null) {
                     jLabel1.addMouseListener(listener);
@@ -142,9 +174,10 @@ public class HeaderPanel extends javax.swing.JPanel {
     }
 
     @Override
-    public void removeMouseListener (final MouseListener listener) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
+    public void removeMouseListener(final MouseListener listener) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
                 HeaderPanel.super.removeMouseListener(listener);
                 if (jLabel1 != null) {
                     jLabel1.removeMouseListener(listener);
@@ -161,9 +194,10 @@ public class HeaderPanel extends javax.swing.JPanel {
     }
 
     @Override
-    public void addMouseMotionListener (final MouseMotionListener listener) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
+    public void addMouseMotionListener(final MouseMotionListener listener) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
                 HeaderPanel.super.addMouseMotionListener(listener);
                 if (jLabel1 != null) {
                     jLabel1.addMouseMotionListener(listener);
@@ -179,9 +213,10 @@ public class HeaderPanel extends javax.swing.JPanel {
     }
 
     @Override
-    public void removeMouseMotionListener (final MouseMotionListener listener) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
+    public void removeMouseMotionListener(final MouseMotionListener listener) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
                 HeaderPanel.super.removeMouseMotionListener(listener);
                 if (jLabel1 != null) {
                     jLabel1.removeMouseMotionListener(listener);
@@ -196,28 +231,30 @@ public class HeaderPanel extends javax.swing.JPanel {
         });
     }
 
-    public void setTitle (String title) {
+    public void setTitle(String title) {
         if (title == null) {
             title = " ";
         }
         final String theTitle = title;
         if (jLabel1 != null) {
-            SwingUtilities.invokeLater(new Runnable () {
-                public void run () {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
                     jLabel1.setText(theTitle);
                 }
             });
         }
     }
 
-    public void setController (String controller) {
+    public void setController(String controller) {
         if (controller == null) {
             controller = " ";
         }
         final String theController = controller;
         if (jLabel1 != null) {
-            SwingUtilities.invokeLater(new Runnable () {
-                public void run () {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
                     jLabel2.setText(theController);
                 }
             });
@@ -229,6 +266,5 @@ public class HeaderPanel extends javax.swing.JPanel {
             container.close();
         }
     }
-
 }
         
