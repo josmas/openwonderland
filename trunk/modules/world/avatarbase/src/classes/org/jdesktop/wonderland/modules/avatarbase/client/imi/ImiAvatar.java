@@ -191,6 +191,13 @@ public class ImiAvatar implements AvatarSPI {
     /**
      * {@inheritDoc}
      */
+    public boolean isHighResolution() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean canDelete() {
         return true;
     }

@@ -48,6 +48,13 @@ public class BasicAvatar implements AvatarSPI {
     /**
      * {@inheritDoc}
      */
+    public boolean isHighResolution() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public String getName() {
         return avatarName;
     }
