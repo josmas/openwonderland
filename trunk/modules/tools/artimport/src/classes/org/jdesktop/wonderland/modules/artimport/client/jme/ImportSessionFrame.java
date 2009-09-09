@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
+import java.lang.reflect.InvocationTargetException;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.image.Texture;
@@ -122,37 +123,41 @@ public class ImportSessionFrame extends javax.swing.JFrame {
     /** Creates new form ImportSessionFrame */
     public ImportSessionFrame() {
         initComponents();
-        tableModel = new DefaultTableModel() {
+        tableModel = (DefaultTableModel) importTable.getModel();
 
-            String[] names = new String[]{
-                BUNDLE.getString("Wonderland_Name"),
-                BUNDLE.getString("Original_Model_Name")
-            };
-            Class[] types = new Class[]{
-                String.class,
-                String.class
-            };
-            boolean[] canEdit = new boolean[]{
-                false,
-                false
-            };
-
-            @Override
-            public String getColumnName(int column) {
-                return names[column];
-            }
-
-            @Override
-            public Class getColumnClass(int columnIndex) {
-                return types[columnIndex];
-            }
-
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit[columnIndex];
-            }
-        };
-        importTable.setModel(tableModel);
+        // The I18N code below does not seem to work, the table headers
+        // are never rendered and neither is table content
+//                new DefaultTableModel() {
+//
+//            String[] names = new String[]{
+//                BUNDLE.getString("Wonderland_Name"),
+//                BUNDLE.getString("Original_Model_Name")
+//            };
+//            Class[] types = new Class[]{
+//                String.class,
+//                String.class
+//            };
+//            boolean[] canEdit = new boolean[]{
+//                false,
+//                false
+//            };
+//
+//            @Override
+//            public String getColumnName(int column) {
+//                return names[column];
+//            }
+//
+//            @Override
+//            public Class getColumnClass(int columnIndex) {
+//                return types[columnIndex];
+//            }
+//
+//            @Override
+//            public boolean isCellEditable(int rowIndex, int columnIndex) {
+//                return canEdit[columnIndex];
+//            }
+//        };
+//        importTable.setModel(tableModel);
 
         importTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -383,6 +388,29 @@ public class ImportSessionFrame extends javax.swing.JFrame {
             }
         });
 
+        importTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Wonderland Name", "Original Model File"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(importTable);
 
         org.jdesktop.layout.GroupLayout centerPLayout = new org.jdesktop.layout.GroupLayout(centerP);
@@ -550,7 +578,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(centerP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                                .add(centerP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .add(0, 0, 0)
                                 .add(eastP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(jLabel6))
@@ -567,7 +595,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(eastP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(centerP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                            .add(centerP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .add(0, 0, 0)
                         .add(southP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
@@ -632,18 +660,31 @@ public class ImportSessionFrame extends javax.swing.JFrame {
 
         final File moduleJar = createModuleJar(deploymentInfo, null);
 
-        final JDialog uploadingDialog = new JDialog(this);
-                uploadingDialog.setLayout(new BorderLayout());
-                uploadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
-                uploadingDialog.pack();
-                uploadingDialog.setSize(200, 100);
-                uploadingDialog.setVisible(true);
-                uploadingDialog.setAlwaysOnTop(true);
-
         // Now deploy to server
-        SwingUtilities.invokeLater(new Runnable() {
+        Thread t = new Thread() {
+            private JDialog uploadingDialog;
+            @Override
             public void run() {
                 try {
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+
+                            public void run() {
+                                uploadingDialog = new JDialog(ImportSessionFrame.this);
+                                    uploadingDialog.setLayout(new BorderLayout());
+                                    uploadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
+                                    uploadingDialog.pack();
+                                    uploadingDialog.setSize(200, 100);
+                                    uploadingDialog.setVisible(true);
+                                    uploadingDialog.setAlwaysOnTop(true);
+                            }
+                        });
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
                     ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
                     uploader.upload(moduleJar);
                 } catch (MalformedURLException ex) {
@@ -653,10 +694,16 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                     LOGGER.log(Level.SEVERE, "IO Exception during upload", e);
                     return;
                 }
-                uploadingDialog.setVisible(false);
-                uploadingDialog.dispose();
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        uploadingDialog.setVisible(false);
+                        uploadingDialog.dispose();
+                    }
+                });
             }
-        });
+        };
+        t.start();
 
         // Remove entities, once we create the cells on the server we
         // will be sent the client cells
@@ -806,7 +853,14 @@ private void saveAsModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     int returnVal = chooser.showSaveDialog(ImportSessionFrame.this);
     if (returnVal == JFileChooser.APPROVE_OPTION) {
-        createModuleJar(deploymentInfo, chooser.getSelectedFile());
+        File f = chooser.getSelectedFile();
+        if (!f.isDirectory()) {
+            JOptionPane.showMessageDialog(this, "Please select a directory into which your module jar will be deployed");
+            return;
+        }
+        if (!f.exists())
+            f.mkdirs();
+        createModuleJar(deploymentInfo, f);
     }
 }//GEN-LAST:event_saveAsModuleBActionPerformed
 
