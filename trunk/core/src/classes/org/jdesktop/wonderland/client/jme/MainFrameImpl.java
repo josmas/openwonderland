@@ -571,9 +571,15 @@ public class MainFrameImpl extends JFrame implements MainFrame {
      * Set the server URL in the location field
      * @param serverURL the server URL to set
      */
-    public void setServerURL(String serverURL) {
+    public void setServerURL(final String serverURL) {
         this.serverURL = serverURL;
-        serverField.setText(serverURL);
+
+        // issue #719: make sure to do this in the AWT event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                serverField.setText(serverURL);
+            }
+        });
     }
 
     public void connected(boolean connected) {

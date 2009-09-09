@@ -90,9 +90,10 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             mgr.addTransformChangeListener(cell, this);
             mgr.addViewUpdateListener(cell, this);
 
-            // The cell will be added to the UniverseManager when this transaction
-            // completes. At which point we will get a transformChanged callback
-            // as the world transform is calculated
+            // Issue #721: we need to set the transform to the cell's transform
+            // here, since the cell may already exist and we can't count on
+            // getting a transform changed notification until the cell moves
+            updateWorldBounds(cell.getWorldTransform(null));
         } else {
             mgr.removeTransformChangeListener(cell, this);
             mgr.removeViewUpdateListener(cell, this);
