@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -43,8 +44,10 @@ import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacter
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacterParams.GenderConfigElement;
 
 /**
- * Avatar attributes for generating Wonderland avatars
+ * Avatar attributes for generating Wonderland avatars.
+ *
  * @author jkaplan
+ * @author Jordasn Slott <jslott@dev.java.net>
  */
 public class WonderlandCharacterParams implements Cloneable {
     private static final Logger logger =
@@ -63,6 +66,30 @@ public class WonderlandCharacterParams implements Cloneable {
         SHIRT_COLOR, JACKET, HANDS, LEGS, PANTS_COLOR, FEET,
         SHOE_COLOR
     };
+
+    // Default preset selections for the Male avatar configuration
+    private static final Map<ConfigType, String> DEFAULT_MALE_PRESETS = new HashMap();
+    static {
+        DEFAULT_MALE_PRESETS.put(ConfigType.HAIR, "Male_ChinLengthPartLeftShape");
+        DEFAULT_MALE_PRESETS.put(ConfigType.HEAD, "Male C Head");
+        DEFAULT_MALE_PRESETS.put(ConfigType.TORSO, "T Shirt");
+        DEFAULT_MALE_PRESETS.put(ConfigType.JACKET, "No Jacket");
+        DEFAULT_MALE_PRESETS.put(ConfigType.HANDS, "Hands");
+        DEFAULT_MALE_PRESETS.put(ConfigType.LEGS, "Jeans");
+        DEFAULT_MALE_PRESETS.put(ConfigType.FEET, "Tennis Shoes");
+    }
+
+    // Default preset selections for the Female avatar configuration
+    private static final Map<ConfigType, String> DEFAULT_FEMALE_PRESETS = new HashMap();
+    static {
+        DEFAULT_FEMALE_PRESETS.put(ConfigType.HAIR, "Layered_bangShape");
+        DEFAULT_FEMALE_PRESETS.put(ConfigType.HEAD, "Female C Head");
+        DEFAULT_FEMALE_PRESETS.put(ConfigType.TORSO, "T Shirt");
+        DEFAULT_FEMALE_PRESETS.put(ConfigType.JACKET, "No Jacket");
+        DEFAULT_FEMALE_PRESETS.put(ConfigType.HANDS, "Hands");
+        DEFAULT_FEMALE_PRESETS.put(ConfigType.LEGS, "Jeans");
+        DEFAULT_FEMALE_PRESETS.put(ConfigType.FEET, "Converse");
+    }
 
     private final Map<ConfigType, List<ConfigElement>> allElements =
             new EnumMap<ConfigType, List<ConfigElement>>(ConfigType.class);
@@ -86,13 +113,27 @@ public class WonderlandCharacterParams implements Cloneable {
     }
 
     public static WonderlandCharacterParams loadMale() throws IOException {
+        // Load the male configuration file and instantiate a params object
         URL maleURL = WonderlandCharacterParams.class.getResource(MALE_CONFIGS);
-        return new WonderlandCharacterParams(maleURL);
+        WonderlandCharacterParams params = new WonderlandCharacterParams(maleURL);
+
+        // Set the default male presets
+        for (ConfigType type : DEFAULT_MALE_PRESETS.keySet()) {
+            params.setElementPreset(type, DEFAULT_MALE_PRESETS.get(type));
+        }
+        return params;
     }
 
     public static WonderlandCharacterParams loadFemale() throws IOException {
+        // Load the female configuration file and instantiate a params object
         URL femaleURL = WonderlandCharacterParams.class.getResource(FEMALE_CONFIGS);
-        return new WonderlandCharacterParams(femaleURL);
+        WonderlandCharacterParams params = new WonderlandCharacterParams(femaleURL);
+
+        // Set the default female presets
+        for (ConfigType type : DEFAULT_FEMALE_PRESETS.keySet()) {
+            params.setElementPreset(type, DEFAULT_FEMALE_PRESETS.get(type));
+        }
+        return params;
     }
 
     /**
@@ -347,54 +388,59 @@ public class WonderlandCharacterParams implements Cloneable {
             }
         };
 
+        // Attempt to load the configuration file, upon error log and return
+        ConfigList config = null;
         try {
-            ConfigList config = ConfigList.decode(configURL.openStream());
-            allElements.put(ConfigType.GENDER, Arrays.asList((ConfigElement[]) config.getGenders()));
-
-            // Add all of the HEAD elements, sorted alphabetically.
-            List<ConfigElement> headList = Arrays.asList((ConfigElement[]) config.getHeads());
-            Collections.sort(headList, comparator);
-            allElements.put(ConfigType.HEAD, headList);
-
-            // Add all of the HAIR elements, sorted alphabetically.
-            List<ConfigElement> hairList = Arrays.asList((ConfigElement[]) config.getHair());
-            Collections.sort(hairList, comparator);
-            allElements.put(ConfigType.HAIR, hairList);
-
-            // Add all of the TORSO elements, sorted alphabetically.
-            List<ConfigElement> torsoList = Arrays.asList((ConfigElement[]) config.getTorsos());
-            Collections.sort(torsoList, comparator);
-            allElements.put(ConfigType.TORSO, torsoList);
-
-            // Add all of the JACKET elements, sorted alphabetically.
-            List<ConfigElement> jacketList = Arrays.asList((ConfigElement[]) config.getJackets());
-            Collections.sort(jacketList, comparator);
-            allElements.put(ConfigType.JACKET, jacketList);
-
-            // Add all of the HANDS elements, sorted alphabetically.
-            List<ConfigElement> handsList = Arrays.asList((ConfigElement[]) config.getHands());
-            Collections.sort(handsList, comparator);
-            allElements.put(ConfigType.HANDS, handsList);
-
-            // Add all of the LEGS elements, sorted alphabetically.
-            List<ConfigElement> legsList = Arrays.asList((ConfigElement[]) config.getLegs());
-            Collections.sort(legsList, comparator);
-            allElements.put(ConfigType.LEGS, legsList);
-
-            // Add all of the FEET elements, sorted alphabetically.
-            List<ConfigElement> feetList = Arrays.asList((ConfigElement[]) config.getFeet());
-            Collections.sort(feetList, comparator);
-            allElements.put(ConfigType.FEET, feetList);
-
-            // load the first element of each type
-            for (ConfigType type : ConfigType.values()) {
-                List<ConfigElement> el = getElements(type);
-                if (el.size() > 0) {
-                    setElement(type, 0);
-                }
-            }            
+            config = ConfigList.decode(configURL.openStream());
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error loading config from " + configURL, ioe);
+            return;
+        }
+
+        allElements.put(ConfigType.GENDER, Arrays.asList((ConfigElement[]) config.getGenders()));
+
+        // Add all of the HEAD elements, sorted alphabetically.
+        List<ConfigElement> headList = Arrays.asList((ConfigElement[]) config.getHeads());
+        Collections.sort(headList, comparator);
+        allElements.put(ConfigType.HEAD, headList);
+
+        // Add all of the HAIR elements, sorted alphabetically.
+        List<ConfigElement> hairList = Arrays.asList((ConfigElement[]) config.getHair());
+        Collections.sort(hairList, comparator);
+        allElements.put(ConfigType.HAIR, hairList);
+
+        // Add all of the TORSO elements, sorted alphabetically.
+        List<ConfigElement> torsoList = Arrays.asList((ConfigElement[]) config.getTorsos());
+        Collections.sort(torsoList, comparator);
+        allElements.put(ConfigType.TORSO, torsoList);
+
+        // Add all of the JACKET elements, sorted alphabetically.
+        List<ConfigElement> jacketList = Arrays.asList((ConfigElement[]) config.getJackets());
+        Collections.sort(jacketList, comparator);
+        allElements.put(ConfigType.JACKET, jacketList);
+
+        // Add all of the HANDS elements, sorted alphabetically.
+        List<ConfigElement> handsList = Arrays.asList((ConfigElement[]) config.getHands());
+        Collections.sort(handsList, comparator);
+        allElements.put(ConfigType.HANDS, handsList);
+
+        // Add all of the LEGS elements, sorted alphabetically.
+        List<ConfigElement> legsList = Arrays.asList((ConfigElement[]) config.getLegs());
+        Collections.sort(legsList, comparator);
+        allElements.put(ConfigType.LEGS, legsList);
+
+        // Add all of the FEET elements, sorted alphabetically.
+        List<ConfigElement> feetList = Arrays.asList((ConfigElement[]) config.getFeet());
+        Collections.sort(feetList, comparator);
+        allElements.put(ConfigType.FEET, feetList);
+
+        // Load the first element of each type and a base-level default. Further
+        // defaults are set depending upon whether it is a male or female.
+        for (ConfigType type : ConfigType.values()) {
+            List<ConfigElement> el = getElements(type);
+            if (el.size() > 0) {
+                setElement(type, 0);
+            }
         }
     }
 
