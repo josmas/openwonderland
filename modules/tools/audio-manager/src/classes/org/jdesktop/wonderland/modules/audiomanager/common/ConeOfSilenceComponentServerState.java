@@ -40,6 +40,8 @@ public class ConeOfSilenceComponentServerState
             "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
     @XmlElement(name = "name")
     private String name = BUNDLE.getString("ConeOfSilence");
+    @XmlElement(name = "useCellBounds")
+    private boolean useCellBounds = true;
     @XmlElement(name = "fullVolumeRadius")
     private double fullVolumeRadius = 1.5;
     @XmlElement(name = "outsideAudioVolume")
@@ -50,8 +52,9 @@ public class ConeOfSilenceComponentServerState
     }
 
     public ConeOfSilenceComponentServerState(
-            String name, double fullVolumeRadius) {
+            String name, boolean useCellBounds, double fullVolumeRadius) {
         this.name = name;
+	this.useCellBounds = useCellBounds;
         this.fullVolumeRadius = fullVolumeRadius;
     }
 
@@ -67,6 +70,15 @@ public class ConeOfSilenceComponentServerState
     @XmlTransient
     public String getName() {
         return name;
+    }
+
+    public void setUseCellBounds(boolean useCellBounds) {
+	this.useCellBounds = useCellBounds;
+    }
+
+    @XmlTransient
+    public boolean getUseCellBounds() {
+	return useCellBounds;
     }
 
     public void setFullVolumeRadius(double fullVolumeRadius) {
@@ -86,4 +98,5 @@ public class ConeOfSilenceComponentServerState
     public double getOutsideAudioVolume() {
         return outsideAudioVolume;
     }
+
 }
