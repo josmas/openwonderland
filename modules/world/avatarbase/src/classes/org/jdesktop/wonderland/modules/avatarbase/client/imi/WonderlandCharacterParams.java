@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -326,19 +327,64 @@ public class WonderlandCharacterParams implements Cloneable {
         return attributes;
     }
 
+    /**
+     * Loads the configuration (the set of available presets) from a URL that
+     * points to an XML configuration file.
+     *
+     * @param configURL The URL of an XML configuration file
+     */
     protected void loadConfig(URL configURL) {
+        // First clear the list of existing avatar presets
         allElements.clear();
+
+        // Sort based upon the description of the present (rather than the name)
+        // since it is the description that appears in the list.
+        Comparator comparator = new Comparator() {
+            public int compare(Object o1, Object o2) {
+                ConfigElement c1 = (ConfigElement) o1;
+                ConfigElement c2 = (ConfigElement) o2;
+                return c1.getDescription().compareTo(c2.getDescription());
+            }
+        };
 
         try {
             ConfigList config = ConfigList.decode(configURL.openStream());
             allElements.put(ConfigType.GENDER, Arrays.asList((ConfigElement[]) config.getGenders()));
-            allElements.put(ConfigType.HEAD, Arrays.asList((ConfigElement[]) config.getHeads()));
-            allElements.put(ConfigType.HAIR, Arrays.asList((ConfigElement[]) config.getHair()));
-            allElements.put(ConfigType.TORSO, Arrays.asList((ConfigElement[]) config.getTorsos()));
-            allElements.put(ConfigType.JACKET, Arrays.asList((ConfigElement[]) config.getJackets()));
-            allElements.put(ConfigType.HANDS, Arrays.asList((ConfigElement[]) config.getHands()));
-            allElements.put(ConfigType.LEGS, Arrays.asList((ConfigElement[]) config.getLegs()));
-            allElements.put(ConfigType.FEET, Arrays.asList((ConfigElement[]) config.getFeet()));
+
+            // Add all of the HEAD elements, sorted alphabetically.
+            List<ConfigElement> headList = Arrays.asList((ConfigElement[]) config.getHeads());
+            Collections.sort(headList, comparator);
+            allElements.put(ConfigType.HEAD, headList);
+
+            // Add all of the HAIR elements, sorted alphabetically.
+            List<ConfigElement> hairList = Arrays.asList((ConfigElement[]) config.getHair());
+            Collections.sort(hairList, comparator);
+            allElements.put(ConfigType.HAIR, hairList);
+
+            // Add all of the TORSO elements, sorted alphabetically.
+            List<ConfigElement> torsoList = Arrays.asList((ConfigElement[]) config.getTorsos());
+            Collections.sort(torsoList, comparator);
+            allElements.put(ConfigType.TORSO, torsoList);
+
+            // Add all of the JACKET elements, sorted alphabetically.
+            List<ConfigElement> jacketList = Arrays.asList((ConfigElement[]) config.getJackets());
+            Collections.sort(jacketList, comparator);
+            allElements.put(ConfigType.JACKET, jacketList);
+
+            // Add all of the HANDS elements, sorted alphabetically.
+            List<ConfigElement> handsList = Arrays.asList((ConfigElement[]) config.getHands());
+            Collections.sort(handsList, comparator);
+            allElements.put(ConfigType.HANDS, handsList);
+
+            // Add all of the LEGS elements, sorted alphabetically.
+            List<ConfigElement> legsList = Arrays.asList((ConfigElement[]) config.getLegs());
+            Collections.sort(legsList, comparator);
+            allElements.put(ConfigType.LEGS, legsList);
+
+            // Add all of the FEET elements, sorted alphabetically.
+            List<ConfigElement> feetList = Arrays.asList((ConfigElement[]) config.getFeet());
+            Collections.sort(feetList, comparator);
+            allElements.put(ConfigType.FEET, feetList);
 
             // load the first element of each type
             for (ConfigType type : ConfigType.values()) {
@@ -348,11 +394,14 @@ public class WonderlandCharacterParams implements Cloneable {
                 }
             }            
         } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error loading config from " +
-                       configURL, ioe);
+            logger.log(Level.WARNING, "Error loading config from " + configURL, ioe);
         }
     }
 
+    /**
+     * An abstract base class that represents some preset for an avatar. Each
+     * has a name, which is unique within the same kind of preset.
+     */
     public static abstract class ConfigElement {
         private String name;
         private String description;
@@ -404,6 +453,9 @@ public class WonderlandCharacterParams implements Cloneable {
             return true;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int hashCode() {
             int hash = 7;
