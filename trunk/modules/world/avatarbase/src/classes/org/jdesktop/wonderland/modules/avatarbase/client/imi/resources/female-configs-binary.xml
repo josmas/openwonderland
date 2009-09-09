@@ -297,12 +297,11 @@
         <shapes>FemaleFeet_NudeShape</shapes>
     </feet>
     
-    <!-- ALERT: ShoesShape doesn't exist; perhaps should be: FemaleFeet_NudeShape -->
     <feet>
         <name>Bare Feet</name>
         <description>Bare Feet</description>
         <model>assets/models/collada/Avatars/FemaleAvatar/Female_Bind.dae</model>
-        <shapes>ShoesShape</shapes>
+        <shapes>FemaleFeet_NudeShape</shapes>
     </feet>
 
     <!-- LEGS -->
@@ -322,7 +321,7 @@
         <name>Shorts</name>
         <description>Shorts</description>
         <model>assets/models/collada/Clothing/FemaleClothing/FemaleShorts.dae</model>
-        <shapes>LegsNudeShape</shapes>
+        <shapes>Legs_NudeShape</shapes>
         <shapes>ShortsShape</shapes>
     </legs>
 </config-list>
