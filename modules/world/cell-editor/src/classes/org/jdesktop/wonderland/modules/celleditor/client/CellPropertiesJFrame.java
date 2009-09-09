@@ -363,6 +363,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 //            root.updateGeometricState(0, true);
 //            print(root, 0);
 //        }
+
+        invalidate();
+        repaint();
     }
 
     private void print(Spatial n, int level) {
