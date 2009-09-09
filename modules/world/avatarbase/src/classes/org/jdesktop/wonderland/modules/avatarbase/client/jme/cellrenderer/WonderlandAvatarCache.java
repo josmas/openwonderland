@@ -183,6 +183,19 @@ public class WonderlandAvatarCache implements CacheBehavior {
         logger.info("Load Texture URL=" + location.toExternalForm() +
                 " Protocol " + location.getProtocol());
 
+        String evolver = location.getFile();
+        if (evolver.contains("avatars/evolver")) {
+            System.err.println("Orig "+evolver);
+            evolver = evolver.substring(evolver.indexOf("localRepo"));
+            evolver = evolver.substring(evolver.indexOf('/'));
+            System.err.println("TRIMMED "+evolver);
+            try {
+                location = new URL("wlcontent://users@"+location.getHost()+":"+location.getPort()+"/"+ evolver);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(WonderlandAvatarCache.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            System.err.println("NEW "+location.toExternalForm());
+        }
         // XXX HACK
         // If the protocl is "file", then check to see if we are taking about
         // a .bhf file. In this case, we lop off the path with some hard-coded
@@ -208,7 +221,12 @@ public class WonderlandAvatarCache implements CacheBehavior {
                 }
 //            }
         }
-        return TextureManager.loadTexture(location);
+        try {
+            return TextureManager.loadTexture(location);
+        } catch (Exception e) {
+            logger.warning("Error loading texture "+location.toExternalForm());
+            return null;
+        }
     }
 
     public void createCachePackage(OutputStream arg0) {
