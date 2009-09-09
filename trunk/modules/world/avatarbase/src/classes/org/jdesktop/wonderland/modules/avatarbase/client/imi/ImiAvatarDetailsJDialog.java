@@ -60,18 +60,23 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
     private static final Logger LOGGER =
             Logger.getLogger(ImiAvatarDetailsJDialog.class.getName());
+
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
-    private final Cursor waitCursor =
-            Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+
+    private final Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
     private final Cursor normalCursor = Cursor.getDefaultCursor();
+
     // The avatar we are currently configuring
-    private ImiAvatar avatar;
+    private ImiAvatar avatar = null;
+
     // The original avatar name when the dialog is first opened. This is used
     // to determine whether the avatar name has actually changed.
-    private String originalAvatarName;
+    private String originalAvatarName = null;
+
     // The current set of attributes for the avatar configuration
-    private WonderlandCharacterParams currentParams;
+    private WonderlandCharacterParams currentParams = null;
+
     // This boolean indicates whether the values of the GUI components are being
     // set programmatically. In such a case, we do not want to generate calls
     // to the avatar system.
@@ -85,9 +90,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Hair, and apply immediate
         hairComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     comboBoxChanged(hairComboBox, ConfigType.HAIR);
                 }
             }
@@ -95,9 +99,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Head, and apply immediate
         headComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     comboBoxChanged(headComboBox, ConfigType.HEAD);
                 }
             }
@@ -105,9 +108,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Torso, and apply immediate
         torsoComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     comboBoxChanged(torsoComboBox, ConfigType.TORSO);
                 }
             }
@@ -115,9 +117,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Legs, and apply immediate
         legsComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     comboBoxChanged(legsComboBox, ConfigType.LEGS);
                 }
             }
@@ -125,9 +126,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Jacket, and apply immediate
         jacketComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     comboBoxChanged(jacketComboBox, ConfigType.JACKET);
                 }
             }
@@ -135,9 +135,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Hands, and apply immediate
         handsComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     comboBoxChanged(handsComboBox, ConfigType.HANDS);
                 }
             }
@@ -145,9 +144,8 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for changes in the value of Feet, and apply immediate
         feetComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (!setLocal) {
+                if (setLocal == false) {
                     comboBoxChanged(feetComboBox, ConfigType.FEET);
                 }
             }
@@ -155,59 +153,50 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for the Hair Color.. button click to configure the its color
         hairButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.HAIR_COLOR,
-                        BUNDLE.getString("Hair_Color"));
+                configureColor(ConfigType.HAIR_COLOR, BUNDLE.getString("Hair_Color"));
             }
         });
 
+        // For now, do not display the Skin Color button...
+        skinButton.setVisible(false);
+        
         // Listen for the Skin Color.. button click to configure the its color
         skinButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.SKIN_COLOR,
-                        BUNDLE.getString("Skin_Color"));
+                configureColor(ConfigType.SKIN_COLOR, BUNDLE.getString("Skin_Color"));
             }
         });
 
         // Listen for the Shirt Color.. button click to configure the its color
         torsoButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.SHIRT_COLOR,
-                        BUNDLE.getString("Shirt_Color"));
+                configureColor(ConfigType.SHIRT_COLOR, BUNDLE.getString("Shirt_Color"));
             }
         });
 
         // Listen for the Pants Color.. button click to configure the its color
         pantsButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.PANTS_COLOR,
-                        BUNDLE.getString("Pants_Color"));
+                configureColor(ConfigType.PANTS_COLOR, BUNDLE.getString("Pants_Color"));
             }
         });
 
         // Listen for the Shoe Color.. button click to configure the its color
         shoeButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                configureColor(ConfigType.SHOE_COLOR,
-                        BUNDLE.getString("Shoe_Color"));
+                configureColor(ConfigType.SHOE_COLOR, BUNDLE.getString("Shoe_Color"));
             }
         });
 
         // Listen when the gender radio buttons are selected. Update the gender
         // and apply
         maleRadioButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 // Reset the GUI with a new male avatar and apply the changes
                 try {
-                    if (!setLocal) {
-                        WonderlandCharacterParams params =
-                                WonderlandCharacterParams.loadMale();
+                    if (setLocal == false) {
+                        WonderlandCharacterParams params = WonderlandCharacterParams.loadMale();
                         setAttributes(params);
                         apply();
                     }
@@ -219,13 +208,11 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         });
 
         femaleRadioButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 // Reset the GUI with a new female avatar and apply the changes
                 try {
-                    if (!setLocal) {
-                        WonderlandCharacterParams params =
-                                WonderlandCharacterParams.loadFemale();
+                    if (setLocal == false) {
+                        WonderlandCharacterParams params = WonderlandCharacterParams.loadFemale();
                         setAttributes(params);
                         apply();
                     }
@@ -240,7 +227,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // original settings when the dialog was first opened and close the
         // dialog
         cancelButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 // Revert to the avatar currently set and close the window
                 AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
@@ -253,7 +239,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // avatar. We do not need to apply() again, since that is done for
         // each change.
         useButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 use();
             }
@@ -262,7 +247,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // For the Randomize button, select a random set of attributes and
         // apply
         randomizeButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 currentParams.randomize();
                 updateComboBoxes();
@@ -272,7 +256,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Listen for when the window is close and do a cancel()
         addWindowListener(new WindowAdapter() {
-
             @Override
             public void windowClosing(WindowEvent e) {
                 // Revert to the avatar currently set and close the window
@@ -294,7 +277,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
             public void avatarRemoved(AvatarSPI removed) {
                 // If the avatar remove equals this avatar, then close this
                 // dialog
-                if ((avatar != null) && avatar.equals(removed)) {
+                if (avatar != null && avatar.equals(removed) == true) {
                     setVisible(false);
                 }
             }
@@ -306,9 +289,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * on the first execution of getImiAvatarDetailsJDialog()
      */
     private static class DetailsDialogHolder {
-
-        private final static ImiAvatarDetailsJDialog d =
-                new ImiAvatarDetailsJDialog();
+        private final static ImiAvatarDetailsJDialog d = new ImiAvatarDetailsJDialog();
     }
 
     /**
@@ -334,7 +315,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // call to setAttributes() happens in the AWT Event Thread.
         final WonderlandCharacterParams params = avatar.getAvatarParams(true);
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 setAttributes(params);
                 apply();
@@ -360,7 +340,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * @param attributes The attribute of the avatar configuration
      */
     public void setAttributes(WonderlandCharacterParams attributes) {
-        if (!EventQueue.isDispatchThread()) {
+        if (EventQueue.isDispatchThread() == false) {
             LOGGER.severe("SET ATTRIBUTES NOT IN AWT EVENT THREAD!");
         }
 
@@ -390,8 +370,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      *
      * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
-    private void populateComboBox(
-            JComboBox box, ConfigType type, String prefix) {
+    private void populateComboBox(JComboBox box, ConfigType type, String prefix) {
         // Make sure we block out any events that happen because the elements
         // in the combo box are being updated
         setLocalChanges(true);
@@ -471,12 +450,12 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         setLocalChanges(true);
         try {
             GenderConfigElement gender =
-                    (GenderConfigElement) currentParams.getElement(
-                    ConfigType.GENDER);
+                    (GenderConfigElement) currentParams.getElement(ConfigType.GENDER);
             if (gender.getGender() == GenderConfigElement.MALE) {
                 maleRadioButton.setSelected(true);
                 femaleRadioButton.setSelected(false);
-            } else {
+            }
+            else {
                 maleRadioButton.setSelected(false);
                 femaleRadioButton.setSelected(true);
             }
@@ -556,10 +535,9 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Make sure the name text field is not empty.
         final String newAvatarName = nameTextField.getText().trim();
-        if ((newAvatarName == null) || newAvatarName.equals("")) {
+        if (newAvatarName == null || newAvatarName.equals("") == true) {
             String msg = "Please enter an avatar name before saving.";
-            JOptionPane.showMessageDialog(
-                    this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -567,30 +545,26 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // XXX Workaround for bug in content repo XXX
         if (newAvatarName.indexOf(" ") != -1) {
             String msg = "The avatar name cannot include spaces, sorry!";
-            JOptionPane.showMessageDialog(
-                    this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // Check to see that the avatar name is not already taken. We only check
         // if the name has actually changed.
         AvatarSPI oldAvatar = registry.getAvatarByName(newAvatarName);
-        if (!newAvatarName.equals(originalAvatarName) && (oldAvatar != null)) {
+        if (newAvatarName.equals(originalAvatarName) == false && oldAvatar != null) {
             String msg = "The avatar name " + newAvatarName + " is already" +
                     " taken. Please enter anothr name.";
-            JOptionPane.showMessageDialog(
-                    this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // If we are not changing the name of the avatar, then we just save the
         // avatar, close the window and return. We do this in a thread to make
         // sure the UI does not block without indication.
-        if (newAvatarName.equals(originalAvatarName)) {
-//            logger.warning("Original avatar name equals new avatar name, " + originalAvatarName);
+        if (newAvatarName.equals(originalAvatarName) == true) {
             setBusy(true);
             new Thread() {
-
                 @Override
                 public void run() {
                     avatar.setAvatarParams(currentParams);
@@ -599,7 +573,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
                     // Close the dialog in the AWT Event Thread
                     SwingUtilities.invokeLater(new Runnable() {
-
                         public void run() {
                             setBusy(false);
                             setVisible(false);
@@ -618,7 +591,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // all of this in a thread so that we do not block the GUI
         setBusy(true);
         new Thread() {
-
             @Override
             public void run() {
                 ImiAvatar newAvatar = ImiAvatar.createAvatar(newAvatarName);
@@ -634,7 +606,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
                 // Close the dialog in the AWT Event Thread
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         setBusy(false);
                         setVisible(false);
@@ -651,8 +622,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Talk to the IMI configuration manager and save it. It takes care
         // of adding it to the list of registered avatars.
-        ImiAvatarConfigManager m =
-                ImiAvatarConfigManager.getImiAvatarConfigManager();
+        ImiAvatarConfigManager m = ImiAvatarConfigManager.getImiAvatarConfigManager();
         try {
             m.saveAvatar(avatar);
         } catch (java.lang.Exception excp) {
@@ -672,22 +642,18 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
         // Update the avatar in the background thread.
         Runnable runner = new Runnable() {
-
             public void run() {
                 // Fetch the name of the avatar from the text field first for
                 // the loading messages and also the primary view cell
-                ViewCell cell =
-                        ClientContextJME.getViewManager().getPrimaryViewCell();
+                ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
                 String name = nameTextField.getText().trim();
 
                 // Ask the avatar to generate its character. If null, then
                 // clean up the loading message and cursor and return.
-                WlAvatarCharacter character =
-                        ImiAvatar.getAvatarCharacter(currentParams);
+                WlAvatarCharacter character = ImiAvatar.getAvatarCharacter(currentParams);
                 if (character == null) {
                     LoadingInfo.finishedLoading(cell.getCellID(), name);
                     SwingUtilities.invokeLater(new Runnable() {
-
                         public void run() {
                             setBusy(false);
                         }
@@ -701,7 +667,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
                 // Set the cursor in the AWT Event Thread.
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         setBusy(false);
                     }
@@ -716,11 +681,13 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * with or not
      */
     private void setBusy(boolean isBusy) {
-        if (isBusy) {
+        if (isBusy == true) {
             setCursor(waitCursor);
-        } else {
+        }
+        else {
             setCursor(normalCursor);
         }
+        
         useButton.setEnabled(!isBusy);
         cancelButton.setEnabled(!isBusy);
         nameLabel.setEnabled(!isBusy);
@@ -756,6 +723,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      * always regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;

@@ -25,9 +25,9 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="namePanel" pref="325" max="32767" attributes="0"/>
-          <Component id="genderPanel" pref="325" max="32767" attributes="0"/>
-          <Component id="mainConfigPanel" alignment="0" pref="325" max="32767" attributes="0"/>
+          <Component id="namePanel" pref="349" max="32767" attributes="0"/>
+          <Component id="genderPanel" pref="349" max="32767" attributes="0"/>
+          <Component id="mainConfigPanel" alignment="0" pref="349" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="randomizeButton" min="-2" max="-2" attributes="0"/>
@@ -35,7 +35,7 @@
           </Group>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="buttonPanel" pref="301" max="32767" attributes="0"/>
+              <Component id="buttonPanel" pref="337" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
