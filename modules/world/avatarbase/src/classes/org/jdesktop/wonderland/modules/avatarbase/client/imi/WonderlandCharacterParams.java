@@ -659,10 +659,29 @@ public class WonderlandCharacterParams implements Cloneable {
     }
 
     public static class HeadConfigElement extends ModelConfigElement {
+        private SkinColorConfigElement skinTone;
+
+        @XmlElement(name = "skin-tone")
+        public SkinColorConfigElement getSkinTone() {
+            return skinTone;
+        }
+
+        public void setSkinTone(SkinColorConfigElement skinTone) {
+            this.skinTone = skinTone;
+        }
+
+
         @Override
         public void apply(CharacterParams attrs) {
             attrs.setHeadAttachment(getModel());
             attrs.getMetaData().put(ConfigType.HEAD.toString(), getName());
+            if (skinTone != null) {
+                logger.warning("SETTING SKIN TONE " +
+                        skinTone.getR() + " " + skinTone.getG() +
+                        " " + skinTone.getB());
+                attrs.setSkinTone(skinTone.getR(), skinTone.getG(), skinTone.getB());
+                attrs.setUsePhongLightingForHead(true);
+            }
         }
 
         /**
@@ -674,6 +693,10 @@ public class WonderlandCharacterParams implements Cloneable {
         public ConfigElement clone(ConfigElement element) {
             if (element == null) {
                 element = new HeadConfigElement();
+            }
+
+            if (skinTone != null) {
+                ((HeadConfigElement) element).skinTone = (SkinColorConfigElement) skinTone.clone(null);
             }
             return super.clone(element);
         }
@@ -880,14 +903,12 @@ public class WonderlandCharacterParams implements Cloneable {
         private float g;
         private float b;
 
-        @XmlTransient
         public void setRGB(float r, float g, float b) {
             this.r = r;
             this.g = g;
             this.b = b;
         }
 
-        @XmlTransient
         public void setColor(Color color) {
             float components[] = new float[3];
             color.getColorComponents(components);

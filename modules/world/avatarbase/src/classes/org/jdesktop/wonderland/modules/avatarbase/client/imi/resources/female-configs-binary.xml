@@ -11,43 +11,66 @@
         <name>Female C Head</name>
         <description>Caucasian</description>
         <model>assets/models/collada/Heads/Binary/FemaleCHead.bhf</model>
+        <skin-tone>
+            <r>1.0</r><g>0.5451</g><b>0.3725</b>
+        </skin-tone>
     </heads>
     <heads>
         <name>Asian Head</name>
         <description>Asian</description>
         <model>assets/models/collada/Heads/Binary/AsianFemaleHead.bhf</model>
+        <skin-tone>
+            <r>1.0</r><g>0.5451</g><b>0.3725</b>
+        </skin-tone>
     </heads>
     <heads>
         <name>AA Head</name>
         <description>African American</description>
         <model>assets/models/collada/Heads/Binary/FemaleAAHead.bhf</model>
+        <skin-tone>
+            <r>0.9490</r><g>0.6235</g><b>0.4784</b>
+        </skin-tone>
     </heads>
    
     <heads>
         <name>Female Hispanic Head</name>
         <description>Hispanic</description>
         <model>assets/models/collada/Heads/Binary/FemaleHispanicHead.bhf</model>
+        <skin-tone>
+            <r>0.9490</r><g>0.6235</g><b>0.4784</b>
+        </skin-tone>
     </heads>
     
     <!-- ALERT: Removed FG_Female_AF_Head02.bhf -->
-  
+
+  <!-- The hair does not look right on this head, removing for now
     <heads>
         <name>FaceGen High-Poly Head 01</name>
         <description>June (high poly)</description>
         <model>assets/models/collada/Heads/Binary/FG_Female01HighPoly.bhf</model>
+        <skin-tone>
+            <r>0.9333</r><g>0.6313</g><b>0.5254</b>
+        </skin-tone>
     </heads>
+    -->
     
      <!-- ALERT: Added Head -->
     <heads>
         <name>FaceGen Low-Poly Head 01</name>
         <description>June (low poly)</description>
         <model>assets/models/collada/Heads/Binary/FG_Female01LowPoly.bhf</model>
+        <skin-tone>
+            <r>0.9333</r><g>0.6313</g><b>0.5254</b>
+        </skin-tone>
     </heads>
     
     <heads>
         <name>FaceGen High-Poly Head 02</name>
         <description>April (high poly)</description>
         <model>assets/models/collada/Heads/Binary/FG_Female02HighPoly.bhf</model>
+        <skin-tone>
+            <r>0.5059</r><g>0.2549</g><b>0.1490</b>
+        </skin-tone>
     </heads>
     
     <!-- ALERT: Removed FG_FemaleHead01.bhf -->
