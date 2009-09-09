@@ -124,40 +124,10 @@ public class ImportSessionFrame extends javax.swing.JFrame {
     public ImportSessionFrame() {
         initComponents();
         tableModel = (DefaultTableModel) importTable.getModel();
-
-        // The I18N code below does not seem to work, the table headers
-        // are never rendered and neither is table content
-//                new DefaultTableModel() {
-//
-//            String[] names = new String[]{
-//                BUNDLE.getString("Wonderland_Name"),
-//                BUNDLE.getString("Original_Model_Name")
-//            };
-//            Class[] types = new Class[]{
-//                String.class,
-//                String.class
-//            };
-//            boolean[] canEdit = new boolean[]{
-//                false,
-//                false
-//            };
-//
-//            @Override
-//            public String getColumnName(int column) {
-//                return names[column];
-//            }
-//
-//            @Override
-//            public Class getColumnClass(int columnIndex) {
-//                return types[columnIndex];
-//            }
-//
-//            @Override
-//            public boolean isCellEditable(int rowIndex, int columnIndex) {
-//                return canEdit[columnIndex];
-//            }
-//        };
-//        importTable.setModel(tableModel);
+        tableModel.setColumnIdentifiers(new Object[] {
+                BUNDLE.getString("Wonderland_Name"),
+                BUNDLE.getString("Original_Model_Name")
+        });
 
         importTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
