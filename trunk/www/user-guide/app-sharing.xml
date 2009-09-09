@@ -1,0 +1,351 @@
+<!DOCTYPE html PUBLIC "-//Tigris//DTD XHTML 1.0 Transitional//EN"
+"http://style.tigris.org/tigris_transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Using X11 Shared Applications</title>
+  <!--
+  <style type="text/css">
+    table, th, td {
+	border-style: none;
+    }
+    table {background-color:#eee}
+    th {font-family:lucida,arial,sans-serif; color:#fff; background-color:#8b8}
+    td {font-family:lucida,arial,sans-serif; color:#333; background-color:#fff}
+  </style>
+  -->
+</head>
+<body>
+<div id="projectdocumentview" class="app">
+
+<center>
+<h1>Using Shared X11 Applications</h1>
+
+   |
+   <a href="#SummaryOfActions">Quick Start</a> | 
+   <a href="#intro">Intro</a> | 
+   <a href="#server-apps">Server Apps</a> | 
+   <a href="#creating">Creating Shared Apps</a> | 
+   <a href="#using">Using Shared Apps</a> | 
+   <a href="#control">Sharing Control</a> | 
+   <a href="#manipulating">Manipulating</a> | 
+   <a href="#persist">Persistence</a> | 
+</center>
+
+<h3><a name="SummaryOfActions"></a>Quick Start</h3> 
+
+<p>
+Here is a quick summary of the actions a user can perform on an X11 shared application window. "Right" and "Left" in the table below refer to the right and left mouse buttons.
+</p>
+
+<ul>
+  <table border="1" cellpadding="2" cellspacing="2" width="95%"> 
+      <tr bgcolor="#6b7f93"> 
+        <th valign="top" width="15%"><font color="white">Action</font></th> 
+        <th valign="top"><font color="white">User Events</font></th> 
+      </tr>  
+      <tr> 
+        <th valign="top" align="left">Take Control</th> 
+        <td valign="top" align="left">
+          <p>
+	  Click <b>Right</b> on the window border to bring up the Window Menu. Select <b>Take Control</b>.
+	  <br>
+	  -or-
+	  <br>
+          Click <b>Shift-Left</b> on the window border or window interior.
+          </p>
+        </td> 
+      </tr> 
+      <tr> 
+        <th valign="top" align="left">Release Control</th> 
+        <td valign="top" align="left">
+	  <p>
+	  Click <b>Right</b> on the window border to bring up the Window Menu. Select <b>Release Control</b>.
+	  <br>
+	  -or-
+	  <br>
+	  Click <b>Shift-Left</b> on the window.
+	  <br>
+	  -or-
+	  <br>
+	  Click <b>Left</b> on the <b>Release App Control</b> HUD button which appears in the upper right
+	  corner of the Wonderland window when you take control of an app.
+          </p>
+	</td> 
+      </tr> 
+      <tr>
+        <th valign="top" align="left">Move App Cell</th> 
+        <td valign="top" align="left">
+          <p>
+	  Click <b>Right</b> on the window border to bring up the Window Menu. Select <b>Edit</b>.
+	  A translate affordance (arrows) will appear. <b>Drag-Left</b> on the arrows  
+	  to move the entire app cell.
+        </td> 
+      </tr> 
+      <tr>
+        <th valign="top" align="left">Rotate App Cell</th> 
+        <td valign="top" align="left">
+          <p>
+	  Click <b>Right</b> on the window border to bring up the Window Menu. Select <b>Edit</b>.
+	  Click the rotate icon of the HUD Edit dialog which appears. <b>Drag-Left</b> on the 
+	  rotate afforances to rotate the entire app cell.
+        </td> 
+      </tr> 
+      <tr>
+        <th valign="top" align="left">Move Secondary Window</th> 
+        <td valign="top" align="left">
+          <p>
+	  A secondary window is a window which appears to support activities in the main (primary)
+	  app window. For example, the Firefox bookmark organizer dialog. To move such a window, 
+	  <b>Drag-Left</b> on the window border.
+        </td> 
+      </tr> 
+      <tr> 
+        <th valign="top" align="left">Move to Top</th> 
+        <td valign="top" align="left">
+          <p>
+	  <b>Click-Left</b> on window border moves window to top of window stack.
+	  <p>
+	   <font color="red">NOTE:</font> Unlike GNOME you cannot move a window to the top of the stack by clicking on the interior of the window. You must click on the border.
+	  </p>
+	</td> 
+      </tr> 
+      <tr> 
+        <th valign="top" align="left">Resize </th> 
+        <td valign="top" align="left">
+          <p>
+	  Move cursor over resize corner (bottom right part of border) and then <b>Drag-Left</b>.
+	  </p>
+	</td> 
+      </tr> 
+      <tr> 
+        <th valign="top" align="left">Close</th> 
+        <td valign="top" align="left">
+          <p>
+	  Move cursor into close button on the right side of the header and <b>Click-Left</b>.
+	  <br>
+	  Note: closing the main window terminates the application.
+	  </p>
+	</td> 
+      </tr> 
+  </table>
+</ul>
+
+<h3><a name="intro"></a>Introduction</h3> 
+
+<p>
+Wonderland provides the ability to run and share different types of applications in the world. This document describes the use of shared X11 applications. You can also run other Wonderland 2D and 3D applications such as the multi-user PDF Viewer and the SVG Whiteboard.
+
+<!--
+TODO: add to the above list:
+ the <a href=04-telephony.html#virtual-phone">virtual telephone</a>, and the <a href="04-recording.html#audio">audio recorder</a>, but these are documented separately.</p>
+-->
+
+<p>
+Your Wonderland system must be pre-configured to support X11 application sharing. The Wonderland wiki contains technical documentation explaining how to set up shared X11 application support:</p>
+
+<a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandConfigureSharedApps">
+http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandConfigureSharedApps</a>
+<p>
+In order of users to be able to create apps in the world, the system adminstrator must specify the list of apps which may be created. Only these apps may be created. Refer to the above document for instructions on how to specify this list. 
+
+<h3><a name="server-apps"></a>Server Applications</h3> 
+
+<p>
+All X11 Applications which run within the world are run on a Solaris or Linux server machine. These apps
+are run by the Shared Application Server (SAS). The output of these SAS applications are broadcast to the 
+Wonderland clients.
+<br><br>
+Notes for Wonderland 0.4 users: 
+<br><br>
+1. In Wonderland 0.4 users could run X11 applications on the local clients. This feature is not supported
+in Wonderland 0.5. But a similar effect can be achieved by configuring the SAS to run on a Solaris or Linux
+client machine. Refer to the administration document for details.
+<br><br>
+2. The older 0.4 name for the SAS was Server Master Client (SMC).
+<br><br>
+
+<a name="creating"><h3>Creating Shared Applications</h3></a>
+<p>
+To create (or insert) an X11 shared app into the world click on <b>Insert</b> in the main menu and 
+select <b>Component</b>. The Insert Component Dialog will appear. Find the name of the app in the 
+scrolling list and select it. Then click <b>Left</b> on the <b>Insert</b> button. In a few seconds 
+the app will appear a "reasonable" distance away from your avatar. 
+<br><br>
+When the app appears, you can click <b>Right</b> on the window border to bring up the
+Window Menu. This menu contains various entries which can be used to manipulate the window.
+<br><br>
+If you select <b>Edit</b> on the Window Menu the HUD Cell Edit dialog appears at the bottom of the 
+main window. In addition, the translate affordance appears. This is a set of three arrows, each pointing
+along one of the cell local axes. <b>Drag-Left</b> on an arrow moves the cell in that direction. 
+When you move the cell, all app windows within the cell move with it.
+<br><br>
+The cell can also be rotated. If you click <b>Left</b> on the left (Translate) button of the 
+Edit Dialog the translate affordance disappears. Then click <b>Left</b> on the middle (Rotate) button
+of the Edit Dialog. The rotate affordance appears. <b>Drag-Left</b> on one of the affordance bands
+rotates the cell in that direction. Rotating the cell rotates all of the app windows within it.
+</p>
+<p>
+Note: the Edit Dialog also provides a Scale affordance. Scaling app cells is not recommended.
+It is much better to resize individual windows within the cell by using their resize corners.
+<p>
+
+<a name="using"><h3>Using Shared Applications</h3></a>
+
+<p>
+When you first create a shared application, the window will have a <b>red</b> border.
+Red indicates that you do not have control of the application. In other words, the application is not listening to your mouse and keyboard. 
+
+<!-- TODO: add
+ like the three red borders shown in the illustration below. </p>
+
+<img src="images/shared-apps-red.png">
+-->
+</p>
+
+<p>
+To use an application, you must first "take control" of it. To do this, click <b>Right</b> on the 
+window border. The Window Menu will appear. One of the entries in this menu will be <b>Take Control</b>.
+Select this item (by clicking <b>Left</b>) to take control of the app. The border on the window will turn <b>green</b>. Another way to take control is to click <b>Shift-Left</b> on the window border.
+
+<!-- TODO: add: <img src="images/shared-apps-green.png"> -->
+
+<br><br>
+Note: taking control of any window within an app cell takes control of all windows of that app.
+
+<p>
+When you have control of the application it means that the app is now listening to you. Any key and mouse events you generate will be sent to the application. (Note that the cursor must be over the window for the application to receive events). In this mode, all mouse and keyboard events go to the application and not the avatar, so you are unable to move while controlling an application.
+</p>
+
+<p>
+While you are controlling an application, the border around the application
+window for other people will be <b>red</b> to indicate that they do not
+have control of the application. Others will, however, see your name in the upper right corner of the window, allowing them to see who does have control.
+</p>
+
+<p>
+When you are done using the application and want to move your avatar you need to release control of the app.
+To do this, click <b>Right</b> to bring up the Window Menu and select the <b>Release Control</b> item.
+(Or click <b>Shift-Left</b> over the window border). 
+At this point, the color of the border will return to red. 
+If this is the last window you were controlling, the mouse and keyboard switch to controlling the avatar again. 
+</p>
+When you first take control of an app window, a HUD button <b>Release App Control</b> appears. If you press this button (by clicking <b>Left</b> on it) control will be released for all apps you control. This is another way of releasing control.
+
+<a name="control"><h3>Sharing Control of Applications</h3></a>
+
+<p>
+If you are working with another person in Wonderland using the same application, you can trade control back and forth. If you are controlling an application and another person wants to "drive," that user can <b>Shift-Left</b> on the application window. The border around this person's window will turn green and the border around the application window in your copy of the world will turn red to indicate that you no longer have control. Note that when another person takes control and your window's border goes red, your mouse and keyboard will automatically change to controlling the avatar. To retake control of the application, you merely need to <b>Shift-Left</b> on the window again.
+</p>
+
+<p>
+There is currently no mechanism in Wonderland to assist in
+arbitrating the exchanging of application control--it must be handled 
+person-to-person via voice conversations. We are investigating
+future features which will help prevent control from accidentally being taken away.
+</p>
+
+<a name="manipulating"><h3>Manipulating Application Windows</h3></a>
+
+The methods available to move and rotate an app cell were described above. When you move or rotate
+an app cell, all windows within it move or rotate. You can also independently move "secondary" windows
+within the app cell. A secondary window is a window which appears in support of the activities in the 
+main app window. An example is the Firefox Bookmark Organizer dialog.
+<p>
+Here are some of the things you can do to secondary windows:
+</p>
+<p>
+<b>Bring to Front </b><br><br>
+If you have multiple app windows open within the same app cell and the window you want to view is obscured
+by other windows, you can click <b>Right</b> to bring up the
+Window Menu and select the <b>To Front</b> (or click <b>Left</b> on the window border). This will make
+the selected window the topmost window in the app's window stack. The window will be unobscured by any
+other windows in that app. (Note that, unlike other windowing systems, you cannot bring a window to the front by clicking on the window interior; you must click on the window border).
+</p>
+<p>
+<b>Move to Back </b><br><br>
+You can also move a window to the bottom of the app's window stack. To do this, click <b>Right</b> 
+to bring up the Window Menu and select the <b>To Back</b>. This will make the window immediately
+underneath it the new topmost window.
+</p>
+
+<p>
+<b>Move Up, Down, Side-to-Side</b><br><br>
+To move a secondary window up, down, and from side to side in its startup plane
+<b>Drag-Left</b> on the window border. When you release the mouse button, the window will remain where you put it. You can only move secondary windows, not the main app window.
+</p>
+
+<p>
+<b>Resize</b><br><br>
+To resize a window, move the cursor over the bottom right part of the window
+border. When you are in the right place the corner will turn yellow. <b>Drag-Left</b> on this corner. 
+Dragging the mouse forward (or backward) will increase (or decrease) the height of the window.
+Dragging the mouse to the left (or to the right) will increase 
+(or decrease) the width of the window. The width and height may be changed
+at the same time. Release the mouse button to end the
+resize operation.
+</p>
+
+<p>
+Note: When you perform a move or rotate operation, other users will see the
+changes as they happen. The results of a resize operation, however, are
+not seen by other users until the resize operation is completed.
+</p>
+
+<h3><a name="persist">Application Persistence</h3></a>
+
+When you create an app cell in the world, that cell will persist in the world until a 
+cold start of the server occurs.
+<br><br>
+If you warm start the server, the app cell will still exist at the place you last left it.
+The cell will persist but the app will be restarted. (Therefore, there is no X11 app state
+which persists after a warm start).
+
+<!-- TODO: move to admin doc
+<h3><a name="concurrent-ff-oo">Concurrent Firefox and OpenOffice Applications</h3></a>
+
+<p>
+This section explains how to get multiple concurrent Firefox and OpenOffice applications to work in a single Wonderland room.
+</p>
+
+<p>
+In order to get multiple concurrently usable firefox main applications in
+one room, create a Shared Apps menu entry for each one. Each menu
+entry must use a different profile (specified by the <code>firefox -P</code>
+argument).
+</p>
+
+<p>
+If you try to open two instances with the same menu entry (and
+therefore the same profile) firefox will prevent this by displaying an
+error message window.
+</p>
+
+<p>
+If you try to open two instances with Firefox's File -> New Window you
+will only be able to interact with the newly created window. The
+original window may not respond to input. If you dismiss the newly
+created window the original window should then respond. (This is
+a bug in Wonderland (179) which is planned to be addressed in Release 0.5).
+</p>
+
+<p>
+OpenOffice is similar. In order to get multiple concurrently usable
+OpenOffice main applications in the same room, create a Shared Apps menu
+entry for each one. Each menu entry must use a separate open office
+"instance" name (specified with the <code>-env</code> argument).
+</p>
+
+<p>
+If you try to open two OpenOffice instances with the same menu entry OpenOffice
+will notice this and should make this a no-op operation.
+</p>
+
+<p>
+If you try to open two instances with OpenOffice's File -> New or Open menus
+you will only be able to interact with the newly created window. The
+original window may not respond to input. If you dismiss the newly
+created window the original window should then respond. (Again, this is
+a bug in Wonderland (179) which is planned to be addressed in Release 0.5).
+</p>
+</html
