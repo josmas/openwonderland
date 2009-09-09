@@ -52,6 +52,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
     private String name = "COS";
 
+    private boolean useCellBounds;
+
     private double fullVolumeRadius = 1.6;
 
     private double outsideAudioVolume = 0;
@@ -84,6 +86,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
 	name = cs.getName();
 
+	useCellBounds = cs.getUseCellBounds();
+
         fullVolumeRadius = cs.getFullVolumeRadius();
 
 	outsideAudioVolume = cs.getOutsideAudioVolume();
@@ -103,8 +107,9 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             state = new ConeOfSilenceComponentServerState();
         }
 
-        state.setFullVolumeRadius(fullVolumeRadius);
         state.setName(name);
+	state.setUseCellBounds(useCellBounds);
+        state.setFullVolumeRadius(fullVolumeRadius);
         state.setOutsideAudioVolume(outsideAudioVolume);
 
         return super.getServerState(state);
@@ -140,6 +145,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 	addProximityListener(live);
     }
 
+    ConeOfSilenceProximityListener proximityListener;
+
     private void addProximityListener(boolean live) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
@@ -150,17 +157,23 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             return;
         }
 
+	if (proximityListener != null) {
+	    component.removeProximityListener(proximityListener);
+	}
+
         // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
             BoundingVolume[] bounds = new BoundingVolume[1];
-            bounds[0] = new BoundingSphere((float) fullVolumeRadius, new Vector3f());
 
-	    //if (proximityListener != null) {
-	    //    component.removeProximityListener(proximityListener);
-	    //}
+	    if (useCellBounds == true) {
+		bounds[0] = cellRef.get().getLocalBounds();
+		logger.warning("COS Using cell bounds:  " + bounds[0]);
+	    } else {
+                bounds[0] = new BoundingSphere((float) fullVolumeRadius, new Vector3f());
+		logger.warning("COS Using radius:  " + bounds[0]);
+	    }
 
-            ConeOfSilenceProximityListener proximityListener = 
-		new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
+            proximityListener = new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
 
             component.addProximityListener(proximityListener, bounds);
         }
