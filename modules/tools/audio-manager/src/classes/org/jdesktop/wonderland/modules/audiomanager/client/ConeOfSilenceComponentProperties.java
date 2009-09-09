@@ -45,6 +45,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private CellPropertiesEditor editor = null;
     private String originalName = null;
+    private boolean originalUseCellBounds = true;
     private double originalFullVolumeRadius = 0.0;
     private int originalOutsideAudioVolume = 0;
     private SpinnerNumberModel fullVolumeRadiusModel = null;
@@ -64,6 +65,8 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         // Listen for changes to the text field and spinner
         nameTextField.getDocument().addDocumentListener(
                 new NameTextFieldListener());
+
+	useCellBoundsRadioButton.addChangeListener(new UseCellBoundsChangeListener());
         fullVolumeRadiusModel.addChangeListener(new RadiusChangeListener());
     }
 
@@ -102,9 +105,10 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         }
 
         originalName = state.getName();
+	originalUseCellBounds = state.getUseCellBounds();
+        originalFullVolumeRadius = state.getFullVolumeRadius();
         originalOutsideAudioVolume = VolumeUtil.getClientVolume(
                 state.getOutsideAudioVolume());
-        originalFullVolumeRadius = state.getFullVolumeRadius();
 
         nameTextField.setText(originalName);
         outsideAudioVolumeSlider.setValue(originalOutsideAudioVolume);
@@ -134,6 +138,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         }
 
         state.setName(nameTextField.getText());
+	state.setUseCellBounds(useCellBoundsRadioButton.isSelected());
         state.setFullVolumeRadius((Double) fullVolumeRadiusModel.getValue());
         state.setOutsideAudioVolume(VolumeUtil.getServerVolume(
                 outsideAudioVolumeSlider.getValue()));
@@ -146,12 +151,29 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     public void restore() {
         // Reset the original values to the GUI
         nameTextField.setText(originalName);
+	useCellBoundsRadioButton.setSelected(originalUseCellBounds);
         outsideAudioVolumeSlider.setValue(originalOutsideAudioVolume);
         fullVolumeRadiusSpinner.setValue(originalFullVolumeRadius);
     }
 
     /**
-     * Inner class to listen for changes to the text field and fire off dirty
+     * Inner class to listen for changes to the use cell bounds radio button 
+     * and fire off dirty or clean indications to the cell properties editor
+     */
+    class UseCellBoundsChangeListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            if (editor != null) {
+		boolean useCellBounds = useCellBoundsRadioButton.isSelected();
+
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class,
+                    useCellBounds != originalUseCellBounds);
+            }
+        }
+    }
+
+    /**
+     * Inner class to listen for changes to the spinner and fire off dirty
      * or clean indications to the cell properties editor
      */
     class RadiusChangeListener implements ChangeListener {
@@ -200,17 +222,20 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
         fullVolumeRadiusSpinner = new javax.swing.JSpinner();
         jLabel3 = new javax.swing.JLabel();
         outsideAudioVolumeSlider = new javax.swing.JSlider();
+        jLabel4 = new javax.swing.JLabel();
+        useCellBoundsRadioButton = new javax.swing.JRadioButton();
+        specifyRadiusRadioButton = new javax.swing.JRadioButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         jLabel1.setText(bundle.getString("ConeOfSilenceComponentProperties.jLabel1.text")); // NOI18N
 
-        jLabel2.setText(bundle.getString("ConeOfSilenceComponentProperties.jLabel2.text")); // NOI18N
+        fullVolumeRadiusSpinner.setEnabled(false);
 
         jLabel3.setText(bundle.getString("ConeOfSilenceComponentProperties.jLabel3.text")); // NOI18N
 
@@ -226,21 +251,48 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
             }
         });
 
+        jLabel4.setText(bundle.getString("ConeOfSilenceComponentProperties.jLabel4.text")); // NOI18N
+
+        buttonGroup1.add(useCellBoundsRadioButton);
+        useCellBoundsRadioButton.setSelected(true);
+        useCellBoundsRadioButton.setText(bundle.getString("ConeOfSilenceComponentProperties.useCellBoundsRadioButton.text")); // NOI18N
+        useCellBoundsRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useCellBoundsRadioButtonActionPerformed(evt);
+            }
+        });
+
+        buttonGroup1.add(specifyRadiusRadioButton);
+        specifyRadiusRadioButton.setText(bundle.getString("ConeOfSilenceComponentProperties.specifyRadiusRadioButton.text")); // NOI18N
+        specifyRadiusRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                specifyRadiusRadioButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(outsideAudioVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
-                    .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(jLabel1)
+                            .add(jLabel4))
+                        .add(51, 51, 51)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
+                            .add(useCellBoundsRadioButton)
+                            .add(layout.createSequentialGroup()
+                                .add(specifyRadiusRadioButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(jLabel3)
+                        .add(18, 18, 18)
+                        .add(outsideAudioVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -248,17 +300,24 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
+                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .add(21, 21, 21)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel4)
+                    .add(useCellBoundsRadioButton))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(specifyRadiusRadioButton)
                     .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(outsideAudioVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(outsideAudioVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(34, 34, 34)
+                        .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -269,12 +328,24 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
                     originalOutsideAudioVolume != outsideAudioVolume);
         }
     }//GEN-LAST:event_outsideAudioVolumeSliderStateChanged
+
+    private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useCellBoundsRadioButtonActionPerformed
+	fullVolumeRadiusSpinner.setEnabled(false);
+    }//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
+
+    private void specifyRadiusRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_specifyRadiusRadioButtonActionPerformed
+	fullVolumeRadiusSpinner.setEnabled(true);
+    }//GEN-LAST:event_specifyRadiusRadioButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JSpinner fullVolumeRadiusSpinner;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JSlider outsideAudioVolumeSlider;
+    private javax.swing.JRadioButton specifyRadiusRadioButton;
+    private javax.swing.JRadioButton useCellBoundsRadioButton;
     // End of variables declaration//GEN-END:variables
 }
