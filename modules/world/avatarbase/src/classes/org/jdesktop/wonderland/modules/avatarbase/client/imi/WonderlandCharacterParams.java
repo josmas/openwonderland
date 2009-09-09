@@ -21,6 +21,7 @@ import imi.character.AttachmentParams;
 import imi.character.CharacterParams;
 import imi.character.CharacterParams.SkinnedMeshParams;
 import imi.scene.PMatrix;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -79,6 +80,15 @@ public class WonderlandCharacterParams implements Cloneable {
         DEFAULT_MALE_PRESETS.put(ConfigType.FEET, "Tennis Shoes");
     }
 
+    // Default colors selections for the Male avatar configuration
+    private static final Map<ConfigType, Color> DEFAULT_MALE_COLORS = new HashMap();
+    static {
+        DEFAULT_MALE_COLORS.put(ConfigType.HAIR_COLOR, new Color(183, 100, 42));
+        DEFAULT_MALE_COLORS.put(ConfigType.SHIRT_COLOR, new Color(204, 204, 255));
+        DEFAULT_MALE_COLORS.put(ConfigType.PANTS_COLOR, new Color(102, 102, 255));
+        DEFAULT_MALE_COLORS.put(ConfigType.SHOE_COLOR, new Color(200, 93, 0));
+    }
+
     // Default preset selections for the Female avatar configuration
     private static final Map<ConfigType, String> DEFAULT_FEMALE_PRESETS = new HashMap();
     static {
@@ -89,6 +99,15 @@ public class WonderlandCharacterParams implements Cloneable {
         DEFAULT_FEMALE_PRESETS.put(ConfigType.HANDS, "Hands");
         DEFAULT_FEMALE_PRESETS.put(ConfigType.LEGS, "Jeans");
         DEFAULT_FEMALE_PRESETS.put(ConfigType.FEET, "Converse");
+    }
+
+    // Default colors selections for the Female avatar configuration
+    private static final Map<ConfigType, Color> DEFAULT_FEMALE_COLORS = new HashMap();
+    static {
+        DEFAULT_FEMALE_COLORS.put(ConfigType.HAIR_COLOR, new Color(183, 100, 42));
+        DEFAULT_FEMALE_COLORS.put(ConfigType.SHIRT_COLOR, new Color(204, 204, 255));
+        DEFAULT_FEMALE_COLORS.put(ConfigType.PANTS_COLOR, new Color(102, 102, 255));
+        DEFAULT_FEMALE_COLORS.put(ConfigType.SHOE_COLOR, new Color(200, 93, 0));
     }
 
     private final Map<ConfigType, List<ConfigElement>> allElements =
@@ -121,6 +140,11 @@ public class WonderlandCharacterParams implements Cloneable {
         for (ConfigType type : DEFAULT_MALE_PRESETS.keySet()) {
             params.setElementPreset(type, DEFAULT_MALE_PRESETS.get(type));
         }
+
+        // Set the default male colors
+        for (ConfigType type : DEFAULT_MALE_COLORS.keySet()) {
+            params.setElementColor(type, DEFAULT_MALE_COLORS.get(type));
+        }
         return params;
     }
 
@@ -132,6 +156,11 @@ public class WonderlandCharacterParams implements Cloneable {
         // Set the default female presets
         for (ConfigType type : DEFAULT_FEMALE_PRESETS.keySet()) {
             params.setElementPreset(type, DEFAULT_FEMALE_PRESETS.get(type));
+        }
+
+        // Set the default female colors
+        for (ConfigType type : DEFAULT_FEMALE_COLORS.keySet()) {
+            params.setElementColor(type, DEFAULT_FEMALE_COLORS.get(type));
         }
         return params;
     }
@@ -321,6 +350,51 @@ public class WonderlandCharacterParams implements Cloneable {
         return -1;
     }
 
+    /**
+     * Sets the current element color given the configuration type and the
+     * Color. If the element is not a color, this method does nothing.
+     *
+     * @param type The configuration element type
+     * @param color The color of the configuration element
+     */
+    public void setElementColor(ConfigType type, Color color) {
+        switch (type) {
+            case HAIR_COLOR:
+                ColorConfigElement hair = new HairColorConfigElement();
+                hair.setColor(color);
+                setElement(type, hair);
+                break;
+
+            case PANTS_COLOR:
+                ColorConfigElement pants = new PantsColorConfigElement();
+                pants.setColor(color);
+                setElement(type, pants);
+                break;
+
+            case SHIRT_COLOR:
+                ColorConfigElement shirt = new ShirtColorConfigElement();
+                shirt.setColor(color);
+                setElement(type, shirt);
+                break;
+
+            case SHOE_COLOR:
+                ColorConfigElement shoe = new ShoeColorConfigElement();
+                shoe.setColor(color);
+                setElement(type, shoe);
+                break;
+
+            case SKIN_COLOR:
+                ColorConfigElement skin = new SkinColorConfigElement();
+                skin.setColor(color);
+                setElement(type, skin);
+                break;
+
+            default:
+                // Do nothing
+                break;
+        }
+    }
+    
     public int getElementCount(ConfigType type) {
         return getElements(type).size();
     }
@@ -812,7 +886,16 @@ public class WonderlandCharacterParams implements Cloneable {
             this.g = g;
             this.b = b;
         }
-        
+
+        @XmlTransient
+        public void setColor(Color color) {
+            float components[] = new float[3];
+            color.getColorComponents(components);
+            setR(components[0]);
+            setG(components[1]);
+            setB(components[2]);
+        }
+
         @XmlElement
         public float getR() {
             return r;
