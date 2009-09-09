@@ -32,6 +32,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,8 +71,10 @@ import org.jdesktop.wonderland.client.cell.properties.PropertiesManager;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -312,10 +315,11 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         clearPanelSet();
 
         // Now, set the currnent Cell. If it is null, we simply return. We
-        // also turn off the "add" capability button
+        // also turn off the "add" capability button and "remove" Cell button.
         selectedCell = cell;
         if (selectedCell == null) {
             addCapabilityButton.setEnabled(false);
+            removeCellButton.setEnabled(false);
             return;
         }
 
@@ -328,8 +332,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             throw new IllegalStateException(warning);
         }
 
-        // Turn on the "add" capability button
+        // Turn on the "add" capability button and the "remove" Cell button
         addCapabilityButton.setEnabled(true);
+        removeCellButton.setEnabled(true);
 
         // Update the panel set based upon the elements in the server state
         updatePanelSet();
@@ -463,6 +468,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         treePanel = new javax.swing.JPanel();
         treeScrollPane = new javax.swing.JScrollPane();
         cellHierarchyTree = new javax.swing.JTree();
+        removeCellButton = new javax.swing.JButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle"); // NOI18N
         setTitle(bundle.getString("CellPropertiesJFrame.title")); // NOI18N
@@ -603,7 +609,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -611,6 +617,22 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         cellHierarchyPanel.add(treePanel, gridBagConstraints);
+
+        removeCellButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        removeCellButton.setText(bundle.getString("CellPropertiesJFrame.removeCellButton.text")); // NOI18N
+        removeCellButton.setEnabled(false);
+        removeCellButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
+        removeCellButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeCellButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        cellHierarchyPanel.add(removeCellButton, gridBagConstraints);
 
         leftSplitPanePanel.setTopComponent(cellHierarchyPanel);
 
@@ -661,6 +683,24 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             restoreValues();
         }
     }//GEN-LAST:event_restoreButtonActionPerformed
+
+    private void removeCellButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeCellButtonActionPerformed
+        // Post a dialog asking if the user really wants to delete the Cell.
+        // Since the button is only enabled when a Cell is selected, we are
+        // guaranteed to have a Cell.
+        String message = BUNDLE.getString("Confirm_Delete_Message");
+        String title = BUNDLE.getString("Confirm_Delete");
+        message = MessageFormat.format(message, selectedCell.getName());
+        int result = JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION);
+
+        // Note that pressing the Esc key results in -1, so we must check
+        // for that too (CLOSED_OPTION)
+        if (result == JOptionPane.NO_OPTION || result == JOptionPane.CLOSED_OPTION) {
+            return;
+        }
+
+        CellUtils.deleteCell(selectedCell);
+    }//GEN-LAST:event_removeCellButtonActionPerformed
 
     /**
      * Inner class to deal with selection on the capability list.
@@ -1352,6 +1392,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
     private javax.swing.JPanel propertyButtonPanel;
     private javax.swing.JPanel propertyPanel;
     private javax.swing.JButton removeCapabilityButton;
+    private javax.swing.JButton removeCellButton;
     private javax.swing.JButton restoreButton;
     private javax.swing.JSplitPane topLevelSplitPane;
     private javax.swing.JPanel treePanel;
