@@ -106,11 +106,16 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         if (result == JOptionPane.NO_OPTION) {
             URL url = null;
             try {
-                url = resource.getURL();
-                LoaderManager manager = LoaderManager.getLoaderManager();
-                DeployedModel dm = manager.getLoaderFromDeployment(url);
-                createCell(dm);
-                return dm.getModelURL();
+                JOptionPane.showMessageDialog(frame, "Use Existing is not currently supported");
+                return null;
+
+                // THIS IS WRONG, we need to import the model so that the
+                // server state is set correctly in the deployedModel
+//                url = resource.getURL();
+//                LoaderManager manager = LoaderManager.getLoaderManager();
+//                DeployedModel dm = manager.getLoaderFromDeployment(url);
+//                createCell(dm);
+//                return dm.getModelURL();
             } catch (java.lang.Exception excp) {
                 logger.log(Level.WARNING, "Unable to load existing model, url=" +
                         url, excp);
@@ -330,7 +335,10 @@ public class ModelDndContentImporter implements ContentImporterSPI {
                         (float)bounds.y, (float)bounds.z);
             }
             else {
-                boundsHint = new BoundingSphere((float)bounds.x, Vector3f.ZERO);
+                if (bounds.x>20)
+                    boundsHint = new BoundingSphere(1f, Vector3f.ZERO);
+                else
+                    boundsHint = new BoundingSphere((float)bounds.x, Vector3f.ZERO);
             }
         }
         BoundingVolumeHint hint = new BoundingVolumeHint(true, boundsHint);
