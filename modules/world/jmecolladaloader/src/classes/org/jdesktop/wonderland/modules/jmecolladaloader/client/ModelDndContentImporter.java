@@ -331,8 +331,13 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         if (pcss != null) {
             Bounds bounds = pcss.getBounds();
             if (bounds.type == Bounds.BoundsType.BOX) {
-                boundsHint = new BoundingBox(Vector3f.ZERO, (float)bounds.x,
-                        (float)bounds.y, (float)bounds.z);
+                if (bounds.x>20 || bounds.y>20 || bounds.z>20) {
+                    boundsHint = new BoundingBox(Vector3f.ZERO, 1, 1, 1);
+
+                } else {
+                    boundsHint = new BoundingBox(Vector3f.ZERO, (float)bounds.x,
+                            (float)bounds.y, (float)bounds.z);
+                }
             }
             else {
                 if (bounds.x>20)
