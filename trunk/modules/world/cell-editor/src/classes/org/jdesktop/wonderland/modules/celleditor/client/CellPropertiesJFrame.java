@@ -271,6 +271,10 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             CellManager.getCellManager().addCellStatusChangeListener(cellListener);
             updateTreeGUI();
             updateGUI();
+
+            // issue #687: force a repaint
+            invalidate();
+            repaint();
         }
         else {
             // Remove the listener for the JTree for Cell status changes
