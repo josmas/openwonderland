@@ -476,6 +476,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        livePlayerAudioGroup.setListenAttenuation(player, AudioGroup.MINIMAL_LISTEN_ATTENUATION);
 	    } else {
                 livePlayerAudioGroup.setSpeaking(player, true);
+                livePlayerAudioGroup.setSpeakingAttenuation(player, AudioGroup.DEFAULT_SPEAKING_ATTENUATION);
                 livePlayerAudioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
 	    }
 	}
