@@ -187,4 +187,11 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	}
     }
 
+    public void remove() {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        AudioGroup audioGroup = vm.getAudioGroup(name);
+
+	vm.removeAudioGroup(audioGroup);
+    }
 }
