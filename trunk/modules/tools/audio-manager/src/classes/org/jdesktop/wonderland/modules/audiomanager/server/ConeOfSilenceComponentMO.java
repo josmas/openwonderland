@@ -159,7 +159,6 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
 	if (proximityListener != null) {
 	    component.removeProximityListener(proximityListener);
-	    proximityListener = null;
 	}
 
         // If we are making this component live, then add a listener to the proximity component.
@@ -177,7 +176,12 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             proximityListener = new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
 
             component.addProximityListener(proximityListener, bounds);
-        }
+        } else {
+	    if (proximityListener != null) {
+	        proximityListener.remove();
+	        proximityListener = null;
+	    }
+	}
     }
 
 }
