@@ -17,9 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import java.awt.Toolkit;
-import java.net.URL;
 import java.util.ResourceBundle;
+import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -47,9 +46,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
-
     private CellPropertiesEditor editor;
-
     private String originalGroupId;
     private String originalFileTreatments;
     private String originalUrlTreatments;
@@ -60,7 +57,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private double originalFullVolumeAreaPercent;
     private boolean originalDistanceAttenuated;
     private int originalFalloff;
-
     private SpinnerNumberModel fullVolumeAreaPercentModel;
     private SpinnerNumberModel extentRadiusModel;
     private double extentRadius = 0;
@@ -72,18 +68,13 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     public AudioTreatmentComponentProperties() {
         initComponents();
 
-        URL url = AudioTreatmentComponentProperties.class.getResource(
-                "resources/AudioCapabilitiesDiagram.png");
-
-        ImageIcon icon = new ImageIcon(
-                Toolkit.getDefaultToolkit().createImage(url));
-
-        AudioCapabilitiesLabel.setIcon(icon);
-
-        AudioCapabilitiesLabel.setVisible(true);
+        String diagramFileName = BUNDLE.getString("AudioCapabilitiesDiagram");
+        String resourceName = "/org/jdesktop/wonderland/modules/audiomanager/" +
+                "client/resources/" + diagramFileName;
+        Icon icon = new ImageIcon(getClass().getResource(resourceName));
+        audioCapabilitiesLabel.setIcon(icon);
 
         // Set the maximum and minimum values for the spinners
-
         Double value = new Double(25);
         Double min = new Double(0);
         Double max = new Double(100);
@@ -166,7 +157,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 }
             } else {
                 originalFileTreatments += treatment + " ";
-	    }
+            }
         }
 
         originalFileTreatments = originalFileTreatments.trim();
@@ -197,10 +188,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 break;
         }
 
-	originalPlayOnce = compState.getPlayOnce();
-	playOnce = originalPlayOnce;
+        originalPlayOnce = compState.getPlayOnce();
+        playOnce = originalPlayOnce;
 
-	playOnceCheckBox.setSelected(playOnce);
+        playOnceCheckBox.setSelected(playOnce);
 
         originalExtentRadius = compState.getExtent();
         extentRadius = originalExtentRadius;
@@ -273,7 +264,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         compState.setTreatments(treatments.split(" "));
         compState.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
         compState.setPlayWhen(playWhen);
-	compState.setPlayOnce(playOnce);
+        compState.setPlayOnce(playOnce);
         compState.setExtent((Double) extentRadiusModel.getValue());
         compState.setFullVolumeAreaPercent(
                 (Double) fullVolumeAreaPercentModel.getValue());
@@ -306,7 +297,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 break;
         }
 
-	playOnceCheckBox.setSelected(originalPlayOnce);
+        playOnceCheckBox.setSelected(originalPlayOnce);
         extentRadiusSpinner.setValue(originalExtentRadius);
         extentRadiusSpinner.setEnabled(true);
         fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
@@ -432,7 +423,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        buttonGroup2 = new javax.swing.ButtonGroup();
         buttonGroup3 = new javax.swing.ButtonGroup();
         jLabel5 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
@@ -458,7 +448,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         distanceAttenuatedRadioButton = new javax.swing.JRadioButton();
         falloffSlider = new javax.swing.JSlider();
         jLabel3 = new javax.swing.JLabel();
-        AudioCapabilitiesLabel = new javax.swing.JLabel();
+        audioCapabilitiesLabel = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         volumeSlider = new javax.swing.JSlider();
@@ -556,7 +546,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         jLabel3.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel3.text")); // NOI18N
 
-        AudioCapabilitiesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/AudioCapabilitiesDiagram.png"))); // NOI18N
+        audioCapabilitiesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/AudioCapabilitiesDiagram_en.png"))); // NOI18N
 
         jLabel6.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel6.text")); // NOI18N
 
@@ -608,7 +598,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                                 .add(29, 29, 29)
                                 .add(playOnceCheckBox))
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(AudioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(layout.createSequentialGroup()
                                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                         .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField)
@@ -623,8 +613,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 174, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel5)
-                        .add(17, 17, 17))
+                        .add(jLabel5))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(jLabel11)
@@ -641,10 +630,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                             .add(layout.createSequentialGroup()
                                 .add(jLabel6)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .add(190, 190, 190)))
-                .addContainerGap())
+                                .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                .add(21, 21, 21))
         );
 
         layout.linkSize(new java.awt.Component[] {audioGroupIdTextField, fileTextField, urlTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -701,7 +688,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                         .add(distanceAttenuatedRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(20, 20, 20))
                     .add(layout.createSequentialGroup()
-                        .add(AudioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(jLabel3)
@@ -803,15 +790,13 @@ private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-
 private void playOnceCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playOnceCheckBoxActionPerformed
     playOnce = playOnceCheckBox.isSelected();
 }//GEN-LAST:event_playOnceCheckBoxActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel AudioCapabilitiesLabel;
     private javax.swing.JRadioButton alwaysRadioButton;
     private javax.swing.JRadioButton ambientRadioButton;
+    private javax.swing.JLabel audioCapabilitiesLabel;
     private javax.swing.JTextField audioGroupIdTextField;
     private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
     private javax.swing.JRadioButton distanceAttenuatedRadioButton;
     private javax.swing.JSpinner extentRadiusSpinner;
