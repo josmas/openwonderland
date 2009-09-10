@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.registry;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.ResourceBundle;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -36,20 +37,27 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name="avatar-config-settings")
+@XmlRootElement(name = "avatar-config-settings")
 public class AvatarConfigSettings implements Serializable {
 
-    // The name of the "default" avatar to use (in case none is set). Perhaps
-    // not the best way to do this -- the name here needs to be kept in sync
-    // with the default avatar names in BasicAvatarFactory.java.
-    public static final String DEFAULT_NAME = "Cartoon (Male)";
-    
+    private static final ResourceBundle BUNDLE =
+            ResourceBundle.getBundle("org/jdesktop/wonderland/modules/" +
+            "avatarbase/client/resources/Bundle");
+
+    /**
+     * The name of the "default" avatar to use (in case none is set). Perhaps
+     * not the best way to do this -- the name here needs to be kept in sync
+     * with the default avatar names in BasicAvatarFactory.java.
+     */
+    public static final String DEFAULT_NAME = BUNDLE.getString("Cartoon_Male");
+
     // The name of the avatar configuration current in-use
-    @XmlElement(name="avatar-in-use")
+    @XmlElement(name = "avatar-in-use")
     private String avatarNameInUse = DEFAULT_NAME;
 
     // The JAXB content to (de)serialize to/from XML
     private static JAXBContext jaxbContext = null;
+
     static {
         try {
             jaxbContext = JAXBContext.newInstance(AvatarConfigSettings.class);
@@ -75,7 +83,7 @@ public class AvatarConfigSettings implements Serializable {
     /**
      * Sets the avatar configuration name currently in use, or null for none.
      *
-     * @param param avatarNameInUse A name of an avatar configuration, or null
+     * @param avatarNameInUse A name of an avatar configuration, or null
      */
     public void setAvatarNameInUse(String avatarNameInUse) {
         this.avatarNameInUse = avatarNameInUse;
@@ -86,20 +94,22 @@ public class AvatarConfigSettings implements Serializable {
      * the AvatarConfigSettings class
      * <p>
      * @param r The input reader of the version XML file
-     * @throw ClassCastException If the input file does not map to AvatarConfigSettings
-     * @throw JAXBException Upon error reading the XML file
+     * @return the decoded and instantiated AvatarConfigSettings
+     * @throw ClassCastException If the input file does not map to
+     * AvatarConfigSettings
+     * @throws JAXBException Upon error reading the XML file
      */
     public static AvatarConfigSettings decode(Reader r) throws JAXBException {
         // Unmarshall the XML into a AvatarConfigSettings class
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        return (AvatarConfigSettings)unmarshaller.unmarshal(r);
+        return (AvatarConfigSettings) unmarshaller.unmarshal(r);
     }
 
     /**
      * Writes the AvatarConfigSettings class to an output writer.
      * <p>
      * @param w The output writer to write to
-     * @throw JAXBException Upon error writing the XML file
+     * @throws JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
         // Marshall the PlacemarkList class into XML
