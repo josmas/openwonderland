@@ -59,57 +59,104 @@
     <a name="prereqs">
     <b>Prerequisites</b></a>
     
-    <p>This page describes how to install a Wonderland server from a binary "jar" file. This is an activity we recommend for advanced end users, system administrators, or software developers. After installing a binary build, you will end up with an instance of a Wonderland server, including a web server component and several default Wonderland worlds. You will be able to provide end users with a link to a web page which has a button to launch a Wonderland client.<br><br>
+    <p>This page describes how to install a Wonderland server from a binary "jar" file. This is an activity we recommend for system administrators, software developers, or advanced users. After installing a binary build, you will end up with an instance of a Wonderland server, including a web server component and several default Wonderland worlds. You will be able to provide users with a link to a web page which has a button to launch a Wonderland client.<br><br>
     
      <b>Important Note:</b> Even if you have successfully run a Wonderland client on your system, you may still need to upgrade Java to be able to run the Wonderland server. See the "Java SE 6 JDK" bullet below.</p>
         
     <p>
-    Before you download and install the binary release of Project Wonderland, make sure you have met the following requirements:
+    Before you download and install the binary release of Project Wonderland, make sure you have met the
+	following requirements:
     <ul>
-        <li><b>Supported Operating Systems</b>: Windows XP/Vista, Linux (Debian/Ubuntu), Solaris 10, Mac OS X<br><br>
+        <li><b>Supported Operating Systems</b>: Windows XP/Vista, Linux (Debian/Ubuntu), OpenSolaris, Mac OS X<br><br>
         If Wonderland does not seem to run on your system, see the note below on <a href="#platforms">platform exceptions</a>.<br><br>
         
         <li><b>Access to a command line</b><br><br>
-        You will need to know how to use a few simple commands such as "cd" and "rm".<br><br>
+        You will need to know how to use a terminal or command window to enter a few simple commands.<br><br>
         
         <li><b>Java SE 6 JDK</b><br><br>
         
-        Each Wonderland binary build includes both a Wonderland server and a Wonderland client. Although you may think you have "Java" installed on your system, you need the Java SE Development Kit (JDK) installed and not just the Java Runtime Environment (JRE). The JRE is sufficient for running the Wonderland client as well as other Java applications downloaded from the Internet, but it is not sufficient for running the Wonderland server.<br><br>
-        
-        <b>Windows, Linux & Solaris users</b><br>
-        If you think you  may already have the JDK installed, a quick test is to type the following command in a terminal window:<br><br>
-        
-        <code>javac -version</code><br><br>
-        
-        If you get a response such as "javac 1.6.0_16," then you have what you need. If you get a "command not found" error, then you will need to download Java SE 6 from here: <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>. Scroll down the page until you see "Java SE Development Kit (JDK)" and download the current update of the JDK 6 for your platform. <br><br>
-        <b>Macintosh users</b><br>
-        The JDK comes pre-installed on most Macs, so you should already have it, but you need to be sure that Java SE 6 is set as the active Java version.  Go to Applications -> Utilities -> Java Preferences, and make sure that "Java SE 6" is first on the list under "Java Applications."<br><br>
+		To set up a Wonderland server you need the Sun Java SE 6 JDK. If you already have Java installed 
+		verify that you have the JDK and not the JRE and that it's the Sun Java SE 6 version. Some
+		Linux distributions include OpenJDK which is not compatible with Wonderland.<br><br>
+		
+		To verify that you have the Sun Java SE 6 JDK installed, follow these platform specific instructions:<br><br>
+		
+		<b>Linux and OpenSolaris</b><br><br>
+		
+                Check to see if you have a <b>/usr/jdk</b> or <b>/usr/jdk1.6.0_<i>nn</i></b> directory (where <i>nn</i>
+                is a number such as 16). If you do, enter the following command to check the version you have installed:<br><br>
+		
+		<code>/usr/jdk/bin/java -version</code><br><br>
 
-    </ul>
+                or:<br><br>
+
+                <code>/usr/jdk1.6.0_<i>nn</i>/bin/java -version</code><br><br>
+		
+                If you have the Sun Java SE 6 JDK installed, you should see <b>1.6.0</b> in the command output:<br><br>
+		
+		<code>
+                java version "<b>1.6.0</b>_16"<br>
+		Java(TM) SE Runtime Environment (build 1.6.0_16-b01)<br>
+		Java HotSpot(TM) Server VM (build 14.2-b01, mixed mode)
+		</code><br><br>
+		
+		<b>Windows</b><br><br>
+		
+		Check to see if you have a <b>C:\Program Files\Java\jdk1.6.0_<i>nn</i></b> directory. If you're 
+		running a 64-bit version of Windows, also check <b>C:\Program Files (x86)\Java\jdk1.6.0_<i>nn</i></b>.
+		<br><br>
+		
+		<b>Mac OS X</b><br><br>
+		
+                The JDK comes pre-installed on most Macs, so you should already have it, but you need to be sure
+		that Java SE 6 is set as the active Java version.  Go to <b>Applications > Utilities > Java Preferences</b>, 
+		and make sure that "Java SE 6" is first on the list under "Java Applications." If not, drag "Java SE 6"
+		to the top of the list<br><br>
+		
+		If you don't see "Java SE 6" in the list, you will need to upgrade the version of Java installed on 
+		your system. 
+		
+		Note: Apple only provides the Java 6 JDK for recent 64-bit systems. If you have an older 32-bit
+		system you will not be able to run the Wonderland server on your system.<br><br>
+		
+		<b>Installing the Sun Java SE 6 JDK</b><br><br>
+		
+		If you are running a 64-bit operating system, please refer to the <a href="#platforms">platform exceptions</a> section for important notes on selecting the correct JDK.<br><br>
+		
+		If you have a version of the JDK earlier than 1.6.0, then you will need to download the Sun Java SE 6 
+		JDK from here:<br><br>
+		
+		<a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a><br><br>
+		
+		Scroll down the page until you see "Java SE Development Kit (JDK)" and download the current update
+		of the JDK 6 for your platform.<br><br>
+		
+		<b>Mac OS X:</b> To download Java SE 6, follow these instructions:<br><br>
+		
+		<a href="http://support.apple.com/kb/HT3649">http://suport.apple.com/kb/HT3649</a><br><br>
+	</ul>
     
- 
-    
-    <br><a name="install">
+    <a name="install">
     <b>Installing a Nightly Binary Build</b></a>
     <p>
-        Each night (US Pacific time), a new Wonderland binary build is created. These are known as the "nightly builds," or simply as the "nightly." To install a nightly, follow these steps:    </p>
+        Each night (US Pacific time), a new Wonderland binary build is created. These are known as the "nightly builds," or simply as a "nightly." To install a nightly, follow these steps:    </p>
     <ol>
         <li>Navigate to <a href="http://download.java.net/lg3d/wonderland/daily-0.5-dev/">http://download.java.net/lg3d/wonderland/daily-0.5-dev/</a><br><br>
         <li>Scroll to the bottom of the page and select the date you want.<br><br>
         Typically you will click on the last folder in the list, which is the most recent nightly build <br><br>
         <li>Right click on "Wonderland.jar" and save it to your computer.<br><br>
         <i>Note:</i> Do not change the name of the jar file when you save it. If you want to keep track of which nightly is which, create a folder and name it with the date of the nightly. Then save the jar file in that folder. The jar files are large, so the download will take some time.<br><br>
-        <li>Open your terminal program to access a command line.<br><br>
-        <li>Change directories to the location where you downloaded the jar file.<br><br>
-        <li>Start Wonderland on Mac or Unix system by typing:<br><br>
+        <li>Open a terminal or command window.<br><br>
+        <li>Change directory to the location where you downloaded the jar file.<br><br>
+        <li>Start the Wonderland server on Mac OS or OpenSolaris by typing:<br><br>
             <ul>
             <code>java -jar Wonderland.jar</code>
             </ul><br>
-        Or on a Windows system by typing the following, including the quotation marks, but replacing the "_16" with the number of the update that you have installed:<br><br>
+        On Windows, type the following, including the quotation marks, but replace the "_16" with the number of the update that you have installed:<br><br>
             <ul>
             <code>"\Program Files\Java\jdk1.6.0_16\bin\java" -jar Wonderland.jar</code>
             </ul><br>
-        Unless you're on a Vista 64-bit system, in which case you need to type a variation of the command, again replacing the "_16" if necessary:<br><br>
+        If you have a 64-bit system, the java command might be located in a different directory, in which case you need to type a variation of the command, again replacing the "_16" if necessary:<br><br>
             <ul>
             <code>"\Program Files (x86)\Java\jdk1.6.0_16\bin\java" -jar Wonderland.jar</code>
             </ul><br>         
@@ -118,21 +165,20 @@
         <li>Be patient while the Wonderland server starts up.<br><br>
         You should soon see lots of messages fly by in the terminal window, including lots of warnings. Expect some pauses. The process will take a minute or two.<br><br>
         <li>Eventually you will see a message that includes the text "Wonderland web server started successfully."<br><br>
-        The entire message will look something like this:<br>
-            <ul>
+        The entire message will look something like this:<br><br>
             <code>
 -----------------------------------------------------------<br>
 Wonderland web server started successfully.<br>
-Log files are in /Users/nicoley/.wonderland-server/0.5-dev/log<br>
-Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
+Log files are in /Users/username/.wonderland-server/0.5-dev/log<br>
+Web server running on http://myserver:8080/<br>
 -----------------------------------------------------------
             </code>
-            </ul><br>
+			<br><br>
         <li>Make a note of the log file directory.<br><br>
         You will need this information when you wish to delete this build from your computer. In addition, this directory may contain useful information for reporting Wonderland problems.<br><br>
         <li>Copy and paste the URL in the last line of the message into a browser window to navigate to the Wonderland launch page.<br><br> 
         This is the URL you can give to end users to launch Wonderland.<br><br>
-        <li>Click "Launch Wonderland 0.5" from the launch page.
+        <li>Click the "Launch" button on the web page.
     </ol>
     
     <br><a name="shutdown">
@@ -182,22 +228,34 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
     </ul>
         
     
-    <br><a name="platforms">
+    <a name="platforms">
     <b>Platform Exceptions</b></a>
-    <p>
-    Wonderland currently supports both 32-bit and 64-bit operating systems to varying degrees, but the situation is a bit complicated. Here's the current state:</p>
+	
     <ul>
-    <p><b>MacOS</b><br> 
-    Apple only provides 64-bit Java SE JRE/JDK, so you have to have a 64-bit system (hardware).</p>
+	
+	<p><b>64-bit Operating Systems</b><br>
+	If you have a 64-bit operating system (other than Mac OS), you must install the 32-bit version of the Sun Java SE 6 JDK
+	to run the Wonderland server. The Wonderland server is not compatible with the 64-bit JDK.<br><br>
+	
+	If you just want to run the Wonderland client, you can use the 32-bit or 64-bit JRE. You don't need 
+	the JDK to run the client.
+
+    <p><b>Mac OS</b><br> 
+    Apple only provides a 64-bit Java SE JRE/JDK, so you must have a 64-bit system (hardware). Note that
+	the 32-bit server restriction above doesn't apply to Mac OS. The Wonderland server will run on the 64-bit
+	JDK on Mac OS.
+	</p>
 
     <p><b>Windows</b><br>
-    32-bit and 64-bit systems are supported, but <i>only</i> with the Java SE 32-bit JRE/JDK.  Wonderland doesn't mind running on a 32-bit JRE on a 64-bit system.<br><br>
-    The glassfish application server fails to pick up the jdk from JAVA_HOME, even if you set it as one of your Windows environment variables. Please use the following workaround--adjust it according to your Java installation:</p>
+    Wonderland's Glassfish application server fails to find the JDK even if you set the JAVA_HOME environment
+	variable. Please use the following workaround, adjusting the paths according to your Java installation:</p>
     <ul>
-        <code>java -Djava.home="C:\Program Files\Java\jdk1.6.0_14" -jar Wonderland.jar</code>
+        <code>"\Program Files\Java\jdk1.6.0_16\bin\java" -Djava.home="C:\Program Files\Java\jdk1.6.0_16" -jar Wonderland.jar</code>
     </ul>
     <p><b>Linux</b><br>
-    Only 32-bit systems are supported right now. In the future, we will try to bundle 64-bit versions of the native client libraries to run the Wonderland client on a 64-bit JRE/JDK. Running the Wonderland server on a 64-bit system is a not currently possible since the Darkstar server component only ships a 32-bit Berkeley DB native library. Once Darkstar moves over to the Java version of Berkeley DB this will no longer be an issue. 
+    Some Linux distributions include the OpenJDK which is not compatible with Wonderland. You must
+	install the Sun Java SE 6 JDK. It's a good idea to uninstall OpenJDK. You can do this with the 
+	Package Manager. Search for "openjdk-6" and uninstall all packages with this prefix.
     <p>
     </ul>
       
