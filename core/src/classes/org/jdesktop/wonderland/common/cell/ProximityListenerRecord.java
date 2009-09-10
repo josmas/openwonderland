@@ -246,7 +246,12 @@ public class ProximityListenerRecord implements Serializable {
         if (!(o instanceof ProximityListenerRecord))
             return false;
 
-        return ((ProximityListenerRecord)o).proximityListener==proximityListener;
+        ProximityListenerRecord plr = (ProximityListenerRecord) o;
+        if (plr.proximityListener == null) {
+            return (proximityListener == null);
+        } else {
+            return plr.proximityListener.equals(proximityListener);
+        }
     }
 
     @Override

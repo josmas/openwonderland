@@ -102,7 +102,7 @@ public class ProximityComponent extends CellComponent {
      */
     public void removeProximityListener(ProximityListener listener) {
         synchronized(listenerRecords) {
-            listenerRecords.remove(new ClientProximityListenerWrapper(cell, listener));
+            listenerRecords.remove(new ProximityListenerRecord(new ClientProximityListenerWrapper(cell, listener), new BoundingVolume[0]));
         }
     }
     
@@ -129,7 +129,12 @@ public class ProximityComponent extends CellComponent {
                     break;
                 case DISK :
                     if (viewTransformListener!=null) {
-                        cell.getCellCache().getViewCell().removeTransformChangeListener(viewTransformListener);
+                        // issue #664: add a check to make sure the view cell is not
+                        // null.  cell and cell.getCellCache() are guaranteed not to
+                        // be null, so there is no need to check them
+                        if (cell.getCellCache().getViewCell() != null) {
+                            cell.getCellCache().getViewCell().removeTransformChangeListener(viewTransformListener);
+                        }
                         cell.removeTransformChangeListener(cellTransformListener);
                     }
                     break;
