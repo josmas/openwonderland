@@ -159,6 +159,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
 	if (proximityListener != null) {
 	    component.removeProximityListener(proximityListener);
+	    proximityListener = null;
 	}
 
         // If we are making this component live, then add a listener to the proximity component.
