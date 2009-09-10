@@ -676,9 +676,6 @@ public class WonderlandCharacterParams implements Cloneable {
             attrs.setHeadAttachment(getModel());
             attrs.getMetaData().put(ConfigType.HEAD.toString(), getName());
             if (skinTone != null) {
-                logger.warning("SETTING SKIN TONE " +
-                        skinTone.getR() + " " + skinTone.getG() +
-                        " " + skinTone.getB());
                 attrs.setSkinTone(skinTone.getR(), skinTone.getG(), skinTone.getB());
                 attrs.setUsePhongLightingForHead(true);
             }
