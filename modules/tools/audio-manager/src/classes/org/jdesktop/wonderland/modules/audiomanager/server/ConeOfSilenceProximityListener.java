@@ -192,6 +192,10 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
+	if (audioGroup == null) {
+	    return;
+	}
+
 	vm.removeAudioGroup(audioGroup);
     }
 }
