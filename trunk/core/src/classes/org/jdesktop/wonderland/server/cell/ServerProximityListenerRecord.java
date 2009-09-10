@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.util.ScalableHashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -90,15 +91,30 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             mgr.addTransformChangeListener(cell, this);
             mgr.addViewUpdateListener(cell, this);
 
-            // Issue #721: we need to set the transform to the cell's transform
-            // here, since the cell may already exist and we can't count on
-            // getting a transform changed notification until the cell moves
-            updateWorldBounds(cell.getWorldTransform(null));
+            // issue #727: if the cell has not yet been added (because the job
+            // to add it is scheduled but hasn't run), this may return null.
+            // In that case, just return, since the listener will be notified
+            // with the actual bounds once the cell is fully inserted into the
+            // world
+            CellTransform worldTransform = cell.getWorldTransform(null);
+            if (worldTransform != null) {
+                // Issue #721: we need to set the transform to the cell's transform
+                // here, since the cell may already exist and we can't count on
+                // getting a transform changed notification until the cell moves
+                updateWorldBounds(worldTransform);
+            }
         } else {
             mgr.removeTransformChangeListener(cell, this);
             mgr.removeViewUpdateListener(cell, this);
 
-            dm.removeBinding(BINDING_NAME + id);
+            try {
+                dm.removeBinding(BINDING_NAME + id);
+            } catch (NameNotBoundException nnbe) {
+                // we can safely ignore this -- this just means the component
+                // is being added before the cell is live, so the first time
+                // setLive is called, the binding hasn't been created
+                logger.log(Level.FINE, null, nnbe);
+            }
         }
     }
 

@@ -393,6 +393,13 @@ public class UniverseService extends AbstractService implements UniverseManager 
     public CellTransform getWorldTransform(CellMO cell, CellTransform result) {
         SpatialCellImpl spatial = (SpatialCellImpl ) universe.getSpatialCell(cell.getCellID());
 
+        // issue #727: if the cell has not yet been added (because the job to
+        // add it is scheduled but hasn't run yet), we should gracefully return
+        // null here
+        if (spatial == null) {
+            return null;
+        }
+
         CellTransform ret;
         spatial.acquireRootReadLock();
         if (spatial.getWorldTransform()==null)
@@ -407,6 +414,13 @@ public class UniverseService extends AbstractService implements UniverseManager 
     public BoundingVolume getWorldBounds(CellMO cell, BoundingVolume result) {
         SpatialCellImpl spatial = (SpatialCellImpl) universe.getSpatialCell(cell.getCellID());
         BoundingVolume ret;
+
+        // issue #727: if the cell has not yet been added (because the job to
+        // add it is scheduled but hasn't run yet), we should gracefully return
+        // null here
+        if (spatial == null) {
+            return null;
+        }
 
         spatial.acquireRootReadLock();
         ret = spatial.getWorldBounds().clone(result);
