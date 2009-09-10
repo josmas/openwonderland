@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDButton;
@@ -295,7 +296,12 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
     /**
      * {@inheritDoc}
      */
-    public void HUDObjectChanged(HUDEvent event) {
-        notifyEventListeners(event);
+    public void HUDObjectChanged(final HUDEvent event) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                notifyEventListeners(event);
+            }
+        });
     }
 }
