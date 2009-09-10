@@ -278,6 +278,14 @@ class ViewCache {
     }
 
     void rootCellRemoved(SpatialCellImpl rootCell) {
+        // Don't remove the caches view cell
+        if (rootCell==viewCell) {
+            // If we are called with our ViewCell then we have warped and
+            // spaces need to be revalidated. Fix for issue 717
+            revalidateSpaces();
+            return;
+        }
+
         viewCell.acquireRootReadLock();
 
         try {
