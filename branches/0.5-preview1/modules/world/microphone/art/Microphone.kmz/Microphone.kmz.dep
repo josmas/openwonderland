@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<deployed-model>
+    <version>1</version>
+    <modelURL>wla://microphone/Microphone.kmz/models/Microphone.dae.gz</modelURL>
+    <loaderDataURL>wla://microphone/Microphone.kmz/Microphone.kmz.ldr</loaderDataURL>
+    <modelBGScale>
+        <x>1.0</x>
+        <y>1.0</y>
+        <z>1.0</z>
+    </modelBGScale>
+    <modelBGTranslation>
+        <x>-0.24999999</x>
+        <y>-0.7611434</y>
+        <z>0.24999997</z>
+    </modelBGTranslation>
+    <modelBGRotation>
+        <x>-0.99999994</x>
+        <y>0.0</y>
+        <z>0.0</z>
+        <angle>1.5707964</angle>
+    </modelBGRotation>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader</modelLoaderClassname>
+</deployed-model>
