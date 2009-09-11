@@ -12,6 +12,7 @@
         <exclude name="kmzloader/build.xml"/>
         <exclude name="jmecolladaloader/build.xml"/>
         <exclude name="avatarbase/build.xml"/>
+        <exclude name="microphone/build.xml"/>
         <include name="*/**/build.xml"/>
     </fileset>
     
