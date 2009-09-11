@@ -106,7 +106,7 @@ public class PortalComponentProperties extends JPanel
 
             Quaternion r = state.getLook();
             if (r != null) {
-                origAngle = String.valueOf(r.toAngleAxis(new Vector3f()));
+                origAngle = String.valueOf(Math.toDegrees(r.toAngleAxis(new Vector3f())));
             } else {
                 origAngle = "";
             }
@@ -159,9 +159,8 @@ public class PortalComponentProperties extends JPanel
         if (anglestr.length() == 0) {
             look = null;
         } else {
-            Quaternion q = new Quaternion(0.0f, 1.0f, 0.0f,
-                    Float.parseFloat(anglestr));
-            look = new Quaternion(q);
+            look.fromAngleAxis((float) Math.toRadians(Float.parseFloat(anglestr)),
+                               new Vector3f(0.0f, 1.0f, 0.0f));
         }
         state.setLook(look);
         editor.addToUpdateList(state);
