@@ -593,8 +593,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         //        jscene.toggleRenderPRendererMesh();   // turn off mesh
         //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
-        // Set up the collision for the avatar
-        setCollisionController(ret);
 
         return ret;
     }
@@ -625,26 +623,33 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         float yExtent = 0.6f;
         float zExtent = 0.3f;
 
-        Spatial collisionGraph = new Box("AvatarCollision", origin, xExtent,
-                yExtent, zExtent);
-        collisionGraph.setModelBound(new BoundingSphere());
-        collisionGraph.updateModelBound();
+        if (selectedForInput) {
+            Spatial collisionGraph = new Box("AvatarCollision", origin, xExtent,
+                    yExtent, zExtent);
+            collisionGraph.setModelBound(new BoundingSphere());
+            collisionGraph.updateModelBound();
 
-        // Fetch the JME Collision system using the server manager of the Cell
-        // to which this renderer is attached.
-        ServerSessionManager manager =
-                cell.getCellCache().getSession().getSessionManager();
-        CollisionSystem collisionSystem =
-                ClientContextJME.getCollisionSystem(manager, "Default");
+            // Fetch the JME Collision system using the server manager of the Cell
+            // to which this renderer is attached.
+            ServerSessionManager manager =
+                    cell.getCellCache().getSession().getSessionManager();
+            CollisionSystem collisionSystem =
+                    ClientContextJME.getCollisionSystem(manager, "Default");
 
-        // Create a new collision controller, and set on the avatar
-        CollisionController controller = new CollisionController(collisionGraph,
-                (JMECollisionSystem) collisionSystem);
-        collisionChangeRequestListener.setCollisionController(controller);
-        AvatarController ac = (AvatarController)avatar.getContext().getController();
-        ac.setCollisionController(controller);
-        collisionListener = new WLCollisionListener();
-        ac.addCollisionListener(collisionListener);
+            // Create a new collision controller, and set on the avatar
+            CollisionController controller = new CollisionController(collisionGraph,
+                    (JMECollisionSystem) collisionSystem);
+            collisionChangeRequestListener.setCollisionController(controller);
+            AvatarController ac = (AvatarController)avatar.getContext().getController();
+            ac.setCollisionController(controller);
+            if (collisionListener==null) {
+                collisionListener = new WLCollisionListener();
+            }
+            ac.addCollisionListener(collisionListener);
+        } else {
+            AvatarController ac = (AvatarController)avatar.getContext().getController();
+            ac.removeCollisionListener(collisionListener);
+         }
     }
 
 
@@ -727,7 +732,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 controlScheme = new DefaultCharacterControls(ClientContextJME.getWorldManager());
                 ((AvatarControls)wm.getUserData(AvatarControls.class)).setDefault(controlScheme);
             }
+            setCollisionController(avatarCharacter);
             if (selectedForInput) {
+
                 // Listen for avatar movement and update the cell
                 avatarCharacter.getContext().getController().addCharacterMotionListener(characterMotionListener);
 
