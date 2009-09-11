@@ -71,6 +71,13 @@ caption .heading {
 	color: #4d4d4d;
 }
 
-caption span.refresh {
+caption .heading + a {
+    font-size: 14px;
+}
+
+caption .refresh {
 	float: right;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
 }

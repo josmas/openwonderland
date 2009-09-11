@@ -24,7 +24,7 @@
   <body>
     <div id="page">
       <div id="head">
-        <img alt="Project Wonderland logo" src="images/idy_launch.png" /> 
+        <a href="http://projectwonderland.com"><img alt="Project Wonderland logo" src="images/idy_launch.png" /></a>
 
         <h1>Project Wonderland</h1>
       </div>
@@ -38,7 +38,8 @@
           <h2>Welcome to Project Wonderland</h2>
 
           <div class="btn">
-            <a href="app/Wonderland.jnlp"><img alt="Launch. Requires Java" src="images/btn_launch.png" /></a>
+            <a href="app/Wonderland.jnlp"><img alt="Launch. Requires Java" src="images/btn_launch.png" /></a><br />
+            <p><a href="http://www.java.com/en/download/index.jsp">Get Java...</a></p>
           </div>
 
           <p>The Project Wonderland Client launches using Java Web Start, which automatically downloads the latest version of the software when you click the launch button below. To get started, all you need is a current version of Java installed on your system.</p>
