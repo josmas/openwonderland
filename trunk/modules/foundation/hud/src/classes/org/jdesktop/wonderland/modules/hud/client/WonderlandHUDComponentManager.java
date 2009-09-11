@@ -185,8 +185,12 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         if (state != null) {
             // remove on-HUD view
+            Window2D window = state.getWindow();
             HUDView2D view2D = state.getView();
-            if (view2D != null) {
+
+            // remove HUD view
+            if ((window != null) && (view2D != null)) {
+                window.removeView(view2D);
                 view2D.cleanup();
                 view2D = null;
             }
@@ -239,7 +243,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         frameView.setOrtho(true, false);
         frameView.setPixelScaleOrtho(hudPixelScale, false);
         frameView.setSizeApp(new Dimension((int) (window.getWidth()), frame.getHeight()));
-        frameView.setOffset(new Vector2f(0.0f, 100.0f));
         frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * componentWindow.getHeight() / 2)));
 
         // register listeners for events on the frame
