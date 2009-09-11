@@ -39,7 +39,7 @@
   <body onload="resizeIframe()">
     <div id="page">
       <div id="head">
-        <img alt="Project Wonderland logo" src="images/idy_admin.png" /><h1>Server Admin</h1> 
+        <a href="http://projectwonderland.com"><img alt="Project Wonderland logo" src="images/idy_admin.png" /></a><h1>Server Admin</h1>
       </div>
 
         <div id="moduleMenu">

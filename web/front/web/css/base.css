@@ -1,5 +1,5 @@
 /* Reset */
-html,body,div,span,h1,h2,h3,h4,h5,h6,hr,p,a,abbr,acronym,address,big,del,em,img,
+html,body,div,span,h1,h2,h3,h4,h5,h6,hr,p,abbr,acronym,address,big,del,em,img,
 small,strike,strong,sub,sup,ul,ol,fieldset,form,label,legend,
 table,caption,tbody,tfoot,thead,tr,th,td,optgroup,option {
   list-style: none;
@@ -22,19 +22,33 @@ body {
 	font: 1em/1.3em 'Arial','Helvetica', sans-serif;
 }
 
+a:link {
+    color: #0866c4;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:active {
+    color: #c46608;
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #52779c;
+    text-decoration: none;
+}
+
 #page { 
 	margin: 0 auto;
 	width: 826px;
-/* min-width: 740px; max-width: 960px;  */
 }
 
 h1, h2, h3 {
 	font-weight: normal;
 	line-height: 130%;
-}
-
-h3, p {
-	margin-top: 10px;
 }
 
 h1 {
@@ -50,6 +64,10 @@ h2 {
 h3 {
 	color: #333;
 	font-size: 18px;
+}
+
+h3, p {
+	margin-top: 10px;
 }
 
 p {
@@ -91,6 +109,14 @@ li {
 #launch, #admin, #footer {
 	border-top: 1px solid #566472;
 	padding: 25px 25px;
+}
+
+#launch div.btn p {
+    padding-left: 22px;
+}
+
+#launch div.btn a {
+    font-style: italic;
 }
 
 #admin h2 {
