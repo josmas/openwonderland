@@ -30,7 +30,8 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
  * @author Paul Byrne
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@CellComponentFactory
+// issue 752: disable until physics are implemented
+//@CellComponentFactory
 public class CellPhysicsPropertiesComponentFactory
         implements CellComponentFactorySPI {
 
