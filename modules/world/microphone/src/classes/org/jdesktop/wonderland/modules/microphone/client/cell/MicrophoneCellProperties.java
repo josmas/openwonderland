@@ -22,6 +22,8 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerSta
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
 
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -38,8 +40,8 @@ import javax.swing.event.DocumentListener;
  *
  * @author  jp
  */
-//@CellProperties
-public class MicrophoneCellProperties extends JPanel /*implements CellPropertiesSPI */ {
+@PropertiesFactory(MicrophoneCellServerState.class)
+public class MicrophoneCellProperties extends JPanel implements PropertiesFactorySPI {
 
     private CellPropertiesEditor editor;
 
@@ -157,9 +159,74 @@ public class MicrophoneCellProperties extends JPanel /*implements CellProperties
         return "Microphone Cell";
     }
 
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    /**
+     * @inheritDoc()
+     */
+    public JPanel getPropertiesJPanel() {
         return this;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+    
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
+        // Fetch the current state from the cell's server state and update
+        // the GUI.
+        CellServerState state = editor.getCellServerState();
+
+	updateGUI(editor.getCellServerState());
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // Do nothing for now.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        MicrophoneCellServerState state = (MicrophoneCellServerState) editor.getCellServerState();
+
+	state.setVolume(volumeSlider.getValue());
+
+	state.setFullVolumeArea(new FullVolumeArea("BOX", (Double) fullVolumeXModel.getValue(),
+	    (Double) fullVolumeYModel.getValue(), (Double) fullVolumeZModel.getValue()));
+
+	Vector3f origin = new Vector3f((Float) activeOriginXModel.getValue(),
+            (Float) activeOriginYModel.getValue(), (Float) activeOriginZModel.getValue());
+
+	state.setActiveArea(new ActiveArea(origin, "BOX", (Double) activeExtentXModel.getValue(),
+	    (Double) activeExtentYModel.getValue(), (Double) activeExtentZModel.getValue()));
+
+        editor.addToUpdateList(state);
+    }
+
+    public void restore() {
+	nameTextField.setText(originalName);
+
+	volumeSlider.setValue(originalVolume);
+
+	fullVolumeXModel.setValue((Double) originalFullVolumeX);
+	fullVolumeYModel.setValue((Double) originalFullVolumeY);
+	fullVolumeZModel.setValue((Double) originalFullVolumeZ);
+
+	activeOriginXModel.setValue((Double) originalActiveOriginX);
+	activeOriginYModel.setValue((Double) originalActiveOriginY);
+	activeOriginZModel.setValue((Double) originalActiveOriginZ);
+
+	activeExtentXModel.setValue((Double) originalActiveExtentX);
+	activeExtentYModel.setValue((Double) originalActiveExtentY);
+	activeExtentZModel.setValue((Double) originalActiveExtentZ);
     }
 
     public <T extends CellServerState> void updateGUI(T cellServerState) {
@@ -173,7 +240,6 @@ public class MicrophoneCellProperties extends JPanel /*implements CellProperties
 
 	nameTextField.setText(originalName);
 
-	//originalVolume = VolumeUtil.getClientVolume(state.getVolume());
 	originalVolume = getClientVolume(state.getVolume());
 
 	volumeSlider.setValue(originalVolume);
