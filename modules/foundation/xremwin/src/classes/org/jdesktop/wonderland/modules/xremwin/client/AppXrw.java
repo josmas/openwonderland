@@ -200,6 +200,13 @@ public abstract class AppXrw extends AppConventional {
             logger.info("oldestVisibleWindow = " + oldestVisibleWindow);
             if (oldestVisibleWindow != null) {
                 try {
+                    if (primaryWindow != null) {
+                        // Old primary is invisible. Since (currently) only one primary window is 
+                        // allowed at a time we must make the old primary non-primary
+                        // TODO: someday: maybe allow more than one primary at a time
+                        setPrimaryWindow(null);
+                        primaryWindow.setType(Window2D.Type.SECONDARY, true);
+                    }
                     oldestVisibleWindow.setType(Window2D.Type.PRIMARY);               
                     logger.info("Made oldest visible window primary");
                     logger.info("New primary window = " + oldestVisibleWindow);
