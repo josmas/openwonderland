@@ -132,6 +132,13 @@ public class WindowXrw extends WindowConventional {
 
     /** {@inheritDoc} */
     @Override
+    public void setType (Type type, boolean okayToDemotePrimary) throws IllegalStateException {
+        super.setType(type, okayToDemotePrimary);
+        updateOffset();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setParent(Window2D parent) {
         super.setParent(parent);
         updateOffset();

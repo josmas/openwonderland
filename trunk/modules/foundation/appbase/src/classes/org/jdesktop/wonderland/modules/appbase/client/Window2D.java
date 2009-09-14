@@ -477,6 +477,19 @@ public abstract class Window2D implements HUDDisplayable {
      * @throws IllegalStateException if the rules above are not followed.
      */
     public synchronized void setType(Type type) throws IllegalStateException {
+        setType(type, false);
+    }
+
+    /**
+     * INTERNAL API.
+     * <br><br>
+     * Same as the other setType method, except that this is used by Xremwin to 
+     * temporarily demote a primary window to secondary. It can do this because it 
+     * is going to shortly make a secondary into the new primary.
+     */
+    @InternalAPI
+    public synchronized void setType(Type type, boolean okayToDemotePrimary) throws IllegalStateException {
+
         if (type == Type.UNKNOWN) {
             throw new RuntimeException("Cannot set window type to unknown.");
         }
@@ -490,8 +503,10 @@ public abstract class Window2D implements HUDDisplayable {
             case SECONDARY:
                 break;
             case PRIMARY:
-                throw new IllegalStateException(
-                        "Cannot change the type of a primary window.");
+                if (!okayToDemotePrimary) {
+                    throw new IllegalStateException("Cannot change the type of a primary window.");
+                }
+                break;
             case POPUP:
                 throw new IllegalStateException(
                         "Cannot change the type of a popup window.");
