@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
@@ -45,7 +46,8 @@ import java.io.Serializable;
  * A server cell that provides a microphone proximity listener
  * @author jprovino
  */
-public class MicrophoneProximityListener implements ProximityListenerSrv, Serializable {
+public class MicrophoneProximityListener implements ProximityListenerSrv, Serializable,
+	AudioGroupListener {
 
     private static final Logger logger =
             Logger.getLogger(MicrophoneProximityListener.class.getName());
@@ -115,12 +117,16 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
             ags.spatializer.setAttenuator(
                     DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
 
+	    ags.audioGroupListener = this;
+
             audioGroup = vm.createAudioGroup(microphoneName, ags);
         }
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(false,
-                AudioGroupPlayerInfo.ChatType.PUBLIC));
+            AudioGroupPlayerInfo.ChatType.PUBLIC));
+    }
 
+    public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
         player.attenuateOtherGroups(audioGroup, 0, 0);
     }
 
@@ -144,13 +150,18 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
         }
 
         audioGroup.removePlayer(player);
+    }
 
-        if (audioGroup.getNumberOfPlayers() == 1) {
-            vm.removeAudioGroup(audioGroup);
-        }
+    public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
+	logger.info("Attenuate other groups... " + audioGroup + " player " + player
+	    + " info " + info);
 
         player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-                AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+            AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+
+        if (audioGroup.getNumberOfPlayers() == 0) {
+            AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
+        }
     }
 
     private void activeAreaEntered(String callId) {
@@ -235,7 +246,18 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
 		newAudioGroup.addPlayer(players[i], info);
 	    }
 	}
+    }
 
+    public void remove() {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        AudioGroup audioGroup = vm.getAudioGroup(microphoneName);
+
+        if (audioGroup == null) {
+            return;
+        }
+
+        vm.removeAudioGroup(audioGroup);
     }
 
 }

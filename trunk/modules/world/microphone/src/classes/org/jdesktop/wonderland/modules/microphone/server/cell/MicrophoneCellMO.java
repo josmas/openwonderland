@@ -116,6 +116,7 @@ public class MicrophoneCellMO extends CellMO {
             channelRef.getForUpdate().removeMessageReceiver(MicrophoneEnterCellMessage.class);
 
             if (proxListener != null) {
+		proxListener.remove();
                 proxRef.getForUpdate().removeProximityListener(proxListener);
                 proxListener = null;
             }
