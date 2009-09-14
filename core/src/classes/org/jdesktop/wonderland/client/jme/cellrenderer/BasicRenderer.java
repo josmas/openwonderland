@@ -444,7 +444,6 @@ public abstract class BasicRenderer implements CellRendererJME {
             return;
         }
 
-        System.err.println("Picking set "+pickingEnabled);
         cc.setCollidable(collisionEnabled);
         cc.setPickable(pickingEnabled);
     }
