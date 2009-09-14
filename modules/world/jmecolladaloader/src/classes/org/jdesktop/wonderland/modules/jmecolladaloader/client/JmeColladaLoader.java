@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -157,7 +158,7 @@ public class JmeColladaLoader implements ModelLoader {
         return modelNode;
     }
 
-    public Node loadDeployedModel(DeployedModel deployedModel) {
+    public Node loadDeployedModel(DeployedModel deployedModel, Entity rootEntity) {
         InputStream in = null;
         try {
             LoaderData data=null;

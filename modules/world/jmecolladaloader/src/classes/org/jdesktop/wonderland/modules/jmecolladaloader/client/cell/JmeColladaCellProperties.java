@@ -89,7 +89,7 @@ public class JmeColladaCellProperties extends javax.swing.JPanel /*implements Ce
     }
 
     public String getDisplayName() {
-        return "JME Collada Cell";
+        return "Model Cell";
     }
 
 ////    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {

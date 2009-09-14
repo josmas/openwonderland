@@ -119,7 +119,7 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
         try {
             URL url = new URL(baseURL + avatarURL);
             DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
-            spatial = dm.getModelLoader().loadDeployedModel(dm);
+            spatial = dm.getModelLoader().loadDeployedModel(dm, null);
             spatial.setLocalScale(0.22f);
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to for .dep URL", excp);

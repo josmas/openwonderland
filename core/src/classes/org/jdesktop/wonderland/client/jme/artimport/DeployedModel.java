@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
 import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
+ * This class represents a .dep file, which is a deployed model. 
  *
  * @author paulby
  */

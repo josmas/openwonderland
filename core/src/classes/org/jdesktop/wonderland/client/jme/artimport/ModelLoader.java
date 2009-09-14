@@ -23,6 +23,7 @@ import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ModelCellComponent;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
@@ -45,10 +46,12 @@ public interface ModelLoader {
     public ImportedModel importModel(ImportSettings settings) throws IOException;
     
     /**
-     * Given a previously deploy ImportedModel, load the model
-     * @param model
+     * Given a previously deploy model, load the model.
+     *
+     * @param model the model to load
+     * @param rootEntity the entity to which the returned node will be attached.
      */
-    public Node loadDeployedModel(DeployedModel model);
+    public Node loadDeployedModel(DeployedModel model, Entity rootEntity);
 
     /**
      * Deploy the art content to the module.

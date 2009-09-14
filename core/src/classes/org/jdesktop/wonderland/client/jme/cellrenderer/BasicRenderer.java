@@ -71,6 +71,7 @@ public abstract class BasicRenderer implements CellRendererJME {
     protected static Logger logger = Logger.getLogger(BasicRenderer.class.getName());
     protected Cell cell;
     protected Entity entity;
+    private Object entityLock=new Object();
     protected Node rootNode;
     protected Node sceneRoot;
     protected MoveProcessor moveProcessor = null;
@@ -78,6 +79,9 @@ public abstract class BasicRenderer implements CellRendererJME {
     private static ZBufferState zbuf = null;
 
     private CellStatus status = CellStatus.DISK;
+
+    private boolean collisionEnabled = true;
+    private boolean pickingEnabled = true;
     
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -280,6 +284,8 @@ public abstract class BasicRenderer implements CellRendererJME {
         CollisionComponent cc=null;
         if (collisionSystem instanceof JMECollisionSystem) {
             cc = ((JMECollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+            cc.setCollidable(collisionEnabled);
+            cc.setPickable(pickingEnabled);
         } else {
             logger.warning("Unsupported CollisionSystem "+collisionSystem);
         }
@@ -344,7 +350,7 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @return
      */
     public Entity getEntity() {
-        synchronized(this) {
+        synchronized(entityLock) {
             logger.fine("Get Entity "+this.getClass().getName());
             if (entity==null)
                 entity = createEntity();
@@ -384,6 +390,67 @@ public abstract class BasicRenderer implements CellRendererJME {
      */
     protected URL getAssetURL(String uri) throws MalformedURLException {
         return AssetUtils.getAssetURL(uri, cell);
+    }
+
+    /**
+     * @return the collisionEnabled
+     */
+    public boolean isCollisionEnabled() {
+        return collisionEnabled;
+    }
+
+    /**
+     * @param collisionEnabled the collisionEnabled to set
+     */
+    public void setCollisionEnabled(boolean collisionEnabled) {
+        if (this.collisionEnabled == collisionEnabled)
+            return;
+
+        synchronized(entityLock) {
+            this.collisionEnabled = collisionEnabled;
+
+            if (entity!=null) {
+                adjustCollisionSystem();
+            }
+        }
+    }
+
+    public void setPickingEnabled(boolean pickingEnabled) {
+        if (this.pickingEnabled == pickingEnabled)
+            return;
+
+        synchronized(entityLock) {
+            this.pickingEnabled = pickingEnabled;
+
+            if (entity!=null) {
+                adjustCollisionSystem();
+            }
+        }
+    }
+
+    /**
+     * Adjust the collision system after a change to picking or collision
+     */
+    private void adjustCollisionSystem() {
+        CollisionComponent cc = entity.getComponent(CollisionComponent.class);
+        if (collisionEnabled==false && pickingEnabled==false && cc!=null)
+            entity.removeComponent(CollisionComponent.class);
+
+        if (cc==null) {
+            WonderlandSession session = cell.getCellCache().getSession();
+            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
+            cc = setupCollision(collisionSystem, rootNode);
+            entity.addComponent(CollisionComponent.class, cc);
+            return;
+        }
+
+        System.err.println("Picking set "+pickingEnabled);
+        cc.setCollidable(collisionEnabled);
+        cc.setPickable(pickingEnabled);
+    }
+
+    public void setLightingEnabled(boolean lightingEnabled) {
+        // Make sure to use a RenderUpdater
     }
 
     /**

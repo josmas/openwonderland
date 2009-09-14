@@ -73,7 +73,7 @@ public class ModelRenderer extends BasicRenderer {
     @Override
     protected Node createSceneGraph(Entity entity) {
         if (modelComponent!=null) {
-            return modelComponent.loadModel();
+            return modelComponent.loadModel(entity);
         }
 
         if (deployedModel!=null) {
@@ -82,7 +82,7 @@ public class ModelRenderer extends BasicRenderer {
                 logger.warning("No loader for model "+deployedModel.getModelURL());
                 return new Node("No Loader");
             }
-            Node ret = loader.loadDeployedModel(deployedModel);
+            Node ret = loader.loadDeployedModel(deployedModel, entity);
             return ret;
         }
 
@@ -96,7 +96,7 @@ public class ModelRenderer extends BasicRenderer {
         deployedModel.setModelRotation(modelRotation);
         deployedModel.setModelScale(modelScale);
 
-        return loader.loadDeployedModel(deployedModel);
+        return loader.loadDeployedModel(deployedModel, entity);
     }
 
 }

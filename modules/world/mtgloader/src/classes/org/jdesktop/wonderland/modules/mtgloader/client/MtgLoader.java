@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ConfigInstance;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager.ConfigLoadListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -56,19 +57,21 @@ class MtgLoader implements ModelLoader {
      */
     @Override
     public ImportedModel importModel(ImportSettings settings) throws IOException {
-        URL modelURL = settings.getModelURL();
-        ImportedModel importedModel=new ImportedModel(modelURL, null);
-        load(modelURL);
-
-        importedModel.setModelLoader(this);
-        importedModel.setImportSettings(settings);
-        importedModel.setModelBG(new Node("Fake"));
-        
-        return importedModel;
+        throw new RuntimeException("Not Implemented");
+//        URL modelURL = settings.getModelURL();
+//        ImportedModel importedModel=new ImportedModel(modelURL, null);
+//        load(modelURL);
+//
+//        importedModel.setModelLoader(this);
+//        importedModel.setImportSettings(settings);
+//        importedModel.setModelBG(new Node("Fake"));
+//
+//        return importedModel;
     }
     
-    public Node loadDeployedModel(DeployedModel model) {
+    public Node loadDeployedModel(DeployedModel model, Entity rootEntity) {
         String baseURL=null;
+        Node ret = null;
         try {
             baseURL = AssetUtils.getAssetURL(model.getModelURL().substring(0, model.getModelURL().lastIndexOf('/')+1)).toExternalForm();
         } catch (MalformedURLException ex) {
@@ -76,16 +79,18 @@ class MtgLoader implements ModelLoader {
         }
         ClientContextJME.getWorldManager().setConfigBaseURL(baseURL.substring(0,baseURL.length()-1));
         try {
-            load(AssetUtils.getAssetURL(model.getModelURL()));
+            ret = load(AssetUtils.getAssetURL(model.getModelURL()), rootEntity);
 
         } catch (IOException ex) {
             Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return new Node("mtg-stub");
+        return ret;
     }
 
-    private Entity load(URL url) {
+    private Node load(URL url, Entity rootEntity) {
+        Node rootNode = new Node("mtg-root");
+        rootEntity.addComponent(RenderComponent.class, ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode));
         ClientContextJME.getWorldManager().loadConfiguration(url, new ConfigLoadListener() {
 
             public void configLoaded(ConfigInstance ci) {
@@ -95,10 +100,12 @@ class MtgLoader implements ModelLoader {
 
         ConfigInstance ci[] = ClientContextJME.getWorldManager().getAllConfigInstances();
         for (int i=0; i<ci.length; i++) {
-            ClientContextJME.getWorldManager().addEntity(ci[i].getEntity());
+            RenderComponent rc = ci[i].getEntity().getComponent(RenderComponent.class);
+            if (rc!=null)
+                rc.setAttachPoint(rootNode);
+            rootEntity.addEntity(ci[i].getEntity());
         }
-
-        return null;
+        return rootNode;
     }
 
     public DeployedModel deployToModule(File moduleRootDir, ImportedModel importedModel) throws IOException {
