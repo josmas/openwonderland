@@ -29,12 +29,15 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -73,7 +76,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	/*
 	 * Send it to the server so it can be sent to all of the other clients.
 	 */
-        session.send(PresenceManagerClient.getInstance(), new PresenceInfoAddedMessage(presenceInfo));
+        send(new PresenceInfoAddedMessage(presenceInfo));
     }
 
     public void presenceInfoAdded(PresenceInfo presenceInfo) {
@@ -176,8 +179,7 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     public void removePresenceInfo(PresenceInfo presenceInfo) {
-        session.send(PresenceManagerClient.getInstance(),
-                new PresenceInfoRemovedMessage(presenceInfo));
+        send(new PresenceInfoRemovedMessage(presenceInfo));
     }
 
     public void presenceInfoRemoved(PresenceInfo presenceInfo) {
@@ -357,8 +359,7 @@ public class PresenceManagerImpl implements PresenceManager {
             presenceInfo.usernameAlias = info.usernameAlias;
         }
 
-        session.send(PresenceManagerClient.getInstance(),
-	    new PresenceInfoChangeMessage(info));
+        send(new PresenceInfoChangeMessage(info));
 
         //notifyListeners(info, ChangeType.UPDATED);
     }
@@ -371,8 +372,7 @@ public class PresenceManagerImpl implements PresenceManager {
     public void setSpeaking(PresenceInfo info, boolean isSpeaking) {
         info.isSpeaking = isSpeaking;
 
-        session.send(PresenceManagerClient.getInstance(),
-	    new PresenceInfoChangeMessage(info));
+        send(new PresenceInfoChangeMessage(info));
 
         //notifyListeners(info, ChangeType.UPDATED);
     }
@@ -385,8 +385,7 @@ public class PresenceManagerImpl implements PresenceManager {
     public void setMute(PresenceInfo info, boolean isMuted) {
         info.isMuted = isMuted;
 
-        session.send(PresenceManagerClient.getInstance(),
-	    new PresenceInfoChangeMessage(info));
+        send(new PresenceInfoChangeMessage(info));
 
         //notifyListeners(info, ChangeType.UPDATED);
     }
@@ -399,8 +398,7 @@ public class PresenceManagerImpl implements PresenceManager {
     public void setEnteredConeOfSilence(PresenceInfo info, boolean inConeOfSilence) {
         info.inConeOfSilence = inConeOfSilence;
 
-        session.send(PresenceManagerClient.getInstance(),
-	    new PresenceInfoChangeMessage(info));
+        send(new PresenceInfoChangeMessage(info));
 
         //notifyListeners(info, ChangeType.UPDATED);
     }
@@ -413,8 +411,7 @@ public class PresenceManagerImpl implements PresenceManager {
     public void setInSecretChat(PresenceInfo info, boolean inSecretChat) {
         info.inSecretChat = inSecretChat;
 
-        session.send(PresenceManagerClient.getInstance(),
-	    new PresenceInfoChangeMessage(info));
+        send(new PresenceInfoChangeMessage(info));
 
         //notifyListeners(info, ChangeType.UPDATED);
     }
@@ -436,8 +433,7 @@ public class PresenceManagerImpl implements PresenceManager {
             info = cellIDMap.values().toArray(new PresenceInfo[0]);
         }
 
-        session.send(PresenceManagerClient.getInstance(),
-	    new PlayerInRangeListenerMessage(true));
+        send(new PlayerInRangeListenerMessage(true));
 
         for (int i = 0; i < info.length; i++) {
             listener.presenceInfoChanged(info[i], ChangeType.USER_ADDED);
@@ -449,12 +445,20 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param PresenceManagerListener the listener to be removed
      */
     public void removePresenceManagerListener(PresenceManagerListener listener) {
-        session.send(PresenceManagerClient.getInstance(),
-	    new PlayerInRangeListenerMessage(false));
+        send(new PlayerInRangeListenerMessage(false));
 
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+
+    private void send(Message message) {
+	if (session.getStatus().equals(Status.CONNECTED) == false) {
+	    logger.warning("Not Connected.  Can't send " + message);
+	    return;
+	}
+
+	session.send(PresenceManagerClient.getInstance(), message);
     }
 
     /**
