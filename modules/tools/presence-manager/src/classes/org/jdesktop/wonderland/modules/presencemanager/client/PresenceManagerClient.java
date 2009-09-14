@@ -59,7 +59,6 @@ public class PresenceManagerClient extends BaseConnection implements
             Logger.getLogger(PresenceManagerClient.class.getName());
     private WonderlandSession session;
     private CellID cellID;
-    private boolean connected = true;
     private PresenceManagerImpl pm;
     private PresenceInfo presenceInfo;
     private static PresenceManagerClient client;
