@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
@@ -43,6 +44,9 @@ public class ModelCellComponent extends CellComponent {
     private String deployedModelURL = null;   // URL of .dep file
     protected DeployedModel deployedModel = null;
     protected ModelRenderer renderer = null;
+    private boolean collidable = true;
+    private boolean pickable = true;
+    private boolean lightingEnabled = true;
 
     public ModelCellComponent(Cell cell) {
         super(cell);
@@ -61,6 +65,8 @@ public class ModelCellComponent extends CellComponent {
                     getDeployedModel();
                 }
                 renderer = new ModelRenderer(cell, deployedModel);
+                renderer.setCollisionEnabled(collidable);
+                renderer.setPickingEnabled(pickable);
             }
             return renderer;
         }
@@ -86,14 +92,14 @@ public class ModelCellComponent extends CellComponent {
      *
      * @return
      */
-    public Node loadModel() {
+    public Node loadModel(Entity rootEntity) {
         Node ret = new Node();
 
         if (deployedModel==null)
             getDeployedModel();
 
         ModelLoader loader = deployedModel.getModelLoader();
-        Node model = loader.loadDeployedModel(deployedModel);
+        Node model = loader.loadDeployedModel(deployedModel, rootEntity);
         if (model != null) {
             model.setName(deployedModel.getModelURL());
             ret.attachChild(model);
@@ -107,6 +113,14 @@ public class ModelCellComponent extends CellComponent {
 
         ModelCellComponentClientState state = (ModelCellComponentClientState) clientState;
         setDeployedModelURL(state.getDeployedModelURL());
+        collidable = state.isCollisionEnabled();
+        pickable = state.isPickingEnabled();
+        lightingEnabled = state.isLightingEnabled();
+
+        if (renderer!=null) {
+            renderer.setCollisionEnabled(collidable);
+            renderer.setPickingEnabled(pickable);
+        }
      }
 
     /**

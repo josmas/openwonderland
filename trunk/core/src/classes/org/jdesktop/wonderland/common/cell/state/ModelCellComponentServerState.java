@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  * world.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author paulby
  */
 @XmlRootElement(name="model-cell-component")
 @ServerState
@@ -36,6 +37,15 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
     /* The URI of the static deployedModelURL file */
     @XmlElement(name="deployedModelURL")
     public String deployedModelURL = null;
+
+    @XmlElement(name="PickingEnabled")
+    private boolean pickable = true;
+
+    @XmlElement(name="CollisionEnabled")
+    private boolean collidable = true;
+
+    @XmlElement(name="LightingEnabled")
+    private boolean lightingEnabled = true;
 
 
     /** Default constructor */
@@ -55,12 +65,18 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
             ret = new ModelCellComponentServerState();
 
         ret.deployedModelURL = this.deployedModelURL;
+        ret.collidable = this.collidable;
+        ret.pickable = this.pickable;
+        ret.lightingEnabled = this.lightingEnabled;
 
         return ret;
     }
 
     public CellComponentClientState setClientState(ModelCellComponentClientState state) {
         state.setDeployedModelURL(deployedModelURL);
+        state.setCollisionEnabled(collidable);
+        state.setPickingEnabled(pickable);
+        state.setLightingEnabled(lightingEnabled);
 
         return state;
     }
@@ -82,5 +98,47 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
      */
     public void setDeployedModelURL(String deployedModelURL) {
         this.deployedModelURL = deployedModelURL;
+    }
+
+    /**
+     * @return the pickable
+     */
+    @XmlTransient public boolean isPickingEnabled() {
+        return pickable;
+    }
+
+    /**
+     * @param pickable the pickable to set
+     */
+    public void setPickingEnable(boolean pickable) {
+        this.pickable = pickable;
+    }
+
+    /**
+     * @return the collidable
+     */
+    @XmlTransient public boolean isCollisionEnabled() {
+        return collidable;
+    }
+
+    /**
+     * @param collidable the collidable to set
+     */
+    public void setCollisionEnabled(boolean collidable) {
+        this.collidable = collidable;
+    }
+
+    /**
+     * @return the lightingEnabled
+     */
+    @XmlTransient public boolean isLightingEnabled() {
+        return lightingEnabled;
+    }
+
+    /**
+     * @param lightingEnabled the lightingEnabled to set
+     */
+    public void setLightingEnabled(boolean lightingEnabled) {
+        this.lightingEnabled = lightingEnabled;
     }
 }

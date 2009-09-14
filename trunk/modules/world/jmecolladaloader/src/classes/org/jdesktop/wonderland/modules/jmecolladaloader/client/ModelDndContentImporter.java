@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.wonderland.client.jme.artimport.*;
@@ -106,16 +107,16 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         if (result == JOptionPane.NO_OPTION) {
             URL url = null;
             try {
-                JOptionPane.showMessageDialog(frame, "Use Existing is not currently supported");
-                return null;
+//                JOptionPane.showMessageDialog(frame, "Use Existing is not currently supported");
+//                return null;
 
                 // THIS IS WRONG, we need to import the model so that the
                 // server state is set correctly in the deployedModel
-//                url = resource.getURL();
-//                LoaderManager manager = LoaderManager.getLoaderManager();
-//                DeployedModel dm = manager.getLoaderFromDeployment(url);
-//                createCell(dm);
-//                return dm.getModelURL();
+                url = resource.getURL();
+                LoaderManager manager = LoaderManager.getLoaderManager();
+                DeployedModel dm = manager.getLoaderFromDeployment(url);
+                createCell(dm);
+                return dm.getModelURL();
             } catch (java.lang.Exception excp) {
                 logger.log(Level.WARNING, "Unable to load existing model, url=" +
                         url, excp);
@@ -325,6 +326,9 @@ public class ModelDndContentImporter implements ContentImporterSPI {
     public void createCell(DeployedModel deployedModel) {
         // Fetch the bounds of the Cell and use it as the bounds hint.
         CellServerState state = deployedModel.getCellServerState();
+        if (state==null) {
+            state = deployedModel.getModelLoader().getCellServerState("Foo", Vector3f.ZERO, new Quaternion(), new Vector3f(1,1,1), null);
+        }
         PositionComponentServerState pcss =
                 (PositionComponentServerState) state.getComponentServerState(PositionComponentServerState.class);
         BoundingVolume boundsHint = null;
