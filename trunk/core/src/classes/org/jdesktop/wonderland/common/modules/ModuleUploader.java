@@ -26,6 +26,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import org.jdesktop.wonderland.common.login.AuthenticationManager;
+import org.jdesktop.wonderland.common.login.AuthenticationService;
 
 /**
  * Upload a module to the server
@@ -34,7 +36,8 @@ import java.net.URLConnection;
 public class ModuleUploader {
     private URL baseURL;
     private URL uploadURL;
-    
+    private String authURL;
+
     // where to find the upload servlet relative to the base URL
     private static final String UPLOAD_SERVLET = 
             "wonderland-web-modules/ModuleUploadServlet";
@@ -54,7 +57,7 @@ public class ModuleUploader {
      * @return the base URL
      */
     protected URL getBaseURL() {
-        return uploadURL;
+        return baseURL;
     }
     
     /**
@@ -64,7 +67,23 @@ public class ModuleUploader {
     protected URL getUploadURL() {
         return uploadURL;
     }
-    
+
+    /**
+     * Set the authentication URL, if any
+     * @param authURL the authentication URL
+     */
+    public void setAuthURL(String authURL) {
+        this.authURL = authURL;
+    }
+
+    /**
+     * Get the authentication URL
+     * @return the authentication URL, or null if not set
+     */
+    public String getAuthURL() {
+        return authURL;
+    }
+
     /**
      * Upload a module
      * @param module the module to upload
@@ -83,6 +102,18 @@ public class ModuleUploader {
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Cache-Control", "no-cache");
 
+        // tell the server not to redirect us to the login page
+        conn.setRequestProperty("Redirect", "false");
+
+        // if there is an authentication manager for this server, attempt
+        // to secure the request
+        if (getAuthURL() != null) {
+            AuthenticationService as = AuthenticationManager.get(getAuthURL());
+            if (as != null) {
+                as.secureURLConnection(conn);
+            }
+        }
+        
         MultiPartFormOutputStream up =
                 new MultiPartFormOutputStream(conn.getOutputStream(), boundary);
 

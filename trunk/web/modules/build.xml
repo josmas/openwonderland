@@ -36,6 +36,13 @@
                 <include name="org/jdesktop/wonderland/modules/*.class"/>
                 <include name="org/jdesktop/wonderland/modules/ant/**"/>
             </fileset>
+
+            <!-- include some client classes that are required by the deploy
+                 ant task -->
+            <zipfileset src="${core.dir}/build/lib/wonderland-client.jar">
+                <include name="org/jdesktop/wonderland/client/login/**"/>
+                <include name="org/jdesktop/wonderland/client/comms/SessionStatusListener*.class"/>
+            </zipfileset>
         </jar>
 
         <jar jarfile="${dist.dir}/wonderland-modules-core.jar">

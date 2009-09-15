@@ -88,6 +88,7 @@ import org.jdesktop.wonderland.common.FileUtils;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.common.login.AuthenticationInfo;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleUploader;
@@ -656,12 +657,28 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                     }
 
                     ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
+
+                    // if the authentication type is NONE, don't authenticate,
+                    // since the upload will only accept modules from an
+                    // administrator.
+                    // XXX TODO: we should fix this so that upload writes to
+                    // the content repository, so that non-admin users can
+                    // upload art when authenication is turned on XXX
+                    if (targetServer.getDetails().getAuthInfo().getType() ==
+                            AuthenticationInfo.Type.WEB_SERVICE)
+                    {
+                        uploader.setAuthURL(targetServer.getCredentialManager().getAuthenticationURL());
+                    }
+
                     uploader.upload(moduleJar);
                 } catch (MalformedURLException ex) {
                     LOGGER.log(Level.SEVERE, "MalformedURL " + targetServer.getServerURL(), ex);
                     return;
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "IO Exception during upload", e);
+                    return;
+                } catch (Throwable t) {
+                    LOGGER.log(Level.SEVERE, "Exception during upload", t);
                     return;
                 }
 
