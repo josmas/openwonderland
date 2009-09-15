@@ -67,6 +67,7 @@ public class ModelCellComponent extends CellComponent {
                 renderer = new ModelRenderer(cell, deployedModel);
                 renderer.setCollisionEnabled(collidable);
                 renderer.setPickingEnabled(pickable);
+                renderer.setLightingEnabled(lightingEnabled);
             }
             return renderer;
         }
@@ -120,6 +121,7 @@ public class ModelCellComponent extends CellComponent {
         if (renderer!=null) {
             renderer.setCollisionEnabled(collidable);
             renderer.setPickingEnabled(pickable);
+            renderer.setLightingEnabled(lightingEnabled);
         }
      }
 

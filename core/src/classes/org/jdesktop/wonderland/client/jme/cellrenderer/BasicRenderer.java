@@ -44,6 +44,7 @@ import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.component.CellPhysicsPropertiesComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -82,7 +83,8 @@ public abstract class BasicRenderer implements CellRendererJME {
 
     private boolean collisionEnabled = true;
     private boolean pickingEnabled = true;
-    
+    private boolean lightingEnabled = true;
+
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
         zbuf.setEnabled(true);
@@ -448,8 +450,24 @@ public abstract class BasicRenderer implements CellRendererJME {
         cc.setPickable(pickingEnabled);
     }
 
-    public void setLightingEnabled(boolean lightingEnabled) {
-        // Make sure to use a RenderUpdater
+    public void setLightingEnabled(final boolean lightingEnabled) {
+        if (this.lightingEnabled == lightingEnabled) {
+            return;
+        }
+
+        this.lightingEnabled = lightingEnabled;
+
+        ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
+            public void commit() {
+                if (lightingEnabled) {
+                    rootNode.setLightCombineMode(Spatial.LightCombineMode.Inherit);
+                } else {
+                    rootNode.setLightCombineMode(Spatial.LightCombineMode.Off);
+                }
+
+                ClientContextJME.getWorldManager().addToUpdateList(rootNode);
+            }
+        });
     }
 
     /**
