@@ -41,7 +41,6 @@ public class ModelCellComponentProperties
             "org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle");
     private CellPropertiesEditor editor = null;
     private ModelCellComponentServerState origState = null;
-    private boolean dirty = false;
 
     /** Creates new form SampleComponentProperties */
     public ModelCellComponentProperties() {
@@ -89,6 +88,8 @@ public class ModelCellComponentProperties
             collisionEnabledCB.setSelected(mState.isCollisionEnabled());
             pickingEnabledCB.setSelected(mState.isPickingEnabled());
             lightingEnabledCB.setSelected(mState.isLightingEnabled());
+
+            checkDirty();
         }
     }
 
@@ -122,6 +123,8 @@ public class ModelCellComponentProperties
         collisionEnabledCB.setSelected(origState.isCollisionEnabled());
         pickingEnabledCB.setSelected(origState.isPickingEnabled());
         lightingEnabledCB.setSelected(origState.isLightingEnabled());
+
+        checkDirty();
     }
 
     /**
@@ -141,10 +144,22 @@ public class ModelCellComponentProperties
         public void changedUpdate(DocumentEvent e) {
             checkDirty();
         }
+    }
 
-        private void checkDirty() {
-            editor.setPanelDirty(ModelCellComponentProperties.class, dirty);
+    private void checkDirty() {
+        if (origState == null) {
+            editor.setPanelDirty(ModelCellComponentProperties.class, true);
+            return;
         }
+
+        boolean dirty;
+
+        dirty = !deployedModelURLTF.getText().equals(origState.getDeployedModelURL());
+        dirty |= (collisionEnabledCB.isSelected() != origState.isCollisionEnabled());
+        dirty |= (pickingEnabledCB.isSelected() != origState.isPickingEnabled());
+        dirty |= (lightingEnabledCB.isSelected() != origState.isLightingEnabled());
+
+        editor.setPanelDirty(ModelCellComponentProperties.class, dirty);
     }
 
     /** This method is called from within the constructor to
@@ -221,19 +236,15 @@ public class ModelCellComponentProperties
     }// </editor-fold>//GEN-END:initComponents
 
     private void collisionEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collisionEnabledCBActionPerformed
-        dirty=true;
-        editor.setPanelDirty(ModelCellComponentProperties.class, dirty);        // TODO add your handling code here:
+        checkDirty();
     }//GEN-LAST:event_collisionEnabledCBActionPerformed
 
     private void pickingEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pickingEnabledCBActionPerformed
-        dirty=true;
-        editor.setPanelDirty(ModelCellComponentProperties.class, dirty);        // TODO add your handling code here:
+        checkDirty();
     }//GEN-LAST:event_pickingEnabledCBActionPerformed
 
     private void lightingEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lightingEnabledCBActionPerformed
-        dirty=true;
-        editor.setPanelDirty(ModelCellComponentProperties.class, dirty);        // TODO add your handling code here:
-        // TODO add your handling code here:
+        checkDirty();
     }//GEN-LAST:event_lightingEnabledCBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
