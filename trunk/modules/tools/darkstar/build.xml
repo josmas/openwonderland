@@ -18,6 +18,7 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${web.dir}/asset/dist/wonderland-asset-core.jar"/>
+        <path location="${web.dir}/checksums/dist/wonderland-checksums-core.jar"/>
         <path location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
         <path location="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
