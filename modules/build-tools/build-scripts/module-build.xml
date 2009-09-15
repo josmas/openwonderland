@@ -118,8 +118,13 @@
                 
     <target name="-module-deploy">
         <deploy module="${module.dist.dir}/${module.jarname}.jar"
-                serverurl="${wonderland.web.url}"/>
-        <runner action="restart" serverurl="${wonderland.web.url}"/>
+                serverurl="${wonderland.web.url}"
+                username="${wonderland.web.username}"
+                password="${wonderland.web.password}"/>
+        <runner action="restart" 
+                serverurl="${wonderland.web.url}"
+                username="${wonderland.web.username}"
+                password="${wonderland.web.password}"/>
     </target>            
                 
     <target name="-module-clean">

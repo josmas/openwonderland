@@ -24,6 +24,13 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerDetails;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.login.AuthenticationException;
+import org.jdesktop.wonderland.common.login.AuthenticationInfo;
+import org.jdesktop.wonderland.common.login.AuthenticationManager;
+import org.jdesktop.wonderland.common.login.AuthenticationService;
 
 /**
  * @author jkaplan
@@ -31,9 +38,10 @@ import org.apache.tools.ant.Task;
 public class RunnerTask extends Task {
     private URL serverUrl;
     private String action = "restart";
-    private boolean wait = true;
     private String service = "all";
-    
+    private String username;
+    private String password;
+
     private Set<Service> services = new HashSet<Service>();
     
     // url for restarting the server
@@ -48,14 +56,18 @@ public class RunnerTask extends Task {
         this.action = action;
     }
     
-    public void setWait(boolean wait) {
-        this.wait = wait;
-    }
-    
     public void setService(String service) {
         this.service = service;
     }
-    
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void add(Service service) {
         if (service.name == null || service.name.trim().length() == 0) {
             throw new BuildException("service requires a name");
@@ -83,11 +95,27 @@ public class RunnerTask extends Task {
     } 
     
     protected void execute(String service, String action)
-        throws IOException
+        throws IOException, BuildException
     {
         URL restartUrl = new URL(serverUrl, SERVICES_URL + "/" +
                                  service + "/" + action);
         HttpURLConnection uc = (HttpURLConnection) restartUrl.openConnection();
+        
+        // tell the server not to redirect us to the login page
+        uc.setRequestProperty("Redirect", "false");
+
+        // if there is authentication, make sure to secure the connection
+        try {
+            AuthenticationService as = getAuthentication();
+            if (as != null) {
+                as.secureURLConnection(uc);
+            }
+        } catch (AuthenticationException ae) {
+            throw new BuildException("Error requesting restart from " +
+                                     restartUrl + ": " + ae.getMessage(), ae);
+        }
+
+        // now connect to the server
         uc.connect();
                 
         int response = uc.getResponseCode();
@@ -96,7 +124,28 @@ public class RunnerTask extends Task {
                                   uc.getResponseMessage());
         }
     }
-    
+
+    protected AuthenticationService getAuthentication()
+        throws AuthenticationException, IOException
+    {
+        AuthenticationService out = null;
+
+        // if the username is not null, set up authentication
+        if (username != null && username.length() > 0 &&
+                password != null && password.length() > 0)
+        {
+            ServerSessionManager ssm = LoginManager.getSessionManager(serverUrl.toString());
+            ServerDetails details = ssm.getDetails();
+
+            if (details.getAuthInfo().getType() == AuthenticationInfo.Type.WEB_SERVICE) {
+                out = AuthenticationManager.login(details.getAuthInfo(),
+                                                  username, password);
+            }
+        }
+
+        return out;
+    }
+
     public static class Service {
         private String name;
     
