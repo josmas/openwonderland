@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.login.CredentialManager;
 
 /**
  * The main logic for the SAS Xremwin provider client.
@@ -266,6 +267,15 @@ public class SasXrwProviderMain
             // if this was an HTTP URL connection, check the return value
             if (uc instanceof HttpURLConnection) {
                 HttpURLConnection huc = (HttpURLConnection) uc;
+
+                // don't redirect to the login page if there is a login failure
+                huc.setRequestProperty("Redirect", "false");
+
+                // secure the connection with the credentials for our session
+                // (we can only do this for an http connection)
+                CredentialManager cm = session.getSessionManager().getCredentialManager();
+                cm.secureURLConnection(huc);
+
                 if (huc.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     logger.warning("Connection to " + url + " returns " +
                             huc.getResponseCode() + " : " +
