@@ -184,7 +184,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
                 " Protocol " + location.getProtocol());
 
         String evolver = location.getFile();
-        if (evolver.contains("avatars/evolver")) {
+        if (evolver.contains("avatars/evolver") && location.getProtocol().equalsIgnoreCase("wlcontent")) {
             System.err.println("Orig "+evolver);
             evolver = evolver.substring(evolver.indexOf("localRepo"));
             evolver = evolver.substring(evolver.indexOf('/'));
