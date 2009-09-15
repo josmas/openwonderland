@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.darkstar.server;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -49,11 +52,18 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     private static final Logger logger =
             Logger.getLogger(DarkstarWebLogin.class.getName());
 
-    private static final Map<DarkstarRunnerImpl, ServerSessionManager> sessions =
+    private static final String USERNAME_PROP = "wonderland.webserver.user";
+    private static final String USERNAME_DEFAULT = "webserver";
+    private static final String PASSWORDFILE_PROP = "wonderland.webserver.password.file";
+
+    private final Map<DarkstarRunnerImpl, ServerSessionManager> sessions =
             new LinkedHashMap<DarkstarRunnerImpl, ServerSessionManager>();
 
-    private static final Set<DarkstarServerListener> listeners =
+    private final Set<DarkstarServerListener> listeners =
             new CopyOnWriteArraySet<DarkstarServerListener>();
+
+    private String username;
+    private File passwordFile;
 
     /**
      * Get an instance of the DarkstarWebLogin class
@@ -69,6 +79,13 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     protected DarkstarWebLogin() {
         LoginManager.setLoginUI(new DarkstarWebLoginUI());
         LoginManager.setPluginFilter(new PluginFilter.NoPluginFilter());
+
+        // read username and password file from properties
+        username = System.getProperty(USERNAME_PROP, USERNAME_DEFAULT);
+        String passwordFileName = System.getProperty(PASSWORDFILE_PROP);
+        if (passwordFileName != null) {
+            passwordFile = new File(passwordFileName);
+        }
 
         // listen for runners
         RunManager.getInstance().addRunnerListener(this);
@@ -170,6 +187,8 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
             }
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error getting session manager", ioe);
+        } catch (Throwable t) {
+            logger.log(Level.WARNING, "Error sending server started event", t);
         }
     }
 
@@ -178,8 +197,12 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
      * @param runner the runner that stopped
      */
     protected void fireServerStopped(DarkstarRunnerImpl runner) {
-        for (DarkstarServerListener l : listeners) {
-            l.serverStopped(runner);
+        try {
+            for (DarkstarServerListener l : listeners) {
+                l.serverStopped(runner);
+            }
+        } catch (Throwable t) {
+            logger.log(Level.WARNING, "Error sending server stopped event", t);
         }
     }
 
@@ -209,7 +232,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     private class DarkstarWebLoginUI implements LoginUI {
         public void requestLogin(NoAuthLoginControl control) {
             try {
-                control.authenticate("webserver", "Wonderland web server");
+                control.authenticate(username, "Wonderland web server");
             } catch (LoginFailureException lfe) {
                 logger.log(Level.WARNING, "Error connecting to " +
                            control.getServerURL(), lfe);
@@ -218,9 +241,26 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
         }
 
         public void requestLogin(UserPasswordLoginControl control) {
+            try {
+                // read the password file
+                BufferedReader br = new BufferedReader(new FileReader(passwordFile));
+                String password = br.readLine();
+
+                control.authenticate(username, password);
+                return;
+            } catch (LoginFailureException lfe) {
+                logger.log(Level.WARNING, "Error connecting to " +
+                           control.getServerURL(), lfe);
+                control.cancel();
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error connecting to " +
+                           control.getServerURL(), ioe);
+                control.cancel();
+            }
         }
 
         public void requestLogin(WebURLLoginControl control) {
+            throw new UnsupportedOperationException("Not supported");
         }
     }
 
