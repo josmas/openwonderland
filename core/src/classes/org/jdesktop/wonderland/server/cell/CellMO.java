@@ -67,6 +67,7 @@ import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.common.cell.security.ModifyAction;
+import org.jdesktop.wonderland.common.cell.security.MoveAction;
 import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -81,7 +82,7 @@ import org.jdesktop.wonderland.server.state.PositionServerStateHelper;
  * @author paulby
  */
 @ExperimentalAPI
-@Actions({ViewAction.class, ModifyAction.class, ComponentAction.class, ChildrenAction.class})
+@Actions({ViewAction.class, ModifyAction.class, ComponentAction.class, ChildrenAction.class, MoveAction.class})
 public abstract class CellMO implements ManagedObject, Serializable {
 
     private ManagedReference<CellMO> parentRef=null;

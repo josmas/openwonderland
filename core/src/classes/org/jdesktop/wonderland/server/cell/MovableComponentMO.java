@@ -24,8 +24,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
-import org.jdesktop.wonderland.common.cell.security.MoveAction;
-import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -36,7 +34,6 @@ import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
  *
  * @author paulby
  */
-@Actions(MoveAction.class)
 public class MovableComponentMO extends CellComponentMO {
 
     @UsesCellComponentMO(ChannelComponentMO.class)
