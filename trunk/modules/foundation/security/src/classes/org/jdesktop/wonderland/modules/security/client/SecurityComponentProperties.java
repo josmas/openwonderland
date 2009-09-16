@@ -46,6 +46,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -95,6 +96,22 @@ public class SecurityComponentProperties extends JPanel
         permsTable.getSelectionModel().addListSelectionListener(
                 new EditButtonSelectionListener());
         perms.addTableModelListener(new TableDirtyListener());
+
+        // resize columns optimally
+        for (int i = 0; i < permsTable.getColumnCount(); i++) {
+            TableColumn tc = permsTable.getColumnModel().getColumn(i);
+            switch (i) {
+                case 1:
+                    tc.setPreferredWidth(120);
+                    break;
+                case 2:
+                    tc.setPreferredWidth(80);
+                    break;
+                default:
+                    tc.setPreferredWidth(100);
+                    break;
+            }
+        }
 
         editPermsTree.setModel(new DefaultTreeModel(edit));
         editPermsTree.addTreeSelectionListener(new TreeSelectionListener() {
@@ -696,18 +713,6 @@ public class SecurityComponentProperties extends JPanel
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
-    class PrincipalCellRender extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
-            Principal p = (Principal) value;
-
-            return super.getListCellRendererComponent(list, p.getId(), index,
-                    isSelected, cellHasFocus);
-        }
-    }
-
     class PermTableModel extends AbstractTableModel {
 
         private List<Principal> principals = new LinkedList<Principal>();
@@ -834,7 +839,16 @@ public class SecurityComponentProperties extends JPanel
                     return p.getType().toString();
                 case 1:
                     p = principals.get(rowIndex);
-                    return p.getId();
+
+                    // special case -- if the princpal is an everybody
+                    // principal (the "users" group), display the name as
+                    // "everyone else"
+                    String name = p.getId();
+                    if (p.getType() == Principal.Type.EVERYBODY) {
+                        name = BUNDLE.getString("Everybody");
+                    }
+
+                    return name;
                 case 2:
                     return owner.get(rowIndex);
                 case 3:

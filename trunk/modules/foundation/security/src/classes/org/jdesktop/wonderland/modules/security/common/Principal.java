@@ -32,7 +32,7 @@ public class Principal implements Serializable, Comparable {
 
     public enum Type {
 
-        USER, GROUP;
+        USER, GROUP, EVERYBODY;
 
         @Override
         public String toString() {
@@ -41,6 +41,8 @@ public class Principal implements Serializable, Comparable {
                     return BUNDLE.getString("Group");
                 case USER:
                     return BUNDLE.getString("User");
+                case EVERYBODY:
+                    return BUNDLE.getString("Everybody");
                 default:
                     return "unknown";
             }
