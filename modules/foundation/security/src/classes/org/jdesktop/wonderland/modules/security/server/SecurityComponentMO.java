@@ -245,46 +245,6 @@ public class SecurityComponentMO extends CellComponentMO {
     }
 
     /**
-     * Find all actions in this cell and its components
-     * @return the set of actions defined by the cell and all its components
-     */
-    protected Set<Action> findActions() {
-        Set<Action> out = new LinkedHashSet<Action>();
-        CellMO cell = cellRef.get();
-
-        // add all the actions for the cell
-        getActions(cellRef.get().getClass(), out);
-
-        // go through each component and add its actions
-        for (ManagedReference<CellComponentMO> componentRef : cell.getAllComponentRefs()) {
-            getActions(componentRef.get().getClass(), out);
-        }
-
-        return out;
-    }
-
-    /**
-     * Find all action annotations on a given class
-     * @param clazz the class to search
-     * @param actions the set of actions to add to
-     * @return the actions for the class
-     */
-    private void getActions(Class clazz, Set<Action> actions) {
-        Actions classActions = (Actions) clazz.getAnnotation(Actions.class);
-
-        if (classActions != null) {
-            for (Class ac : classActions.value()) {
-                actions.add(Action.getInstance(ac));
-            }
-        }
-
-        // search the superclass for any actions
-        if (clazz.getSuperclass() != null) {
-            getActions(clazz.getSuperclass(), actions);
-        }
-    }
-
-    /**
      * Get the permissions for the current user.  This is submitted as a request
      * to the security service that evaluates the security rules for the
      * current user and sends the result over a channel.

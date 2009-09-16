@@ -107,7 +107,7 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
         out.add(new Principal(username, Type.USER));
 
         // add the default group principal
-        out.add(new Principal(defaultGroup, Type.GROUP));
+        out.add(new Principal(defaultGroup, Type.EVERYBODY));
 
         // get the credential manager to use
         CredentialManager cm = ServerAuthentication.getAuthenticationService();

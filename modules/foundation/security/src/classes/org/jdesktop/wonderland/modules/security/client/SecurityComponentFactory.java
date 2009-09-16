@@ -67,7 +67,7 @@ public class SecurityComponentFactory implements CellComponentFactorySPI {
         }
 
         // add view permissions for all users
-        Principal p = new Principal("users", Principal.Type.GROUP);
+        Principal p = new Principal("users", Principal.Type.EVERYBODY);
         ActionDTO view = new ActionDTO(new ViewAction());
         perms.getPermissions().add(new Permission(
                 p, view, Permission.Access.GRANT));

@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -651,20 +652,69 @@ public class CellResourceService extends AbstractService {
         protected boolean getPermission(Set<Principal> userPrincipals,
                                         Action action)
         {
+            // collect all permissions
+            List<Permission> myPerms = new ArrayList<Permission>();
             for (Principal p : userPrincipals) {
                 // first, check if this principal is an owner
                 if (owners.contains(p)) {
                     return true;
                 }
 
-                // now see if this particular principal has this permission
-                if (getPermission(p, action)) {
-                    return true;
+                // find the permission for this principal
+                Permission perm = getPermission(p, action);
+                if (perm != null) {
+                    // now check if the permission is a user permission.  If
+                    // it is, it means it was a permission specifically for
+                    // this user, and therefore should be applied directly
+                    // and not combined with any other permissions.
+                    if (perm.getPrincipal().getType() == Principal.Type.USER) {
+                        return (perm.getAccess() == Access.GRANT);
+                    }
+
+                    // if the permission is a group or everybody permission,
+                    // put it on the list to combine later
+                    myPerms.add(perm);
                 }
             }
 
-            // the permission wasn't found or was denied to all principals
-            // for this cell
+            // now go through all the group permissions. If there are any
+            // positive group permissions, this means that at least one of
+            // the groups this user is a member of has access to the content,
+            // so access should be granted
+            boolean hasGroupPerm = false;
+            for (Iterator<Permission> i = myPerms.iterator(); i.hasNext();) {
+                Permission perm = i.next();
+
+                if (perm.getPrincipal().getType() == Principal.Type.GROUP) {
+                    hasGroupPerm = true;
+                    i.remove();
+
+                    if (perm.getAccess() == Access.GRANT) {
+                        return true;
+                    }
+                }
+            }
+
+            // at this point, if there was a group permission defined, we know
+            // that it was a DENY because otherwise we would have returned
+            // above.  That means that the user wasn't part of any groups
+            // that had permission, but was part of at least one group that
+            // was denied permission.  In this case, we should deny access.
+            if (hasGroupPerm) {
+                return false;
+            }
+
+            // last, we check for any remaining permissionm, which must
+            // be everyone permissions. There is no way to combine these, so
+            // just go with whatever the first one says (hopefully there is
+            // only one)
+            for (Permission perm : myPerms) {
+                return (perm.getAccess() == Access.GRANT);
+            }
+            
+            // if we get here, it means that there were no permissions for
+            // this user, any of the user's groups or everybody.  In that case,
+            // deny access.
             return false;
         }
 
@@ -677,7 +727,7 @@ public class CellResourceService extends AbstractService {
          * @return true if the given principal has permission for the given
          * action, or false if it is denied or undefined.
          */
-        protected boolean getPermission(Principal p, Action action) {
+        protected Permission getPermission(Principal p, Action action) {
             // construct a prototype permission to search for
             Permission search = new Permission(p, new ActionDTO(action), null);
 
@@ -692,7 +742,7 @@ public class CellResourceService extends AbstractService {
             
             // if the permission exists, return its value
             if (perm != null) {
-                return (perm.getAccess() == Access.GRANT);
+                return perm;
             }
 
             // If we get here, it means the permission was not specified.
@@ -704,7 +754,7 @@ public class CellResourceService extends AbstractService {
 
             // if we get here, the permission was a top-level permission that
             // was not specified.  Default to deny.
-            return false;
+            return null;
         }
 
         @Override
