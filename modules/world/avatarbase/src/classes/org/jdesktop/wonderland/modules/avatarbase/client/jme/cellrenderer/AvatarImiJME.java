@@ -204,8 +204,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     NameTagNode nameTagNode = getNameTagNode();
                     if (e.getUsername().equals(username) == true) {
                         nameTagNode.setNameTag(e.getEventType(), username,
-                                           e.getUsernameAlias(),
-                                           e.getForegroundColor(), e.getFont());
+                                           e.getUsernameAlias());
                     }
                 } else if (event instanceof AvatarRendererChangeRequestEvent) {
                     handleAvatarRendererChangeRequest((AvatarRendererChangeRequestEvent)event);
