@@ -21,8 +21,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
 import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -42,8 +40,8 @@ public class MicrophoneCellFactory implements CellFactorySPI {
 
     private final static Logger LOGGER =
             Logger.getLogger(MicrophoneCellFactory.class.getName());
-    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
+    //private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+    //        "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[]{};
@@ -52,24 +50,15 @@ public class MicrophoneCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(
             Properties props) {
         // Create a setup with some default values
-        MicrophoneCellServerState cellServerState =
-                new MicrophoneCellServerState();
-        cellServerState.setName("MICROPHONE");
-        cellServerState.setMicrophoneName("MICROPHONE");
-        cellServerState.setFullVolumeArea(
-                new FullVolumeArea("BOX", 11.0, 11.0, 11.0));
-
-        Vector3f origin = new Vector3f(0F, 0F, 0F);
-
-        cellServerState.setActiveArea(
-                new ActiveArea(origin, "BOX", 2., 2., 2.));
+        MicrophoneCellServerState cellServerState = new MicrophoneCellServerState();
 
         LOGGER.warning("MICROPHONE!!!!");
         return (T) cellServerState;
     }
 
     public String getDisplayName() {
-        return BUNDLE.getString("Microphone");
+        //return BUNDLE.getString("Microphone");
+        return "Microphone";
     }
 
     public Image getPreviewImage() {
@@ -77,4 +66,5 @@ public class MicrophoneCellFactory implements CellFactorySPI {
                 "resources/microphone_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
+
 }
