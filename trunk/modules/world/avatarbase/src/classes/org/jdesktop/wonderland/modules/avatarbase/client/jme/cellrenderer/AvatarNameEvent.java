@@ -34,21 +34,11 @@ public class AvatarNameEvent extends Event {
     private EventType eventType;
     private String username;
     private String usernameAlias;
-    private Color foregroundColor;
-    private Font font;
 
     public AvatarNameEvent(EventType eventType, String username, String usernameAlias) {
-	this(eventType, username, usernameAlias, null, null);
-    }
-
-    public AvatarNameEvent(EventType eventType, String username, String usernameAlias, 
-	    Color foregroundColor, Font font) {
-
 	this.eventType = eventType;
 	this.username = username;
 	this.usernameAlias = usernameAlias;
-	this.foregroundColor = foregroundColor;
-	this.font = font;
     }
 
     public void setEventType(EventType eventType) {
@@ -75,35 +65,16 @@ public class AvatarNameEvent extends Event {
 	return usernameAlias;
     }
 
-    public void setForegroundColor(Color foregroundColor) {
-	this.foregroundColor = foregroundColor;
-    }
-
-    public Color getForegroundColor() {
-	return foregroundColor;
-    }
-
-    public void setFont(Font font) {
-	this.font = font;
-    }
-
-    public Font getFont() {
-	return font;
-    }
-
     @Override
     public Event clone(Event evt) {
         if (evt == null) {
-            evt = new AvatarNameEvent(eventType, username, usernameAlias, 
-		foregroundColor, font);
+            evt = new AvatarNameEvent(eventType, username, usernameAlias);
         } else {
             AvatarNameEvent e = (AvatarNameEvent) evt;
 
 	    e.setEventType(eventType);
 	    e.setUsername(username);
 	    e.setUsernameAlias(usernameAlias);
-	    e.setForegroundColor(foregroundColor);
-	    e.setFont(font);
         }
 
         super.clone(evt);
@@ -112,7 +83,7 @@ public class AvatarNameEvent extends Event {
 
     public String toString() {
 	return "AvatarNameEvent:  " + eventType + " " + username + " usernameAlias " 
-	    + usernameAlias + " foregroundColor " + foregroundColor + " font " + font;
+	    + usernameAlias;
     }
 
 }
