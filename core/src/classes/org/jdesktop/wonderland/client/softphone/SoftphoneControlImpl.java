@@ -445,7 +445,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	return isMuted;
     }
 
-    private AudioQuality quality = AudioQuality.VPN;
+    private AudioQuality quality;
 
     public AudioQuality getAudioQuality() {
 	return quality;
