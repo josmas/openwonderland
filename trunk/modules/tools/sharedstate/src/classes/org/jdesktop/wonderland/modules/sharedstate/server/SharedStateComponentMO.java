@@ -452,7 +452,7 @@ public class SharedStateComponentMO extends CellComponentMO {
             SharedData prev = get(key);
 
             // notify listeners, see if they veto
-            if (firePropertyChange(senderID, message, key, value, prev)) {
+            if (firePropertyChange(senderID, message, key, prev, value)) {
                 doPut(senderID, key, value);
                 return true;
             }
@@ -499,7 +499,7 @@ public class SharedStateComponentMO extends CellComponentMO {
             SharedData prev = get(key);
 
             // notify listeners, see if they veto
-            if (firePropertyChange(senderID, message, key, null, prev)) {
+            if (firePropertyChange(senderID, message, key, prev, null)) {
                 doRemove(senderID, key);
                 return true;
             }
@@ -541,13 +541,13 @@ public class SharedStateComponentMO extends CellComponentMO {
         }
 
         protected boolean firePropertyChange(WonderlandClientID senderID,
-                CellMessage message, String key, SharedData newVal,
-                SharedData oldVal)
+                CellMessage message, String key, SharedData oldVal,
+                SharedData newVal)
         {
             for (SharedMapListenerSrv listener : listeners) {
 
                 SharedMapEventSrv event = new SharedMapEventSrv(
-                        this, senderID, message, key, newVal, oldVal);
+                        this, senderID, message, key, oldVal, newVal);
                 if (!listener.propertyChanged(event)) {
                     return false;
                 }
