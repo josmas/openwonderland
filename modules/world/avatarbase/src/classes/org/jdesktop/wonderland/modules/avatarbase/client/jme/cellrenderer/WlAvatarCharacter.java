@@ -22,6 +22,8 @@ import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.statemachine.GameContext;
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import org.jdesktop.mtgame.WorldManager;
 
 /**
@@ -104,6 +106,38 @@ public class WlAvatarCharacter extends Avatar {
     public Iterable<String> getAnimationNames() {
         return ((WlAvatarContext)getContext()).getAnimationNames();
     }
+
+    /**
+     * Returns (a copy of) the Map of key bindings that maps KeyEvent objects
+     * to the actions to trigger on the avatar.
+     *
+     * @return A copy of the map of avatar key bindings
+     */
+    public Map<Integer, Integer> getKeyBindings() {
+        // For now, return a copy of the Map. This isn't too bad so long as
+        // this method is not called that often. Perhaps we should move to
+        // a copy-on-write for m_keyBindings.
+        synchronized (m_keyBindings) {
+            return new HashMap<Integer, Integer>(m_keyBindings);
+        }
+    }
+
+    /**
+     * Sets the Map of key bindings that maps KeyEvent objects to the actions
+     * to trigger on the avatar to the given Map. This method clears out any
+     * existing entries in the key map.
+     *
+     * @param keyBindingMap The new key binding map
+     */
+    public void setKeyBindings(Map<Integer, Integer> keyBindingMap) {
+        // Unfortunately, the m_keyBindings map is <Integer, Integer>. In the
+        // future, m_keyMap should be changed to <Integer, TriggerNames>
+        synchronized (m_keyBindings) {
+            m_keyBindings.clear();
+            m_keyBindings.putAll(keyBindingMap);
+        }
+    }
+
 
     // TESTING
     private void bigHeadMode(WlAvatarCharacter avatar)
