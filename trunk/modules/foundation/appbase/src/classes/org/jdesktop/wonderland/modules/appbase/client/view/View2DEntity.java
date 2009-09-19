@@ -789,6 +789,9 @@ public abstract class View2DEntity implements View2D {
      * the coordinate system of the ortho plane. Update afterward.
      * This attribute is ignored for non-primary views.
      *
+     * Note: setPixelOffset is the other part of the ortho offset translation. The two offsets are 
+     * added to produce the effective offset.
+     *
      * Note: there is no corresponding attribute for cell mode because the cell itself automatically
      * controls the location of a primary view within the cell (usually centered) and the cell location
      * within the world is derived from WFS and other input. 

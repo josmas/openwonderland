@@ -49,7 +49,7 @@ public class SasProvider {
     private File passwordFile;
 
     /** The login object to connect with */
-    private SasLogin login;
+    private ProgrammaticLogin<SasProviderSession> login;
 
     /** the property to set to "false" in order to not reconnect */
     private static final String RECONNECT_PROP = "sas.reconnect";
@@ -73,16 +73,33 @@ public class SasProvider {
                                                             RECONNECT_DEFAULT));
 
         // create a new programmatic login object
-        this.login = new SasLogin(serverUrl);
+        this.login = createSasLogin(serverUrl, listener);
 
         // perform the login
-        doLogin();
+        doLoginAndNotify();
     }
     
     /** Executed before the SAS session is reconnected */
     protected void cleanup () {}
 
-    protected void doLogin() {
+    /**
+     * This method calls the doLogin() method and then notifies the server
+     * that the connection is ready.  This is done outside the doLogin()
+     * method so that subclasses can add processing to doLogin() that happens
+     * before the status is updated.
+     */
+    private void doLoginAndNotify() {
+        // do login
+        SasProviderSession session = doLogin();
+
+        // at this point, the sas provider has completed startup and is
+        // ready to start receiving launch requests. Notify the server.
+        logger.info("Login complete.  Notifying server.");
+        session.getConnection().notifyProviderReady();
+    }
+
+    protected SasProviderSession doLogin() {
+
         // Log in.  This will wait until the server is available, and then
         // connect when the server is available.
         SasProviderSession curSession = login.login(userName, passwordFile);
@@ -108,7 +125,7 @@ public class SasProvider {
                     if (reconnect) {
                         Thread t = new Thread(new Runnable() {
                             public void run() {
-                                doLogin();
+                                doLoginAndNotify();
                             }
                         },  "SAS Reconnect");
                         t.start();
@@ -116,14 +133,26 @@ public class SasProvider {
                 }
             }
         });
+
+        return curSession;
+    }
+
+    protected ProgrammaticLogin<SasProviderSession> createSasLogin(
+            String serverURL, SasProviderConnectionListener listener)
+    {
+        return new SasLogin(serverURL, listener);
     }
 
     /**
      *  Provides the login information from the constructor to the login manager.
      */
     private class SasLogin extends ProgrammaticLogin<SasProviderSession> {
-        public SasLogin(String serverURL) {
+
+        private SasProviderConnectionListener listener;
+
+        public SasLogin(String serverURL, SasProviderConnectionListener listener) {
             super (serverURL);
+            this.listener = listener;
         }
 
         @Override

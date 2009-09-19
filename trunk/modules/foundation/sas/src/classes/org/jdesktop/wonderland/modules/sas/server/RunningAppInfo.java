@@ -24,7 +24,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 
 /**
  * Information about provider apps that are running.
@@ -33,19 +35,21 @@ import java.util.LinkedList;
 @ExperimentalAPI
 public class RunningAppInfo implements ManagedObject, Serializable {
 
+    private static final Logger logger = Logger.getLogger(RunningAppInfo.class.getName());
+
     class AppInfo implements Serializable {
-        public ProviderProxy provider;
+        public ManagedReference providerRef;
         public CellID cellID;
-        public AppInfo (ProviderProxy provider, CellID cellID) {
-            this.provider = provider;
+        public AppInfo (ManagedReference providerRef, CellID cellID) {
+            this.providerRef = providerRef;
             this.cellID = cellID;
         }
     }
 
     private HashMap<MessageID,AppInfo> runningAppMap = new HashMap<MessageID,AppInfo>();
 
-    void addAppInfo (MessageID msgID, ProviderProxy provider, CellID cellID) {
-        AppInfo msgInfo = new AppInfo(provider, cellID);
+    void addAppInfo (MessageID msgID, ManagedReference providerRef, CellID cellID) {
+        AppInfo msgInfo = new AppInfo(providerRef, cellID);
         runningAppMap.put(msgID, msgInfo);
         AppContext.getDataManager().markForUpdate(this);
     }
@@ -62,11 +66,11 @@ public class RunningAppInfo implements ManagedObject, Serializable {
     /**
      * Removes all app infos that are for the given provider.
      */
-    void removeAppInfosForProvider (ProviderProxy provider) {
+    void removeAppInfosForProvider (ManagedReference providerRef) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
-            if (appInfo.provider == provider) {
+            if (appInfo.providerRef.getId() == providerRef.getId()) {
                 removeList.add(msgID);
             }
         }        
@@ -80,11 +84,12 @@ public class RunningAppInfo implements ManagedObject, Serializable {
     /**
      * Removes all app infos that are for the given provider.
      */
-    void removeAppInfosForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    void removeAppInfosForCellAndProvider (ManagedReference providerRef, CellID cellID) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
-            if (appInfo.provider == provider && appInfo.cellID == cellID) {
+            if (appInfo.providerRef.getId() == providerRef.getId() && 
+                appInfo.cellID.equals(cellID)) {
                 removeList.add(msgID);
             }
         }        
@@ -97,10 +102,10 @@ public class RunningAppInfo implements ManagedObject, Serializable {
 
     // Given an an app identified by a provider and a cell, returns the launch message ID
     // for that app. TODO: someday: assumes only one app launched per cell.
-    MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    MessageID getLaunchMessageIDForCellAndProvider (ManagedReference providerRef, CellID cellID) {
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
-            if (appInfo.provider == provider && appInfo.cellID == cellID) {
+            if ((appInfo.providerRef.getId() == providerRef.getId()) && (appInfo.cellID.equals(cellID))) {
                 return msgID;
             }
         }        

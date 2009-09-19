@@ -172,31 +172,11 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     }
 
     public void connect() throws IOException {
-        // make sure the connection is connected on this session.  Do it in
-        // a separate thread so we don't block the Darkstar thread
-        new Thread(new Runnable() {
-            public void run() {
-                setupConnection();
-            }
-        }, "XrwSecurityConnection").start();
-
         setClientId(MASTER_CLIENT_ID);
 
         establishConnection();
 
         sf = new SlaveForwarder(this, session.getID(), serverSocket);
-    }
-
-    private void setupConnection() {
-        // make sure the security connection is available
-        if (session.getConnection(XrwSecurityConnectionType.TYPE) == null) {
-            try {
-                ClientConnection conn = new XrwSecurityConnection();
-                session.connect(conn);
-            } catch (ConnectionFailureException cfe) {
-                AppXrw.logger.log(Level.WARNING, "Unable to add connection", cfe);
-            }
-        }
     }
 
     @Override

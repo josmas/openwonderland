@@ -95,6 +95,12 @@ public abstract class App2D {
     private FirstVisibleInitializer fvi;
 
     /**
+     * False if shutdown() has been called. If true, the app base is running. If false, it
+     * has been shut down by a Java runtime hook.
+     */
+    private static boolean isAppBaseRunning = true;
+
+    /**
      * There are some deadlock situations during app cleanup. I would prefer to address this
      * by replacing all app base locks with a single app-wide lock, but that is to big a change
      * to do at this point. For now, we'll just use this lock to force the cleanup process to be
@@ -166,6 +172,7 @@ public abstract class App2D {
      */
     public void cleanup() {
         synchronized (appCleanupLock) {
+            setShowInHUD(false);
             viewSet.cleanup();
             if (controlArb != null) {
                 controlArb.cleanup();
@@ -360,6 +367,7 @@ public abstract class App2D {
     /** Executed by the JVM shutdown process. */
     private static void shutdown () {
         logger.warning("Shutting down app base...");
+        isAppBaseRunning = false;
 
         // Note: I tried to run this in a synchronized block, but it hung.
         LinkedList<App2D> appsCopy = (LinkedList<App2D>) apps.clone();
@@ -371,6 +379,13 @@ public abstract class App2D {
 
         apps.clear();
         logger.warning("Done shutting down app base.");
+    }
+
+    /**
+     * Returns whether the app base is running.
+     */
+    public static boolean isAppBaseRunning () {
+        return isAppBaseRunning;
     }
 
     /**

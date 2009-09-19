@@ -76,7 +76,7 @@ public class WindowXrw extends WindowConventional {
         // TODO: not yet implemented
         int transientForWid = ((AppXrw)app).getTransientForWid(wid);
         if (transientForWid != 0) {
-            winTransientFor = ((AppXrw)app).widToWindow.get(transientForWid);
+            winTransientFor = ((AppXrw)app).getWindowForWid(transientForWid);
         }
 
         setScreenPosition(x, y);

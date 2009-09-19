@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -32,6 +33,7 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderAppExittedMessage;
 import com.sun.sgs.app.AppContext;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderReadyMessage;
 
 /**
  * The connection between the SAS provider and the SAS server.
@@ -86,34 +88,41 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
                                 WonderlandClientID clientID,
                                 Properties properties) 
     {
-        SasServer server = (SasServer) serverRef.get();
-        server.providerConnected(sender, clientID);
+        // when the provider connects, it has not yet set up the necessary
+        // connections to receive launch requests. The provider will send
+        // a SasProviderReadyMessage when startup is complete, which is
+        // handled below in messageReceived()
     }
 
-    static void addProviderMessageInFlight (MessageID msgID, ProviderProxy provider, CellID cellID) {
-        getProviderMessagesInFlight().addMessageInfo(msgID, provider, cellID);
+    static void addProviderMessageInFlight (MessageID msgID, ManagedReference providerRef, CellID cellID) {
+        getProviderMessagesInFlight().addMessageInfo(msgID, providerRef, cellID);
     }
 
     public void messageReceived(WonderlandClientSender sender, 
                                 WonderlandClientID clientID,
                                 Message message) 
     {
-        logger.severe("***** Message received from sas provider: " + message);
+        logger.info("Message received from sas provider: " + message);
 
-        if (message instanceof SasProviderLaunchStatusMessage) {
+        if (message instanceof SasProviderReadyMessage) {
+            // the provider is ready to start receiving requests.  Send any
+            // queued requests at this point.
+            SasServer server = (SasServer) serverRef.get();
+            server.providerConnected(sender, clientID);
+        } else if (message instanceof SasProviderLaunchStatusMessage) {
             SasProviderLaunchStatusMessage msg = (SasProviderLaunchStatusMessage) message;
             SasProviderLaunchStatusMessage.LaunchStatus status = msg.getStatus();
             MessageID launchMsgID = msg.getLaunchMessageID();
             String connInfo = msg.getConnectionInfo();
 
-            logger.severe("############### ProviderConnectionHandler: Launch status message received");
-            logger.severe("status = " + status);
-            logger.severe("launchMsgID = " + launchMsgID);
-            logger.severe("connInfo = " + connInfo);
+            logger.info("ProviderConnectionHandler: Launch status message received");
+            logger.info("status = " + status);
+            logger.info("launchMsgID = " + launchMsgID);
+            logger.info("connInfo = " + connInfo);
 
             ProviderMessagesInFlight messagesInFlight = getProviderMessagesInFlight();
             ProviderMessagesInFlight.MessageInfo msgInfo = messagesInFlight.getMessageInfo(launchMsgID);
-            if (msgInfo == null || msgInfo.provider == null) {
+            if (msgInfo == null || msgInfo.providerRef == null) {
                 logger.warning("Cannot find provider proxy for message " + launchMsgID);
                 return;
             }
@@ -122,10 +131,11 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
             // If app launch succeeded, transition the app to the running apps list. It will 
             // stay there until the app exits or the provider disconnects
             if (status == SasProviderLaunchStatusMessage.LaunchStatus.SUCCESS) {
-                getRunningApps().addAppInfo(launchMsgID, msgInfo.provider, msgInfo.cellID);
+                getRunningApps().addAppInfo(launchMsgID, msgInfo.providerRef, msgInfo.cellID);
             }
             
-            msgInfo.provider.appLaunchResult(status, msgInfo.cellID, connInfo);
+            ProviderProxy provider = (ProviderProxy) msgInfo.providerRef.get();
+            provider.appLaunchResult(status, msgInfo.cellID, connInfo);
 
         } else if (message instanceof SasProviderAppExittedMessage) {
             SasProviderAppExittedMessage msg = (SasProviderAppExittedMessage) message;
@@ -135,7 +145,8 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
             RunningAppInfo.AppInfo appInfo = getRunningApps().getAppInfo(launchMsgID);
             if (appInfo != null) {
                 getRunningApps().removeAppInfo(launchMsgID);
-                appInfo.provider.appExitted(appInfo.cellID, exitValue);
+                ProviderProxy provider = (ProviderProxy) appInfo.providerRef.get();
+                provider.appExitted(appInfo.cellID, exitValue);
             } else {
                 logger.warning("Cannot find provider to notify that the app launched with this message ID has exitted." + launchMsgID);
             }
@@ -148,39 +159,43 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.fine("SasProvider client disconnected.");
         SasServer server = (SasServer) serverRef.get();
-        ProviderProxy provider = server.providerDisconnected(sender, clientID);
-        if (provider != null) {
+           
+        ManagedReference providerRef = server.providerDisconnected(sender, clientID);
+        if (providerRef != null) {
 
             ProviderMessagesInFlight messagesInFlight = getProviderMessagesInFlight();
             if (messagesInFlight != null) {
-                messagesInFlight.removeMessagesForProvider(provider);
+                messagesInFlight.removeMessagesForProvider(providerRef);
             }
 
             RunningAppInfo runningApps = getRunningApps();
             if (runningApps != null) {
-                runningApps.removeAppInfosForProvider(provider);
+                runningApps.removeAppInfosForProvider(providerRef);
             }
 
-            provider.cleanup();
+            ProviderProxy provider = (ProviderProxy) providerRef.get();
+            if (provider != null) {
+                provider.cleanup();
+            }
         }
     }
 
     // Called when the app is stopped (usually when the cell is deleted).
-    static void removeCell (CellID cellID, ProviderProxy provider) {
-        getProviderMessagesInFlight().removeMessagesForCellAndProvider(provider, cellID);
-        getRunningApps().removeAppInfosForCellAndProvider(provider, cellID);
+    static void removeCell (CellID cellID, ManagedReference providerRef) {
+        getProviderMessagesInFlight().removeMessagesForCellAndProvider(providerRef, cellID);
+        getRunningApps().removeAppInfosForCellAndProvider(providerRef, cellID);
     }
 
     // Given an an app identified by a provider and a cell, returns the launch message ID
     // for that app. TODO: someday: assumes only one app launched per cell.
-    static MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    static MessageID getLaunchMessageIDForCellAndProvider (ManagedReference providerRef, CellID cellID) {
 
         // First check the running app list
-        MessageID msgID = getRunningApps().getLaunchMessageIDForCellAndProvider(provider, cellID);
+        MessageID msgID = getRunningApps().getLaunchMessageIDForCellAndProvider(providerRef, cellID);
         if (msgID != null) return msgID;
 
         // Then check the list of launch messages in flight
-        msgID = getProviderMessagesInFlight().getLaunchMessageIDForCellAndProvider(provider, cellID);
+        msgID = getProviderMessagesInFlight().getLaunchMessageIDForCellAndProvider(providerRef, cellID);
         if (msgID != null) return msgID;
         
         return null;

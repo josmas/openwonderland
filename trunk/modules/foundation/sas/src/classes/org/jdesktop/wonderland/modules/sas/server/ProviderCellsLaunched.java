@@ -51,4 +51,8 @@ public class ProviderCellsLaunched implements ManagedObject, Serializable {
         cellsLaunched.clear();
         AppContext.getDataManager().markForUpdate(this);
     }
+
+    public int size() {
+        return cellsLaunched.size();
+    }
 }
