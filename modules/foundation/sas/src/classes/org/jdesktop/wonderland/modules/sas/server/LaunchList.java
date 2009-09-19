@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.sas.server.SasServer.LaunchRequest;
+import java.util.logging.Logger;
 
 /**
  * Holds the launch requests which have not yet been satisified.
@@ -29,6 +30,8 @@ import org.jdesktop.wonderland.modules.sas.server.SasServer.LaunchRequest;
  * @author deronj
  */
 class LaunchList implements Serializable {
+
+    private static final Logger logger = Logger.getLogger(LaunchList.class.getName());
 
     private HashMap<String,LinkedList<SasServer.LaunchRequest>> execCapToLaunchReqList =
         new HashMap<String,LinkedList<SasServer.LaunchRequest>>();
@@ -58,7 +61,7 @@ class LaunchList implements Serializable {
         LaunchRequest reqToRemove = null;
         if (reqs == null) return;
         for (LaunchRequest req : reqs) {
-            if (req.cellID == cellID) {
+            if (req.cellID.equals(cellID)) {
                 reqToRemove = req;
                 break;
             }

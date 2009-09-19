@@ -147,21 +147,14 @@ class ServerProxySlave implements ServerProxy {
             disconnectListener.disconnected();
             disconnectListener = null;
         }
-        AppXrw.logger.severe("ServerProxySlave disconnected");
+        AppXrw.logger.info("ServerProxySlave disconnected");
     }
 
     private void establishConnection() throws IOException {
 
         Socket socket = new Socket(connectionInfo.getHostName(), connectionInfo.getPortNum());
-        if (socket == null) {
-            throw new IOException("Cannot create socket to connect to host " + connectionInfo.getHostName() +
-                    " and port number " + connectionInfo.getPortNum());
-        }
 
         slaveSocket = new SlaveClientSocket(session.getID(), socket, new MyListener());
-        if (slaveSocket == null) {
-            throw new IOException("Cannot create SlaveSocketchannel for slave");
-        }
         slaveSocket.initialize();
     }
 
@@ -170,7 +163,7 @@ class ServerProxySlave implements ServerProxy {
         client = null;
         scanLineBuf = null;
         bufQueue = null;
-        AppXrw.logger.severe("ServerProxySlave cleaned up");
+        AppXrw.logger.info("ServerProxySlave cleaned up");
     }
 
     private class MyListener implements ClientSocketListener {

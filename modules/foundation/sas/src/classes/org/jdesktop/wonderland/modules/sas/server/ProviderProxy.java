@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.sas.server;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchMessage;
@@ -33,6 +32,9 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
+import java.util.Iterator;
 
 /**
  * This represents a provider on the server side.
@@ -40,7 +42,7 @@ import org.jdesktop.wonderland.common.messages.MessageID;
  * @author deronj
  */
 
-class ProviderProxy implements Serializable {
+class ProviderProxy implements ManagedObject, Serializable {
 
     private static final Logger logger = Logger.getLogger(ProviderProxy.class.getName());
 
@@ -102,14 +104,16 @@ class ProviderProxy implements Serializable {
     void tryLaunch (CellID cellID, String executionCapability, String appName, String command) 
         throws InstantiationException
     {
-        logger.severe("**** Provider tryLaunch, clientID = " + clientID);
+        logger.severe("Provider tryLaunch, clientID = " + clientID);
         logger.severe("command = " + command);
+
+        ManagedReference thisRef = AppContext.getDataManager().createReference(this);
 
         SasProviderLaunchMessage msg = new SasProviderLaunchMessage(executionCapability, appName, command, cellID);
 
         // Record this message so we can match it up with its corresponding status message
         logger.info("message ID = " + msg.getMessageID());
-        SasProviderConnectionHandler.addProviderMessageInFlight(msg.getMessageID(), this, cellID);
+        SasProviderConnectionHandler.addProviderMessageInFlight(msg.getMessageID(), thisRef, cellID);
 
         // Now send the message. The response will come back asynchronously via the 
         // SasProviderConnectionHandler and it will report the launch status to the 
@@ -163,11 +167,12 @@ class ProviderProxy implements Serializable {
      * Called by the cell to stop the app. Usually called when the cell is deleted.
      * TODO: someday: currently assumes that there is only one app running per cell.
      */
-    public void appStop (CellMO cell) {
+    public void appStop (CellID cellID) {
 
         // Get the launch message ID which will identify the app to the provider
+        ManagedReference thisRef = AppContext.getDataManager().createReference(this);
         MessageID launchMessageID = SasProviderConnectionHandler.getLaunchMessageIDForCellAndProvider(
-                                                                      this, cell.getCellID());
+                                                                      thisRef, cellID);
 
         // Send a stop message to the provider
         if (launchMessageID != null) {
@@ -180,16 +185,39 @@ class ProviderProxy implements Serializable {
         }
 
         // Remove information about the cell and app from the cells launched list
-        getProviderCellsLaunched().remove(cell.getCellID());
+        getProviderCellsLaunched().remove(cellID);
 
         // Remove information about the cell and app from the connection handler
-        SasProviderConnectionHandler.removeCell(cell.getCellID(), this);
+        SasProviderConnectionHandler.removeCell(cellID, thisRef);
     }
 
     /**
      * Clean up resources.
      */
     public void cleanup () {
-        getProviderCellsLaunched().clear();
+
+        // The connection info of the cells whose apps were launched on this provider
+        // are no longer valid. But they may be reassigned later if this is a warm start.
+        // But for now we need to set the connection info to null.
+        ProviderCellsLaunched cellList = getProviderCellsLaunched();
+        Iterator<CellID> it = cellList.getIterator();
+        while (it.hasNext()) {
+            
+            CellID cellID = it.next();
+            CellMO cell = CellManagerMO.getCell(cellID);
+            if (cell == null) {
+                logger.warning("Cannot find cell " + cellID);
+                continue;
+            }
+            if (!(cell instanceof AppConventionalCellMO)) {
+                logger.warning("Cell an AppConventionalMO, cellID = " + cellID);
+                continue;
+            }
+
+            ((AppConventionalCellMO)cell).setConnectionInfo(null);
+        }
+        cellList.clear();
+
+        AppContext.getDataManager().removeObject(this);
     }
 }

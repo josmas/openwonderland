@@ -170,18 +170,21 @@ public abstract class AppConventionalCell extends App2DCell {
      * This is called when the server sends the connection info.
      */
     synchronized void setConnectionInfo (String connInfo) {
-
-        // If we already know the connection info then we can skip this.
-        // Note: this will happen if we are the master, or if this cell was created after
-        // the server learned of the connection info.
-        if (connectionInfo != null) {
-            return;
+        
+        // Has the connection info changed? If not, just return
+        if (connectionInfo == null) {
+            if (connInfo == null) {
+                return;
+            } 
+        } else {
+            if (connectionInfo.equals(connInfo)) {
+                return;
+            }
         }
-
-        // Slave: If this message arrives after we are already connected, just ignore it.
-        if (slaveStarted) return;
-
+        
         connectionInfo = connInfo;
+
+        // The connection info has changed. Start the app.
         startSlaveIfReady();
     }
 

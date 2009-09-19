@@ -26,11 +26,13 @@ import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import java.util.logging.Level;
 
 /**
  * Provides the main server-side logic for SAS. This singleton contains the Registry,
@@ -46,14 +48,13 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
     /** Helps clean up app info when the app is stopped by the cell. */
     private static class SasLaunchInfo implements Serializable{
-        private AppConventionalCellMO cell;
+        private CellID cellID;
         private String executionCapability;
-        private ProviderProxy provider;
-        private SasLaunchInfo (AppConventionalCellMO cell, String executionCapability, 
-                               ProviderProxy provider) {
-            this.cell = cell;
+        private ManagedReference providerRef;
+        private SasLaunchInfo (CellID cellID, String executionCapability, ManagedReference providerRef) {
+            this.cellID = cellID;
             this.executionCapability = executionCapability;
-            this.provider = provider;
+            this.providerRef = providerRef;
         }
     }
 
@@ -62,7 +63,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         String executionCapability;
         String appName;
         String command;
-        ProviderProxy provider;
+        ManagedReference providerRef;
 
         LaunchRequest (CellID cellID, String executionCapability, String appName, String command) {
             this.cellID = cellID;
@@ -71,8 +72,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             this.command = command;
         }
 
-        void setProvider (ProviderProxy provider) {
-            this.provider = provider;
+        void setProvider (ManagedReference providerRef) {
+            this.providerRef = providerRef;
         }
 
         @Override
@@ -94,8 +95,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
      * A map of the SAS providers which have connected, indexed by their execution capabilities
      * Note: because a provider may support multiple capabilities it may appear on more than one list.
      */
-    private HashMap<String,LinkedList<ProviderProxy>> execCapToProviderList = 
-        new HashMap<String,LinkedList<ProviderProxy>>();
+    private HashMap<String,LinkedList<ManagedReference>> execCapToProviderList = 
+        new HashMap<String,LinkedList<ManagedReference>>();
 
     /**
      * A list of the app launch requests which still must be honored.
@@ -112,23 +113,24 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
      * Called when a new provider client connects to the SAS server.
      */
     public void providerConnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-        logger.info("**** Sas provider connected, clientID = " + clientID);
+        logger.info("Sas provider connected, clientID = " + clientID);
         
         // TODO: for now everything uses xremwin
         String execCap = "xremwin";
 
         ProviderProxy provider = new ProviderProxy(clientID, sender);
+        ManagedReference providerRef = AppContext.getDataManager().createReference(provider);
         provider.addExecutionCapability(execCap);
 
         // Add to execution capability list
-        LinkedList<ProviderProxy> providers = execCapToProviderList.get(execCap);
+        LinkedList<ManagedReference> providers = execCapToProviderList.get(execCap);
         if (providers == null) {
-            providers = new LinkedList<ProviderProxy>();
+            providers = new LinkedList<ManagedReference>();
             execCapToProviderList.put(execCap, providers);
         }
-        providers.add(provider);
+        providers.add(providerRef);
 
-        logger.info("**** provider added to xremwin list, clientID = " + clientID);
+        logger.info("Provider added to xremwin list, clientID = " + clientID);
 
         // See if there are any pending launches
         try {
@@ -144,27 +146,29 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
     /**
      * Called when provider client disconnects from the SAS server.
+     * A reference to the provider proxy for that client is returned. It is the callers
+     * responsibility to properly clean up the provider proxy.
      */
-    ProviderProxy providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-        logger.info("**** Sas provider disconnnected, clientID = " + clientID);
-        ProviderProxy providerToRemove = null;
+    ManagedReference providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
+        logger.info("Sas provider disconnnected, clientID = " + clientID);
+        ManagedReference providerRefToRemove = null;
 
         // TODO: for now everything uses xremwin
         String execCap = "xremwin";
 
         // Remove provider from execution capability list 
-        LinkedList<ProviderProxy> providers = execCapToProviderList.get(execCap);
+        LinkedList<ManagedReference> providers = execCapToProviderList.get(execCap);
         if (providers != null) {
-            for (ProviderProxy provider : providers) {
+            for (ManagedReference providerRef : providers) {
+                ProviderProxy provider = (ProviderProxy) providerRef.get();
                 if (provider.getClientID().equals(clientID)) {
-                    providerToRemove = provider;
-                    provider.cleanup();
-                    persistProviderApps(provider, execCap);
+                    providerRefToRemove = providerRef;
                     break;
                 }
             }
-            if (providerToRemove != null) {
-                providers.remove(providerToRemove);
+            if (providerRefToRemove != null) {
+                providers.remove(providerRefToRemove);
+                persistProviderApps(providerRefToRemove, execCap);
             }
 
             if (providers.size() <= 0) {
@@ -174,8 +178,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
         // Mark server modified
         AppContext.getDataManager().markForUpdate(this);
+        return providerRefToRemove;
 
-        return providerToRemove;
     }
 
     /**
@@ -190,32 +194,43 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         CellID cellID = cell.getCellID();
 
         // Construct the launch request
+        // TODO: someday: allow multiple apps to be launched per cell.
         LaunchRequest launchReq = new LaunchRequest(cellID, executionCapability, appName, command);
 
-        // TODO: someday: allow multiple apps to be launched per cell.
+        ManagedReference providerRef = requestLaunch(launchReq);
+        return new SasLaunchInfo(launchReq.cellID, launchReq.executionCapability, providerRef);
+    }
 
-        LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
+    private ManagedReference requestLaunch (LaunchRequest launchReq) 
+        throws InstantiationException 
+    {
+        // Note: it is guaranteed that, during a warm start, the old SAS has already been removed
+        // from this map.
+        LinkedList<ManagedReference> providers = execCapToProviderList.get(launchReq.executionCapability);
         if (providers == null || providers.size() <= 0) {
             // No provider. Launch must pend
-            logger.warning("No SAS provider for " + executionCapability + " is available.");
-            logger.warning("Launch attempt will pend.");
+            logger.info("No SAS provider for " + launchReq.executionCapability + " is available.");
+            logger.info("Launch attempt will pend.");
             pendingLaunches.add(launchReq);
             AppContext.getDataManager().markForUpdate(this);
-            return new SasLaunchInfo(cell, executionCapability, null);
+            return null;
         }
 
         // TODO: someday: Right now we just try only the first provider. Eventually try multiple providers.
-        ProviderProxy provider = providers.getFirst();
-        if (provider == null) {
-            throw new InstantiationException("Cannot find a provider for " + executionCapability);
+        ManagedReference providerRef = providers.getFirst();
+        if (providerRef == null) {
+            throw new InstantiationException("Cannot find a provider for " + 
+                                             launchReq.executionCapability);
         }
 
         // Now request the provider to launch the app
-        launchReq.setProvider(provider);
-        launchesInFlight.put(cellID, launchReq);
-        provider.tryLaunch(cellID, executionCapability, appName, command);
+        launchReq.setProvider(providerRef);
+        launchesInFlight.put(launchReq.cellID, launchReq);
+        ProviderProxy provider = (ProviderProxy) providerRef.get();
+        provider.tryLaunch(launchReq.cellID, launchReq.executionCapability, launchReq.appName, 
+                           launchReq.command);
 
-        return new SasLaunchInfo(cell, executionCapability, provider);
+        return providerRef;
     }
         
     /**
@@ -230,7 +245,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // Get the request that we used to launch the app
         LaunchRequest launchReq = launchesInFlight.get(cellID);
         if (launchReq == null) {
-            logger.warning("Cannot app request launch for cell " + cellID);
+            logger.warning("Cannot get app launch request for cell " + cellID);
             return;
         }
         launchesInFlight.remove(cellID);
@@ -276,17 +291,15 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     public void appStop (Object launchInfo) {
         SasLaunchInfo sasLaunchInfo = (SasLaunchInfo) launchInfo;
 
-        CellID cellID = sasLaunchInfo.cell.getCellID();
-
         // First, remove cell from the launches in flight map.
-        launchesInFlight.remove(cellID);
+        launchesInFlight.remove(sasLaunchInfo.cellID);
 
         // Next, remove cell from the list of running apps
-        runningLaunches.remove(cellID, sasLaunchInfo.executionCapability);
+        runningLaunches.remove(sasLaunchInfo.cellID, sasLaunchInfo.executionCapability);
 
         // Next, remove cell from pending launch list. 
         // TODO: someday: For now, this code assumes only one app launch per cell.
-        pendingLaunches.remove(cellID, sasLaunchInfo.executionCapability);
+        pendingLaunches.remove(sasLaunchInfo.cellID, sasLaunchInfo.executionCapability);
 
         AppContext.getDataManager().markForUpdate(this);
 
@@ -295,19 +308,22 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // If the provider was determined when appLaunch() was called, tell it to stop the app. */
         // But if the app had to pend waiting for a provider, we must notify all providers to 
         // see which one launched the app.
-        if (sasLaunchInfo.provider != null) {
-            sasLaunchInfo.provider.appStop(sasLaunchInfo.cell);
+        if (sasLaunchInfo.providerRef != null) {
+            ProviderProxy provider = (ProviderProxy) sasLaunchInfo.providerRef.get();
+            provider.appStop(sasLaunchInfo.cellID);
         } else {
-            LinkedList<ProviderProxy> providers = 
+            LinkedList<ManagedReference> providers =
                 execCapToProviderList.get(sasLaunchInfo.executionCapability);
             if (providers != null) {
-                for (ProviderProxy provider : providers) {
-                    provider.appStop(sasLaunchInfo.cell);
+                for (ManagedReference providerRef : providers) {
+                    ProviderProxy provider = (ProviderProxy) sasLaunchInfo.providerRef.get();
+                    provider.appStop(sasLaunchInfo.cellID);
                 }
             }
         }
     }
 
+    /* TODO:someday:currently assumes a single provider per execution capability */
     private void tryPendingLaunches (String executionCapability) throws InstantiationException {
         LinkedList<LaunchRequest> reqs = pendingLaunches.getLaunches(executionCapability);
         if (reqs == null) {
@@ -320,12 +336,13 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             // TODO: Some of this code is dup from above in tryLaunch; share it
 
             // See if there are any more providers to try
-            LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
+            LinkedList<ManagedReference> providers = execCapToProviderList.get(executionCapability);
             if (providers == null || providers.size() <= 0) {
                 continue;
             }
             // TODO: someday: weed out providers already tried
-            ProviderProxy provider = providers.getFirst();
+            ManagedReference providerRef = providers.getFirst();
+            ProviderProxy provider = (ProviderProxy) providerRef.get();
 
             // Remove request from pending list while it is in flight */
             reqs.remove(req);
@@ -339,20 +356,26 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     /**
      * Make the currently running apps persist by transferring them to the pending
      * launches list. They will be rerun the next time a suitable provider connects.
-     * @param provider The provider whose running apps should be persisted.
+     * @param providerRef The provider whose running apps should be persisted.
      * @param execCap The execution capability of the running apps that should be persisted.
+     * TODO:someday:currently assumes a single provider per execution capability
      */
-    private void persistProviderApps (ProviderProxy provider, String execCap) {
+    private void persistProviderApps (ManagedReference providerRef, String execCap) {
+        LinkedList<LaunchRequest> reqsToRelaunch = new LinkedList<LaunchRequest>();
+
+        logger.info("Persist provider apps");
 
         // First, persist the in-flight launches (i.e. the launches that have been requested
         // but have not yet occurred.
         LinkedList<CellID> cellsToRemove = new LinkedList<CellID>();
         for (CellID cellID : launchesInFlight.keySet()) {
             LaunchRequest launchReq = launchesInFlight.get(cellID);
-            if (launchReq != null && launchReq.cellID == cellID && launchReq.provider == provider) {
-                logger.warning("Persisting in-flight app to pending list, appName = " + launchReq.appName);
-                pendingLaunches.add(launchReq);
-                cellsToRemove.add(cellID);
+            if (launchReq != null) {
+                ProviderProxy reqProvider = (ProviderProxy) launchReq.providerRef.get();
+                if (reqProvider.provides(execCap)) {
+                    reqsToRelaunch.add(launchReq);
+                    cellsToRemove.add(cellID);
+                }
             }
         }
         for (CellID cellID : cellsToRemove) {
@@ -364,15 +387,33 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         LinkedList<LaunchRequest> launches = runningLaunches.getLaunches(execCap);
         if (launches != null) {
             for (LaunchRequest launchReq : launches) {
-                logger.warning("Persisting running app to pending list, appName = " + launchReq.appName);
-                pendingLaunches.add(launchReq);
+                reqsToRelaunch.add(launchReq);
                 cellsToRemove.add(launchReq.cellID);
             }
+        }
+        for (CellID cellID : cellsToRemove) {
+            runningLaunches.remove(cellID, execCap);
+        }
+        cellsToRemove.clear();
 
-            for (CellID cellID : cellsToRemove) {
-                runningLaunches.remove(cellID, execCap);
+        // Note: previously we were just adding the launch request directly to the pendingLaunches
+        // list. However, that wasn't handling the case where the new SAS provider connects before 
+        // the old SAS provider fully disconnects (and this method was fully done and its data committed). 
+        // Since the only way anything is launched off of the pending launch list is for a new SAS
+        // provider to connect, we were, in the previous case, adding requests to the pending launch
+        // list but nobody was ever actually reading this list to relaunch the apps. 
+        // 
+        // Instead, we call requestLaunch. If the new SAS provider has already connected it will 
+        // launch the app immediately. Otherwise, it will pend the launch and when the new SAS
+        // provider later connects the request will be launched.
+
+        for (LaunchRequest launchReq : reqsToRelaunch) {
+            try {
+                requestLaunch(launchReq);
+            } catch (InstantiationException ex) {
+                logger.log(Level.SEVERE, "App Instantiation error while trying to persist it", ex);
+                continue;
             }
-            cellsToRemove.clear();
         }
 
         AppContext.getDataManager().markForUpdate(this);

@@ -94,16 +94,18 @@ public abstract class AppXrw extends AppConventional {
         // Note: we may not always receive explicit DestroyWindow messages
         // for all windows. So destroy any that are left over.
         LinkedList<WindowXrw> toRemove = new LinkedList<WindowXrw>();
-        for (int wid : widToWindow.keySet()) {
-            WindowXrw window = widToWindow.get(wid);
-            if (window != null) {
-                toRemove.add(window);
+        synchronized (widToWindow) {
+            for (int wid : widToWindow.keySet()) {
+                WindowXrw window = getWindowForWid(wid);
+                if (window != null) {
+                    toRemove.add(window);
+                }
             }
+            widToWindow.clear();
         }
         for (WindowXrw window : toRemove) {
             window.cleanup();
         }
-        widToWindow.clear();
 
         windowVisibleOrder.clear();
     }
@@ -217,6 +219,22 @@ public abstract class AppXrw extends AppConventional {
                     throw re;
                 }
             }
+        }
+    }
+
+    WindowXrw getWindowForWid (int wid) {
+        return widToWindow.get(wid);
+    }
+
+    void addWindow (int wid, WindowXrw window) {
+        synchronized (widToWindow) {
+            widToWindow.put(wid, window);
+        }
+    }
+
+    void removeWindow (int wid) {
+        synchronized (widToWindow) {
+            widToWindow.remove(wid);
         }
     }
 }

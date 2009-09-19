@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.common.login.CredentialManager;
 
 /**
@@ -213,7 +214,16 @@ public class SasXrwProviderMain
             AppInfo appInfo = runningAppInfos.get(app);
             if (appInfo != null) {
                 runningAppInfos.remove(app);
-                appInfo.connection.appExitted(appInfo.launchMessageID, app.getExitValue());
+
+                // Don't send the app exitted message if the app base is no longer running.
+                // This happens when a SAS Provider JVM shutdown hook has been called. If 
+                // a shutdown of the SAS provider has occurred it will be restarted by the 
+                // web server. But if we treat this as an app exit condition then the server 
+                // cells for the apps will be deleted and their apps won't get restarted on 
+                // the new SAS provider.
+                if (App2D.isAppBaseRunning()) {
+                    appInfo.connection.appExitted(appInfo.launchMessageID, app.getExitValue());
+                }
             }
         }
     }

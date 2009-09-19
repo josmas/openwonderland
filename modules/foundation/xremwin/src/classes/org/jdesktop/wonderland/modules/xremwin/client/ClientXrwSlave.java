@@ -57,7 +57,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      */
     public ClientXrwSlave(AppXrw app, ControlArbXrw controlArb, WonderlandSession session,
             AppXrwConnectionInfo connectionInfo, ProcessReporter reporter)
-            throws InstantiationException {
+            throws InstantiationException, BadConnectionInfoException {
         super(app, controlArb, reporter);
 
         // Connect to the Xremwin server
@@ -65,7 +65,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
         try {
             serverProxy.connect();
         } catch (IOException ex) {
-            throw new InstantiationException();
+            throw new BadConnectionInfoException(connectionInfo);
         }
         serverConnected = true;
 
@@ -177,7 +177,8 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      * Called when the slave disconnects from the master.
      */
     public void disconnected() {
-        AppXrw.logger.severe("ClientXrwSlave disconnected");
+        AppXrw.logger.info("ClientXrwSlave disconnected");
+        serverConnected = false;
         // We no longer control the remote app group
         if (controlArb != null && controlArb.hasControl()) {
             ((ControlArbXrw)controlArb).controlLost();

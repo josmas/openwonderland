@@ -606,9 +606,7 @@ public abstract class ClientXrw implements Runnable {
      * @param wid The X11 window ID.
      */
     protected WindowXrw lookupWindow(int wid) {
-        synchronized (((AppXrw)app).widToWindow) {
-            return ((AppXrw)app).widToWindow.get(wid);
-        }
+        return ((AppXrw)app).getWindowForWid(wid);
     }
 
     /**
@@ -618,9 +616,7 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to associate with the wid.
      */
     protected void addWindow(int wid, WindowXrw window) {
-        synchronized (((AppXrw)app).widToWindow) {
-            ((AppXrw)app).widToWindow.put(wid, window);
-        }
+        ((AppXrw)app).addWindow(wid, window);
     }
 
     /**
@@ -629,9 +625,7 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to disassociate from the wid.
      */
     protected void removeWindow(WindowXrw win) {
-        synchronized (((AppXrw)app).widToWindow) {
-            ((AppXrw)app).widToWindow.remove(win.getWid());
-        }
+        ((AppXrw)app).removeWindow(win.getWid());
     }
 
     /**
@@ -965,6 +959,13 @@ public abstract class ClientXrw implements Runnable {
      * @param win The window to close.
      */
     public abstract void windowCloseUser(WindowXrw win);
+
+    /**
+     * Returns whether the client is connected to the server. 
+     */
+    public boolean isConnected () {
+        return serverConnected;
+    }
 
     /*
      ** For Debug: Print pixel run lengths

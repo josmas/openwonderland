@@ -219,6 +219,8 @@ public interface View2D {
      *
      * NOTE: this part of the offset also applies to primary views. In this case the offset is from
      * the center of the cell to the center of the view.
+     *
+     * NOTE: this part of the offset only applies to views which are in the world.
      */
     public void setOffset(Vector2f offset);
 
@@ -226,6 +228,11 @@ public interface View2D {
      * Specify the first part view's offset translation in local coordinates from the center of the parent 
      * to the center of this view. Update if specified. Note: setPixelOffset is the other part of the 
      * offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: this part of the offset also applies to primary views. In this case the offset is from
+     * the center of the cell to the center of the view.
+     *
+     * NOTE: this part of the offset only applies to views which are in the world.
      */
     public void setOffset(Vector2f offset, boolean update);
 
