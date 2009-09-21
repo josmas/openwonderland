@@ -29,8 +29,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -47,6 +51,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public class DragAndDropManager {
 
     private static Logger logger = Logger.getLogger(DragAndDropManager.class.getName());
+
+    // The I18N resource bundle
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/client/jme/dnd/Bundle");
 
     /* The drop-target component */
     private Component dropTarget = null;
@@ -179,27 +187,24 @@ public class DragAndDropManager {
 
         public void drop(DropTargetDropEvent dtde) {
 
-            logger.warning("Got Drop Target");
-
-            // Fetch the data flavors supported by the transferable as a list
-            // (presumably ordered). Look to see if that flavor is handled by
-            // a flavor in our map. We create an ordered list of these to
-            // check later
-            logger.warning("Dropped target flavor list " + dtde.getCurrentDataFlavors().length);
-            for (DataFlavor flavor : dtde.getCurrentDataFlavors()) {
-                logger.warning("Data flavor of dropped " + flavor.toString());
+            // Check to see if the list of data flavors is empty. This happens
+            // on MAX OSX, which is likely a Java bug. If so, display a dialog
+            // to tell the user to retry the DnD.
+            if (dtde.getCurrentDataFlavors().length == 0) {
+                JFrame frame = JmeClientMain.getFrame().getFrame();
+                String title = BUNDLE.getString("DND_Error_Title");
+                String message = BUNDLE.getString("DND_Error_message");
+                int type = JOptionPane.ERROR_MESSAGE;
+                JOptionPane.showMessageDialog(frame, message, title, type);
+                return;
             }
 
             List<DataFlavor> flavorList = dtde.getCurrentDataFlavorsAsList();
-            for (DataFlavor flavor : flavorList) {
-                logger.warning("Data flavor of dropped " + flavor.toString());
-            }
-
             List<DataFlavor> supportedFlavors = new LinkedList();
             for (DataFlavor dataFlavor : flavorList) {
                 DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
                 if (handler != null) {
-                    logger.warning("Adding flavor to handled " + dataFlavor.toString());
+                    logger.info("Adding flavor to handled " + dataFlavor.toString());
                     supportedFlavors.add(dataFlavor);
                 }
             }
