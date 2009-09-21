@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.common.checksums;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -56,7 +58,8 @@ public class Checksum {
         try {
             jaxbContext = JAXBContext.newInstance(Checksum.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            Logger.getLogger(Checksum.class.getName()).log(Level.WARNING,
+                    "Unable to create JAXBContext", excp);
         }
     }
     

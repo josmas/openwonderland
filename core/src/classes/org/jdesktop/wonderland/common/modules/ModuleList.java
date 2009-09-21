@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.common.modules;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -49,7 +51,8 @@ public class ModuleList {
         try {
             jaxbContext = JAXBContext.newInstance(ModuleInfo.class, ModuleList.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            Logger.getLogger(ModuleList.class.getName()).log(Level.WARNING,
+                    "Unable to create JAXBContext", excp);
         }
     }
         

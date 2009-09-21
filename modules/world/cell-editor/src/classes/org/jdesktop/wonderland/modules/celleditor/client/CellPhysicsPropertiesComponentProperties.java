@@ -113,9 +113,6 @@ public class CellPhysicsPropertiesComponentProperties
                     CellPhysicsPropertiesComponentServerState.DEFAULT_NAME, p);
         }
 
-        System.err.println("getCellServerState " + state.getPhyiscsProperties(
-                CellPhysicsPropertiesComponentServerState.DEFAULT_NAME));
-
         p.setMass(((Float) massSpinner.getModel().getValue()).floatValue());
         cellServerState.addComponentServerState(state);
     }

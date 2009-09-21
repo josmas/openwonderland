@@ -55,7 +55,7 @@ import org.jdesktop.wonderland.common.ThreadManager;
 @ExperimentalAPI
 public class AssetManager {
     
-    private Logger logger = Logger.getLogger(AssetManager.class.getName());
+    private static Logger logger = Logger.getLogger(AssetManager.class.getName());
     private AssetCache assetCache = null;
     private AssetFactory assetFactory = null;
     private final Set<AssetProgressListener> progressListeners =
@@ -760,7 +760,7 @@ public class AssetManager {
             try {
                 threads[i].join();
             } catch (java.lang.InterruptedException excp) {
-                System.out.println(excp.toString());
+                logger.log(Level.WARNING, "Thread is interrupted", excp);
             }
         }
     }

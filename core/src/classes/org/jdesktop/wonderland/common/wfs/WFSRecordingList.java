@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.common.wfs;
 
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -48,7 +50,8 @@ public class WFSRecordingList {
         try {
             jaxbContext = JAXBContext.newInstance(WFSRecordingList.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            Logger.getLogger(WFSRecordingList.class.getName()).log(Level.WARNING,
+                    "Unable to create JAXBContext", excp);
         }
     }
     
