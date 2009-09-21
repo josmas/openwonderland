@@ -23,6 +23,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -87,7 +89,8 @@ public class HelpContent {
             Collection<Class> clazz = HelpContent.getJAXBClasses();
             context = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            Logger.getLogger(HelpContent.class.getName()).log(Level.WARNING,
+                    "Unable to get JAXBContext", excp);
         }
     }
     

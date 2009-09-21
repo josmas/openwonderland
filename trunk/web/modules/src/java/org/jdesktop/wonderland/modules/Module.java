@@ -198,10 +198,4 @@ public abstract class Module {
         sb.append("---------------------------------------------------------------------------\n");
         return sb.toString();
     }
-    
-    public static void main(String args[]) throws MalformedURLException, FileNotFoundException, IOException, JAXBException {
-        File file = new File("/Users/jordanslott/src/moduletest/tmp/example.jar");
-        Module module = ModuleFactory.open(file);
-        System.out.println(module.toString());
-    }
 }

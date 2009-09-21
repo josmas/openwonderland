@@ -521,9 +521,4 @@ public class WFSManager {
     public static String getBaseWFSDirectory() {
         return SystemPropertyUtil.getProperty(WFS_ROOT_PROPERTY);
     }
-    
-    public static void main(String args[]) {
-        WFSManager wfsm = WFSManager.getWFSManager();
-        System.out.println(wfsm.getWFS("default"));
-    }
 }
