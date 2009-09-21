@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.common.modules;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -61,7 +63,8 @@ public class ModulePluginList implements Serializable {
         try {
             jaxbContext = JAXBContext.newInstance(ModulePluginList.class, JarURI.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            Logger.getLogger(ModulePluginList.class.getName()).log(Level.WARNING,
+                    "Unable to create JAXBContext", excp);
         }
     }
     

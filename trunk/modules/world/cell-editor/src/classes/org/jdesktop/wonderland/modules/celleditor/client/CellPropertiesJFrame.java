@@ -386,7 +386,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
                 n.getLocalRotation() + "  world " + n.getWorldTranslation() +
                 "  " + n.getWorldRotation());
 
-        System.err.println(buf);
+        LOGGER.warning(buf.toString());
 
         if (n instanceof Node) {
             java.util.List<Spatial> children = ((Node) n).getChildren();
@@ -1302,7 +1302,6 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 //            transformGraph.add(oldParentWorld);
 //            transformGraph.add(draggedCell.getLocalTransform());
 //            CellTransform tmp = CellTransform.computeGraph(transformGraph);
-//            System.err.println("New Child Transform "+tmp);
 
             // Send a message to the server indicating the change in the
             // parent. We need to send this over the cell edit connection,

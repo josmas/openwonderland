@@ -138,14 +138,14 @@ public class AssetDB {
             /* Disconnect from the database after creation and attempt to re-connect */
             disconnect();
             if (!connect()) {
-                System.out.println("Unable to open AssetDB, exiting");
-                System.out.println("Check you don't have a Wonderland client already running");
+                logger.severe("Unable to open AssetDB, exiting");
+                logger.severe("Check you don't have a Wonderland client already running");
                 System.exit(1);
             }
         } else {            
             if (!connect()) {
-                System.out.println("Unable to open AssetDB, exiting");
-                System.out.println("Check you don't have a Wonderland client already running");
+                logger.severe("Unable to open AssetDB, exiting");
+                logger.severe("Check you don't have a Wonderland client already running");
                 System.exit(1);
             }
         }

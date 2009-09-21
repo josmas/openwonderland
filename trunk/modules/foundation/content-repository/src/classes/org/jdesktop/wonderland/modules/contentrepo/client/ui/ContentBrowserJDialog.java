@@ -204,7 +204,6 @@ public class ContentBrowserJDialog
                     }
 
                     String uri = factory.getURI(tableSelectedNode);
-                    System.out.println("URI " + uri);
                     l.okAction(uri);
                 }
             }

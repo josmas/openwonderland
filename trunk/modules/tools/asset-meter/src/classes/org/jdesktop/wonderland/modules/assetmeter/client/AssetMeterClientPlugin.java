@@ -114,7 +114,6 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
 
     void resize() {
         Dimension size = assetMeterJPanel.getSize();
-        System.out.println("Resize to " + size);
         assetMeterHUDComponent.setSize(size);
     }
 

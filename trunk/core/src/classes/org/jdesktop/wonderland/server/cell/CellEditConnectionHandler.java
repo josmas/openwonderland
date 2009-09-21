@@ -295,8 +295,6 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             CellID cellID = ((CellReparentMessage)editMessage).getCellID();
             CellID newParentID = ((CellReparentMessage)editMessage).getParentCellID();
 
-//            logger.warning("REPARENT CELL " + cellID + " " + newParentID);
-
             // Figure out the new local coordinates of the cell wrt the new
             // parent
 
@@ -305,22 +303,17 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             CellMO oldParent = child.getParent();
             CellMO newParent = CellManagerMO.getCell(newParentID);
 
-//            System.err.println("ORIGINAL LOC "+child.getWorldTransform(null).getTranslation(null));
-//
-//            System.err.println("NEW PARENT "+newParent);
-//            System.err.println("OLD PARENT "+oldParent);
-
-            if (oldParent==null) {
+            if (oldParent == null) {
                 CellManagerMO.getCellManager().removeCellFromWorld(child);
             } else {
                 oldParent.removeChild(child);
             }
 
-            CellTransform childTransform = ((CellReparentMessage)editMessage).getChildCellTransform();
-            if (childTransform!=null)
+            CellTransform childTransform = ((CellReparentMessage) editMessage).getChildCellTransform();
+            if (childTransform != null)
                 child.setLocalTransform(childTransform);
 
-            if (newParent==null) {
+            if (newParent == null) {
                 try {
                     CellManagerMO.getCellManager().insertCellInWorld(child);
                 } catch (MultipleParentException ex) {
@@ -333,10 +326,6 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                     Logger.getLogger(CellEditConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            
-//            System.err.println("REPARENTED LOC "+child.getWorldTransform(null).getTranslation(null));
-
-
         }
     }
 

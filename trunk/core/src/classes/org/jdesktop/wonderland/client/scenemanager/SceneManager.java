@@ -133,7 +133,6 @@ public class SceneManager {
      * Provides a raw input event to process
      */
     protected void inputEvent(Event event) {
-        Logger logger = Logger.getLogger(SceneManager.class.getName());
         InputManager inputManager = InputManager.inputManager();        
         Entity entity = event.getEntity();
                         
