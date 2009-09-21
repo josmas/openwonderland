@@ -154,7 +154,6 @@ public class TextChatPanel extends javax.swing.JPanel {
         messageTextArea.setRows(6);
         messageTextArea.setTabSize(4);
         messageTextArea.setWrapStyleWord(true);
-        messageTextArea.setFocusable(false);
         jScrollPane1.setViewportView(messageTextArea);
 
         messageTextField.setFont(messageTextField.getFont().deriveFont(messageTextField.getFont().getStyle() | java.awt.Font.BOLD));
@@ -170,7 +169,7 @@ public class TextChatPanel extends javax.swing.JPanel {
         textEntryPanelLayout.setHorizontalGroup(
             textEntryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, textEntryPanelLayout.createSequentialGroup()
-                .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sendButton)
                 .addContainerGap())
@@ -192,7 +191,7 @@ public class TextChatPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(textEntryPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
