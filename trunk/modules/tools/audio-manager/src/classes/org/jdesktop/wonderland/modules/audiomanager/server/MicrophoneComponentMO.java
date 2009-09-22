@@ -58,7 +58,8 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
     private ActiveArea activeArea = new ActiveArea();
 
-    private MicrophoneProximityListener proximityListener;
+    private MicrophoneEnterProximityListener enterProximityListener;
+    private MicrophoneActiveAreaProximityListener activeAreaProximityListener;
 
     public MicrophoneComponentMO(CellMO cellMO) {
         super(cellMO);
@@ -88,7 +89,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
 	activeArea = state.getActiveArea();
 
-	addProximityListener(isLive());
+	addProximityListeners(isLive());
     }
 
     /**
@@ -138,10 +139,10 @@ public class MicrophoneComponentMO extends CellComponentMO {
     public void setLive(boolean live) {
         super.setLive(live);
 
-        addProximityListener(live);
+        addProximityListeners(live);
     }
 
-    private void addProximityListener(boolean live) {
+    private void addProximityListeners(boolean live) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
         ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
@@ -151,13 +152,14 @@ public class MicrophoneComponentMO extends CellComponentMO {
             return;
         }
 
-        if (proximityListener != null) {
-            component.removeProximityListener(proximityListener);
+        if (enterProximityListener != null) {
+            component.removeProximityListener(enterProximityListener);
+            component.removeProximityListener(activeAreaProximityListener);
         }
 
         // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
-            BoundingVolume[] bounds = new BoundingVolume[2];
+            BoundingVolume[] bounds = new BoundingVolume[1];
 
             if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
@@ -171,25 +173,29 @@ public class MicrophoneComponentMO extends CellComponentMO {
                     fullVolumeArea.bounds.getY(), fullVolumeArea.bounds.getZ());
             }
 
+            enterProximityListener = new MicrophoneEnterProximityListener(cellRef.get(), name, volume);
+            component.addProximityListener(enterProximityListener, bounds);
+
             Vector3f activeOrigin = new Vector3f((float) activeArea.activeAreaOrigin.getX(),
                                                  (float) activeArea.activeAreaOrigin.getY(),
                                                  (float) activeArea.activeAreaOrigin.getZ());
 
             if (activeArea.activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
-                bounds[1] = new BoundingSphere((float) 2, activeOrigin);
+                bounds[0] = new BoundingSphere((float) 2, activeOrigin);
             } else {
-                bounds[1] = new BoundingBox(activeOrigin, (float) activeArea.activeAreaBounds.getX(),
+                bounds[0] = new BoundingBox(activeOrigin, (float) activeArea.activeAreaBounds.getX(),
                                                           (float) activeArea.activeAreaBounds.getY(),
                                                           (float) activeArea.activeAreaBounds.getZ());
             }
 
-            proximityListener = new MicrophoneProximityListener(cellRef.get(), name, volume);
-
-            component.addProximityListener(proximityListener, bounds);
+            activeAreaProximityListener = new MicrophoneActiveAreaProximityListener(cellRef.get(), name, volume);
+            component.addProximityListener(activeAreaProximityListener, bounds);
         } else {
-            if (proximityListener != null) {
-                proximityListener.remove();
-                proximityListener = null;
+            if (enterProximityListener != null) {
+                enterProximityListener.remove();
+                enterProximityListener = null;
+                activeAreaProximityListener.remove();
+                activeAreaProximityListener = null;
             }
         }
     }

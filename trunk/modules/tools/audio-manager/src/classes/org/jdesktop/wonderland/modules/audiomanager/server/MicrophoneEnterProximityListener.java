@@ -47,7 +47,7 @@ import java.io.Serializable;
  * A server cell that provides a microphone proximity listener
  * @author jprovino
  */
-public class MicrophoneProximityListener implements ProximityListenerSrv, Serializable,
+public class MicrophoneEnterProximityListener implements ProximityListenerSrv, Serializable,
 	AudioGroupListener {
 
     private static final Logger logger =
@@ -57,7 +57,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
     private String name;
     private double volume;
 
-    public MicrophoneProximityListener(CellMO cellMO, String name, double volume) {
+    public MicrophoneEnterProximityListener(CellMO cellMO, String name, double volume) {
 	cellID = cellMO.getCellID();
         this.name = name;
 	this.volume = volume;
@@ -73,17 +73,9 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
 	String callId = CallID.getCallID(viewCellID);
 
 	if (entered) {
-	    if (proximityIndex == 0) {
-	        cellEntered(callId);
-	    } else {
-		activeAreaEntered(callId);
-	    }
+	    cellEntered(callId);
 	} else {
-	    if (proximityIndex == 0) {
-	        cellExited(callId);
-	    } else {
-		activeAreaExited(callId);
-	    }
+	    cellExited(callId);
 	}
     }
 
@@ -163,58 +155,6 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
         if (audioGroup.getNumberOfPlayers() == 0) {
             AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
         }
-    }
-
-    private void activeAreaEntered(String callId) {
-	logger.info(callId + " entered active area " + name);
-
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        Player player = vm.getPlayer(callId);
-
-        if (player == null) {
-            logger.warning("Can't find player for " + callId);
-            return;
-        }
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-	    logger.warning("Can't find audio group " + name);
-	    return;
-	}
-
-	if (audioGroup.getPlayerInfo(player) == null) {
-            audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-                AudioGroupPlayerInfo.ChatType.PUBLIC));
-	} else {
-	    audioGroup.setSpeaking(player, true);
-	}
-
-	audioGroup.setSpeakingAttenuation(player, volume);
-    }
-
-    private void activeAreaExited(String callId) {
-	logger.info(callId + " exited active area " + name);
-
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        Player player = vm.getPlayer(callId);
-
-        if (player == null) {
-            logger.warning("Can't find player for " + callId);
-            return;
-        }
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-	    logger.warning("Can't find audio group " + name);
-	    return;
-	}
-
-	audioGroup.setSpeaking(player, false);
-	audioGroup.setSpeakingAttenuation(player, volume);
     }
 
     public void changeName(String name) {
