@@ -568,6 +568,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 logger.fine("displaying in-world view");
                 worldView.setOrtho(false, false);
                 worldView.setPixelScale(worldPixelScale);
+                worldView.setVisibleApp(true, false);
                 worldView.setVisibleUser(true, false);
                 componentMovedWorld(component);
                 worldView.update();
@@ -587,6 +588,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
             if (worldView != null) {
                 logger.fine("hiding in-world view");
+                worldView.setVisibleApp(false, false);
                 worldView.setVisibleUser(false, false);
                 worldView.update();
             } else {
