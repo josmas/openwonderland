@@ -50,6 +50,9 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.Vo
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 
+import org.jdesktop.wonderland.client.cell.ProximityComponent;
+import org.jdesktop.wonderland.client.cell.ProximityListener;
+
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
@@ -58,6 +61,10 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+
+import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.client.cell.Cell;
 
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -82,12 +89,18 @@ import java.awt.event.ActionEvent;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+
+import com.jme.math.Vector3f;
+
 /**
  *
  * @author nsimpson
  */
 public class AddUserPanel extends javax.swing.JPanel implements 
-	 PresenceManagerListener, MemberChangeListener, UserInRangeListener {
+	PresenceManagerListener, MemberChangeListener, UserInRangeListener,
+	ProximityListener {
 
     private static final Logger logger = Logger.getLogger(AddUserPanel.class.getName());
 
@@ -302,6 +315,45 @@ public class AddUserPanel extends javax.swing.JPanel implements
             session.send(client, new VoiceChatJoinMessage(group, info, 
 		new PresenceInfo[0], chatType));
         }
+
+	Cell cell = client.getCell();
+	ProximityComponent prox = cell.getComponent(ProximityComponent.class);
+
+	if (prox == null) {
+	    logger.warning("NO PROX FOR CELL!");
+	    return;
+	}
+
+	if (chatType.equals(ChatType.PUBLIC)) {
+	    BoundingVolume[] bounds = new BoundingVolume[] {
+                new BoundingSphere((float) 1, new Vector3f())
+	    };
+
+	    logger.info("Adding proximity listener... " + prox 
+		+ " bounds " + bounds[0]);
+
+	    prox.addProximityListener(this, bounds);
+	} else {
+	    prox.removeProximityListener(this);
+	}
+    }
+
+    public void setPrivacy(ChatType chatType) {
+	this.chatType = chatType;
+    }
+
+    public ChatType getPrivacy() {
+	return chatType;
+    }
+
+    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID,
+	    BoundingVolume proximityVolume, int proximityIndex) {
+
+	PresenceInfo cellInfo = pm.getPresenceInfo(cell.getCellID());
+	PresenceInfo viewCellInfo = pm.getPresenceInfo(viewCellID);
+
+	logger.info("Entered " + entered + " cellInfo " + cellInfo
+	    + " viewCellInfo " + viewCellInfo);
     }
 
     public void showPrivacyPanel(boolean showPrivacy) {
@@ -330,10 +382,6 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void animateCallAnswer() {
-	if (true) {
-	    return;
-	}
-
 	WlAvatarCharacter avatar = client.getWlAvatarCharacter();
 
 	if (avatar == null) {
@@ -377,11 +425,12 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    synchronized (invitedMembers) {
                 invitedMembers.remove(info);
                 invitedMembers.add(info);
-		logger.warning("Sending invite to " + info);
+		logger.warning("Sending invite to " + info + " chatType " + chatType);
 	    }
 	}
 
 	updateUserList();
+
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
             usersToInvite.toArray(new PresenceInfo[0]), chatType));
     }
@@ -611,7 +660,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	}
 
 	if ((ix = invitedMembers.indexOf(info)) >= 0) {
-	    updatePresenceInfo(info, members.get(ix));
+	    updatePresenceInfo(info, invitedMembers.get(ix));
 	}
 
 	//dumpu();
@@ -680,15 +729,20 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	logger.fine("member change:  " + presenceInfo + " added " + added + " mode " + addHUDPanel.getMode()
 	    + " isTransient " + isTransientMember);
 
+	System.out.println("member change:  " + presenceInfo + " added " + added + " mode " + addHUDPanel.getMode()
+	    + " isTransient " + isTransientMember);
+
 	if (added) {
 	    synchronized (members) {
 	        if (members.contains(presenceInfo) == false) {
 		    members.add(presenceInfo);
 	        }
 	    }
-	    if (isTransientMember) {
-	    	synchronized (transientMembers) {
-		    transientMembers.remove(presenceInfo);
+
+	    synchronized (transientMembers) {
+		transientMembers.remove(presenceInfo);
+
+	        if (isTransientMember) {
 		    transientMembers.add(presenceInfo);
 		}
 	    }

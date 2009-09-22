@@ -30,7 +30,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.SpinnerListModel;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
@@ -113,8 +112,6 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
     }
 
     private void applyChanges() {
-        AvatarNameEvent avatarNameEvent;
-
         if (myNameTagAttribute != originalMyNameTagAttribute) {
             originalMyNameTagAttribute = myNameTagAttribute;
 

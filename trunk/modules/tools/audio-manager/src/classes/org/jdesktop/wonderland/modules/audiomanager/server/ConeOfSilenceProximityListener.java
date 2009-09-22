@@ -45,6 +45,15 @@ import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import java.io.Serializable;
 
+import org.jdesktop.wonderland.common.cell.security.ViewAction;
+import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.server.cell.CellResourceManager;
+import org.jdesktop.wonderland.server.security.ActionMap;
+import org.jdesktop.wonderland.server.security.Resource;
+import org.jdesktop.wonderland.server.security.ResourceMap;
+import org.jdesktop.wonderland.server.security.SecureTask;
+import org.jdesktop.wonderland.server.security.SecurityManager;
+
 /**
  * A server cell that provides conference coneofsilence functionality
  * @author jprovino
@@ -84,25 +93,65 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	}
     }
 
-    private void cellEntered(CellID softphoneCellID) {
-        cellEntered(CallID.getCallID(softphoneCellID));
+    public void cellEntered(CellID cellID) {
+        // get the security manager
+        SecurityManager security = AppContext.getManager(SecurityManager.class);
+        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+
+        // create a request
+        Action viewAction = new ViewAction();
+        Resource resource = crm.getCellResource(cellID);
+        if (resource != null) {
+            // there is security on this cell perform the enter notification
+            // securely
+            ActionMap am = new ActionMap(resource, new Action[] { viewAction });
+            ResourceMap request = new ResourceMap();
+            request.put(resource.getId(), am);
+
+            // perform the security check
+            security.doSecure(request, new CellEnteredTask(resource.getId(), cellID));
+        } else {
+            // no security, just make the call directly
+            cellEntered(CallID.getCallID(cellID));
+        }
     }
 
-    public void cellEntered(String callId) {
+    private class CellEnteredTask implements SecureTask, Serializable {
+        private String resourceID;
+        private CellID softphoneCellID;
+
+        public CellEnteredTask(String resourceID, CellID softphoneCellID) {
+            this.resourceID = resourceID;
+            this.softphoneCellID = softphoneCellID;
+        }
+
+        public void run(ResourceMap granted) {
+            ActionMap am = granted.get(resourceID);
+            if (am != null && !am.isEmpty()) {
+                // request was granted -- the user has permission to
+                // enter the COS
+                cellEntered(CallID.getCallID(softphoneCellID));
+            } else {
+                logger.warning("Access denied to enter Cone of Silence");
+            }
+        }
+    }
+
+    private void cellEntered(String callId) {
         /*
-         * The avatar has entered the ConeOfSilence cell.
-         * Set the public and incoming spatializers for the avatar to be
+         * A cell has entered the ConeOfSilence cell.
+         * Set the public and incoming spatializers for the cell to be
          * the zero volume spatializer.
          * Set a private spatializer for the given fullVolume radius
          * for all the other avatars in the cell.
-         * For each avatar already in the cell, set a private spatializer
-         * for this avatar.
+         * For each cell already in the cell, set a private spatializer
+         * for this cell.
          */
-        logger.info(callId + " entered cone " + name + " avatar cell ID " + callId);
-
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         Player player = vm.getPlayer(callId);
+
+        logger.info(callId + " entered cone " + name + " player " + player);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
@@ -112,20 +161,21 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
         if (audioGroup == null) {
-            AudioGroupSetup ags = new AudioGroupSetup();
+	    AudioGroupSetup setup = new AudioGroupSetup();
 
-	    ags.audioGroupListener = this;
+	    setup.audioGroupListener = this;
 
-            ags.spatializer = new FullVolumeSpatializer();
+	    setup.spatializer = new FullVolumeSpatializer();
 
-            ags.spatializer.setAttenuator(
-                    DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+            setup.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
 
-            audioGroup = vm.createAudioGroup(name, ags);
+	    logger.info("Creating audio group for " + name);
+
+	    audioGroup = vm.createAudioGroup(name, setup);
         }
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-       	    AudioGroupPlayerInfo.ChatType.SECRET));
+       	    AudioGroupPlayerInfo.ChatType.PRIVATE));
 
 	logger.fine("Attenuate other groups to " + outsideAudioVolume + " name " + name);
 
@@ -136,22 +186,25 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
+	//System.out.println("Player added:  " + player);
+
 	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
     }
 
-    private void cellExited(CellID softphoneCellID) {
-        cellExited(CallID.getCallID(softphoneCellID));
+    public void cellExited(CellID cellID) {
+        cellExited(CallID.getCallID(cellID));
     }
 
-    public void cellExited(String callId) {
+    private void cellExited(String callId) {
         logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
+        //System.out.println(callId + " exited cone " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
         if (audioGroup == null) {
-            logger.warning("Not a member of audio group " + name);
+            logger.warning("No audio group " + name);
             return;
         }
 
@@ -171,10 +224,6 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     }
 
     public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        if (audioGroup.getNumberOfPlayers() == 0) {
-            AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
-        }
-
 	VoiceChatHandler.updateAttenuation(player);
 
 	if (entered) {
@@ -191,6 +240,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
+
+	logger.warning("Remove " + audioGroup + " name " + name);
 
 	if (audioGroup == null) {
 	    return;

@@ -28,12 +28,9 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageRece
 
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
-import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -41,21 +38,11 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
-
-import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
-
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
-
-import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 
 /**
  * A component that provides audio participant control

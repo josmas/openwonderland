@@ -67,7 +67,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
+	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
 	String callId = CallID.getCallID(viewCellID);

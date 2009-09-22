@@ -18,11 +18,11 @@
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
@@ -31,7 +31,9 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState.COSBoundsType;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 
@@ -52,13 +54,13 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
     private String name = "COS";
 
-    private boolean useCellBounds;
+    private COSBoundsType boundsType = COSBoundsType.CELL_BOUNDS;
 
-    private double fullVolumeRadius = 1.6;
+    private Vector3f bounds = new Vector3f(1.6f, 1.6f, 1.6f);
 
     private double outsideAudioVolume = 0;
 
-    //ConeOfSilenceProximityListener proximityListener;
+    ConeOfSilenceProximityListener proximityListener;
 
     /**
      * Create a ConeOfSilenceComponent for the given cell. 
@@ -86,9 +88,9 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
 	name = cs.getName();
 
-	useCellBounds = cs.getUseCellBounds();
+	boundsType = cs.getBoundsType();
 
-        fullVolumeRadius = cs.getFullVolumeRadius();
+	bounds = cs.getBounds();
 
 	outsideAudioVolume = cs.getOutsideAudioVolume();
 
@@ -108,8 +110,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         }
 
         state.setName(name);
-	state.setUseCellBounds(useCellBounds);
-        state.setFullVolumeRadius(fullVolumeRadius);
+	state.setBoundsType(boundsType);
+	state.setBounds(bounds);
         state.setOutsideAudioVolume(outsideAudioVolume);
 
         return super.getServerState(state);
@@ -142,10 +144,35 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     public void setLive(boolean live) {
         super.setLive(live);
 
+	//System.out.println("CONE Set live " + live);
+
 	addProximityListener(live);
+
+	AudioTreatmentComponentMO audioTreatmentComponentMO =
+	    cellRef.get().getComponent(AudioTreatmentComponentMO.class);
     }
 
-    ConeOfSilenceProximityListener proximityListener;
+    public void addAudioTreatmentComponentMO(CellMO cellMO) {
+	//System.out.println("Adding audio to COS for " + 
+	//    CallID.getCallID(cellMO.getCellID()));
+
+	if (proximityListener == null) {
+	    return;
+	}
+
+	proximityListener.cellEntered(cellMO.getCellID());
+    }
+
+    public void removeAudioTreatmentComponentMO(CellMO cellMO) {
+	//System.out.println("removing audio to COS for " + 
+	//    CallID.getCallID(cellMO.getCellID()));
+
+	if (proximityListener == null) {
+	    return;
+	}
+
+	proximityListener.cellExited(cellMO.getCellID());
+    }
 
     private void addProximityListener(boolean live) {
         // Fetch the proximity component, we will need this below. If it does
@@ -158,29 +185,32 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         }
 
 	if (proximityListener != null) {
+	    proximityListener.remove();
 	    component.removeProximityListener(proximityListener);
 	}
 
         // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
-            BoundingVolume[] bounds = new BoundingVolume[1];
+            BoundingVolume[] boundingVolume = new BoundingVolume[1];
 
-	    if (useCellBounds == true) {
-		bounds[0] = cellRef.get().getLocalBounds();
-		logger.warning("COS Using cell bounds:  " + bounds[0]);
+	    if (boundsType.equals(COSBoundsType.CELL_BOUNDS)) {
+		boundingVolume[0] = cellRef.get().getLocalBounds();
+		logger.warning("COS Using cell local bounds:  " + boundingVolume[0]);
+	    } else if (boundsType.equals(COSBoundsType.BOX)) {
+                boundingVolume[0] = new BoundingBox(new Vector3f(), bounds.getX(), 
+		    bounds.getY(), bounds.getZ());
+		logger.warning("COS Using specified BOX:  " + boundingVolume[0]);
 	    } else {
-                bounds[0] = new BoundingSphere((float) fullVolumeRadius, new Vector3f());
-		logger.warning("COS Using radius:  " + bounds[0]);
+                boundingVolume[0] = new BoundingSphere(bounds.getX(), new Vector3f());
+		logger.warning("COS Using specified radius:  " + boundingVolume[0]);
 	    }
 
-            proximityListener = new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
+            proximityListener = new ConeOfSilenceProximityListener(cellRef.get(), name, 
+		outsideAudioVolume);
 
-            component.addProximityListener(proximityListener, bounds);
+            component.addProximityListener(proximityListener, boundingVolume);
         } else {
-	    if (proximityListener != null) {
-	        proximityListener.remove();
-	        proximityListener = null;
-	    }
+	    proximityListener = null;
 	}
     }
 

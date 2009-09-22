@@ -30,7 +30,14 @@ import org.jdesktop.wonderland.common.messages.Message;
 @ExperimentalAPI
 public class GetVoiceBridgeRequestMessage extends Message {
 
-    public GetVoiceBridgeRequestMessage() {
+    private String callID;
+
+    public GetVoiceBridgeRequestMessage(String callID) {
+	this.callID = callID;
+    }
+
+    public String getCallID() {
+	return callID;
     }
 
 }

@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client.voicechat;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Point;
@@ -45,7 +47,6 @@ import org.jdesktop.wonderland.modules.audiomanager.client.DisconnectListener;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatHoldMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
@@ -79,7 +80,6 @@ public class AddHUDPanel
     private PresenceInfo myPresenceInfo;
     private PresenceInfo caller;
     private String group;
-    private ChatType chatType;
     private static int groupNumber;
     private static ArrayList<AddHUDPanel> addHUDPanelList = new ArrayList();
     private PropertyChangeSupport listeners;
@@ -193,6 +193,12 @@ public class AddHUDPanel
 
     public void setClosed() {
         addHUDComponent.setClosed();
+    }
+
+    public void setPrivacy(ChatType chatType) {
+	if (addUserPanel != null) {
+	    addUserPanel.setPrivacy(chatType);
+	}
     }
 
     public void disconnected() {
@@ -492,6 +498,8 @@ public class AddHUDPanel
     private void addButtonActionPerformed(ActionEvent e) {
         AddHUDPanel addHUDPanel = new AddHUDPanel(client, session,
                 myPresenceInfo, myPresenceInfo, group, Mode.ADD);
+
+	addHUDPanel.setPrivacy(addUserPanel.getPrivacy());
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         addModeAddHUDComponent = mainHUD.createComponent(addHUDPanel);

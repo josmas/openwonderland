@@ -71,20 +71,20 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         // Set the maximum and minimum values for the volume radius spinner
         fullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         fullVolumeRadiusSpinner.setModel(fullVolumeRadiusModel);
 
         xExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         xExtentSpinner.setModel(xExtentModel);
 
         yExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         yExtentSpinner.setModel(yExtentModel);
 
         zExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
-        zExtentSpinner.setModel(yExtentModel);
+            new Float(100), new Float(.1));
+        zExtentSpinner.setModel(zExtentModel);
 
         fullVolumeRadiusModel.addChangeListener(new RadiusChangeListener());
         xExtentModel.addChangeListener(new XExtentChangeListener());
@@ -93,31 +93,31 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         // Set the maximum and minimum values for the volume radius spinner
         activeAreaFullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         activeAreaFullVolumeRadiusSpinner.setModel(activeAreaFullVolumeRadiusModel);
 
         activeAreaXExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         activeAreaXExtentSpinner.setModel(activeAreaXExtentModel);
 
         activeAreaYExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         activeAreaYExtentSpinner.setModel(activeAreaYExtentModel);
 
         activeAreaZExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         activeAreaZExtentSpinner.setModel(activeAreaZExtentModel);
 
         activeAreaXOriginModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         activeAreaXOriginSpinner.setModel(activeAreaXOriginModel);
 
         activeAreaYOriginModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         activeAreaYOriginSpinner.setModel(activeAreaYOriginModel);
 
         activeAreaZOriginModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(100), new Float(1));
+            new Float(100), new Float(.1));
         activeAreaZOriginSpinner.setModel(activeAreaZOriginModel);
 
         activeAreaFullVolumeRadiusModel.addChangeListener(new ActiveAreaRadiusChangeListener());
@@ -327,8 +327,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float radius = (Float) fullVolumeRadiusModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        radius != originalFullVolumeArea.bounds.getX());
+
+		boolean dirty = radius != originalFullVolumeArea.bounds.getX() ||
+		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
@@ -342,8 +345,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float xExtent = (Float) xExtentModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        xExtent != originalFullVolumeArea.bounds.getX());
+
+		boolean dirty = xExtent != originalFullVolumeArea.bounds.getX() ||
+		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
@@ -357,8 +363,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float yExtent = (Float) yExtentModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        yExtent != originalFullVolumeArea.bounds.getY());
+
+		boolean dirty = yExtent != originalFullVolumeArea.bounds.getY() ||
+		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
@@ -372,8 +381,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float zExtent = (Float) zExtentModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        zExtent != originalFullVolumeArea.bounds.getZ());
+
+		boolean dirty = zExtent != originalFullVolumeArea.bounds.getZ() ||
+		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
@@ -387,8 +399,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float radius = (Float) activeAreaFullVolumeRadiusModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        radius != originalActiveArea.activeAreaBounds.getX());
+
+		boolean dirty = radius != originalActiveArea.activeAreaBounds.getX() ||
+		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.SPHERE) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
@@ -402,8 +417,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float xExtent = (Float) activeAreaXExtentModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        xExtent != originalActiveArea.activeAreaBounds.getX());
+
+		boolean dirty = xExtent != originalActiveArea.activeAreaBounds.getX() ||
+		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.BOX) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
@@ -417,8 +435,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float yExtent = (Float) activeAreaYExtentModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        yExtent != originalActiveArea.activeAreaBounds.getY());
+
+		boolean dirty = yExtent != originalActiveArea.activeAreaBounds.getY() ||
+		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.BOX) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
@@ -432,8 +453,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
                 Float zExtent = (Float) activeAreaZExtentModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        zExtent != originalActiveArea.activeAreaBounds.getZ());
+
+		boolean dirty = zExtent != originalActiveArea.activeAreaBounds.getZ() ||
+		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.BOX) == false;
+
+                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
             }
         }
     }
