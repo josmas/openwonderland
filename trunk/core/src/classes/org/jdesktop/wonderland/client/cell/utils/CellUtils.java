@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -55,11 +56,38 @@ public class CellUtils {
      * This method attempts to position the Cell "optimally" so that the avatar
      * can see it, based upon "hints" about the Cell bounds given to it in the
      * CellServerState.
-     * 
+     *
      * @param state The cell server state for the new cell
      * @throw CellCreationException Upon error creating the cell
      */
-    public static void createCell(CellServerState state) throws CellCreationException {
+    public static void createCell(CellServerState state)
+            throws CellCreationException {
+
+        // Find the parent cell for this creation (may be null)
+        CellID parentID = null;
+        Cell parent = CellCreationParentRegistry.getCellCreationParent();
+        if (parent != null) {
+            parentID = parent.getCellID();
+            logger.info("Using parent with Cell ID " + parentID.toString());
+        }
+
+        // Go ahead and create the Cell with the parent ID we found
+        createCell(state, parentID);
+    }
+
+    /**
+     * Creates a cell in the world given the CellServerState of the cell. If the
+     * given CellServerState is null, this method simply does not create a Cell.
+     * This method attempts to position the Cell "optimally" so that the avatar
+     * can see it, based upon "hints" about the Cell bounds given to it in the
+     * CellServerState.
+     * 
+     * @param state The cell server state for the new cell
+     * @param parentCellID The Cell ID of the parent, of null for world root
+     * @throw CellCreationException Upon error creating the cell
+     */
+    public static void createCell(CellServerState state, CellID parentCellID)
+            throws CellCreationException {
 
         // Check to see if the Cell server state is null, and fail quietly if
         // so
@@ -114,18 +142,11 @@ public class CellUtils {
             // the origin of the avatar as the initial placement
             transform = new CellTransform();
         }
-
-        // find the parent cell for this creation (may be null)
-        CellID parentID = null;
-        Cell parent = CellCreationParentRegistry.getCellCreationParent();
-        if (parent != null) {
-            parentID = parent.getCellID();
-            logger.info("Using parent with Cell ID " + parentID.toString());
-        }
         
         // We also need to convert the initial origin of the Cell (in world
         // coordinates to the coordinates of the parent Cell (if non-null)
-        if (parentID != null) {
+        if (parentCellID != null) {
+            Cell parent = viewCell.getCellCache().getCell(parentCellID);
             CellTransform worldTransform = new CellTransform(null, null);
             CellTransform parentTransform = parent.getWorldTransform();
 
@@ -140,8 +161,9 @@ public class CellUtils {
         logger.info("Final adjusted origin " + transform.getTranslation(null).toString());
         
         // Create a position component that will set the initial origin
-        PositionComponentServerState position = (PositionComponentServerState) state.getComponentServerState(PositionComponentServerState.class);
-        if (position==null) {
+        PositionComponentServerState position = (PositionComponentServerState)
+                state.getComponentServerState(PositionComponentServerState.class);
+        if (position == null) {
             position = new PositionComponentServerState();
             state.addComponentServerState(position);
         }
@@ -156,7 +178,7 @@ public class CellUtils {
         WonderlandSession session = manager.getPrimarySession();
         CellEditChannelConnection connection = (CellEditChannelConnection)
                 session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        CellCreateMessage msg = new CellCreateMessage(parentID, state);
+        CellCreateMessage msg = new CellCreateMessage(parentCellID, state);
         connection.send(msg);
     }
 
