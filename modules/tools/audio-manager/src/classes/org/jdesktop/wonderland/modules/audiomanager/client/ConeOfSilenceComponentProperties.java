@@ -76,7 +76,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         zExtentModel = new SpinnerNumberModel(new Float(1), new Float(0), 
 	    new Float(100), new Float(.1));
-        zExtentSpinner.setModel(yExtentModel);
+        zExtentSpinner.setModel(zExtentModel);
 
         // Listen for changes to the text field and spinner
         nameTextField.getDocument().addDocumentListener(
@@ -155,19 +155,20 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         state.setName(nameTextField.getText());
 
-	COSBoundsType boundsType;
-
 	if (useCellBoundsRadioButton.isSelected()) {
-	    boundsType = COSBoundsType.CELL_BOUNDS;
+	    state.setBoundsType(COSBoundsType.CELL_BOUNDS);
 	} else if (specifyRadiusRadioButton.isSelected()) {
-	    boundsType = COSBoundsType.SPHERE;
+	    state.setBoundsType(COSBoundsType.SPHERE);
+	    state.setBounds(new Vector3f((Float) fullVolumeRadiusModel.getValue(), 0f, 0));
 	} else {
-	    boundsType = COSBoundsType.BOX;
+	    state.setBoundsType(COSBoundsType.BOX);
+	    state.setBounds(new Vector3f((Float) xExtentSpinner.getValue(), 
+		(Float) yExtentSpinner.getValue(), (Float) zExtentSpinner.getValue())); 
 	}
 	
-	state.setBoundsType(boundsType);
         state.setOutsideAudioVolume(VolumeUtil.getServerVolume(
                 outsideAudioVolumeSlider.getValue()));
+
         editor.addToUpdateList(state);
     }
 
@@ -191,7 +192,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	    fullVolumeRadiusSpinner.setEnabled(false);
 	    fullVolumeRadiusSpinner.setValue(originalBounds.getX());
 	} else {
-	    specifyRadiusRadioButton.setSelected(true);
+	    specifyBoxRadioButton.setSelected(true);
 	    xExtentSpinner.setEnabled(true);
 	    yExtentSpinner.setEnabled(true);
 	    zExtentSpinner.setEnabled(true);
@@ -456,6 +457,10 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     }//GEN-LAST:event_outsideAudioVolumeSliderStateChanged
 
     private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useCellBoundsRadioButtonActionPerformed
+	if (useCellBoundsRadioButton.isSelected() == false) {
+	    return;
+	}
+
 	fullVolumeRadiusSpinner.setEnabled(false);
 	xExtentSpinner.setEnabled(false);
 	yExtentSpinner.setEnabled(false);
@@ -474,6 +479,10 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     }//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
 
     private void specifyRadiusRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_specifyRadiusRadioButtonActionPerformed
+	if (specifyRadiusRadioButton.isSelected() == false) {
+	    return;
+	}
+
 	fullVolumeRadiusSpinner.setEnabled(true);
 	xExtentSpinner.setEnabled(false);
 	yExtentSpinner.setEnabled(false);
@@ -487,6 +496,10 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     }//GEN-LAST:event_specifyRadiusRadioButtonActionPerformed
 
     private void specifyBoxRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_specifyBoxRadioButtonActionPerformed
+	if (specifyBoxRadioButton.isSelected() == false) {
+	    return;
+	}
+
 	fullVolumeRadiusSpinner.setEnabled(false);
 	xExtentSpinner.setEnabled(true);
 	yExtentSpinner.setEnabled(true);
