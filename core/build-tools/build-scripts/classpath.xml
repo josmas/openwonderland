@@ -17,7 +17,6 @@
         <path location="${core.jme.dir}/target/jme-terrain.jar"/>
         <path location="${core.jme.dir}/target/jme-font.jar"/>
         <path location="${core.jme.dir}/lib/lwjgl/lwjgl_util.jar"/>
-        <path location="/Users/paulby/src/java.net/java3d/trunk/vecmath/build/opt/lib/ext/vecmath.jar"/>
         
         <!-- jogl -->
         <path location="${core.lib.os.dir}/jogl.jar"/>
@@ -35,7 +34,6 @@
         <path location="${core.common.dir}/swing-worker-1.2.jar"/>
         <path location="${core.common.dir}/mtgame.jar"/>
         <path location="${core.common.dir}/jbullet.jar"/>
-        <path location="${core.common.dir}/vecmath.jar"/>
         <path location="${core.common.dir}/javolution.jar"/>
     </pathconvert>
     
@@ -63,6 +61,7 @@
         <path location="${core.common.dir}/scannotation-1.0.2.jar"/>
         <path location="${core.common.dir}/javassist.jar"/>
         <path location="${top.dir}/utils/wonderland-version/dist/wonderland-version.jar"/>
+        <path location="${core.common.dir}/vecmath.jar"/>
     </pathconvert>
     
     <pathconvert property="core-common.classpath">
