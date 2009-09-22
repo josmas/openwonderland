@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.awt.Color;
@@ -75,6 +76,7 @@ import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -1292,9 +1294,15 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             // Compute the new local transform of the moved Cell. We find the
             // transform that will take us from the old parent to the new
             // parent, and transform the transform of the Cell by that.
-            newParentWorld.invert();
-            newParentWorld.mul(oldParentWorld);
-            newParentWorld.mul(draggedCell.getLocalTransform());
+//            newParentWorld.invert();
+//            System.err.println("NewParentInvert "+newParentWorld);
+//            newParentWorld.mul(oldParentWorld);
+//            System.err.println("Transform "+newParentWorld);
+//            System.err.println("Mult dragged cell "+draggedCell.getLocalTransform());
+//            newParentWorld.mul(draggedCell.getLocalTransform());
+//            System.err.println("Final "+newParentWorld);
+
+            CellTransform newChildLocal = ScenegraphUtils.computeChildTransform(newParentWorld, draggedCell.getWorldTransform());
 
 
 //            ArrayList<CellTransform> transformGraph = new ArrayList();
@@ -1309,7 +1317,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             CellEditChannelConnection connection =
                     (CellEditChannelConnection) session.getConnection(
                     CellEditConnectionType.CLIENT_TYPE);
-            connection.send(new CellReparentMessage(cellID, parentCellID, newParentWorld));
+            connection.send(new CellReparentMessage(cellID, parentCellID, newChildLocal));
 
             // Turn off the selected node border and repaint the tree.
             dragOverTreeNode = null;
