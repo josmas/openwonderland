@@ -200,6 +200,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 	
 	if (message instanceof AudioVolumeMessage) {
 	    logger.fine("Got volume message " + ((AudioVolumeMessage) message).getVolume());
+
 	    new VolumeControlJFrame(cell.getCellID(), this, "", CallID.getCallID(cell.getCellID()),
 	        VolumeUtil.getClientVolume(((AudioVolumeMessage) message).getVolume()));
 	    return;

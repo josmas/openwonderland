@@ -73,7 +73,7 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
     private String callID;
     private boolean isExternalCall;
 
-    private boolean ended;
+    private boolean done;
 
     public AudioCallStatusListener(WonderlandClientID clientID, String callID) {
 	this(clientID, callID, false);
@@ -86,13 +86,21 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 	this.callID = callID;
 	this.isExternalCall = isExternalCall;
 
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
+    }
 
-	vm.addCallStatusListener(this, callID);
+    public void done() {
+	if (done) {
+	    return;
+	}
+
+	done = true;
+
+	AppContext.getManager(VoiceManager.class).removeCallStatusListener(this, callID);
     }
 
     public void callStatusChanged(CallStatus status) {
-	if (ended) {
+	if (done) {
 	    return;
 	}
 
@@ -196,8 +204,11 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 	    break;
 
 	case CallStatus.ENDED:
-	    vm.removeCallStatusListener(this);
+	    if (done) {
+		return;
+	    }
 
+if (false) {
 	    if (player != null) {
 	        AudioGroup[] audioGroups = player.getAudioGroups();
 
@@ -211,8 +222,9 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 	    } else {
 		logger.warning("Couldn't find player for " + status);
 	    } 
+}
 
-	    ended = true;
+	    done();
 	    sender.send(new CallEndedMessage(callID, status.getOption("Reason")));
             break;
 	  

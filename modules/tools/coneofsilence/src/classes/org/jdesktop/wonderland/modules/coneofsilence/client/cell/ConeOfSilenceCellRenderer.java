@@ -52,7 +52,7 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
 
         // Raise the cone off of the floor, and rotate it about the +x axis 90
         // degrees so it faces the proper way
-        Vector3f translation = new Vector3f(0.0f, 2.3f, 0.0f);
+        Vector3f translation = new Vector3f(0.0f, 1.9f, 0.0f);
         Vector3f axis = new Vector3f(1.0f, 0.0f, 0.0f);
         float angle = (float)Math.toRadians(90);
         Quaternion rotation = new Quaternion().fromAngleAxis(angle, axis);

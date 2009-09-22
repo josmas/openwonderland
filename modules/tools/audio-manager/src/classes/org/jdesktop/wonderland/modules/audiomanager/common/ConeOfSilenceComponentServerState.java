@@ -21,11 +21,16 @@ import java.util.ResourceBundle;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
+import com.jme.math.Vector3f;
+
+import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
+
 /**
- * The ConeOfSilenceCellServerState class is the cell that renders a coneofsilence cell in
+ * The ConeOfSilenceComponentServerState class is the cell that renders a coneofsilence cell in
  * world.
  * 
  * @author jprovino
@@ -40,22 +45,42 @@ public class ConeOfSilenceComponentServerState
             "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
     @XmlElement(name = "name")
     private String name = BUNDLE.getString("ConeOfSilence");
-    @XmlElement(name = "useCellBounds")
-    private boolean useCellBounds = true;
-    @XmlElement(name = "fullVolumeRadius")
-    private double fullVolumeRadius = 1.5;
+    @XmlElement(name = "boundsType")
+    private COSBoundsType boundsType = COSBoundsType.CELL_BOUNDS;
+    @XmlElement(name="bounds")
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
+    public Vector3f bounds = new Vector3f(1.5f, 1.5f, 1.5f);
     @XmlElement(name = "outsideAudioVolume")
     private double outsideAudioVolume = 0;
+
+    public enum COSBoundsType {
+	CELL_BOUNDS,
+	BOX,
+	SPHERE
+    }
 
     /** Default constructor */
     public ConeOfSilenceComponentServerState() {
     }
 
-    public ConeOfSilenceComponentServerState(
-            String name, boolean useCellBounds, double fullVolumeRadius) {
+    public ConeOfSilenceComponentServerState(String name) {
+	this(name, COSBoundsType.CELL_BOUNDS, new Vector3f());
+    }
+
+    public ConeOfSilenceComponentServerState(String name, double fullVolumeRadius) {
+	this(name, COSBoundsType.SPHERE, new Vector3f((float) fullVolumeRadius, 0f, 0f));
+    }
+
+    public ConeOfSilenceComponentServerState(String name, Vector3f bounds) {
+	this(name, COSBoundsType.BOX, bounds);
+    }
+
+    public ConeOfSilenceComponentServerState(String name, COSBoundsType boundsType,
+	Vector3f bounds) {
+
         this.name = name;
-	this.useCellBounds = useCellBounds;
-        this.fullVolumeRadius = fullVolumeRadius;
+	this.boundsType = boundsType;
+	this.bounds = bounds;
     }
 
     public String getServerComponentClassName() {
@@ -72,22 +97,22 @@ public class ConeOfSilenceComponentServerState
         return name;
     }
 
-    public void setUseCellBounds(boolean useCellBounds) {
-	this.useCellBounds = useCellBounds;
+    public void setBoundsType(COSBoundsType boundsType) {
+	this.boundsType = boundsType;
     }
 
     @XmlTransient
-    public boolean getUseCellBounds() {
-	return useCellBounds;
+    public COSBoundsType getBoundsType() {
+	return boundsType;
     }
 
-    public void setFullVolumeRadius(double fullVolumeRadius) {
-        this.fullVolumeRadius = fullVolumeRadius;
+    public void setBounds(Vector3f bounds) {
+	this.bounds = bounds;
     }
 
     @XmlTransient
-    public double getFullVolumeRadius() {
-        return fullVolumeRadius;
+    public Vector3f getBounds() {
+	return bounds;
     }
 
     public void setOutsideAudioVolume(double outsideAudioVolume) {

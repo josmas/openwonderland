@@ -393,6 +393,7 @@ public class UserListHUDPanel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jCheckBox1 = new javax.swing.JCheckBox();
         controlPanel = new javax.swing.JPanel();
         muteButton = new javax.swing.JButton();
         textChatButton = new javax.swing.JButton();
@@ -407,10 +408,12 @@ public class UserListHUDPanel
         jPanel1 = new javax.swing.JPanel();
         panelToggleButton = new javax.swing.JButton();
 
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        jCheckBox1.setText(bundle.getString("UserListHUDPanel.jCheckBox1.text")); // NOI18N
+
         setPreferredSize(new java.awt.Dimension(179, 300));
 
         muteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMuteOff24x24.png"))); // NOI18N
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         muteButton.setToolTipText(bundle.getString("UserListHUDPanel.muteButton.toolTipText")); // NOI18N
         muteButton.setBorderPainted(false);
         muteButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
@@ -488,7 +491,7 @@ public class UserListHUDPanel
         volumeSlider.setPaintLabels(true);
         volumeSlider.setPaintTicks(true);
         volumeSlider.setSnapToTicks(true);
-        volumeSlider.setValue(DEFAULT_SLIDER_VOLUME);
+        volumeSlider.setValue(5);
         volumeSlider.setMinimumSize(new java.awt.Dimension(36, 85));
         volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -688,6 +691,8 @@ public class UserListHUDPanel
 
     public void volumeChanged(CellID cellID, String otherCallID, int volume) {
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+	LOGGER.info("Volume changed for " + otherCallID);
 
         session.send(client, new AudioVolumeMessage(cellID, sc.getCallID(), 
                 otherCallID, VolumeUtil.getServerVolume(volume), true));
@@ -904,6 +909,7 @@ private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel controlPanel;
     private javax.swing.JButton editButton;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JButton muteButton;
     private javax.swing.JButton panelToggleButton;

@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
@@ -319,6 +320,10 @@ public class AudioManagerClient extends BaseConnection implements
         notifyDisconnectListeners();
     }
 
+    public Cell getCell() {
+	return cell;
+    }
+
     public void addMenus() {
         MainFrame mainFrame = JmeClientMain.getFrame();
         mainFrame.addToToolsMenu(AudioMenu.getAudioMenuItem(this), 1);
@@ -352,6 +357,10 @@ public class AudioManagerClient extends BaseConnection implements
                     cellID + " presence: " + presenceInfo + " from " + pm);
 
             connectSoftphone();
+
+	    if (cell.getComponent(ProximityComponent.class) == null) {
+		cell.addComponent(new ProximityComponent(cell));
+	    }
         }
     }
 
@@ -359,13 +368,10 @@ public class AudioManagerClient extends BaseConnection implements
         logger.fine("[AudioManagerClient] " +
                 "Sending message to server to get voice bridge...");
 
-        WonderlandSession.Status status = session.getStatus();
-        if (status == WonderlandSession.Status.CONNECTED) {
-            logger.warning("Sending message to server to get voice bridge... " +
-                    "session is " + status);
+        logger.warning("Sending message to server to get voice bridge... ");
 
-            session.send(this, new GetVoiceBridgeRequestMessage());
-        }
+        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+        sendmessage(new GetVoiceBridgeRequestMessage(sc.getCallID()));
     }
 
     public void showSoftphone() {
@@ -417,13 +423,7 @@ public class AudioManagerClient extends BaseConnection implements
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
         sc.mute(isMuted);
 
-        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-            session.send(this,
-                    new MuteCallRequestMessage(sc.getCallID(), isMuted));
-        } else {
-            logger.warning("Unable to send MuteCallRequestMessage. " +
-                    "Session is not connected.");
-        }
+        sendmessage(new MuteCallRequestMessage(sc.getCallID(), isMuted));
     }
 
     public void personalPhone() {
@@ -539,13 +539,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void transferCall(String phoneNumber) {
-        session.send(this, new TransferCallRequestMessage(
-                presenceInfo, phoneNumber, false));
+        sendmessage(new TransferCallRequestMessage(presenceInfo, phoneNumber, false));
     }
 
     public void cancelCallTransfer() {
-        session.send(this, new TransferCallRequestMessage(
-                presenceInfo, "", true));
+        sendmessage(new TransferCallRequestMessage(presenceInfo, "", true));
     }
 
     @Override
@@ -656,8 +654,7 @@ public class AudioManagerClient extends BaseConnection implements
         if (message instanceof VoiceChatCallEndedMessage) {
             VoiceChatCallEndedMessage msg = (VoiceChatCallEndedMessage) message;
             voiceChatCallEnded(msg);
-            session.send(this,
-                    new VoiceChatLeaveMessage(msg.getGroup(), msg.getCallee()));
+            sendmessage(new VoiceChatLeaveMessage(msg.getGroup(), msg.getCallee()));
             return;
         }
 
@@ -719,8 +716,8 @@ public class AudioManagerClient extends BaseConnection implements
                 "org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER", "");
 
         if (phoneNumber != null && phoneNumber.length() > 0) {
-            session.send(this, new PlaceCallRequestMessage(
-                    presenceInfo, phoneNumber, 0., 0., 0., 90., false));
+            sendmessage(new PlaceCallRequestMessage(presenceInfo, phoneNumber, 
+		0., 0., 0., 90., false));
             return;
         }
 
@@ -774,8 +771,8 @@ public class AudioManagerClient extends BaseConnection implements
 
                 if (sipURL != null) {
                     // XXX need location and direction
-                    session.send(this, new PlaceCallRequestMessage(
-                            presenceInfo, sipURL, 0., 0., 0., 90., false));
+                    sendmessage(new PlaceCallRequestMessage(
+			presenceInfo, sipURL, 0., 0., 0., 90., false));
                 } else {
                     logger.warning("Failed to start softphone, retrying.");
 
@@ -1048,7 +1045,17 @@ public class AudioManagerClient extends BaseConnection implements
 	notifyMemberChangeListeners(message.getGroup(), info, message.getIsAdded(), true);
     }
 	    
+    private void sendmessage(Message message) {
+        if (session.getStatus() != WonderlandSession.Status.CONNECTED) {
+	    logger.warning("Not connected, can't send " + message);
+	    return;
+	}
+
+	session.send(this, message);
+    }
+
     public ConnectionType getConnectionType() {
         return AudioManagerConnectionType.CONNECTION_TYPE;
     }
+
 }

@@ -29,6 +29,11 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
 
+import com.sun.sgs.kernel.KernelRunnable;
+
+import com.sun.sgs.service.NonDurableTransactionParticipant;
+import com.sun.sgs.service.Transaction;
+
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Serializable;
@@ -49,6 +54,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellParentChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 
@@ -96,7 +102,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author jprovino
  */
-public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
+public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
+	implements CellParentChangeListenerSrv {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
@@ -140,6 +147,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
         if (cellMO.getComponent(ProximityComponentMO.class) == null) {
             cellMO.addComponent(new ProximityComponentMO(cellMO));
         }
+
+        cellMO.addParentChangeListener(this);
+	//System.out.println("Added parent change listener");
     }
 
     @Override
@@ -229,6 +239,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
     public void setLive(boolean live) {
         super.setLive(live);
 
+	//System.out.println("Set live " + live);
+
         //ChannelComponentMO channelComponent = (ChannelComponentMO) cellRef.get().getComponent(ChannelComponentMO.class);
 
         ChannelComponentMO channelComponent = channelRef.get();
@@ -239,6 +251,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
             channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
 	    removeProximityListener();
 
+	    //cellRef.get().removeParentChangeListener(this);
+	    //System.out.println("Removed parent change listener");
+	    
 	    cleanup();
             return;
         }
@@ -250,6 +265,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
         channelComponent.addMessageReceiver(AudioVolumeMessage.class, receiver);
 
 	initialize();
+
+	checkForParentWithCOS();
     }
 
     private void initialize() {
@@ -277,7 +294,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
 	    falloff = .999;
 	}
 
-	logger.info("id " + groupId + " cellRadius " + cellRadius 
+	logger.warning("id " + groupId + " cellRadius " + cellRadius 
 	    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
 	    + falloff + " volume " + volume);
 
@@ -407,37 +424,46 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
     }
 
     private void cleanup() {
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	CellMO parent = cellRef.get();
 
-	if (groupId == null) {
-	    return;
+	while (parent != null) {
+            ConeOfSilenceComponentMO coneOfSilenceComponentMO = 
+	        parent.getComponent(ConeOfSilenceComponentMO.class);
+
+	    if (coneOfSilenceComponentMO != null) {
+	        coneOfSilenceComponentMO.removeAudioTreatmentComponentMO(cellRef.get());
+		break;
+	    } 
+
+	    parent = parent.getParent();
 	}
 
-        TreatmentGroup group = vm.getTreatmentGroup(groupId);
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        TreatmentGroup group = null;
+
+	if (groupId != null) {
+	    group = vm.getTreatmentGroup(groupId);
+	}
 
 	if (group == null) {
+	    Treatment treatment = vm.getTreatment(CallID.getCallID(cellID));
+
+	    if (treatment == null) {
+	  	//System.out.println("No treatment for " + CallID.getCallID(cellID));
+		return;
+	    }
+
+	    endTreatment(treatment);
 	    return;
 	}
 
 	Treatment[] treatments = group.getTreatments().values().toArray(new Treatment[0]);
 
 	for (int i = 0; i < treatments.length; i++) {
-	    Treatment treatment = treatments[i];
-
-	    Call call = treatment.getCall();
-	
-	    if (call == null) {
-		logger.warning("No call for treatment " + treatment);
-		group.removeTreatment(treatment);
-	    } else {
-		logger.info("Ending call for treatment " + treatment + " groupId " + groupId);
-
-		try {
-		    call.end(true);
-		} catch (IOException e) {
-		    logger.warning("Unable to end call " + call + ":  " + e.getMessage());
-		}
-	    }
+	    //System.out.println("Ending treatment:  " + treatments[i]);
+	    endTreatment(treatments[i]);
+	    group.removeTreatment(treatments[i]);
 	}
 
 	try {
@@ -449,6 +475,23 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
 	vm.dump("all");
     }
 
+    private void endTreatment(Treatment treatment) {
+	Call call = treatment.getCall();
+	
+	if (call == null) {
+	    logger.warning("No call for treatment " + treatment);
+	    return;
+	}
+
+	logger.info("Ending call for treatment " + treatment);
+
+	try {
+	    call.end(false);
+	} catch (IOException e) {
+	    logger.warning("Unable to end call " + call + ":  " + e.getMessage());
+	}
+    }
+
     public CellMO getCell() {
         return cellRef.get();
     }
@@ -456,6 +499,83 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
     @Override
     protected String getClientClass() {
         return "org.jdesktop.wonderland.modules.audiomanager.client.AudioTreatmentComponent";
+    }
+
+    public void parentChanged(CellMO cellMO, CellMO parent) {
+	//System.out.println("parent changed... isLive " + isLive);
+
+	if (isLive() == false) {
+	    return;
+	}
+
+	checkForParentWithCOS();
+    }
+
+    private void checkForParentWithCOS() {
+	CellMO cellMO = cellRef.get();
+
+	while (cellMO != null) {
+            ConeOfSilenceComponentMO coneOfSilenceComponentMO = 
+	        cellMO.getComponent(ConeOfSilenceComponentMO.class);
+
+	    if (coneOfSilenceComponentMO != null) {
+		AppContext.getManager(VoiceManager.class).scheduleTask(
+		    new AddAudioTreatmentComponentMO(cellRef.get(), coneOfSilenceComponentMO), 2);
+	        //coneOfSilenceComponentMO.addAudioTreatmentComponentMO(cellRef.get());
+		break;
+	    } 
+
+	    cellMO = cellMO.getParent();
+	}
+    }
+
+    private static class AddAudioTreatmentComponentMO implements KernelRunnable, 
+	    NonDurableTransactionParticipant {
+
+	private String cellMOBindingName;
+	private String coneOfSilenceComponentMOBindingName;
+
+	public AddAudioTreatmentComponentMO(CellMO cellMO, ConeOfSilenceComponentMO coneOfSilenceComponentMO) {
+
+	    cellMOBindingName = cellMO.toString();
+	    AppContext.getDataManager().setBinding(cellMOBindingName, cellMO);
+
+	    coneOfSilenceComponentMOBindingName = coneOfSilenceComponentMO.toString();
+	    AppContext.getDataManager().setBinding(coneOfSilenceComponentMOBindingName, coneOfSilenceComponentMO);
+	}
+
+        public String getBaseTaskType() {
+            return AddAudioTreatmentComponentMO.class.getName();
+        }
+
+        public boolean prepare(Transaction txn) throws Exception {
+            return false;
+        }
+
+        public void abort(Transaction t) {
+        }
+
+        public void prepareAndCommit(Transaction txn) throws Exception {
+            prepare(txn);
+            commit(txn);
+        }
+
+        public void commit(Transaction t) {
+        }
+
+        public String getTypeName() {
+            return "AddAudioTreatmentComponentMO";
+        }
+
+	public void run() {
+            CellMO cellMO = (CellMO) AppContext.getDataManager().getBinding(cellMOBindingName);
+
+            ConeOfSilenceComponentMO coneOfSilenceComponentMO = (ConeOfSilenceComponentMO)
+                (ConeOfSilenceComponentMO) AppContext.getDataManager().getBinding(coneOfSilenceComponentMOBindingName);
+
+	    coneOfSilenceComponentMO.addAudioTreatmentComponentMO(cellMO);
+	}
+
     }
 
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
@@ -485,10 +605,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
 
         	Treatment treatment = null;
 
-		try {
-		    treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
-		} catch (IOException e) {
-		}
+		treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
 
 		if (treatment == null) {
 		    logger.warning("Can't find treatment " + treatmentId);
@@ -600,8 +717,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
         public void callStatusChanged(CallStatus callStatus) {
             String callId = callStatus.getCallId();
 
-	    System.out.println("Got status " + callStatus + " playOnce " + playOnce);
-
             if (callId == null) {
                 logger.warning("No callId in callStatus:  " + callStatus);
                 return;
@@ -613,7 +728,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
 
             case CallStatus.TREATMENTDONE:
 	        if (playOnce == true) {
-		    System.out.println("TREATMENT DONE");
+		    //System.out.println("TREATMENT DONE");
 
 		    channelRef.get().sendAll(null, new AudioTreatmentDoneMessage(cellID, callId));
 	        }
@@ -637,7 +752,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
         // We are making this component live, add a listener to the proximity component.
 	BoundingVolume[] bounds = new BoundingVolume[1];
 
-        bounds[0] = new BoundingSphere((float) extent, new Vector3f());
+        bounds[0] = new BoundingSphere(getCellRadius(), new Vector3f());
 
         AudioTreatmentProximityListener proximityListener = 
 	    new AudioTreatmentProximityListener(cellRef.get(), treatment);
@@ -655,6 +770,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
     private float getCellRadius() {
 	BoundingVolume bounds = cellRef.get().getLocalBounds();
 
+	logger.warning("Cell bounds:  " + bounds);
+
 	float cellRadius;
 
 	if (bounds instanceof BoundingSphere) {
@@ -662,17 +779,32 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO {
 	} else if (bounds instanceof BoundingBox) {
 	    Vector3f extent = new Vector3f();
 	    extent = ((BoundingBox) bounds).getExtent(extent);
-	    cellRadius = extent.getZ();
+
+	    cellRadius = getMax(extent);
 	} else if (bounds instanceof BoundingCapsule) {
 	    cellRadius = ((BoundingCapsule) bounds).getRadius();
 	} else if (bounds instanceof OrientedBoundingBox) {
 	    Vector3f extent = ((OrientedBoundingBox) bounds).getExtent();
-	    cellRadius = extent.getZ();
+	    cellRadius = getMax(extent);
 	} else {
 	    cellRadius = 5;
 	}
 
 	return cellRadius;
+    }
+
+    private float getMax(Vector3f extent) {
+	float max = extent.getX();
+
+	if (extent.getY() > max) {
+	    max = extent.getY();
+	}
+
+	if (extent.getZ() > max) {
+	    max = extent.getZ();
+	}
+
+	return max;
     }
 
     /**
