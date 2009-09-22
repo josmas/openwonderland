@@ -20,10 +20,12 @@ package org.jdesktop.wonderland.client.jme.utils;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * Various utilties for the JME scene graph
@@ -70,6 +72,40 @@ public class ScenegraphUtils {
             }
         });
     }
+
+    /**
+     * Given the world coordinates of a child compute the childs localTransform 
+     * asssuming it will become a child of the parent with the supplied world transform
+     * 
+     * @param parent
+     * @param childWorldTransform
+     * @return
+     */
+    public static CellTransform computeChildTransform(CellTransform parentWorld, CellTransform childWorldTransform) {
+
+        CellTransform pInv = parentWorld.clone(null).invert();
+
+        CellTransform newChildLocal = new CellTransform();
+        newChildLocal.mul(pInv, childWorldTransform);
+
+        return newChildLocal;
+    }
+
+    /**
+     * Given a list of cell transforms, multiply them together and return the
+     * 'world' transform of the leaf transform. This mimics the transform calculation in the scene
+     * graph, where the first element of the array is the graph root and the last
+     * element is the leaf.
+     * @param graphLocal list of cell transforms
+     * @return the 'world' transform of the leaf
+     */
+//    public static CellTransform computeGraph(ArrayList<CellTransform> graphLocal) {
+//        CellTransform result = new CellTransform();
+//        for(int i=0; i<graphLocal.size(); i++) {
+//            result.mul(graphLocal.get(i));
+//        }
+//        return result;
+//    }
 
     static class FindNamedNodeListener implements ProcessNodeInterface {
 

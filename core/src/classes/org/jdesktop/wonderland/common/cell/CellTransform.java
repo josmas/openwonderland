@@ -18,11 +18,13 @@
 package org.jdesktop.wonderland.common.cell;
 
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Matrix4f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -36,7 +38,6 @@ public class CellTransform implements Serializable {
     private Quaternion rotation;
     private Vector3f translation;
     private float scale = 1f;
-    private transient Matrix4f matrix = null;
     
     /**
      * Create an identity transform
@@ -153,10 +154,10 @@ public class CellTransform implements Serializable {
      */
     public void getLookAt(Vector3f position, Vector3f look) {
         position.set(0,0,0);
-        position.addLocal(translation);
+        transform(position);
 
         look.set(0,0,1);
-        rotation.multLocal(look);
+        transform(look);
         look.normalizeLocal();
     }
 
@@ -167,33 +168,42 @@ public class CellTransform implements Serializable {
      * @param transform
      * @return this
      */
-    public CellTransform mul(CellTransform t1) {
-        updateMatrix();
-        t1.updateMatrix();
+    public CellTransform mul(CellTransform in) {
+        // This does not work when scale!=1
+//        this.scale *= in.scale;
+//        this.translation.addLocal(rotation.mult(in.translation).multLocal(in.scale));
+//        this.rotation.multLocal(in.rotation);
 
-        matrix.multLocal(t1.matrix);
+        // Correctly calculate the multiplication.
+        Quat4d q = new Quat4d(rotation.x, rotation.y, rotation.z, rotation.w);
+        Vector3d t = new Vector3d(translation.x, translation.y, translation.z);
+        Matrix4d m = new Matrix4d(q,t,scale);
 
-        updateFromMatrix();
+        Quat4d q1 = new Quat4d(in.rotation.x, in.rotation.y, in.rotation.z, in.rotation.w);
+        Vector3d t1 = new Vector3d(in.translation.x, in.translation.y, in.translation.z);
+        Matrix4d m1 = new Matrix4d(q1,t1,in.scale);
 
-        // As we force uniform scales we can avoid the SVD and track scale ourselves
-        scale = scale*t1.scale;
+        m.mul(m1);
+
+        m.get(q);
+        m.get(t);
+        scale = (float)m.getScale();
+        rotation.set((float)q.x, (float)q.y, (float)q.z, (float)q.w);
+        translation.set((float)t.x, (float)t.y, (float)t.z);
+
         return this;
     }
 
-    private void updateMatrix() {
-        if (matrix==null) {
-            matrix = new Matrix4f();
-        } else {
-            matrix.loadIdentity();
-        }
-        matrix.multLocal(scale);
-        matrix.multLocal(rotation);
-        matrix.setTranslation(translation);
-    }
-
-    private void updateFromMatrix() {
-        matrix.toRotationQuat(rotation);
-        matrix.toTranslationVector(translation);
+    /**
+     * Multiply t1 * t2 and put the result in this. Also return this
+     * @param t1
+     * @param t2
+     * @return
+     */
+    public CellTransform mul(CellTransform t1, CellTransform t2) {
+        this.set(t1);
+        this.mul(t2);
+        return this;
     }
     
     /**
@@ -230,9 +240,10 @@ public class CellTransform implements Serializable {
      * @param translation set the translation for this transform
      */
     public void setTranslation(Vector3f translation) {
-        this.translation = translation;
         if (this.translation==null)
             this.translation = new Vector3f();
+        else
+            this.translation.set(translation);
     }
 
     /**
@@ -257,7 +268,10 @@ public class CellTransform implements Serializable {
      * @param rotation set the rotation for this transform
      */
     public void setRotation(Quaternion rotation) {
-        this.rotation = new Quaternion(rotation);
+        if (this.rotation==null)
+            this.rotation = new Quaternion(rotation);
+        else
+            this.rotation.set(rotation);
     }
     
     /**
@@ -297,26 +311,60 @@ public class CellTransform implements Serializable {
         this.scale = scale;
     }
 
-    /**
-     * @deprecated Non uniform scale is not supported
-     * @param scale
-     */
-    public void setScaling(Vector3f scale) {
-        Logger.getLogger(CellTransform.class.getName()).warning("Non uniform scale is not supported, please use the other setScaling method");
-        Thread.dumpStack();
-        setScaling(scale.x);
-    }
+//    /**
+//     * @deprecated Non uniform scale is not supported
+//     * @param scale
+//     */
+//    public void setScaling(Vector3f scale) {
+//        Logger.getLogger(CellTransform.class.getName()).warning("Non uniform scale is not supported, please use the other setScaling method");
+//        Thread.dumpStack();
+//        setScaling(scale.x);
+//    }
 
     /**
-     * Invert the transform
+     * Invert the transform, this object is inverted and returned.
+     *
+     * @return return this
      */
-    public void invert() {
-        updateMatrix();
-        matrix.invertLocal();
-        updateFromMatrix();
-        scale = 1/scale;
+    public CellTransform invert() {
+        // This invert for jme does not function when the scale != 1
+//        Matrix3f rot = new Matrix3f();
+//        rot.set(rotation);
+//        float temp;
+//        temp=rot.m01;
+//        rot.m01=rot.m10;
+//        rot.m10=temp;
+//        temp=rot.m02;
+//        rot.m02=rot.m20;
+//        rot.m20=temp;
+//        temp=rot.m21;
+//        rot.m21=rot.m12;
+//        rot.m12=temp;
+//        rot.multLocal(1/scale);
+//
+//        rot.multLocal(translation);
+//
+//        translation.multLocal(-1);
+//        scale = 1/scale;
+//
+//        rotation.fromRotationMatrix(rot);
+
+        // Correctly compute the inversion, use Vecmath as the matrix invert
+        // in JME does not function when scale!=1
+        Quat4d q = new Quat4d(rotation.x, rotation.y, rotation.z, rotation.w);
+        Vector3d t = new Vector3d(translation.x, translation.y, translation.z);
+        Matrix4d m = new Matrix4d(q,t,scale);
+        m.invert();
+
+        m.get(q);
+        m.get(t);
+        scale = (float)m.getScale();
+        rotation.set((float)q.x, (float)q.y, (float)q.z, (float)q.w);
+        translation.set((float)t.x, (float)t.y, (float)t.z);
+
+        return this;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         boolean ret = true;
@@ -356,31 +404,14 @@ public class CellTransform implements Serializable {
     @Override
     public String toString() {
         return "[tx="+translation.x+" ty="+translation.y+" tz="+translation.z +
-                "] [rx="+rotation.x+" ry="+rotation.y+" rz="+rotation.z+" rw="+rotation.w +
+                "] [rot="+printQuat(rotation) +
                 "] [s=" + scale+"]";
 
     }
 
-//    public static void main(String[] args) {
-//        ArrayList<CellTransform> graphLocal = new ArrayList();
-//
-//        graphLocal.add(create(new Vector3f(0,1,0), 180, new Vector3f(2,0,0)));
-//        graphLocal.add(create(new Vector3f(0,1,0), 0, new Vector3f(0,0,3)));
-//
-//        computeGraph(graphLocal);
-//    }
-//
-//    public static CellTransform computeGraph(ArrayList<CellTransform> graphLocal) {
-//        CellTransform result = new CellTransform();
-//        for(int i=0; i<graphLocal.size(); i++) {
-//            result.mul(graphLocal.get(i));
-//        }
-//        return result;
-//    }
-//
-//    private static CellTransform create(Vector3f axis, float angle, Vector3f translation) {
-//        Quaternion quat = new Quaternion();
-//        quat.fromAngleAxis((float) Math.toRadians(angle), axis);
-//        return new CellTransform(quat, translation);
-//    }
+    private String printQuat(Quaternion q) {
+        Vector3f axis = new Vector3f();
+        float angle = q.toAngleAxis(axis);
+        return axis+":"+Math.toDegrees(angle);
+    }
 }
