@@ -47,11 +47,11 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
      * Return the names of the animations available to this character
      * @return
      */
-    Iterable<String> getAnimationNames() {
+    public Iterable<String> getAnimationNames() {
         return actionMap.keySet();
     }
 
-    void playMiscAnimation(String name) {
+    public void playMiscAnimation(String name) {
         if (getavatar().getCharacterParams().isAnimateBody()) {
             setMiscAnimation(name);
 
@@ -64,7 +64,7 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
         }
     }
 
-    void setMiscAnimation(String animationName) {
+    public void setMiscAnimation(String animationName) {
         currentActionInfo = actionMap.get(animationName);
         ActionState action = (ActionState) gameStates.get(CycleActionState.class);
         action.setAnimationSetBoolean(false);
