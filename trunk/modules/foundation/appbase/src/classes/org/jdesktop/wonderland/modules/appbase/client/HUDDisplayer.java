@@ -75,7 +75,9 @@ public class HUDDisplayer implements View2DDisplayer {
                 if (e.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
                     // TODO: currently we take the entire app off the HUD when
                     // any HUD view of any app window is quit
-                    app.setShowInHUD(false);
+                    if (app != null) {
+                        app.setShowInHUD(false);
+                    }
                 }
             }
         });
