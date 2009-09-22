@@ -244,6 +244,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         frameView.setPixelScaleOrtho(hudPixelScale, false);
         frameView.setSizeApp(new Dimension((int) (window.getWidth()), frame.getHeight()));
         frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * componentWindow.getHeight() / 2)));
+        frameView.setVisibleApp(true);
 
         // register listeners for events on the frame
         frameImpl.addActionListener(frame);
@@ -366,14 +367,15 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             }
 
             // show/hide the frame view
-            frameView.setVisibleApp(visible);
-            frameView.setVisibleUser(visible);
+            if (frameView != null) {
+                frameView.setVisibleUser(visible);
 
-            if (!visible) {
-                // frame needs removing
-                logger.fine("removing frame");
-                view.detachView(view);
-                removeFrame(component);
+                if (!visible) {
+                    // frame needs removing
+                    logger.fine("removing frame");
+                    view.detachView(view);
+                    removeFrame(component);
+                }
             }
         }
     }
@@ -401,19 +403,26 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             if (layout != null) {
                 layout.addView(component, view);
             }
+            if (((HUDComponent2D) component).isHUDManagedWindow()) {
+                view.setVisibleApp(true);
+            }
         }
 
         // move the component to the screen
         view.setOrtho(true, false);
         view.setPixelScaleOrtho(hudPixelScale, false);
 
-        // TODO: Remove this when bug 323 is fixed
-        view.setVisibleUser(false);
+        // position the component on the screen
 
-        // position the component on the screen 
+        // TODO: the HUD should only be explicitly positioning PRIMARY views
+        // for now, position everything, until relative view positioning is
+        // working.
+
+        //if (view.getType() == View2D.Type.PRIMARY) {
         Vector2f location = (layout != null) ? layout.getLocation(component) : new Vector2f(component.getX(), component.getY());
         component.setLocation((int) location.x, (int) location.y, false);
         view.setLocationOrtho(new Vector2f(location.x + view.getDisplayerLocalWidth() / 2, location.y + view.getDisplayerLocalHeight() / 2), false);
+        //}
 
         if (component.getPreferredTransparency() != 1.0f) {
             // component has a preferred transparency, so it at that
@@ -426,12 +435,14 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
 
         // display the component
-        view.setVisibleApp(true, false);
         view.setVisibleUser(true);
 
         // add a frame if this component wants to be decorated
         if (component.getDecoratable()) {
-            showFrame(component, true);
+            Type windowType = state.getWindow().getType();
+            if ((windowType != Type.POPUP) && (windowType != Type.UNKNOWN)) {
+                showFrame(component, true);
+            }
         }
     }
 
@@ -521,7 +532,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
             if (view != null) {
                 logger.fine("hiding HUD view");
-                view.setVisibleApp(false, false);
                 view.setVisibleUser(false);
             } else {
                 logger.warning("attempt to set HUD invisible with no HUD view");
@@ -558,7 +568,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 logger.fine("displaying in-world view");
                 worldView.setOrtho(false, false);
                 worldView.setPixelScale(worldPixelScale);
-                worldView.setVisibleApp(true);
                 worldView.setVisibleUser(true, false);
                 componentMovedWorld(component);
                 worldView.update();
@@ -578,7 +587,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
             if (worldView != null) {
                 logger.fine("hiding in-world view");
-                worldView.setVisibleApp(false);
                 worldView.setVisibleUser(false, false);
                 worldView.update();
             } else {

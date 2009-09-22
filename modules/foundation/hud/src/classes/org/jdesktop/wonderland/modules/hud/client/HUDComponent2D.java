@@ -44,6 +44,7 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
     private Cell cell;
     protected JComponent component;
     protected Window2D window;
+    protected boolean managedWindow = true;
 
     public HUDComponent2D() {
         super();
@@ -78,6 +79,7 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
      */
     public HUDComponent2D(Window2D window) {
         this.window = window;
+        setHUDManagedWindow(false);
         setBounds(getX(), getY(), window.getWidth(), window.getHeight());
         window.addResizeListener(new ResizeListener() {
 
@@ -159,6 +161,14 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
      */
     public Window2D getWindow() {
         return window;
+    }
+
+    public void setHUDManagedWindow(boolean managedWindow) {
+        this.managedWindow = managedWindow;
+    }
+
+    public boolean isHUDManagedWindow() {
+        return managedWindow;
     }
 
     /**
