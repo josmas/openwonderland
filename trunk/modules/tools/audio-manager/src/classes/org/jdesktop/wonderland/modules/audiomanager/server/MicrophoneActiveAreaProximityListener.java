@@ -50,7 +50,7 @@ import java.io.Serializable;
 public class MicrophoneActiveAreaProximityListener implements ProximityListenerSrv, Serializable {
 
     private static final Logger logger =
-            Logger.getLogger(MicrophoneProximityListener.class.getName());
+            Logger.getLogger(MicrophoneActiveAreaProximityListener.class.getName());
 
     private CellID cellID;
     private String name;

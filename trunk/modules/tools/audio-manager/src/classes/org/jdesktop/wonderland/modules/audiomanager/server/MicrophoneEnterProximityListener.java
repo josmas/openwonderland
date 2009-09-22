@@ -51,7 +51,7 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv, S
 	AudioGroupListener {
 
     private static final Logger logger =
-            Logger.getLogger(MicrophoneProximityListener.class.getName());
+            Logger.getLogger(MicrophoneEnterProximityListener.class.getName());
 
     private CellID cellID;
     private String name;
