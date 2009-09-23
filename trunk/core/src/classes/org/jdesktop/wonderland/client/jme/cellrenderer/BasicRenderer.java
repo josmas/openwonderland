@@ -459,12 +459,9 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
             public void commit() {
-                if (lightingEnabled) {
-                    rootNode.setLightCombineMode(Spatial.LightCombineMode.Inherit);
-                } else {
-                    rootNode.setLightCombineMode(Spatial.LightCombineMode.Off);
-                }
-
+                RenderComponent rc = entity.getComponent(RenderComponent.class);
+                rc.setLightingEnabled(lightingEnabled);
+                
                 ClientContextJME.getWorldManager().addToUpdateList(rootNode);
             }
         });
