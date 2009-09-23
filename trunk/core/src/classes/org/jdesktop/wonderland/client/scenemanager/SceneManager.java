@@ -233,7 +233,115 @@ public class SceneManager {
             inputManager.postEvent(new ContextEvent(entityList, mouseEvent));
         }
     }
-    
+
+    /**
+     * Posts a Scene Manager event to this system. This method can be used to
+     * 'fake' such an event. This method will re-post the event to the input
+     * manager for others to handle.
+     *
+     * @param event The scene event to post to the system
+     */
+    public void postEvent(SceneEvent event) {
+        InputManager inputManager = InputManager.inputManager();
+        Entity entity = ((SceneEvent)event).getPrimaryEntity();
+
+        // Much of this code duplicates the inputEvent() method -- there seems
+        // to be no way around this duplication for now.
+        
+        // Implement hover. We check if the event interrupts hover and we
+        // restart the timer. If we kill a timer, there may be an executing
+        // hover task run() method. This may lead to a race condition where
+        // the run() method has been called at the same time a hover interrupt
+        // event happens. To fix this, we keep track of when we kicked off
+        // the last timer event.
+        if (event instanceof HoverEvent) {
+            synchronized(this) {
+                // Cancel the current timer (although a run() method of the timer
+                // may still happen as a race condition
+                if (hoverTimer != null) {
+                    hoverTimer.cancel();
+                }
+
+                // If there is a currently hovering entity, then send a stop
+                // event
+                MouseEvent mouseEvent = (MouseEvent) ((HoverEvent) event).getMouseEvent();
+                if (hoverEntity != null) {
+                    inputManager.postEvent(new HoverEvent(hoverEntity, false, mouseEvent));
+                    hoverEntity = null;
+                }
+
+                // Update the hover start time. This will cause any remaining
+                // timer tasks that may have been run to ignore themselves
+                hoverStartTime = System.currentTimeMillis();
+
+                // Launch a new timer task, but not unless we are actually over
+                // a non-null entity
+                if (entity != null) {
+                    HoverTimerTask task = new HoverTimerTask(entity, hoverStartTime, mouseEvent);
+                    hoverTimer = new Timer();
+                    hoverTimer.schedule(task, policy.getHoverDelay());
+                }
+            }
+        }
+
+        // If a selection event, then set the list of entities and re-post the
+        // event.
+        if (event instanceof SelectionEvent) {
+            // If a selection event, then set the list of entities and re-port
+            // the event
+            selectedEntityList.clear();
+            selectedEntityList.addAll(event.getEntityList());
+            inputManager.postEvent(new SelectionEvent(new LinkedList(selectedEntityList)));
+            return;
+        }
+
+        // If an enter/exit event, then note the Entity we are entering or
+        // exiting and repost the event.
+        if (event instanceof EnterExitEvent) {
+            if (((EnterExitEvent)event).isEnter() == true) {
+                enterEntity = entity;
+                inputManager.postEvent(new EnterExitEvent(entity, true));
+            }
+            else {
+                Entity eventEntity = enterEntity;
+                enterEntity = null;
+                inputManager.postEvent(new EnterExitEvent(eventEntity, false));
+            }
+            return;
+        }
+
+        // If an activation event, the simply repost the event
+        if (event instanceof ActivatedEvent) {
+            inputManager.postEvent(new ActivatedEvent(entity));
+            return;
+        }
+
+        // If a context event, then set the list of entities associated with
+        // the context and re-post the event.
+        if (event instanceof ContextEvent) {
+            Logger.getLogger(SceneManager.class.getName()).warning("RECEIVED CONTEXT EVENT " +
+                    entity.getName());
+            // We use the context event to clear the selected entity list first
+            selectedEntityList.clear();
+
+            // If there is an entity for the mouse event, then add the entity to
+            // the list and pass a Selection event too.
+            if (entity != null) {
+                selectedEntityList.add(entity);
+                LinkedList entityList = new LinkedList(selectedEntityList);
+                inputManager.postEvent(new SelectionEvent(entityList));
+            }
+
+            // Pass the mouse event for now so we know where the event was
+            // fired. We sent this even if the entity is null, so the context
+            // menu can be cleared.
+            LinkedList entityList = new LinkedList(selectedEntityList);
+            MouseEvent mouseEvent = (MouseEvent) ((ContextEvent) event).getMouseEvent();
+            inputManager.postEvent(event);
+            return;
+        }
+    }
+
     /**
      * Clears out the currently selection set of entities.
      */

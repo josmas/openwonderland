@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.client.hud.HUDDisplayable;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -1932,7 +1933,7 @@ public abstract class Window2D implements HUDDisplayable {
         entities.add(entity);
         WindowContextMenuEvent windowMenuEvent =
                 new WindowContextMenuEvent(entities, mouseEvent);
-        InputManager.inputManager().postEvent(windowMenuEvent);
+        SceneManager.getSceneManager().postEvent(windowMenuEvent);
     }
 
     /**
