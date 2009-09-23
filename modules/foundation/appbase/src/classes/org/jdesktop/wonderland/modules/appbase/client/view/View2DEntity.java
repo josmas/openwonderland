@@ -372,6 +372,9 @@ public abstract class View2DEntity implements View2D {
             // All new types are permitted
         } else if (this.type == Type.SECONDARY && type == Type.PRIMARY) {
             // A promotion of a secondary to a primary is permitted.
+        } else if (this.type == Type.PRIMARY && type == Type.SECONDARY) {
+            // A demotion of a primary to a secondary is permitted.
+            // AppXrw.selectPrimaryWindow sometimes does this.
         } else if (this.type == Type.SECONDARY && type == Type.POPUP) {
             // A change of a secondary to a popup is permitted.
         } else {
