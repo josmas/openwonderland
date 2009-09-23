@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
@@ -51,6 +52,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.util.GraphOptimizer;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
@@ -143,8 +145,10 @@ public class JmeColladaLoader implements ModelLoader {
 
         importer.cleanUp();
 
-        setupBounds(modelNode);
+        GraphOptimizer optimizer = new GraphOptimizer();
+        optimizer.removeSharedMeshes(modelNode);
 
+        setupBounds(modelNode);
 
 //        TreeScan.findNode(modelNode, new ProcessNodeInterface() {
 //
@@ -235,8 +239,10 @@ public class JmeColladaLoader implements ModelLoader {
 
             public boolean processNode(Spatial node) {
                 if (node instanceof Geometry) {
-                    node.setModelBound(new BoundingSphere());
-                    node.updateModelBound();
+                    if (node.getWorldBound()==null) {
+                        node.setModelBound(new BoundingBox());
+                        node.updateModelBound();
+                    }
                 }
                 return true;
             }
