@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.Frame2DCell;
 
 /**
@@ -94,6 +95,14 @@ public class FirstVisibleInitializerCell implements FirstVisibleInitializer {
         CellTransform ct = CellPlacementUtils.getCellTransform(null, bbox, creatorViewTransform);
         if (ct != null) {
             logger.info("Best initial cell transform = " + ct);
+
+            // if this cell has a parent, make sure to compute the child
+            // relative to that parent
+            if (cell.getParent() != null) {
+                CellTransform pt = cell.getParent().getWorldTransform();
+                ct = ScenegraphUtils.computeChildTransform(pt, ct);
+            }
+            
             cell.performFirstMove(ct);
         }
     }
