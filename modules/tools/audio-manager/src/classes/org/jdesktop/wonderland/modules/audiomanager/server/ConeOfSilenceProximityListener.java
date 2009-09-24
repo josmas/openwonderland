@@ -83,6 +83,9 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
+	//System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
+	//    + " viewCellID " + viewCellID + " " + proximityVolume);
+
 	this.entered = entered;
 	this.callID = CallID.getCallID(viewCellID);
 
@@ -151,7 +154,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
         Player player = vm.getPlayer(callId);
 
-        logger.info(callId + " entered cone " + name + " player " + player);
+        //System.out.println(callId + " entered cone " + name + " player " + player);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
@@ -169,15 +172,15 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
             setup.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
 
-	    logger.info("Creating audio group for " + name);
+	    //System.out.println("Creating audio group for " + name);
 
 	    audioGroup = vm.createAudioGroup(name, setup);
         }
 
+	//System.out.println("CONE PROX Player:  " + player);
+
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
        	    AudioGroupPlayerInfo.ChatType.PRIVATE));
-
-	logger.fine("Attenuate other groups to " + outsideAudioVolume + " name " + name);
 
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
@@ -188,6 +191,17 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
 	//System.out.println("Player added:  " + player);
 
+	logger.fine("Attenuate other groups to " + outsideAudioVolume + " name " + name);
+
+	//System.out.println("Attenuate other groups to " + outsideAudioVolume + " name " + name);
+
+	Player p = AppContext.getManager(VoiceManager.class).getPlayer(player.getId());
+
+	if (player.toString().equals(p.toString()) == false) {
+	    System.out.println("WRONG player!");
+	    player = p;
+	}
+
 	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
     }
 
@@ -197,6 +211,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
     private void cellExited(String callId) {
         logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
+
         //System.out.println(callId + " exited cone " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
