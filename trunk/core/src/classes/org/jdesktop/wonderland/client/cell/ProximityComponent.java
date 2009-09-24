@@ -18,7 +18,8 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -65,7 +66,8 @@ public class ProximityComponent extends CellComponent {
     private ViewTransformListener viewTransformListener=null;
     private CellTransformListener  cellTransformListener=null;
     
-    private HashSet<ProximityListenerRecord> listenerRecords = new HashSet();
+    private final Set<ProximityListenerRecord> listenerRecords =
+            new CopyOnWriteArraySet<ProximityListenerRecord>();
     
     /**
      * Set a list of bounds for which the system will track view enter/exit for
