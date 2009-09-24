@@ -103,7 +103,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * @author jprovino
  */
 public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
-	implements CellParentChangeListenerSrv {
+	implements CellParentChangeListenerSrv, ManagedCallStatusListener {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
@@ -239,7 +239,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     public void setLive(boolean live) {
         super.setLive(live);
 
-	//System.out.println("Set live " + live);
+	//System.out.println("AudiotTreatmentComponent Set live " + live);
 
         //ChannelComponentMO channelComponent = (ChannelComponentMO) cellRef.get().getComponent(ChannelComponentMO.class);
 
@@ -265,8 +265,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         channelComponent.addMessageReceiver(AudioVolumeMessage.class, receiver);
 
 	initialize();
-
-	checkForParentWithCOS();
     }
 
     private void initialize() {
@@ -284,44 +282,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
         TreatmentGroup group = vm.createTreatmentGroup(groupId);
 	
-	float cellRadius = getCellRadius();
-
-	double fullVolumeRadius = fullVolumeAreaPercent / 100. * cellRadius;
-
-	double falloff = .92 + ((50 - this.falloff) * ((1 - .92) / 50));
-
-	if (falloff >= 1) {
-	    falloff = .999;
-	}
-
-	logger.warning("id " + groupId + " cellRadius " + cellRadius 
-	    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
-	    + falloff + " volume " + volume);
-
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
 
-            if (distanceAttenuated == true) {
-                DefaultSpatializer spatializer = new DefaultSpatializer();
-
-                setup.spatializer = spatializer;
-
-                spatializer.setFullVolumeRadius(fullVolumeRadius);
-
-		if (extent == 0) {
-                    spatializer.setZeroVolumeRadius(cellRadius);
-		} else {
-                    spatializer.setZeroVolumeRadius(extent);
-		}
-
-		FalloffFunction falloffFunction = spatializer.getFalloffFunction();
-
-		falloffFunction.setFalloff(falloff);
-            } else {
-                setup.spatializer = new FullVolumeSpatializer(extent);
-            }
-
-	    setup.spatializer.setAttenuator(volume * DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+	    setup.spatializer = getSpatializer();
 
             String treatment = treatments[i];
 
@@ -387,9 +351,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    }
 
             setup.treatment = treatment;
-	    //setup.listener = new MyCallStatusListener(cellID, playOnce);
 
-	    vm.addCallStatusListener(new MyCallStatusListener(cellID, channelRef, playOnce), treatmentId);
+	    vm.addCallStatusListener(this, treatmentId);
 
             if (setup.treatment == null || setup.treatment.length() == 0) {
                 logger.warning("Invalid treatment '" + setup.treatment + "'");
@@ -423,6 +386,57 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         }
     }
 
+    public void setSpatializer(boolean inConeOfSilence) {
+	String callID = CallID.getCallID(cellID);
+
+	Player player = AppContext.getManager(VoiceManager.class).getPlayer(callID);
+	  
+	if (inConeOfSilence) {
+	    if (player != null) {
+		player.setPublicSpatializer(new FullVolumeSpatializer());
+	    } else {
+	        logger.warning("no player for " + callID);
+	    }
+	} else {
+	    player.setPublicSpatializer(getSpatializer());
+	}
+    }
+
+    private Spatializer getSpatializer() {
+	float cellRadius = getCellRadius();
+
+	double fullVolumeRadius = fullVolumeAreaPercent / 100. * cellRadius;
+
+	double falloff = .92 + ((50 - this.falloff) * ((1 - .92) / 50));
+
+	if (falloff >= 1) {
+	    falloff = .999;
+	}
+
+	logger.warning("id " + groupId + " cellRadius " + cellRadius 
+	    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
+	    + falloff + " volume " + volume);
+
+        if (distanceAttenuated == true) {
+            DefaultSpatializer spatializer = new DefaultSpatializer();
+
+            spatializer.setFullVolumeRadius(fullVolumeRadius);
+
+	    if (extent == 0) {
+                spatializer.setZeroVolumeRadius(cellRadius);
+	    } else {
+                spatializer.setZeroVolumeRadius(extent);
+	    }
+
+	    FalloffFunction falloffFunction = spatializer.getFalloffFunction();
+
+	    falloffFunction.setFalloff(falloff);
+	    return spatializer;
+        } 
+
+        return new FullVolumeSpatializer(extent);
+    }
+
     private void cleanup() {
 	CellMO parent = cellRef.get();
 
@@ -431,7 +445,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	        parent.getComponent(ConeOfSilenceComponentMO.class);
 
 	    if (coneOfSilenceComponentMO != null) {
-	        coneOfSilenceComponentMO.removeAudioTreatmentComponentMO(cellRef.get());
+	        coneOfSilenceComponentMO.removeAudioTreatmentComponentMO(cellRef.get(), this);
 		break;
 	    } 
 
@@ -483,7 +497,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    return;
 	}
 
-	logger.info("Ending call for treatment " + treatment);
+	//System.out.println("Ending call for treatment " + treatment);
 
 	try {
 	    call.end(false);
@@ -502,7 +516,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     }
 
     public void parentChanged(CellMO cellMO, CellMO parent) {
-	//System.out.println("parent changed... isLive " + isLive);
+	//System.out.println("parent changed... isLive " + isLive());
 
 	if (isLive() == false) {
 	    return;
@@ -519,9 +533,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	        cellMO.getComponent(ConeOfSilenceComponentMO.class);
 
 	    if (coneOfSilenceComponentMO != null) {
-		AppContext.getManager(VoiceManager.class).scheduleTask(
-		    new AddAudioTreatmentComponentMO(cellRef.get(), coneOfSilenceComponentMO), 2);
-	        //coneOfSilenceComponentMO.addAudioTreatmentComponentMO(cellRef.get());
+	        coneOfSilenceComponentMO.addAudioTreatmentComponentMO(cellRef.get(), this);
 		break;
 	    } 
 
@@ -529,53 +541,30 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	}
     }
 
-    private static class AddAudioTreatmentComponentMO implements KernelRunnable, 
-	    NonDurableTransactionParticipant {
+    public void callStatusChanged(CallStatus callStatus) {
+        String callId = callStatus.getCallId();
 
-	private String cellMOBindingName;
-	private String coneOfSilenceComponentMOBindingName;
-
-	public AddAudioTreatmentComponentMO(CellMO cellMO, ConeOfSilenceComponentMO coneOfSilenceComponentMO) {
-
-	    cellMOBindingName = cellMO.toString();
-	    AppContext.getDataManager().setBinding(cellMOBindingName, cellMO);
-
-	    coneOfSilenceComponentMOBindingName = coneOfSilenceComponentMO.toString();
-	    AppContext.getDataManager().setBinding(coneOfSilenceComponentMOBindingName, coneOfSilenceComponentMO);
-	}
-
-        public String getBaseTaskType() {
-            return AddAudioTreatmentComponentMO.class.getName();
+        if (callId == null) {
+            logger.warning("No callId in callStatus:  " + callStatus);
+            return;
         }
 
-        public boolean prepare(Transaction txn) throws Exception {
-            return false;
+        switch (callStatus.getCode()) {
+	case CallStatus.ESTABLISHED:
+	    checkForParentWithCOS();
+            break;
+
+        case CallStatus.TREATMENTDONE:
+	    if (playOnce == true) {
+		//System.out.println("TREATMENT DONE");
+
+		channelRef.get().sendAll(null, new AudioTreatmentDoneMessage(cellID, callId));
+	    }
+	    break;
+
+	case CallStatus.ENDED:
+	    break;
         }
-
-        public void abort(Transaction t) {
-        }
-
-        public void prepareAndCommit(Transaction txn) throws Exception {
-            prepare(txn);
-            commit(txn);
-        }
-
-        public void commit(Transaction t) {
-        }
-
-        public String getTypeName() {
-            return "AddAudioTreatmentComponentMO";
-        }
-
-	public void run() {
-            CellMO cellMO = (CellMO) AppContext.getDataManager().getBinding(cellMOBindingName);
-
-            ConeOfSilenceComponentMO coneOfSilenceComponentMO = (ConeOfSilenceComponentMO)
-                (ConeOfSilenceComponentMO) AppContext.getDataManager().getBinding(coneOfSilenceComponentMOBindingName);
-
-	    coneOfSilenceComponentMO.addAudioTreatmentComponentMO(cellMO);
-	}
-
     }
 
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
@@ -697,42 +686,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             spatializer.setAttenuator(volume);
 
             softphonePlayer.setPrivateSpatializer(player, spatializer);
-	}
-    }
-
-    private static class MyCallStatusListener implements ManagedCallStatusListener {
-
-	private CellID cellID;
-	private boolean playOnce;
-        private ManagedReference<ChannelComponentMO> channelRef;
-
-	public MyCallStatusListener(CellID cellID, ManagedReference<ChannelComponentMO> channelRef,
-		boolean playOnce) {
-
-	    this.cellID = cellID;
-	    this.channelRef = channelRef;
-	    this.playOnce = playOnce;
-	}
-
-        public void callStatusChanged(CallStatus callStatus) {
-            String callId = callStatus.getCallId();
-
-            if (callId == null) {
-                logger.warning("No callId in callStatus:  " + callStatus);
-                return;
-            }
-
-            switch (callStatus.getCode()) {
-	    case CallStatus.ESTABLISHED:
-                break;
-
-            case CallStatus.TREATMENTDONE:
-	        if (playOnce == true) {
-		    //System.out.println("TREATMENT DONE");
-
-		    channelRef.get().sendAll(null, new AudioTreatmentDoneMessage(cellID, callId));
-	        }
-            }
 	}
     }
 
