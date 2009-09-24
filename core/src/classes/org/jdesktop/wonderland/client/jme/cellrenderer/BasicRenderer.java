@@ -255,7 +255,8 @@ public abstract class BasicRenderer implements CellRendererJME {
             } else {
                 rc.setSceneRoot(rootNode);
             }
-            
+
+            // TODO: shouldn't this just be a call to adjustCollisionSystem()?
             WonderlandSession session = cell.getCellCache().getSession();
             CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
 
@@ -266,6 +267,9 @@ public abstract class BasicRenderer implements CellRendererJME {
             if (cc!=null) {
                 entity.addComponent(CollisionComponent.class, cc);
             }
+
+            // set initial lighting
+            adjustLighting(entity);
 
 //            PhysicsSystem jBulletPhysicsSystem = ClientContextJME.getPhysicsSystem(session.getSessionManager(), "Physics");
 //            CollisionSystem jBulletCollisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Physics");
@@ -457,14 +461,14 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         this.lightingEnabled = lightingEnabled;
 
-        ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
-            public void commit() {
-                RenderComponent rc = entity.getComponent(RenderComponent.class);
-                rc.setLightingEnabled(lightingEnabled);
-                
-                ClientContextJME.getWorldManager().addToUpdateList(rootNode);
-            }
-        });
+        if (entity != null) {
+            adjustLighting(entity);
+        }
+    }
+
+    private void adjustLighting(final Entity entity) {
+        RenderComponent rc = entity.getComponent(RenderComponent.class);
+        rc.setLightingEnabled(lightingEnabled);
     }
 
     /**
