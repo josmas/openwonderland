@@ -59,7 +59,9 @@ class Space {
         synchronized(viewCaches) {
             cell.addViewCache(viewCaches, this);
 
-            for(ViewCache cache : viewCaches)
+            // issue 754: avoid concurrent modification
+            ViewCache[] caches = viewCaches.toArray(new ViewCache[viewCaches.size()]);
+            for(ViewCache cache : caches)
                 cache.rootCellAdded(cell);
         }
     }
@@ -72,8 +74,10 @@ class Space {
         
         synchronized(viewCaches) {
             cell.removeViewCache(viewCaches, this);
-            
-            for(ViewCache cache : viewCaches)
+
+            // issue 754: avoid concurrent modification
+            ViewCache[] caches = viewCaches.toArray(new ViewCache[viewCaches.size()]);
+            for(ViewCache cache : caches)
                 cache.rootCellRemoved(cell);
         }
     }
