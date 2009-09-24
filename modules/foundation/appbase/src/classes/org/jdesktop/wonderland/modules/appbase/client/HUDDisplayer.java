@@ -73,11 +73,7 @@ public class HUDDisplayer implements View2DDisplayer {
         component.addEventListener(new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
-                    // TODO: currently we take the entire app off the HUD when
-                    // any HUD view of any app window is quit
-                    if (app != null) {
-                        app.setShowInHUD(false);
-                    }
+                    hudComponents.remove((HUDComponent)e.getObject());
                 }
             }
         });
