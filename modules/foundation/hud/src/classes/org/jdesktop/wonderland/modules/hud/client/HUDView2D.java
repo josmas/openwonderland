@@ -43,6 +43,7 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     public HUDView2D(View2DDisplayer displayer, Window2D window) {
         this(displayer, window, null);
+        name = "HUDView2D for " + window.getName();
     }
 
     /**
@@ -56,6 +57,7 @@ public class HUDView2D extends View2DEntity implements HUDView {
         this.displayer = displayer;
         changeMask = CHANGED_ALL;
         update();
+        name = "HUDView2D for " + window.getName();
     }
 
     /** 
@@ -69,7 +71,11 @@ public class HUDView2D extends View2DEntity implements HUDView {
      * {@inheritDoc}
      */
     protected Entity getParentEntity() {
-        return getEntity().getParent();
+        View2DEntity parentView = (View2DEntity) getParent();
+        if (parentView == null) {
+            return null;
+        }
+        return parentView.getEntity();
     }
 
     /**
