@@ -273,5 +273,6 @@ public abstract class AppConventionalCell extends App2DCell {
         }
 
         this.app = app;
+        setName(app.getName());
     }
 }

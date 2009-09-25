@@ -185,6 +185,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         }
 
         this.app = app;
+        setName(app.getName());
 
         if (App2D.doAppInitialPlacement) {
             logger.info("Cell transferring fvi to app, fvi = " + fvi);
