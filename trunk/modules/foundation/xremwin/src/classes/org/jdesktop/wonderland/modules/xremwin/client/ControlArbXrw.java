@@ -241,7 +241,9 @@ public class ControlArbXrw extends ControlArbSingle {
         try {
             AppXrw.logger.finer("Write key event to server");
             // Note: server doesn't care about the window which generated key events
-            serverProxy.writeEvent(event);
+            if (serverProxy != null) {
+                serverProxy.writeEvent(event);
+            }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -260,6 +262,8 @@ public class ControlArbXrw extends ControlArbSingle {
         if (event.getID() == MouseEvent.MOUSE_CLICKED) {
             return;
         }
+
+        if (serverProxy == null) return;
 
         try {
             if (event instanceof MouseWheelEvent) {
