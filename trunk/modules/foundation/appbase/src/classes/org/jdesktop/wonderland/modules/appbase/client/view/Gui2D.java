@@ -322,18 +322,19 @@ public class Gui2D {
                 me.getButton() == MouseEvent.BUTTON1 &&
                 me.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
 
-                configState = ConfigState.DRAG_ACTIVE;
-                action = new Action(ActionType.DRAG_START);
-                dragStartScreen = new Point(me.getX(), me.getY());
-                dragStartWorld = buttonEvent.getIntersectionPointWorld();
-                configDragType = ConfigDragType.MOVING_PLANAR;
-
                 // Remember: the move occurs in parent coords
                 View2DEntity parentView = (View2DEntity) view.getParent();
                 if (parentView == null) {
                     // Note: we don't yet support dragging of primaries
                     return null;
                 }
+
+                configState = ConfigState.DRAG_ACTIVE;
+                action = new Action(ActionType.DRAG_START);
+                dragStartScreen = new Point(me.getX(), me.getY());
+                dragStartWorld = buttonEvent.getIntersectionPointWorld();
+                configDragType = ConfigDragType.MOVING_PLANAR;
+
                 dragStartLocal = parentView.getNode().worldToLocal(dragStartWorld, new Vector3f());
             }
             return action;
