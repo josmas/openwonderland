@@ -420,4 +420,18 @@ public abstract class App2D {
     public FirstVisibleInitializer getFirstVisibleInitializer () {
         return fvi;
     }
+
+    /**
+     * Invoked in the sas xremwin provider to guaranteed that the app is completely
+     * stopped, including the app processes.
+     */
+    public void stop () {
+
+        for (Window2D window : (LinkedList<Window2D>) windows.clone()) {
+            logger.severe("%%%%%%%%%% close user on window: " + window);
+            window.closeUser(true);
+        }
+
+        cleanup();
+    }
 }

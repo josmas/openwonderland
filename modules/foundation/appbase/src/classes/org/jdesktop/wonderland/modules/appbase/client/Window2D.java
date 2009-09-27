@@ -1326,15 +1326,28 @@ public abstract class Window2D implements HUDDisplayable {
      * Called by the GUI to close the window.
      */
     public void closeUser() {
+        closeUser(false);
+    }
 
-        // User must have control in order to close the window
-        if (!app.getControlArb().hasControl()) {
-            // TODO: bring up swing option window: "You cannot close this window
-            // because you do not have control"
-            // Danger: can't do this in SAS!
-            logger.warning("You cannot close this window because you do not " +
-                    "have control");
-            return;
+    /**
+     * INTERNAL API.
+     * <br><br>
+     * Same as closeUser, but if forceClose is true, closes the window even if this
+     * client doesn't have control. (This is used only by the SAS).
+     */
+    public void closeUser (boolean forceClose) {
+        if (!forceClose) {
+            if (app == null || app.getControlArb() == null) return;
+
+            // User must have control in order to close the window
+            if (!app.getControlArb().hasControl()) {
+                // TODO: bring up swing option window: "You cannot close this window
+                // because you do not have control"
+                // Danger: can't do this in SAS!
+                logger.warning("You cannot close this window because you do not " +
+                               "have control");
+                return;
+            }
         }
 
         // Call close listeners

@@ -235,9 +235,9 @@ public class SasXrwProviderMain
         synchronized (runningAppInfos) {
             for (AppXrwMaster app : runningAppInfos.keySet()) {
                 AppInfo appInfo = runningAppInfos.get(app);
-                if (appInfo.connection == connection && appInfo.launchMessageID == launchMessageID) {
+                if (appInfo.connection == connection && appInfo.launchMessageID.equals(launchMessageID)) {
                     runningAppInfos.remove(app);
-                    app.cleanup();
+                    app.stop();
                 }
             }
         }
