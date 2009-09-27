@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * The Xremwin window class. 
@@ -166,9 +167,32 @@ public class WindowXrw extends WindowConventional {
      * {@inheritDoc}
      */
     @Override
-    public void closeUser() {
+    public void closeUser () {
+        closeUser(false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    @Override
+    public void closeUser (boolean forceClose) {
+        if (!forceClose) {
+            if (app == null || app.getControlArb() == null) return;
+
+            // User must have control in order to close the window
+            if (!app.getControlArb().hasControl()) {
+                // TODO: bring up swing option window: "You cannot close this window
+                // because you do not have control"
+                // Danger: can't do this in SAS!
+                AppXrw.logger.warning("You cannot close this window because you do not " +
+                               "have control");
+                return;
+            }
+        }
 
         // Notify the Xremwin server and other clients
+        if (app == null || ((AppXrw) app).getClient() == null) return;
         ((AppXrw) app).getClient().windowCloseUser(this);
 
         // now clean up the window.

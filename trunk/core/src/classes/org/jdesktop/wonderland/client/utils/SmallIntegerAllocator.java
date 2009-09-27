@@ -81,7 +81,7 @@ public class SmallIntegerAllocator {
      */
     public synchronized void free (int i) {
 	if (!allocated[i]) {
-	    throw new RuntimeException("Value is not allocated.");
+	    return;
 	}
 	allocated[i] = false;
 	numAllocated--;
