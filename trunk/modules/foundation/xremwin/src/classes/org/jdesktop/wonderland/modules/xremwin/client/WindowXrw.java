@@ -196,7 +196,7 @@ public class WindowXrw extends WindowConventional {
         ((AppXrw) app).getClient().windowCloseUser(this);
 
         // now clean up the window.
-        super.closeUser();
+        super.closeUser(forceClose);
     }
 
     /**
