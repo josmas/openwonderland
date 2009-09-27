@@ -310,14 +310,18 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // see which one launched the app.
         if (sasLaunchInfo.providerRef != null) {
             ProviderProxy provider = (ProviderProxy) sasLaunchInfo.providerRef.get();
-            provider.appStop(sasLaunchInfo.cellID);
+            if (provider != null) {
+                provider.appStop(sasLaunchInfo.cellID);
+            }
         } else {
             LinkedList<ManagedReference> providers =
                 execCapToProviderList.get(sasLaunchInfo.executionCapability);
             if (providers != null) {
                 for (ManagedReference providerRef : providers) {
-                    ProviderProxy provider = (ProviderProxy) sasLaunchInfo.providerRef.get();
-                    provider.appStop(sasLaunchInfo.cellID);
+                    ProviderProxy provider = (ProviderProxy) providerRef.get();
+                    if (provider != null) {
+                        provider.appStop(sasLaunchInfo.cellID);
+                    }
                 }
             }
         }

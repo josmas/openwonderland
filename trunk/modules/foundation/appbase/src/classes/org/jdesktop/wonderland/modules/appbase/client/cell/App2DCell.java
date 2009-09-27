@@ -139,7 +139,9 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Destroy the app cell.
      */
     public void destroy() {
-        app.cleanup();
+        if (app != null) {
+            app.cleanup();
+        }
         cleanup();
 
         // Tell the server to remove the cell from the world
