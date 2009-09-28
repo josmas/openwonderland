@@ -24,6 +24,7 @@ import com.jme.scene.state.BlendState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.system.DisplaySystem;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -51,6 +52,9 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.test.EnterExitEvent3DLogger;
 import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb.ControlChangeListener;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
@@ -296,6 +300,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
+    public void updateFrame(HUDComponent2D component) {
+        HUDComponentState state = hudStateMap.get(component);
+
+        HUDFrameHeader2D frame = state.getFrame();
+
+        if ((frame != null) && !component.isHUDManagedWindow()) {
+            frame.setControlled(component.hasControl());
+        }
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("action performed: " + e);
@@ -370,7 +384,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             if (frameView != null) {
                 frameView.setVisibleUser(visible);
 
-                if (!visible) {
+                if (visible) {
+                    // showing frame
+                    updateFrame(component);
+                } else {
                     // frame needs removing
                     logger.fine("removing frame");
                     view.detachView(view);
@@ -739,6 +756,17 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
+    protected void componentControlChanged(HUDComponent2D component) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("changing control of: " + component);
+        }
+
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+        if (state != null) {
+            updateFrame(component);
+        }
+    }
+
     private void handleHUDComponentChanged(HUDEvent event) {
         HUDComponent2D comp = (HUDComponent2D) event.getObject();
 
@@ -790,6 +818,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 break;
             case CHANGED_NAME:
                 componentNameChanged(comp);
+                break;
+            case CHANGED_CONTROL:
+                componentControlChanged(comp);
                 break;
             case CLOSED:
                 componentClosed(comp);

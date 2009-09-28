@@ -47,7 +47,7 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         initComponents();
         addListeners();
         paint = new GradientPaint(0, 0, gradientStartColor,
-                0, (int)getPreferredSize().getHeight(), gradientEndColor);
+                0, (int) getPreferredSize().getHeight(), gradientEndColor);
     }
 
     private void addListeners() {
@@ -86,8 +86,24 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         }
     }
 
+    public void setFrameColor(Color color) {
+        setFrameColor(color, color);
+    }
+
+    public void setFrameColor(Color startColor, Color endColor) {
+        setGradientStartColor(startColor);
+        setGradientEndColor(endColor);
+        repaint();
+    }
+
+    public void setTextColor(Color textColor) {
+        titleLabel.setForeground(textColor);
+    }
+
     public void setGradientStartColor(Color gradientStartColor) {
         this.gradientStartColor = gradientStartColor;
+        paint = new GradientPaint(0, 0, gradientStartColor,
+                0, (int) getPreferredSize().getHeight(), gradientEndColor);
     }
 
     public Color getGradientStartColor() {
@@ -96,6 +112,8 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
 
     public void setGradientEndColor(Color gradientEndColor) {
         this.gradientEndColor = gradientEndColor;
+        paint = new GradientPaint(0, 0, gradientStartColor,
+                0, (int) getPreferredSize().getHeight(), gradientEndColor);
     }
 
     public Color getGradientEndColor() {
