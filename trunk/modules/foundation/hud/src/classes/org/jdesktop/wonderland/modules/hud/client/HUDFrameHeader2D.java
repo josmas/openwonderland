@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -40,9 +41,50 @@ public class HUDFrameHeader2D extends HUDComponent2D implements ActionListener, 
     private List<ActionListener> actionListeners;
     private List<MouseListener> mouseListeners;
     private List<MouseMotionListener> mouseMotionListeners;
+    // colors for HUD components that don't have a control state
+    private static final Color NO_CONTROL_START_COLOR = new Color(137, 137, 137);
+    private static final Color NO_CONTROL_END_COLOR = new Color(180, 180, 180);
+    // color to use when controlled
+    private static final Color CONTROL_COLOR = new Color(0.0f, 0.9f, 0.0f, 1f);
+    // color to use when not controlled
+    private static final Color NO_CONTROL_COLOR = new Color(0.9f, 0.0f, 0.0f, 1f);
+    // text color when controlled
+    private static final Color CONTROL_TEXT_COLOR = new Color(0.0f, 0.0f, 0.0f, 1f);
+    // text color when not controlled
+    private static final Color NO_CONTROL_TEXT_COLOR = new Color(1.0f, 1.0f, 1.0f, 1f);
 
     public HUDFrameHeader2D(JComponent component) {
         super(component);
+        setTextColor(NO_CONTROL_TEXT_COLOR);
+        setFrameColor(NO_CONTROL_START_COLOR, NO_CONTROL_END_COLOR);
+    }
+
+    public void setControlled(boolean controlled) {
+        if (controlled) {
+            setFrameColor(CONTROL_COLOR);
+            setTextColor(CONTROL_TEXT_COLOR);
+        } else {
+            setFrameColor(NO_CONTROL_COLOR);
+            setTextColor(NO_CONTROL_TEXT_COLOR);
+        }
+    }
+
+    public void setFrameColor(Color color) {
+        if (component instanceof HUDFrameHeader2DImpl) {
+            ((HUDFrameHeader2DImpl) component).setFrameColor(color);
+        }
+    }
+
+    public void setFrameColor(Color startColor, Color endColor) {
+        if (component instanceof HUDFrameHeader2DImpl) {
+            ((HUDFrameHeader2DImpl) component).setFrameColor(startColor, endColor);
+        }
+    }
+
+    public void setTextColor(Color color) {
+        if (component instanceof HUDFrameHeader2DImpl) {
+            ((HUDFrameHeader2DImpl) component).setTextColor(color);
+        }
     }
 
     public void setTitle(String title) {

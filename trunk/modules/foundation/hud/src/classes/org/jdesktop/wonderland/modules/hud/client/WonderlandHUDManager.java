@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
@@ -252,9 +253,11 @@ public class WonderlandHUDManager extends HUDManager implements HUDEventListener
     }
 
     public void HUDObjectChanged(HUDEvent event) {
-        logger.fine("HUDManager received event: " + event);
-
         if (event.getObject() instanceof HUD) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("HUDManager received HUD event: " + event);
+            }
+
             HUD hud = (HUD) event.getObject();
 
             switch (event.getEventType()) {
@@ -290,6 +293,10 @@ public class WonderlandHUDManager extends HUDManager implements HUDEventListener
                 case DISABLED:
                     break;
                 case CHANGED_TRANSPARENCY:
+                    break;
+                case CHANGED_NAME:
+                    break;
+                case CHANGED_CONTROL:
                     break;
                 case CLOSED:
                     break;
