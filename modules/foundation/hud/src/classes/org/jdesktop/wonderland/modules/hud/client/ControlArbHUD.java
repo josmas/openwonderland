@@ -59,6 +59,8 @@ public class ControlArbHUD extends ControlArbAppFocus {
     @Override
     public void releaseControl() {
         // Remove focus from the app
-        inputManager.removeKeyMouseFocus(new Entity[]{app.getFocusEntity()});
+        // Fix issue 796
+        // - don't allow shift-click to release control of HUD windows
+        //inputManager.removeKeyMouseFocus(new Entity[]{app.getFocusEntity()});
     }
 }
