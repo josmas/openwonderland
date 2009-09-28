@@ -73,7 +73,9 @@ public class HUDDisplayer implements View2DDisplayer {
         component.addEventListener(new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
-                    hudComponents.remove((HUDComponent)e.getObject());
+                    HUDComponent comp = (HUDComponent)e.getObject();
+                    mainHUD.addComponent(comp);
+                    hudComponents.remove(comp);
                 }
             }
         });
