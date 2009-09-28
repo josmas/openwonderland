@@ -24,7 +24,6 @@ import com.jme.scene.state.BlendState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.system.DisplaySystem;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -52,13 +51,11 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.test.EnterExitEvent3DLogger;
 import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
-import org.jdesktop.wonderland.modules.appbase.client.App2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArb.ControlChangeListener;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 /**
  * A WonderlandHUDComponentManager manages a set of HUDComponents.
@@ -435,11 +432,11 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         // for now, position everything, until relative view positioning is
         // working.
 
-        //if (view.getType() == View2D.Type.PRIMARY) {
-        Vector2f location = (layout != null) ? layout.getLocation(component) : new Vector2f(component.getX(), component.getY());
-        component.setLocation((int) location.x, (int) location.y, false);
-        view.setLocationOrtho(new Vector2f(location.x + view.getDisplayerLocalWidth() / 2, location.y + view.getDisplayerLocalHeight() / 2), false);
-        //}
+        if (view.getType() == View2D.Type.PRIMARY) {
+            Vector2f location = (layout != null) ? layout.getLocation(component) : new Vector2f(component.getX(), component.getY());
+            component.setLocation((int) location.x, (int) location.y, false);
+            view.setLocationOrtho(new Vector2f(location.x + view.getDisplayerLocalWidth() / 2, location.y + view.getDisplayerLocalHeight() / 2), false);
+        }
 
         if (component.getPreferredTransparency() != 1.0f) {
             // component has a preferred transparency, so it at that
