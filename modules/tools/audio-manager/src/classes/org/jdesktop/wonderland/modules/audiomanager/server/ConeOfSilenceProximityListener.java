@@ -103,7 +103,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
         // create a request
         Action viewAction = new ViewAction();
-        Resource resource = crm.getCellResource(cellID);
+        Resource resource = crm.getCellResource(this.cellID);
         if (resource != null) {
             // there is security on this cell perform the enter notification
             // securely
