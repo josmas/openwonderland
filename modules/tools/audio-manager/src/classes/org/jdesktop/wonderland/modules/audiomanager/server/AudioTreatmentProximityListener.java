@@ -55,14 +55,14 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
 
     private CellID cellID;
     private String name;
-    private Treatment treatment;
+    private String treatmentId;
 
     private int numberInRange;
 
     public AudioTreatmentProximityListener(CellMO cellMO, Treatment treatment) {
 	cellID = cellMO.getCellID();
         name = cellMO.getName();
-	this.treatment = treatment;
+	treatmentId = treatment.getId();
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -87,6 +87,14 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
 	}
 
 	logger.fine("Restarting treatment...");
+
+	Treatment treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
+
+	if (treatment == null) {
+	    logger.warning("No treatment for " + treatmentId);
+	    return;
+	}
+
 	treatment.restart(false);
     }
 
@@ -98,6 +106,14 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
 	}
 
 	logger.fine("Pausing treatment...");
+
+	Treatment treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
+
+	if (treatment == null) {
+	    logger.warning("No treatment for " + treatmentId);
+	    return;
+	}
+
 	treatment.restart(true);
     }
 
