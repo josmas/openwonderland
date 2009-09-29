@@ -316,7 +316,7 @@ public class RunAppServer {
         // side-effect, any module with a checksum is removed from the
         // list of installed modules, so that list can be used to decide
         // which modules to uninstall
-        Map<String, String> installedChecksums = getChecksums(installed);
+        Map<String, String[]> installedChecksums = getChecksums(installed);
 
         // add all modules remaining in the installed list to the
         // uninstall list.  These are modules that were installed by an
@@ -333,9 +333,9 @@ public class RunAppServer {
             // old checksum doesn't exist or is different than the new
             // checksum, install the new file.  This will overwrite the old
             // checksum in the process.
-            String installedChecksum = installedChecksums.remove(checksum.getKey());
+            String[] installedChecksum = installedChecksums.remove(checksum.getKey());
             if (installedChecksum == null ||
-                    !installedChecksum.equals(checksum.getValue()))
+                    !installedChecksum[0].equals(checksum.getValue()))
             {
                 install.add(createTaggedModule(checksum.getKey(),
                                                checksum.getValue(),
@@ -347,7 +347,9 @@ public class RunAppServer {
         // old modules that were installed by a previous version of Wonderland
         // (not by the user) and aren't in the new module list.  We need to
         // remove these modules
-        uninstall.addAll(installedChecksums.keySet());
+        for (String[] moduleDesc : installedChecksums.values()) {
+            uninstall.add(moduleDesc[1]);
+        }
 
         // uninstall any modules on the uninstall list
         logger.warning("Uninstall: " + uninstall);
@@ -362,8 +364,8 @@ public class RunAppServer {
         mm.addTaggedToInstall(install);
     }
 
-    private Map<String, String> getChecksums(Map<String, Module> modules) {
-        Map<String, String> out = new HashMap<String, String>();
+    private Map<String, String[]> getChecksums(Map<String, Module> modules) {
+        Map<String, String[]> out = new HashMap<String, String[]>();
 
         for (Iterator<Module> i = modules.values().iterator(); i.hasNext();) {
             ModuleInfo info = i.next().getInfo();
@@ -371,8 +373,13 @@ public class RunAppServer {
             String checksum = info.getAttribute(ModuleAttributes.CHECKSUM);
 
             if (filename != null) {
+                // add both the checksum and the module name
+                String[] desc = new String[2];
+                desc[0] = checksum;
+                desc[1] = info.getName();
+
                 // add to the list of files with checksums
-                out.put(filename, checksum);
+                out.put(filename, desc);
 
                 // remove from the installed list
                 i.remove();
