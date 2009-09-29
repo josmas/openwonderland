@@ -261,7 +261,9 @@ public abstract class ClientXrw implements Runnable {
 
             // Read message type from the server.
             ServerMessageType msgType = serverProxy.getMessageType();
+            //if (msgType != Proto.ServerMessageType.DISPLAY_PIXELS){
             AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType);
+            //}
 
             /* TODO
             if (ENABLE_XREMWIN_STATS) {
@@ -274,7 +276,9 @@ public abstract class ClientXrw implements Runnable {
             // Get the full message
             MessageArgs msgArgs = readMessageArgs(msgType);
             if (msgArgs != null) {
+                //if (msgType != Proto.ServerMessageType.DISPLAY_PIXELS){
                 AppXrw.logger.info("msgArgs: " + msgArgs);
+                //}
 
                 /* For debug: an example of how to ignore the firefox heartbeat which occurs on igoogle
                 if (msgType == ServerMessageType.DISPLAY_PIXELS) {
