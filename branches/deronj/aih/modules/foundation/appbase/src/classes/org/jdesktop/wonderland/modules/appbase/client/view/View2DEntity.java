@@ -2190,7 +2190,9 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public void removeEntityComponent(Class clazz) {
-        entity.removeComponent(clazz);
+        if (entity != null) {
+            entity.removeComponent(clazz);
+        }
     }
 
     /**
