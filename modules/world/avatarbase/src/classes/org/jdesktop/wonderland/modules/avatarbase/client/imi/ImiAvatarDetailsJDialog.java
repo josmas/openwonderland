@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -61,8 +62,14 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
     private static final Logger LOGGER =
             Logger.getLogger(ImiAvatarDetailsJDialog.class.getName());
 
+    // The primary resource bundle for the GUI
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
+
+    // The resource bundle for the combo boxes
+    private static final ResourceBundle PRESETS_BUNDLE =
+            ResourceBundle.getBundle("org/jdesktop/wonderland/modules/" +
+            "avatarbase/client/imi/resources/Bundle");
 
     private final Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
     private final Cursor normalCursor = Cursor.getDefaultCursor();
@@ -349,13 +356,13 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         currentParams = attributes.clone();
 
         // Initialize the values of the combo boxes
-        populateComboBox(hairComboBox, ConfigType.HAIR, "Hair");
-        populateComboBox(headComboBox, ConfigType.HEAD, "Head");
-        populateComboBox(torsoComboBox, ConfigType.TORSO, "Torso");
-        populateComboBox(legsComboBox, ConfigType.LEGS, "Legs");
-        populateComboBox(jacketComboBox, ConfigType.JACKET, "Jacket");
-        populateComboBox(handsComboBox, ConfigType.HANDS, "Hands");
-        populateComboBox(feetComboBox, ConfigType.FEET, "Feet");
+        populateComboBox(hairComboBox, ConfigType.HAIR);
+        populateComboBox(headComboBox, ConfigType.HEAD);
+        populateComboBox(torsoComboBox, ConfigType.TORSO);
+        populateComboBox(legsComboBox, ConfigType.LEGS);
+        populateComboBox(jacketComboBox, ConfigType.JACKET);
+        populateComboBox(handsComboBox, ConfigType.HANDS);
+        populateComboBox(feetComboBox, ConfigType.FEET);
 
         // Update the name, gender, and combox boxes of the avatar
         updateAvatarName();
@@ -365,22 +372,26 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
 
     /**
      * Initializes the given combo box with the elements from the given
-     * configuration type (ConfigType). The 'prefix' given the name to prepend
-     * to each entry in the combo box.
+     * configuration type (ConfigType).
      *
      * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
-    private void populateComboBox(JComboBox box, ConfigType type, String prefix) {
+    private void populateComboBox(JComboBox box, ConfigType type) {
         // Make sure we block out any events that happen because the elements
         // in the combo box are being updated
         setLocalChanges(true);
         try {
+            // First remove all of the existing elements in the combo box.
             List<ConfigElement> elements = currentParams.getElements(type);
             DefaultComboBoxModel m = (DefaultComboBoxModel) box.getModel();
             m.removeAllElements();
+
+            // Iterate through the list of presets given. From the description
+            // look-up the resource bundle for the display string.
             int i = 0;
             for (ConfigElement ce : elements) {
-                m.insertElementAt(ce.getDescription(), i);
+                String description = ce.getDescription();
+                m.insertElementAt(PRESETS_BUNDLE.getString(description), i);
                 i++;
             }
         } finally {
@@ -536,16 +547,18 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // Make sure the name text field is not empty.
         final String newAvatarName = nameTextField.getText().trim();
         if (newAvatarName == null || newAvatarName.equals("") == true) {
-            String msg = "Please enter an avatar name before saving.";
-            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            String msg = BUNDLE.getString("PLEASE_ENTER_AVATAR_NAME");
+            String title = BUNDLE.getString("AVATAR_NAME");
+            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // Make sure there are no spaces in the avatar name.
         // XXX Workaround for bug in content repo XXX
         if (newAvatarName.indexOf(" ") != -1) {
-            String msg = "The avatar name cannot include spaces, sorry!";
-            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            String msg = BUNDLE.getString("AVATAR_NAME_SPACES");
+            String title = BUNDLE.getString("AVATAR_NAME");
+            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -553,9 +566,10 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // if the name has actually changed.
         AvatarSPI oldAvatar = registry.getAvatarByName(newAvatarName);
         if (newAvatarName.equals(originalAvatarName) == false && oldAvatar != null) {
-            String msg = "The avatar name " + newAvatarName + " is already" +
-                    " taken. Please enter anothr name.";
-            JOptionPane.showMessageDialog(this, msg, "Avatar Name", JOptionPane.ERROR_MESSAGE);
+            String msg = BUNDLE.getString("THE_AVATAR_NAME_TAKEN");
+            msg = MessageFormat.format(msg, newAvatarName);
+            String title = BUNDLE.getString("AVATAR_NAME");
+            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
