@@ -55,7 +55,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="xapps-config" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Shared apps configuration library" builddir="${build.dir}">
 
           <requires name="darkstar" version="1"/>
           <requires name="content-repository" version="1"/>

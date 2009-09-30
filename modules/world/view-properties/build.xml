@@ -23,7 +23,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="viewproperties" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="View properties configuration library" builddir="${build.dir}">
 
             <requires name="content-repository" version="1"/>
             <client>

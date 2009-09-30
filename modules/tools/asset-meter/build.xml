@@ -19,7 +19,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="asset-meter" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Asset download progress meter" builddir="${build.dir}">
                     
             <client>
                 <clientjar name="asset-meter-client" basedir="${build.classes.dir}">

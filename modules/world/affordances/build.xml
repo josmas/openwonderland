@@ -23,7 +23,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="affordances" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Visual affordances to move, rotate, and scale cells" builddir="${build.dir}">
                     
             <client>
                 <clientjar name="affordances-client" basedir="${build.classes.dir}">

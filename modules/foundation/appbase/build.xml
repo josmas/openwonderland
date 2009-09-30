@@ -18,7 +18,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="appbase" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="2D application API and library" builddir="${build.dir}">
         
             <client dir="${current.dir}/lib">
                 <clientjar name="appbase-client" basedir="${build.classes.dir}">

@@ -31,6 +31,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="orb" version="1" minorversion="1"
+                moduleDescription="Telephone orb Cell"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
             <client>

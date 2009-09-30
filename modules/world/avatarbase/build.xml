@@ -45,7 +45,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="avatarbase" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/avatarbase.jar"
-                moduleDescription="Base for high quality avatar rendering" builddir="${build.dir}">
+                moduleDescription="Avatar API and library" builddir="${build.dir}">
 
             <requires name="content-repository" version="1"/>
 

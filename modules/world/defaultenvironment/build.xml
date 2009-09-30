@@ -18,7 +18,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="defaultenvironment" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/defaultenvironment.jar"
-                moduleDescription="Default Environment" builddir="${build.dir}">
+                moduleDescription="Default environment library" builddir="${build.dir}">
                     
             <client>
                 <clientjar name="defaultenvironment-client" basedir="${build.classes.dir}">

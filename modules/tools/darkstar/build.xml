@@ -55,6 +55,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
+                moduleDescription="Darkstar server"
                 builddir="${build.dir}">
 
             <!-- include core libraries -->

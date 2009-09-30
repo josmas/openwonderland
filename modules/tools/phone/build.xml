@@ -33,6 +33,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="phone" version="1" minorversion="1"
+                moduleDescription="Telephone Cell"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
             <client>

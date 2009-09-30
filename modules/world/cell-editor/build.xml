@@ -23,7 +23,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="celleditor" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Cell editor dialog" builddir="${build.dir}">
                     
             <client>
                 <clientjar name="celleditor-client" basedir="${build.classes.dir}">
