@@ -45,7 +45,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="xremwin" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="X11 shared application library" builddir="${build.dir}">
   
            <client dir="${current.dir}/lib">
              <include name="escher-0.2.2.lg.jar"/>

@@ -34,6 +34,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="microphone" version="1" minorversion="1"
+                moduleDescription="Microphone Cell"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
             <requires name="audiomanager" version="1"/>

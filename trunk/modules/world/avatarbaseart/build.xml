@@ -18,7 +18,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="avatarbaseart" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/avatarbaseart.jar"
-                moduleDescription="Art for avatarbase" builddir="${build.dir}">
+                moduleDescription="Avatar artwork" builddir="${build.dir}">
             <!--
             <client>
                 <clientjar name="avatarbaseart-client" basedir="${build.classes.dir}">

@@ -24,7 +24,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="colladaloader" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/colladaloader.jar"
-                moduleDescription="Wonderland Collada Loader" builddir="${build.dir}">
+                moduleDescription="Collada loader library" builddir="${build.dir}">
                     
             <client>
                 <clientjar name="colladaloader-client" basedir="${build.classes.dir}">

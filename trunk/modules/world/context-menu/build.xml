@@ -19,7 +19,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="context-menu" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Context menu library" builddir="${build.dir}">
                     
             <client>
                 <clientjar name="contextmenu-client" basedir="${build.classes.dir}">
