@@ -1208,9 +1208,15 @@ public abstract class View2DEntity implements View2D {
         // Note: all of the scene graph changes are queued up and executed at the end
         boolean windowNeedsValidate = false;
 
+        // For Debug - Part 1: Uncomment this to print info for HUD views only
+        //if (!("View2DCell".equals(this.getClass().getName()))) {
+
         logger.info("------------------ Processing changes for view " + this);
         logger.info("type " + type);
         logChangeMask(changeMask);
+
+        // For Debug - Part 2: Uncomment this to print info for HUD views only
+        //        }
 
         // React to topology related changes
         if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP | CHANGED_TYPE | CHANGED_PARENT | 
