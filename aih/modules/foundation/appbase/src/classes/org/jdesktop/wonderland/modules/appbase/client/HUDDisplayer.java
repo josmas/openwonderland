@@ -93,7 +93,7 @@ public class HUDDisplayer implements View2DDisplayer {
         mainHUD.addComponent(component);
         component.setVisible(true);
 
-        // TODO: get the view from the HUD component and return it?
+        // Note: it is okay that null is returned here. The caller never uses it.
         return null;
     }
 
