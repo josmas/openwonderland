@@ -406,6 +406,13 @@ public abstract class App2D {
     }
 
     /**
+     * Returns true if the app is currently shown in the HUD.
+     */
+    public boolean isShownInHUD () {
+        return showInHUD;
+    }
+
+    /**
      * Specify a first-visible initializer for this app. If non-null, this will perform
      * some sort of initialization for the app the first time a window is made visible.
      */
