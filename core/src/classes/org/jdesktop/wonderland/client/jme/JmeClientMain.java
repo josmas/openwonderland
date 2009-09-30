@@ -34,6 +34,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CameraComponent;
@@ -100,6 +101,8 @@ public class JmeClientMain {
      * @param args the command line arguments
      */
     public JmeClientMain(String[] args) {
+        checkVmVersion();
+
         // process command line arguments
         processArgs(args);
 
@@ -586,6 +589,19 @@ public class JmeClientMain {
                 LOGGER.log(Level.WARNING, "Error reading properties from " +
                         propsURL, ioe);
             }
+        }
+    }
+
+    /**
+     * Check we are running in a supported VM.
+     */
+    private void checkVmVersion() {
+        try {
+            Class clazz = Class.forName("javax.lang.model.SourceVersion");
+        } catch (ClassNotFoundException ex) {
+            Logger.getAnonymousLogger().severe("Java Version is older than 6");
+            JOptionPane.showMessageDialog(null, "Java version 6 is required.\nIf you are using webstart on a Mac, please launch from Safari as Firefox seems to ignore the java version\nOn other platforms please download a new version from here http://java.com/en/download/index.jsp","Wrong Java Version", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
         }
     }
 }
