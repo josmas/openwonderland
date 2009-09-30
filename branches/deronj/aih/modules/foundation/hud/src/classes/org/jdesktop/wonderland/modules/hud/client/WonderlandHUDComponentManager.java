@@ -454,7 +454,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         // add a frame if this component wants to be decorated
         if (component.getDecoratable()) {
             Type windowType = state.getWindow().getType();
-            System.err.println("--- window type: " + windowType);
             if (windowType != Type.POPUP) {
                 showFrame(component, true);
             }
