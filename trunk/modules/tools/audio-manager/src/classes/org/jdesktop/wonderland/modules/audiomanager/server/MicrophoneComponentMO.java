@@ -78,11 +78,11 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
 	MicrophoneComponentServerState state = (MicrophoneComponentServerState) serverState;
 
+	name = state.getName() + "-" + cellRef.get().getCellID();
+	
 	System.out.println("name " + state.getName() + " volume " + state.getVolume()
 	    + " fva " + state.getFullVolumeArea() + " aa " + state.getActiveArea());
 
-	name = state.getName();
-	
 	volume = state.getVolume();
 
 	fullVolumeArea = state.getFullVolumeArea();

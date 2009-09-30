@@ -86,7 +86,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         // Fetch the component-specific state and set member variables
         ConeOfSilenceComponentServerState cs = (ConeOfSilenceComponentServerState) serverState;
 
-	name = cs.getName();
+	name = cs.getName() + "-" + cellRef.get().getCellID();
 
 	boundsType = cs.getBoundsType();
 
