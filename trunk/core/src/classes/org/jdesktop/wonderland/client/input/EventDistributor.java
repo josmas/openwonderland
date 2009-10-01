@@ -237,8 +237,8 @@ public abstract class EventDistributor implements Runnable {
                         logger.info("Consuming listener " + listener);
                     }
 		    listener.postEvent(distribEvent);
+                    propState.toParent |= listener.propagatesToParent(distribEvent);
                 }
-                propState.toParent |= listener.propagatesToParent(distribEvent);
 		// TODO: someday: decommit for now
                 //propState.toUnder |= listener.propagatesToUnder(distribEvent);
 //                logger.finer("Listener prop state, toParent = " + propState.toParent +
