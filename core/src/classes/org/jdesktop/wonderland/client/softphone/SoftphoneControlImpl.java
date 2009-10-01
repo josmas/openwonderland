@@ -506,8 +506,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
                     e.printStackTrace();
                     //softphoneOutputStream = null;
 
-		    System.out.println("SoftphoneControl exception:  " + e.getMessage());
-		    System.out.println("IS RUNNING? " + isRunning());
+		    System.err.println("SoftphoneControl exception:  " + e.getMessage());
 		}
 
 		//close(
