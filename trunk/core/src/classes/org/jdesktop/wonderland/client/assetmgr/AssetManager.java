@@ -94,8 +94,12 @@ public class AssetManager {
     private static final int NETWORK_CHUNK_SIZE = 50 * 1024;
     
     private AssetManager() {
-        assetFactory = new AssetFactory();
-        assetCache = new AssetCache(assetFactory);
+        try {
+            assetFactory = new AssetFactory();
+            assetCache = new AssetCache(assetFactory);
+        } catch (java.lang.Exception excp) {
+            logger.log(Level.WARNING, "Unable to create Asset Cache", excp);
+        }
         loadingAssets = new HashMap<AssetID, AssetLoader>();
         loadedAssets = new HashMap<AssetID, Asset>();
     }

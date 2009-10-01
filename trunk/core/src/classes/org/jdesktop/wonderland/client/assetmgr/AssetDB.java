@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.client.assetmgr;
 
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.sql.DriverManager;
@@ -29,9 +28,14 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.InternalAPI;
 
@@ -45,6 +49,10 @@ import org.jdesktop.wonderland.common.InternalAPI;
  */
 @InternalAPI
 public class AssetDB {
+
+    // The I18N resource bundle
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/client/assetmgr/resources/Bundle");
 
     /* The default name of the asset database */
     private static final String DB_NAME = "AssetDB";
@@ -80,9 +88,11 @@ public class AssetDB {
     }
 
     /**
-     * Default constructor
+     * Default constructor.
+     *
+     * @throw AssetDBException Upon error connecting to the DB
      */
-    public AssetDB() {
+    public AssetDB() throws AssetDBException {
         /* Initialize the name to some default name */
         this.dbName = AssetDB.DB_NAME;
 
@@ -95,7 +105,7 @@ public class AssetDB {
          */
         if (this.setDBSystemDir() == false) {
             logger.severe("AssetDB: Unable to set database directory");
-            System.exit(1);
+            throw new AssetDBException("Unable to set database directory");
         }
         
         /*
@@ -127,7 +137,8 @@ public class AssetDB {
          */
         if(!dbExists()) {
             try {
-                logger.fine("AssetDB does not exist, creating it at location "+getDatabaseLocation());
+                logger.fine("AssetDB does not exist, creating it at location " +
+                        getDatabaseLocation());
                 createDatabase();
             } catch(Exception e) {
                 e.printStackTrace();
@@ -140,13 +151,13 @@ public class AssetDB {
             if (!connect()) {
                 logger.severe("Unable to open AssetDB, exiting");
                 logger.severe("Check you don't have a Wonderland client already running");
-                System.exit(1);
+                throw new AssetDBException("Unable to connect to database");
             }
         } else {            
             if (!connect()) {
                 logger.severe("Unable to open AssetDB, exiting");
                 logger.severe("Check you don't have a Wonderland client already running");
-                System.exit(1);
+                throw new AssetDBException("Unable to connect to database");
             }
         }
     }
@@ -170,7 +181,8 @@ public class AssetDB {
                     logger.log(Level.INFO, "AssetDB: Shutdown was normal");
                 }
                 else {
-                    logger.log(Level.WARNING, "Failed to disconnect from AssetDB " + ex.getMessage(), ex);
+                    logger.log(Level.WARNING, "Failed to disconnect from " +
+                            "AssetDB " + ex.getMessage(), ex);
                 }
             }
             isConnected = false;
@@ -553,7 +565,7 @@ public class AssetDB {
      * LIST: Lists all of the entries in the database
      * ADD: Add an entry to the database, followed by the required data fields
      */
-    public static void main(String[] args) throws URISyntaxException {
+    public static void main(String[] args) throws URISyntaxException, AssetDBException {
         /* Create the database and open a connection */
         AssetDB db = new AssetDB();
         
