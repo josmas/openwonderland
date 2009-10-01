@@ -74,7 +74,9 @@ public class HUDDisplayer implements View2DDisplayer {
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
                     HUDComponent comp = (HUDComponent)e.getObject();
-                    mainHUD.removeComponent(comp);
+                    if (mainHUD != null) {
+                        mainHUD.removeComponent(comp);
+                    }
                     Window2D compWindow = hudComponents.get(comp);
                     hudComponents.remove(comp);
 
