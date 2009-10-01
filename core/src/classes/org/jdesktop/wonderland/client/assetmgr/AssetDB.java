@@ -28,14 +28,9 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.InternalAPI;
 
@@ -49,10 +44,6 @@ import org.jdesktop.wonderland.common.InternalAPI;
  */
 @InternalAPI
 public class AssetDB {
-
-    // The I18N resource bundle
-    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/client/assetmgr/resources/Bundle");
 
     /* The default name of the asset database */
     private static final String DB_NAME = "AssetDB";
