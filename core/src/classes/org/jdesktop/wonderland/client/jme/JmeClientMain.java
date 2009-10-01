@@ -46,6 +46,8 @@ import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsManager;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.assetmgr.AssetDB;
+import org.jdesktop.wonderland.client.assetmgr.AssetDBException;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.common.ThreadManager;
@@ -102,6 +104,10 @@ public class JmeClientMain {
      */
     public JmeClientMain(String[] args) {
         checkVmVersion();
+
+        // Check whether there is another JVM processing running that is
+        // attached to the database.
+        checkDBException();
 
         // process command line arguments
         processArgs(args);
@@ -609,5 +615,31 @@ public class JmeClientMain {
                     BUNDLE.getString("JAVA_VERSION"), JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
+    }
+
+    /**
+     * Check if another JVM process has the database opened. If so, then post
+     * a message and exit.
+     */
+    private void checkDBException() {
+        // Create an AssetDB object, which will attempt to open the DB. Upon
+        // exception, launch a message dialog. Upon success, just close the
+        // DB
+        AssetDB assetDB = null;
+        try {
+            assetDB = new AssetDB();
+        } catch (AssetDBException excp) {
+            LOGGER.log(Level.SEVERE,
+                    "Unable to connect DB, another JVM running", excp);
+            
+            String msg = BUNDLE.getString("DB_ERROR_1") + "\n" +
+                    BUNDLE.getString("DB_ERROR_2") + "\n" +
+                    BUNDLE.getString("DB_ERROR_3") + "\n" +
+                    BUNDLE.getString("DB_ERROR_4");
+            String title = BUNDLE.getString("DB_ERROR_TITLE");
+            JOptionPane.showMessageDialog(null, msg, title, JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
+        assetDB.disconnect();
     }
 }
