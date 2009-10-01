@@ -368,7 +368,7 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
     public void contextInitialized(ServletContextEvent sce) {
         // register with the admininstration page
         context = sce.getServletContext();
-        ar = new AdminRegistration("X Apps",
+        ar = new AdminRegistration("Manage Apps",
                                    "/xapps-config/wonderland-xapps-config/browse");
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);

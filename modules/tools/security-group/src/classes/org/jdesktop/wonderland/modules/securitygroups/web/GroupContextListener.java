@@ -79,7 +79,7 @@ public class GroupContextListener
         DarkstarWebLogin.getInstance().addDarkstarServerListener(this);
 
         // register with the UI
-        ar = new AdminRegistration("Group Editor",
+        ar = new AdminRegistration("Manage Groups",
                                    "/security-groups/security-groups/editor");
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, this.context);
