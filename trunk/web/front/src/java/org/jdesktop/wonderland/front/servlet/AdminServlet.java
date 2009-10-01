@@ -150,7 +150,7 @@ public class AdminServlet extends HttpServlet implements ServletContextListener 
         
         // add other built-in registrations
         AdminRegistration runner = new AdminRegistration("runner",
-                "Server Status", "/wonderland-web-runner");
+                "Manage Server", "/wonderland-web-runner");
         runner.setFilter(AdminRegistration.ADMIN_FILTER);
         runner.setPosition(1);
         registry.add(runner);

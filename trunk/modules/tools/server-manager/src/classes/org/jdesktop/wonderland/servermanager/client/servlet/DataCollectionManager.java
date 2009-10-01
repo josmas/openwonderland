@@ -42,7 +42,7 @@ public class DataCollectionManager implements ServletContextListener
         pdc = new PingDataCollector();
         context.setAttribute(PingDataCollector.KEY, pdc);
     
-        ar = new AdminRegistration("Server Performance", 
+        ar = new AdminRegistration("Monitor Server", 
                                    "/servermanager/servermanager-web");
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
