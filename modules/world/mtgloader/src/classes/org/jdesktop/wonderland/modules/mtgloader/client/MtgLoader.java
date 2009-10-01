@@ -90,6 +90,12 @@ class MtgLoader implements ModelLoader {
 
     private Node load(URL url, Entity rootEntity) {
         Node rootNode = new Node("mtg-root");
+
+        if (ClientContextJME.getWorldManager().getRenderManager().supportsOpenGL20() == false) {
+            logger.warning("MTG files require OpenGL 2.0");
+            return (rootNode);
+        }
+        
         rootEntity.addComponent(RenderComponent.class, ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode));
         ClientContextJME.getWorldManager().loadConfiguration(url, new ConfigLoadListener() {
 
