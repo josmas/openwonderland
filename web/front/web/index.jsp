@@ -78,7 +78,7 @@
 
       <div id="footer">
 	<p id="serverInfo">
-	Server:  <%= request.getLocalName() %><br/>
+	Server:  <%= request.getLocalName() %>, Port: <%= request.getLocalPort() %><br/>
 	Version: @VERSION@
 	</p>
       </div>

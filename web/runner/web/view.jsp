@@ -120,7 +120,7 @@
         }
     
         // clear the list
-        $('periods').update("refresh:");
+        $('periods').update("refresh: ");
         
         var times = [0, 15, 60];
         for (var i = 0; i < times.length; i++) {
@@ -142,24 +142,24 @@
     }
 </script>
 
-    <title>Wonderland Server Status</title>
+    <title>Server Status</title>
   </head>
 
   <body onload="updateServices(); setUpdatePeriod(15);">
-    <h2>Wonderland Server Status</h2>
+      <h2>Server Status (Host: <%= request.getLocalName()%>, Port: <%=request.getLocalPort()%>)</h2>
 
-    <table class="installed" id="runnerTable">
-      <caption>
-        <span class="refresh" id="periods"></span><span class="heading">Server Components</span> <a href="/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=editRunners" target="_top">(edit)</a>
-      </caption>
-      <tr class="header">
-        <td class="installed">Name</td>
-        <td class="installed">Location</td>
-        <td class="installed">Status</td>
-        <td class="installed">Actions</td>
-      </tr>
-    </table>
-    
-    <a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
+      <table class="installed" id="runnerTable">
+          <caption>
+              <span class="refresh" id="periods"></span><span class="heading">Server Components</span> <a href="/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=editRunners" target="_top">(edit)</a>
+          </caption>
+          <tr class="header">
+              <td class="installed">Name</td>
+              <td class="installed">Location</td>
+              <td class="installed">Status</td>
+              <td class="installed">Actions</td>
+          </tr>
+      </table>
+
+      <a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
   </body>
 </html>
