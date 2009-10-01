@@ -15,20 +15,17 @@
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
         <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
-        <title>Project Wonderland Placemarks Configuration</title>
+        <title>Manage Placemarks</title>
     </head>
     <body>
+        <h2>Server Placemarks</h2>
         <table class="installed" id="runnerTable">
-            <tr>
-                <td colspan="3"><h3>System-wide Placemarks</h3></td>
-                <td class="refresh" id="periods"></td>
-            </tr>
             <tr class="header">
-                <td class="installed"><b>Name</b></td>
-                <td class="installed"><b>Server URL</b></td>
-                <td class="installed"><b>Transport Location</b></td>
-                <td class="installed"><b>Look Direction</b></td>
-                <td class="installed"><b>Actions</b></td>
+                <td class="installed">Name</td>
+                <td class="installed">Server URL</td>
+                <td class="installed">Transport Location</td>
+                <td class="installed">Look Direction</td>
+                <td class="installed">Actions</td>
             </tr>
             <c:forEach var="entry" items="${requestScope['entries']}">
                 <tr>
