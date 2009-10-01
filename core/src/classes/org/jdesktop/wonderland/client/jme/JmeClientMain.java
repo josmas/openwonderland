@@ -597,10 +597,16 @@ public class JmeClientMain {
      */
     private void checkVmVersion() {
         try {
-            Class clazz = Class.forName("javax.lang.model.SourceVersion");
+            Class clazz = Class.forName("javax.lang.model.SourceVersionX");
         } catch (ClassNotFoundException ex) {
             Logger.getAnonymousLogger().severe("Java Version is older than 6");
-            JOptionPane.showMessageDialog(null, "Java version 6 is required.\nIf you are using webstart on a Mac, please launch from Safari as Firefox seems to ignore the java version\nOn other platforms please download a new version from here http://java.com/en/download/index.jsp","Wrong Java Version", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, 
+                    BUNDLE.getString("JAVA_VERSION_1") + "\n\n" +
+                    BUNDLE.getString("JAVA_VERSION_2") + "\n" +
+                    BUNDLE.getString("JAVA_VERSION_3") + "\n\n" +
+                    BUNDLE.getString("JAVA_VERSION_4") + "\n" +
+                    BUNDLE.getString("JAVA_VERSION_5"),
+                    BUNDLE.getString("JAVA_VERSION"), JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
     }
