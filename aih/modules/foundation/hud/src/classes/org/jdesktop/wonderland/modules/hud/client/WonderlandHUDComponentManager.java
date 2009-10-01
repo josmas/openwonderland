@@ -148,6 +148,11 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         window.addEventListener(new EnterExitEvent3DLogger() {
 
+                @Override
+                public boolean propagatesToParent (Event event) {
+                    return false;
+                }
+
             @Override
             public void commitEvent(Event event) {
                 MouseEnterExitEvent3D mouseEvent = (MouseEnterExitEvent3D) event;
