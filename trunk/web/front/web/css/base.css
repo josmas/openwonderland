@@ -53,12 +53,13 @@ h1, h2, h3 {
 
 h1 {
 	font-size: 32px;
-	
+
 }
 
 h2 {
 	color: #0866c4;
 	font-size: 32px;
+        margin-bottom: 10px;
 }
 
 h3 {
@@ -86,7 +87,7 @@ li {
 }
 
 #head {
-	height: 146px;
+	height: 100px;
 	overflow: visible;
 }
 
@@ -94,7 +95,7 @@ li {
 	height: 90px;
 	position: relative;
 	right: 22px;
-	top: 39px;
+	top: 5px;
 	width: 365px;
 }
 
