@@ -597,7 +597,7 @@ public class JmeClientMain {
      */
     private void checkVmVersion() {
         try {
-            Class clazz = Class.forName("javax.lang.model.SourceVersionX");
+            Class clazz = Class.forName("javax.lang.model.SourceVersion");
         } catch (ClassNotFoundException ex) {
             Logger.getAnonymousLogger().severe("Java Version is older than 6");
             JOptionPane.showMessageDialog(null, 
