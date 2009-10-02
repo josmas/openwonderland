@@ -697,7 +697,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
-        buttonGroup3.add(specifyRadiusRadioButton);
+        buttonGroup2.add(specifyRadiusRadioButton);
         specifyRadiusRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.specifyRadiusRadioButton.text")); // NOI18N
         specifyRadiusRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -705,7 +705,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
-        buttonGroup3.add(useCellBoundsRadioButton);
+        buttonGroup2.add(useCellBoundsRadioButton);
         useCellBoundsRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.useCellBoundsRadioButton.text")); // NOI18N
         useCellBoundsRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
