@@ -56,7 +56,7 @@ public class ModelCellComponentProperties
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Model Component";
+        return BUNDLE.getString("Model_Component");
     }
 
     /**
@@ -106,7 +106,8 @@ public class ModelCellComponentProperties
     public void apply() {
         // Fetch the latest from the info text field and set it.
         CellServerState state = editor.getCellServerState();
-        ModelCellComponentServerState compState = (ModelCellComponentServerState) state.getComponentServerState(
+        ModelCellComponentServerState compState =
+                (ModelCellComponentServerState) state.getComponentServerState(
                 ModelCellComponentServerState.class);
         compState.setCollisionEnabled(collisionEnabledCB.isSelected());
         compState.setPickingEnable(pickingEnabledCB.isSelected());
@@ -177,25 +178,26 @@ public class ModelCellComponentProperties
         pickingEnabledCB = new javax.swing.JCheckBox();
         lightingEnabledCB = new javax.swing.JCheckBox();
 
-        jLabel1.setText("Deployed Model URL");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("ModelCellComponentProperties.jLabel1.text")); // NOI18N
 
         deployedModelURLTF.setEditable(false);
 
-        collisionEnabledCB.setText("Collision Enabled");
+        collisionEnabledCB.setText(bundle.getString("ModelCellComponentProperties.collisionEnabledCB.text")); // NOI18N
         collisionEnabledCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 collisionEnabledCBActionPerformed(evt);
             }
         });
 
-        pickingEnabledCB.setText("Picking Enabled");
+        pickingEnabledCB.setText(bundle.getString("ModelCellComponentProperties.pickingEnabledCB.text")); // NOI18N
         pickingEnabledCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 pickingEnabledCBActionPerformed(evt);
             }
         });
 
-        lightingEnabledCB.setText("Lighting Enabled");
+        lightingEnabledCB.setText(bundle.getString("ModelCellComponentProperties.lightingEnabledCB.text")); // NOI18N
         lightingEnabledCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 lightingEnabledCBActionPerformed(evt);
@@ -246,7 +248,6 @@ public class ModelCellComponentProperties
     private void lightingEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lightingEnabledCBActionPerformed
         checkDirty();
     }//GEN-LAST:event_lightingEnabledCBActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox collisionEnabledCB;
     private javax.swing.JTextField deployedModelURLTF;
