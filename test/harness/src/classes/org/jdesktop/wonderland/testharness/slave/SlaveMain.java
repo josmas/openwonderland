@@ -50,35 +50,32 @@ import org.jdesktop.wonderland.testharness.common.TestRequest;
  * @author paulby
  */
 public class SlaveMain {
-    private static final Logger logger =
-        Logger.getLogger(SlaveMain.class.getName());
 
+    private static final Logger logger =
+            Logger.getLogger(SlaveMain.class.getName());
     private ObjectOutputStream out;
     private ObjectInputStream in;
-
     private URL[] jarUrls;
-
     private HashMap<String, RequestProcessor> processors =
             new HashMap<String, RequestProcessor>();
     private boolean done = false;
-    
+
 //    static {
 //        new LogControl(SlaveMain.class, "/org/jdesktop/wonderland/testharness/slave/resources/logging.properties");
 //    }
-    
     public SlaveMain(String[] args) {
-        
+
         String masterHostname;
         int masterPort;
-        
-        if (args.length<2) {
+
+        if (args.length < 2) {
             System.err.println("Usage: SlaveMain <master hostname> <master port>");
             System.exit(1);
         }
-        
+
         masterHostname = args[0];
         masterPort = Integer.parseInt(args[1]);
-        
+
         try {
             initJars();
 
@@ -86,25 +83,25 @@ public class SlaveMain {
             System.out.println("Opening streams");
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
-            
+
             // Register the output stream with the log handler
             SlaveLogHandler.setOutputStream(out);
-            
+
             do {
                 try {
                     System.out.println("Waiting for request...");
                     TestRequest request = (TestRequest) in.readObject();
-                    System.out.println("Slave got request "+request);
+                    System.out.println("Slave got request " + request);
                     processRequest(request);
                 } catch (IOException ex) {
-                    done=true;
+                    done = true;
                     logger.log(Level.SEVERE, null, ex);
                 } catch (ClassNotFoundException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 } catch (ProcessingException pe) {
                     logger.log(Level.WARNING, "Unable to process request", pe);
                 }
-            } while(!done);
+            } while (!done);
         } catch (UnknownHostException ex) {
             logger.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -124,7 +121,7 @@ public class SlaveMain {
         InputStream client = getClass().getResourceAsStream("/wonderland-client.jar");
 
         try {
-            jarUrls = new URL[] { writeJar(processor), writeJar(client) };
+            jarUrls = new URL[]{writeJar(processor), writeJar(client)};
 
             // Set up the URL handler based on the WonderlandURLStreamHandler.
             // We do this here because we only want to do it once per VM.
@@ -148,9 +145,7 @@ public class SlaveMain {
         }
     }
 
-    private void processRequest(TestRequest request) 
-            throws ProcessingException
-    {
+    private void processRequest(TestRequest request) throws ProcessingException {
         if (request instanceof LoginRequest) {
             LoginRequest lr = (LoginRequest) request;
             RequestProcessor rp = createProcessor(lr.getProcessorName());
@@ -176,9 +171,7 @@ public class SlaveMain {
 
     }
 
-    private RequestProcessor createProcessor(String processorName)
-        throws ProcessingException
-    {
+    private RequestProcessor createProcessor(String processorName) throws ProcessingException {
         String pkgName = getClass().getPackage().getName();
         String clazzName = pkgName + "." + processorName;
 
@@ -186,7 +179,7 @@ public class SlaveMain {
         InputStream client = getClass().getResourceAsStream("/wonderland-client.jar");
 
         try {
-            URL[] urls = new URL[] { writeJar(processor), writeJar(client) };
+            URL[] urls = new URL[]{writeJar(processor), writeJar(client)};
             ClassLoader loader = new URLClassLoader(urls, getClass().getClassLoader());
 
             Class rpClazz = loader.loadClass(clazzName);
@@ -203,8 +196,7 @@ public class SlaveMain {
     }
 
     private URL writeJar(InputStream is)
-        throws IOException
-    {
+            throws IOException {
         File outFile = File.createTempFile("testharness", "jar");
         outFile.deleteOnExit();
         FileOutputStream outWriter = new FileOutputStream(outFile);

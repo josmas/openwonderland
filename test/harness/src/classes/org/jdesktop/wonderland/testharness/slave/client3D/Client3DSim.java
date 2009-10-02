@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -599,6 +600,34 @@ public class Client3DSim
         }
 
         public void removeFromWindowMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addToInsertMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addToInsertMenu(JMenuItem menuItem, int index) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromInsertMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void connected(boolean connected) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setDesiredFrameRate(int desiredFrameRate) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addToCameraChoices(JRadioButtonMenuItem cameraMenuItem, int index) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromCameraChoices(JRadioButtonMenuItem menuItem) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
