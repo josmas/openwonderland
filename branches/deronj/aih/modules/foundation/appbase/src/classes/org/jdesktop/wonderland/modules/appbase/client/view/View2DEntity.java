@@ -738,7 +738,11 @@ public abstract class View2DEntity implements View2D {
     /** Return the pixel scale used when the view is displayed in cell mode. */
     public Vector2f getPixelScale () {
         if (pixelScaleCell == null) {
-            return window.getPixelScale();
+            if (window != null) {
+                return window.getPixelScale();
+            } else {
+                return new Vector2f(0.01f, 0.01f);
+            }
         } else {
             return pixelScaleCell.clone();
         }
