@@ -345,6 +345,7 @@ public class AudioManagerClient extends BaseConnection implements
         if (cell==null) {
             logger.severe("TODO - Implement AudioManager.viewConfigured for the case when the primary view cell disconnects");
         } else {
+	    //System.out.println("LOCAL AVATAR BOUNDS:  " + cell.getLocalBounds());
             CellID cellID = cell.getCellID();
 
             /*

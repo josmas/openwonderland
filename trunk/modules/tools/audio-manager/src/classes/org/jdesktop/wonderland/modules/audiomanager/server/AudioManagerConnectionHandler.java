@@ -134,7 +134,9 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
     public void messageReceived(WonderlandClientSender sender,
             WonderlandClientID clientID, Message message) {
 
-        VoiceManager vm = AppContext.getManager(VoiceManager.class); if (message instanceof GetPlayersInRangeRequestMessage) {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class); 
+
+	if (message instanceof GetPlayersInRangeRequestMessage) {
 	    GetPlayersInRangeRequestMessage msg = (GetPlayersInRangeRequestMessage) message;
 
 	    Player player = vm.getPlayer(msg.getPlayerID());

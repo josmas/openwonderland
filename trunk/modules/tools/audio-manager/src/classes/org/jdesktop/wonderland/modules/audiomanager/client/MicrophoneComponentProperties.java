@@ -47,7 +47,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     private String originalName = null;
     private int originalVolume = 1;
     private FullVolumeArea originalFullVolumeArea = new FullVolumeArea();
+    private boolean originalShowBounds = false;
     private ActiveArea originalActiveArea = new ActiveArea();
+    private boolean originalShowActiveArea = false;
 
     private SpinnerNumberModel fullVolumeRadiusModel = null;
     private SpinnerNumberModel xExtentModel = null;
@@ -66,6 +68,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     private MicrophoneBoundsType activeAreaBoundsType = MicrophoneBoundsType.CELL_BOUNDS;
 
     private BoundsViewerEntity boundsViewerEntity;
+    private BoundsViewerEntity activeAreaViewerEntity;
 
     /** Creates new form MicrophoneComponentProperties */
     public MicrophoneComponentProperties() {
@@ -75,6 +78,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         nameTextField.getDocument().addDocumentListener(
                 new NameTextFieldListener());
 
+	initialize();
+    }
+
+    private void initialize() {
         // Set the maximum and minimum values for the volume radius spinner
         fullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0),
             new Float(100), new Float(.1));
@@ -114,15 +121,15 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             new Float(100), new Float(.1));
         activeAreaZExtentSpinner.setModel(activeAreaZExtentModel);
 
-        activeAreaXOriginModel = new SpinnerNumberModel(new Float(1), new Float(0),
+        activeAreaXOriginModel = new SpinnerNumberModel(new Float(0), new Float(-100),
             new Float(100), new Float(.1));
         activeAreaXOriginSpinner.setModel(activeAreaXOriginModel);
 
-        activeAreaYOriginModel = new SpinnerNumberModel(new Float(1), new Float(0),
+        activeAreaYOriginModel = new SpinnerNumberModel(new Float(0), new Float(-100),
             new Float(100), new Float(.1));
         activeAreaYOriginSpinner.setModel(activeAreaYOriginModel);
 
-        activeAreaZOriginModel = new SpinnerNumberModel(new Float(1), new Float(0),
+        activeAreaZOriginModel = new SpinnerNumberModel(new Float(0), new Float(-100),
             new Float(100), new Float(.1));
         activeAreaZOriginSpinner.setModel(activeAreaZOriginModel);
 
@@ -161,6 +168,8 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
+	initialize();
+
         CellServerState cellServerState = editor.getCellServerState();
         MicrophoneComponentServerState state =
                 (MicrophoneComponentServerState) cellServerState.getComponentServerState(
@@ -210,15 +219,17 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void close() {
-	if (true) {
-	    return;
-	}
-
-	showBoundsCheckBox.setSelected(false);
-
         if (boundsViewerEntity != null) {
             boundsViewerEntity.dispose();
             boundsViewerEntity = null;
+
+	    showBoundsCheckBox.setSelected(false);
+        }
+
+        if (activeAreaViewerEntity != null) {
+            activeAreaViewerEntity.dispose();
+            activeAreaViewerEntity = null;
+	    showActiveAreaCheckBox.setSelected(false);
         }
     }
 
@@ -239,26 +250,27 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         state.setName(nameTextField.getText());
 
-	state.setVolume(volumeSlider.getValue());
+	state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
 
-        if (useCellBoundsRadioButton.isSelected()) {
+        if (fullVolumeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
 	    state.setFullVolumeArea(new FullVolumeArea());
-        } else if (specifyRadiusRadioButton.isSelected()) {
-	    state.setFullVolumeArea(new FullVolumeArea(
-		(Float) fullVolumeRadiusModel.getValue()));
+        } else if (fullVolumeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
+	    state.setFullVolumeArea(new FullVolumeArea( (Float) fullVolumeRadiusModel.getValue()));
         } else {
 	    state.setFullVolumeArea(new FullVolumeArea(
 	        new Vector3f((Float) xExtentSpinner.getValue(), (Float) yExtentSpinner.getValue(),
 	        (Float) zExtentSpinner.getValue())));
+
+	    System.out.println("fva " + state.getFullVolumeArea());
         }
 
 	Vector3f origin = new Vector3f((Float) activeAreaXOriginSpinner.getValue(),
 	    (Float) activeAreaYOriginSpinner.getValue(),
 	    (Float) activeAreaZOriginSpinner.getValue());
 
-        if (activeAreaUseCellBoundsRadioButton.isSelected()) {
+        if (activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
 	    state.setActiveArea(new ActiveArea(origin));
-        } else if (activeAreaSpecifyRadiusRadioButton.isSelected()) {
+        } else if (activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
 	    state.setActiveArea(new ActiveArea(origin,
 		(Float) activeAreaFullVolumeRadiusModel.getValue()));
         } else {
@@ -313,7 +325,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             activeAreaUseCellBoundsRadioButton.setSelected(true);
         } else if (originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
             activeAreaSpecifyRadiusRadioButton.setSelected(true);
-	    activeAreaFullVolumeRadiusSpinner.setValue(originalFullVolumeArea.bounds.getX());
+	    activeAreaFullVolumeRadiusSpinner.setValue(originalActiveArea.activeAreaBounds.getX());
 	    activeAreaFullVolumeRadiusSpinner.setEnabled(true);
 	    activeAreaXOriginSpinner.setEnabled(true);
 	    activeAreaYOriginSpinner.setEnabled(true);
@@ -331,20 +343,176 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    activeAreaZOriginSpinner.setEnabled(true);
         }
 
-	if (showBoundsCheckBox.isSelected()) {
-            showBounds();
-        }
+        showBounds();
+	showActiveArea();
     }
 
     private void showBounds() {
-	if (useCellBoundsRadioButton.isSelected()) {
-	    boundsViewerEntity.showBounds();
-	} else if (specifyRadiusRadioButton.isSelected()) {
-	    boundsViewerEntity.showBounds((Float) fullVolumeRadiusModel.getValue());
-	} else {
-	    boundsViewerEntity.showBounds((Float) xExtentModel.getValue(),
-		(Float) yExtentModel.getValue(), (Float) zExtentModel.getValue());
+	if (boundsViewerEntity != null) {
+            boundsViewerEntity.dispose();
+	    boundsViewerEntity = null;
 	}
+
+        if (showBoundsCheckBox.isSelected() == false) {
+	    return;
+	}
+
+	boundsViewerEntity = new BoundsViewerEntity(editor.getCell());
+
+	if (useCellBoundsRadioButton.isSelected()) {
+	    boundsViewerEntity.showBounds(editor.getCell().getLocalBounds());
+	} else if (specifyRadiusRadioButton.isSelected()) {
+	    boundsViewerEntity.showBounds(
+		new BoundingSphere((Float) fullVolumeRadiusModel.getValue(),
+		new Vector3f()));
+	} else {
+	    boundsViewerEntity.showBounds(new BoundingBox(new Vector3f(),
+		(Float) xExtentModel.getValue(), (Float) yExtentModel.getValue(), 
+		(Float) zExtentModel.getValue()));
+	}
+    }
+
+    private void showActiveArea() {
+	if (activeAreaViewerEntity != null) {
+            activeAreaViewerEntity.dispose();
+	    activeAreaViewerEntity = null;
+	}
+
+        if (showActiveAreaCheckBox.isSelected() == false) {
+	    return;
+	}
+
+	activeAreaViewerEntity = new BoundsViewerEntity(editor.getCell());
+
+	Vector3f origin = new Vector3f((Float) activeAreaXOriginSpinner.getValue(),
+	    (Float) activeAreaYOriginSpinner.getValue(),
+	    (Float) activeAreaZOriginSpinner.getValue());
+
+	if (activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
+	    activeAreaViewerEntity.showBounds(editor.getCell().getLocalBounds());
+	} else if (activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
+	    activeAreaViewerEntity.showBounds(new BoundingSphere(
+		(Float) activeAreaFullVolumeRadiusModel.getValue(), origin));
+	} else {
+	    activeAreaViewerEntity.showBounds(new BoundingBox(origin,
+		(Float) activeAreaXExtentModel.getValue(),
+		(Float) activeAreaYExtentModel.getValue(), 
+		(Float) activeAreaZExtentModel.getValue()));
+	}
+    }
+
+    private boolean isDirty() {
+	if (nameTextField.getText().equals(originalName) == false) {
+	    return true;
+	}
+
+	if (originalVolume != volumeSlider.getValue()) {
+	    return true;
+	}
+
+	if (fullVolumeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
+	    if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS) == false) {
+	        return true;
+	    }
+	} else if (fullVolumeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
+	    if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE) == false) {
+		return true;
+	    }
+
+	    Float radius = (Float) fullVolumeRadiusModel.getValue();
+
+	    if (radius != originalFullVolumeArea.bounds.getX()) {
+	        return true;
+	    }
+	} else {
+       	    if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false) {
+		return true;
+	    }
+
+	    Float xExtent = (Float) xExtentModel.getValue();
+
+            if (xExtent != originalFullVolumeArea.bounds.getX()) {
+	        return true;
+	    }
+
+	    Float yExtent = (Float) yExtentModel.getValue();
+
+	    if (yExtent != originalFullVolumeArea.bounds.getY()) {
+	        return true;
+	    }
+
+	    Float zExtent = (Float) zExtentModel.getValue();
+
+	    if (zExtent != originalFullVolumeArea.bounds.getZ()) {
+	        return true;
+	    }
+	}
+
+	if (activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
+	    if (originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS) == false) {
+	        return true;
+	    }
+	} else if (activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
+            if (originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE) == false) {
+		return true;
+	    }
+
+	    Float radius = (Float) activeAreaFullVolumeRadiusModel.getValue();
+
+	    if (radius != originalActiveArea.activeAreaBounds.getX()) {
+	        return true;
+	    }
+	} else {
+	    if (originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.BOX) == false) {
+		return true;
+	    }
+
+	    Float xExtent = (Float) activeAreaXExtentModel.getValue();
+
+	    if (xExtent != originalActiveArea.activeAreaBounds.getX()) {
+	        return true;
+	    }
+
+	    Float yExtent = (Float) activeAreaYExtentModel.getValue();
+
+            if (yExtent != originalActiveArea.activeAreaBounds.getY()) {
+	        return true;
+	    }
+
+	    Float zExtent = (Float) activeAreaZExtentModel.getValue();
+
+            if (zExtent != originalActiveArea.activeAreaBounds.getZ()) {
+	        return true;
+	    }
+	}
+
+	Float xOrigin = (Float) activeAreaXOriginModel.getValue();
+
+	if (xOrigin != originalActiveArea.activeAreaOrigin.getX()) {
+	    return true;
+	}
+
+	Float yOrigin = (Float) activeAreaYOriginModel.getValue();
+
+	if (yOrigin != originalActiveArea.activeAreaOrigin.getY()) {
+	    return true;
+	}
+
+	Float zOrigin = (Float) activeAreaZOriginModel.getValue();
+
+	if (zOrigin != originalActiveArea.activeAreaOrigin.getZ()) {
+	    return true;
+	}
+
+	if (originalShowBounds != showBoundsCheckBox.isSelected()) {
+	    return true;
+	}
+
+	if (originalShowActiveArea != showActiveAreaCheckBox.isSelected()) {
+	    return true;
+	}
+
+	return false;
     }
 
     /**
@@ -367,8 +535,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         private void checkDirty() {
             if (editor != null) {
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        !nameTextField.getText().equals(originalName));
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
             }
         }
     }
@@ -381,16 +548,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float radius = (Float) fullVolumeRadiusModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = radius != originalFullVolumeArea.bounds.getX() ||
-		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
-
-                if (showBoundsCheckBox.isSelected()) {
-                    boundsViewerEntity.showBounds(radius);
-                }
+                showBounds();
             }
         }
     }
@@ -403,16 +563,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float xExtent = (Float) xExtentModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = xExtent != originalFullVolumeArea.bounds.getX() ||
-		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
-
-                if (showBoundsCheckBox.isSelected()) {
-                    boundsViewerEntity.showBounds(xExtent, (Float) yExtentModel.getValue(), (Float) zExtentModel.getValue());
-		}
+                showBounds();
             }
         }
     }
@@ -425,16 +578,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float yExtent = (Float) yExtentModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = yExtent != originalFullVolumeArea.bounds.getY() ||
-		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
-
-                if (showBoundsCheckBox.isSelected()) {
-                    boundsViewerEntity.showBounds((Float) xExtentModel.getValue(), yExtent, (Float) zExtentModel.getValue());
-		}
+                showBounds();
             }
         }
     }
@@ -447,16 +593,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float zExtent = (Float) zExtentModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = zExtent != originalFullVolumeArea.bounds.getZ() ||
-		    originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
-
-                if (showBoundsCheckBox.isSelected()) {
-                    boundsViewerEntity.showBounds((Float) xExtentModel.getValue(), (Float) yExtentModel.getValue(), zExtent);
-		}
+                showBounds();
             }
         }
     }
@@ -469,12 +608,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float radius = (Float) activeAreaFullVolumeRadiusModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = radius != originalActiveArea.activeAreaBounds.getX() ||
-		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.SPHERE) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
+		showActiveArea();
             }
         }
     }
@@ -487,12 +623,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float xExtent = (Float) activeAreaXExtentModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = xExtent != originalActiveArea.activeAreaBounds.getX() ||
-		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.BOX) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
+		showActiveArea();
             }
         }
     }
@@ -505,12 +638,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float yExtent = (Float) activeAreaYExtentModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = yExtent != originalActiveArea.activeAreaBounds.getY() ||
-		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.BOX) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
+		showActiveArea();
             }
         }
     }
@@ -523,12 +653,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float zExtent = (Float) activeAreaZExtentModel.getValue();
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		boolean dirty = zExtent != originalActiveArea.activeAreaBounds.getZ() ||
-		    originalActiveArea.activeAreaBounds.equals(MicrophoneBoundsType.BOX) == false;
-
-                editor.setPanelDirty(MicrophoneComponentProperties.class, dirty);
+		showActiveArea();
             }
         }
     }
@@ -541,9 +668,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float xOrigin = (Float) activeAreaXOriginModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        xOrigin != originalActiveArea.activeAreaBounds.getX());
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+		showActiveArea();
             }
         }
     }
@@ -556,9 +683,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float yOrigin = (Float) activeAreaYOriginModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        yOrigin != originalActiveArea.activeAreaBounds.getY());
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+		showActiveArea();
             }
         }
     }
@@ -571,9 +698,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float zOrigin = (Float) activeAreaZOriginModel.getValue();
-                editor.setPanelDirty(MicrophoneComponentProperties.class,
-                        zOrigin != originalActiveArea.activeAreaBounds.getZ());
+                editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+		showActiveArea();
             }
         }
     }
@@ -616,6 +743,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         activeAreaUseCellBoundsRadioButton = new javax.swing.JRadioButton();
         showBoundsCheckBox = new javax.swing.JCheckBox();
         cellBoundsLabel = new javax.swing.JLabel();
+        showActiveAreaCheckBox = new javax.swing.JCheckBox();
 
         fullVolumeRadiusSpinner.setEnabled(false);
 
@@ -709,6 +837,13 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             }
         });
 
+        showActiveAreaCheckBox.setText("Show Active Area");
+        showActiveAreaCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showActiveAreaCheckBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -730,47 +865,46 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(useCellBoundsRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE))
+                        .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE))
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(specifyBoxRadioButton)
                             .add(specifyRadiusRadioButton)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(24, 24, 24)
                                 .add(activeAreaXOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(showBoundsCheckBox))
-                        .add(24, 24, 24)
+                            .add(showBoundsCheckBox)
+                            .add(activeAreaUseCellBoundsRadioButton)
+                            .add(activeAreaSpecifyBoxRadioButton)
+                            .add(showActiveAreaCheckBox)
+                            .add(activeAreaSpecifyRadiusRadioButton))
+                        .add(12, 12, 12)
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(activeAreaYOriginSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
-                                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, activeAreaXExtentSpinner)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, activeAreaFullVolumeRadiusSpinner)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, xExtentSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)))
-                                .add(18, 18, 18)
+                                    .add(activeAreaXExtentSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
+                                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                        .add(xExtentSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
+                                        .add(activeAreaYOriginSpinner)
+                                        .add(activeAreaFullVolumeRadiusSpinner)))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(activeAreaZOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(jPanel1Layout.createSequentialGroup()
-                                        .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(activeAreaZOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(jPanel1Layout.createSequentialGroup()
-                                        .add(yExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
+                                        .add(yExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(9, 9, 9))
                     .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                         .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 245, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 245, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(activeAreaUseCellBoundsRadioButton)
-                            .add(activeAreaSpecifyRadiusRadioButton)
-                            .add(activeAreaSpecifyBoxRadioButton))))
-                .add(33, 33, 33))
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 245, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -801,38 +935,38 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                             .add(specifyBoxRadioButton)
                             .add(xExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .add(3, 3, 3)
-                        .add(showBoundsCheckBox)
-                        .add(52, 52, 52)
-                        .add(activeAreaUseCellBoundsRadioButton)
-                        .add(18, 18, 18)
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(activeAreaSpecifyRadiusRadioButton)
-                            .add(activeAreaFullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(17, 17, 17)
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(activeAreaSpecifyBoxRadioButton)
-                            .add(activeAreaXExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(showBoundsCheckBox))
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(113, 113, 113)
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel3)
                             .add(jLabel5)
-                            .add(activeAreaXOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(activeAreaYOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(activeAreaZOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(24, Short.MAX_VALUE))
+                            .add(activeAreaZOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(activeAreaXOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .add(16, 16, 16)
+                .add(activeAreaUseCellBoundsRadioButton)
+                .add(18, 18, 18)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(activeAreaFullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(activeAreaSpecifyRadiusRadioButton))
+                .add(17, 17, 17)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(activeAreaSpecifyBoxRadioButton)
+                    .add(activeAreaXExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 30, Short.MAX_VALUE)
+                .add(showActiveAreaCheckBox))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(30, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 422, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -857,8 +991,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	activeAreaZExtentSpinner.setEnabled(true);
 	
 	if (editor != null) {
-	     editor.setPanelDirty(MicrophoneComponentProperties.class,
-		originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.BOX) == false);
+	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+	    showActiveArea();
 	}
 }//GEN-LAST:event_activeAreaSpecifyBoxRadioButtonActionPerformed
 
@@ -876,8 +1011,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	activeAreaZExtentSpinner.setEnabled(false);
 
 	if (editor != null) {
-	     editor.setPanelDirty(MicrophoneComponentProperties.class,
-		originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE) == false);
+	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+	    showActiveArea();
 	}
 }//GEN-LAST:event_activeAreaSpecifyRadiusRadioButtonActionPerformed
 
@@ -895,16 +1031,15 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	activeAreaZExtentSpinner.setEnabled(false);
 
 	if (editor != null) {
-	     editor.setPanelDirty(MicrophoneComponentProperties.class,
-		originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS) == false);
+	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+	    showActiveArea();
 	}
 }//GEN-LAST:event_activeAreaUseCellBoundsRadioButtonActionPerformed
 
     private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
 	if (editor != null) {
-	    int volume = volumeSlider.getValue();
-	    editor.setPanelDirty(MicrophoneComponentProperties.class,
-		originalVolume != volume);
+	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 	}
 }//GEN-LAST:event_volumeSliderStateChanged
 
@@ -917,12 +1052,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	zExtentSpinner.setEnabled(false);
 
 	if (editor != null) {
-	    editor.setPanelDirty(MicrophoneComponentProperties.class,
-		originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS) == false);
+	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-	    if (showBoundsCheckBox.isSelected()) {
-	        boundsViewerEntity.showBounds(editor.getCell().getLocalBounds());
-	    }
+	    showBounds();
 	}
     }//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
 
@@ -935,12 +1067,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	zExtentSpinner.setEnabled(false);
 
 	if (editor != null) {
-	    editor.setPanelDirty(MicrophoneComponentProperties.class,
-		originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE) == false);
+	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-	    if (showBoundsCheckBox.isSelected()) {
-	        boundsViewerEntity.showBounds((Float) fullVolumeRadiusModel.getValue());
-	    }
+	    showBounds();
 	}
     }//GEN-LAST:event_specifyRadiusRadioButtonActionPerformed
 
@@ -953,27 +1082,31 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	zExtentSpinner.setEnabled(true);
 
 	if (editor != null) {
-	    editor.setPanelDirty(MicrophoneComponentProperties.class,
-		originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.BOX) == false);
+	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-	    if (showBoundsCheckBox.isSelected()) {
-	        boundsViewerEntity.showBounds((Float) xExtentModel.getValue(), 
-		    (Float) yExtentModel.getValue(), (Float) zExtentModel.getValue());
-	    }
+	    showBounds();
 	}
     }//GEN-LAST:event_specifyBoxRadioButtonActionPerformed
 
     private void showBoundsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showBoundsCheckBoxActionPerformed
-	if (boundsViewerEntity != null) {
-            boundsViewerEntity.dispose();
-	    boundsViewerEntity = null;
+	if (editor == null) {
+	    return;
 	}
 
-        if (showBoundsCheckBox.isSelected()) {
-	    boundsViewerEntity = new BoundsViewerEntity(editor.getCell());
-            boundsViewerEntity.showBounds();
-	}
+        editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+        showBounds();
     }//GEN-LAST:event_showBoundsCheckBoxActionPerformed
+
+    private void showActiveAreaCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showActiveAreaCheckBoxActionPerformed
+	if (editor == null) {
+	    return;
+	}
+
+        editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+
+        showActiveArea();
+    }//GEN-LAST:event_showActiveAreaCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner activeAreaFullVolumeRadiusSpinner;
@@ -997,6 +1130,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField nameTextField;
+    private javax.swing.JCheckBox showActiveAreaCheckBox;
     private javax.swing.JCheckBox showBoundsCheckBox;
     private javax.swing.JRadioButton specifyBoxRadioButton;
     private javax.swing.JRadioButton specifyRadiusRadioButton;

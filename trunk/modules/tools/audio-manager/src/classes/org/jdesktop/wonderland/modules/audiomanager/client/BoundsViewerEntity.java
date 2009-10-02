@@ -68,19 +68,7 @@ public class BoundsViewerEntity extends Entity {
         this.cell = cell;
     }
 
-    public void showBounds() {
-	showBounds(cell.getLocalBounds());
-    }
-
-    public void showBounds(float radius) {
-        showBounds(new BoundingSphere(radius, new Vector3f()));
-    }
-
-    public void showBounds(float x, float y, float z) {
-        showBounds(new BoundingBox(new Vector3f(), x, y, z));
-    }
-
-    public void showBounds(BoundingVolume bounds) {
+    public void showBounds(final BoundingVolume bounds) {
 	if (rootNode != null) {
 	    dispose();
 	}
@@ -118,6 +106,7 @@ public class BoundsViewerEntity extends Entity {
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
         Vector3f translation = cell.getWorldTransform().getTranslation(null);
+	translation = translation.add(bounds.getCenter());
         rootNode.setLocalTranslation(translation);
 
         // Listen for changes to the cell's translation and apply the same
@@ -134,6 +123,7 @@ public class BoundsViewerEntity extends Entity {
                     public void update(Object obj) {
                         CellTransform transform = cell.getWorldTransform();
                         Vector3f translation = transform.getTranslation(null);
+		        translation = translation.add(bounds.getCenter());
                         rootNode.setLocalTranslation(translation);
                         wm.addToUpdateList(rootNode);
                     }

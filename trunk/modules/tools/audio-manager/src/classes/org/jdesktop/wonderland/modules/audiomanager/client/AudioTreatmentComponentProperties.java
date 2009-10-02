@@ -35,6 +35,13 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+
+import com.jme.math.Vector3f;
+
+
 /**
  *
  * @author  jp
@@ -53,16 +60,21 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private int originalVolume;
     private PlayWhen originalPlayWhen;
     private boolean originalPlayOnce;
-    private double originalExtentRadius;
-    private double originalFullVolumeAreaPercent;
+    private float originalExtentRadius;
+    private boolean originalUseCellBounds;
+    private float originalFullVolumeAreaPercent;
     private boolean originalDistanceAttenuated;
     private int originalFalloff;
+    private boolean originalShowBounds;
     private SpinnerNumberModel fullVolumeAreaPercentModel;
     private SpinnerNumberModel extentRadiusModel;
-    private double extentRadius = 0;
+    private float extentRadius = 0;
+    private boolean useCellBounds;
     private PlayWhen playWhen;
     private boolean playOnce;
     private boolean distanceAttenuated;
+
+    private BoundsViewerEntity boundsViewerEntity;
 
     /** Creates new form AudioTreatmentComponentProperties */
     public AudioTreatmentComponentProperties() {
@@ -74,19 +86,23 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         Icon icon = new ImageIcon(getClass().getResource(resourceName));
         audioCapabilitiesLabel.setIcon(icon);
 
+	initialize();
+    }
+
+    private void initialize() {
         // Set the maximum and minimum values for the spinners
-        Double value = new Double(25);
-        Double min = new Double(0);
-        Double max = new Double(100);
-        Double step = new Double(1);
+        Float value = new Float(25);
+        Float min = new Float(0);
+        Float max = new Float(100);
+        Float step = new Float(1);
         fullVolumeAreaPercentModel =
                 new SpinnerNumberModel(value, min, max, step);
         fullVolumeAreaPercentSpinner.setModel(fullVolumeAreaPercentModel);
 
-        value = new Double(10);
-        min = new Double(0);
-        max = new Double(100);
-        step = new Double(1);
+        value = new Float(10);
+        min = new Float(0);
+        max = new Float(100);
+        step = new Float(1);
         extentRadiusModel = new SpinnerNumberModel(value, min, max, step);
         extentRadiusSpinner.setModel(extentRadiusModel);
 
@@ -99,8 +115,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 new AudioUrlTreatmentsTextFieldListener());
         fullVolumeAreaPercentModel.addChangeListener(
                 new FullVolumeAreaPercentChangeListener());
-        extentRadiusModel.addChangeListener(
-                new ExtentRadiusChangeListener());
+        extentRadiusModel.addChangeListener(new ExtentRadiusChangeListener());
     }
 
     /**
@@ -128,6 +143,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
+	initialize();
+
         CellServerState state = editor.getCellServerState();
 
         AudioTreatmentComponentServerState compState =
@@ -193,14 +210,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         playOnceCheckBox.setSelected(playOnce);
 
-        originalExtentRadius = compState.getExtent();
+        originalExtentRadius = (float) compState.getExtent();
         extentRadius = originalExtentRadius;
         extentRadiusSpinner.setValue(originalExtentRadius);
 
-        extentRadiusSpinner.setEnabled(true);
-        extentRadiusSpinner.setValue((Double) extentRadius);
+        extentRadiusSpinner.setEnabled(originalUseCellBounds == false);
+        extentRadiusSpinner.setValue((Float) extentRadius);
 
-        originalFullVolumeAreaPercent = compState.getFullVolumeAreaPercent();
+        originalFullVolumeAreaPercent = (float) compState.getFullVolumeAreaPercent();
         fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
 
         originalDistanceAttenuated = compState.getDistanceAttenuated();
@@ -215,13 +232,30 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         } else {
             falloffSlider.setEnabled(false);
         }
+
+	BoundingVolume bounds = editor.getCell().getLocalBounds();
+
+	if (bounds instanceof BoundingSphere) {
+	    originalUseCellBounds = compState.getUseCellBounds();
+	    useCellBoundsRadioButton.setEnabled(true);
+	    useCellBoundsRadioButton.setSelected(originalUseCellBounds);
+	} else {
+	    originalUseCellBounds = false;
+	    useCellBoundsRadioButton.setEnabled(false);
+	    useCellBoundsRadioButton.setSelected(false);
+	} 
+
+	originalShowBounds = compState.getShowBounds();
     }
 
     /**
      * @{inheritDoc}
      */
     public void close() {
-        // Do nothing
+        if (boundsViewerEntity != null) {
+            boundsViewerEntity.dispose();
+            boundsViewerEntity = null;
+        }
     }
 
     /**
@@ -265,9 +299,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         compState.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
         compState.setPlayWhen(playWhen);
         compState.setPlayOnce(playOnce);
-        compState.setExtent((Double) extentRadiusModel.getValue());
+        compState.setExtent((Float) extentRadiusModel.getValue());
+	compState.setUseCellBounds(useCellBounds);
         compState.setFullVolumeAreaPercent(
-                (Double) fullVolumeAreaPercentModel.getValue());
+                (Float) fullVolumeAreaPercentModel.getValue());
         compState.setDistanceAttenuated(distanceAttenuated);
         compState.setFalloff(falloffSlider.getValue());
         editor.addToUpdateList(compState);
@@ -299,11 +334,107 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         playOnceCheckBox.setSelected(originalPlayOnce);
         extentRadiusSpinner.setValue(originalExtentRadius);
-        extentRadiusSpinner.setEnabled(true);
+        extentRadiusSpinner.setEnabled(useCellBounds == false);
         fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
         distanceAttenuatedRadioButton.setSelected(originalDistanceAttenuated);
         falloffSlider.setValue(originalFalloff);
         falloffSlider.setEnabled(originalDistanceAttenuated);
+
+	showBoundsCheckBox.setSelected(originalShowBounds);
+
+	BoundingVolume bounds = editor.getCell().getLocalBounds();
+
+	if (bounds instanceof BoundingSphere) {
+	    useCellBoundsRadioButton.setEnabled(true);
+	    useCellBoundsRadioButton.setSelected(originalUseCellBounds);
+	} else {
+	    useCellBoundsRadioButton.setEnabled(false);
+	    useCellBoundsRadioButton.setSelected(false);
+	} 
+
+	showBounds();
+    }
+
+    private void showBounds() {
+	if (boundsViewerEntity != null) {
+	    boundsViewerEntity.dispose();
+	    boundsViewerEntity = null;
+	}
+
+	if (showBoundsCheckBox.isSelected() == false) {
+	    return;
+	}
+
+	boundsViewerEntity = new BoundsViewerEntity(editor.getCell());
+
+	if (useCellBoundsRadioButton.isSelected()) {
+	    boundsViewerEntity.showBounds(editor.getCell().getLocalBounds());
+	} else {
+	    boundsViewerEntity.showBounds(
+		new BoundingSphere((Float) extentRadiusSpinner.getValue(), new Vector3f()));
+	} 
+    }
+
+    private boolean isDirty() {
+	String audioGroupId = audioGroupIdTextField.getText();
+
+	if (audioGroupId.equals(originalGroupId) == false) {
+	    return true;
+	}
+
+	String treatments = fileTextField.getText();
+
+	if (treatments.equals(originalFileTreatments) == false) {
+	    return true;
+	}
+
+	treatments = urlTextField.getText();
+
+	if (treatments.equals(originalUrlTreatments) == false) {
+	    return true;
+	}
+
+	Float fullVolumeAreaPercent = (Float) fullVolumeAreaPercentModel.getValue();
+
+	if (fullVolumeAreaPercent != originalFullVolumeAreaPercent) {
+	    return true;
+	}
+
+	if (useCellBounds != originalUseCellBounds) {
+	    return true;
+	}
+
+	if (useCellBounds == false) {
+	    Float extentRadius = (Float) extentRadiusModel.getValue();
+
+	    if (extentRadius != originalExtentRadius) {
+	        return true;
+	    }
+	}
+
+	if (playWhen != originalPlayWhen) {
+	    return true;
+	}
+
+	if (distanceAttenuated != originalDistanceAttenuated) {
+	    return true;
+	}
+
+	if (distanceAttenuated == true) {
+	    if (falloffSlider.getValue() != originalFalloff) {
+	        return true;
+	    }
+	} 
+
+	if (volumeSlider.getValue() != originalVolume) {
+	    return true;
+	}
+
+        if (originalShowBounds != showBoundsCheckBox.isSelected()) {
+            return true;
+        }
+
+	return false;
     }
 
     /**
@@ -325,11 +456,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         }
 
         private void checkDirty() {
-            String audioGroupId = audioGroupIdTextField.getText();
-
             if (editor != null) {
-                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                        !audioGroupId.equals(originalGroupId));
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
             }
         }
     }
@@ -353,11 +481,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         }
 
         private void checkDirty() {
-            String treatments = fileTextField.getText();
-
             if (editor != null) {
-                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                        !treatments.equals(originalFileTreatments));
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
             }
         }
     }
@@ -381,11 +506,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         }
 
         private void checkDirty() {
-            String treatments = urlTextField.getText();
-
             if (editor != null) {
-                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                        !treatments.equals(originalUrlTreatments));
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
             }
         }
     }
@@ -393,11 +515,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     class FullVolumeAreaPercentChangeListener implements ChangeListener {
 
         public void stateChanged(ChangeEvent e) {
-            Double fullVolumeAreaPercent =
-                    (Double) fullVolumeAreaPercentModel.getValue();
             if (editor != null) {
-                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                        fullVolumeAreaPercent != originalFullVolumeAreaPercent);
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
             }
         }
     }
@@ -405,10 +524,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     class ExtentRadiusChangeListener implements ChangeListener {
 
         public void stateChanged(ChangeEvent e) {
-            Double extentRadius = (Double) extentRadiusModel.getValue();
             if (editor != null) {
-                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                        extentRadius != originalExtentRadius);
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
+
+		showBounds();
             }
         }
     }
@@ -424,6 +543,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup3 = new javax.swing.ButtonGroup();
+        buttonGroup2 = new javax.swing.ButtonGroup();
         jLabel5 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -449,10 +569,12 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         falloffSlider = new javax.swing.JSlider();
         jLabel3 = new javax.swing.JLabel();
         audioCapabilitiesLabel = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         volumeSlider = new javax.swing.JSlider();
         playOnceCheckBox = new javax.swing.JCheckBox();
+        showBoundsCheckBox = new javax.swing.JCheckBox();
+        specifyRadiusRadioButton = new javax.swing.JRadioButton();
+        useCellBoundsRadioButton = new javax.swing.JRadioButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         jLabel5.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel5.text")); // NOI18N
@@ -548,8 +670,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         audioCapabilitiesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/AudioCapabilitiesDiagram_en.png"))); // NOI18N
 
-        jLabel6.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel6.text")); // NOI18N
-
         jLabel15.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel15.text")); // NOI18N
 
         volumeSlider.setMajorTickSpacing(1);
@@ -570,12 +690,35 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
+        showBoundsCheckBox.setText(bundle.getString("AudioTreatmentComponentProperties.showBoundsCheckBox.text")); // NOI18N
+        showBoundsCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showBoundsCheckBoxActionPerformed(evt);
+            }
+        });
+
+        buttonGroup3.add(specifyRadiusRadioButton);
+        specifyRadiusRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.specifyRadiusRadioButton.text")); // NOI18N
+        specifyRadiusRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                specifyRadiusRadioButtonActionPerformed(evt);
+            }
+        });
+
+        buttonGroup3.add(useCellBoundsRadioButton);
+        useCellBoundsRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.useCellBoundsRadioButton.text")); // NOI18N
+        useCellBoundsRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useCellBoundsRadioButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(23, 23, 23)
@@ -597,14 +740,12 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                             .add(layout.createSequentialGroup()
                                 .add(29, 29, 29)
                                 .add(playOnceCheckBox))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(layout.createSequentialGroup()
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, fileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 251, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(browseButton)))))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, fileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 251, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton))))
                     .add(layout.createSequentialGroup()
                         .add(151, 151, 151)
                         .add(jLabel3)
@@ -622,16 +763,23 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel13))
-                            .add(ambientRadioButton)
-                            .add(distanceAttenuatedRadioButton)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(jLabel13))
+                                    .add(ambientRadioButton)
+                                    .add(distanceAttenuatedRadioButton))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(layout.createSequentialGroup()
-                                .add(jLabel6)
+                                .add(specifyRadiusRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
-                .add(21, 21, 21))
+                                .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(18, 18, 18)
+                                .add(useCellBoundsRadioButton))
+                            .add(showBoundsCheckBox))))
+                .add(13, 13, 13))
         );
 
         layout.linkSize(new java.awt.Component[] {audioGroupIdTextField, fileTextField, urlTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -665,17 +813,20 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(proximityRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(manualRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(playOnceCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(jLabel11)
+                    .add(specifyRadiusRadioButton)
+                    .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(useCellBoundsRadioButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(showBoundsCheckBox)
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(manualRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(playOnceCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                            .add(jLabel6)
-                            .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel11))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                             .add(jLabel12)
                             .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -687,7 +838,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(distanceAttenuatedRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(20, 20, 20))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
@@ -713,8 +864,7 @@ private void alwaysRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     playWhen = PlayWhen.ALWAYS;
 
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                playWhen != originalPlayWhen);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_alwaysRadioButtonActionPerformed
 
@@ -722,8 +872,7 @@ private void proximityRadioButtonActionPerformed(java.awt.event.ActionEvent evt)
     playWhen = PlayWhen.FIRST_IN_RANGE;
 
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                playWhen != originalPlayWhen);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_proximityRadioButtonActionPerformed
 
@@ -731,32 +880,25 @@ private void manualRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     playWhen = PlayWhen.MANUAL;
 
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                playWhen != originalPlayWhen);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_manualRadioButtonActionPerformed
 
 private void extentRadiusSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_extentRadiusSpinnerStateChanged
-    extentRadius = (Double) extentRadiusModel.getValue();
-
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                extentRadius != originalExtentRadius);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_extentRadiusSpinnerStateChanged
 
 private void fullVolumeAreaPercentSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fullVolumeAreaPercentSpinnerStateChanged
     if (editor != null) {
-        double newValue = (Double) fullVolumeAreaPercentModel.getValue();
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                newValue != originalFullVolumeAreaPercent);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_fullVolumeAreaPercentSpinnerStateChanged
 
 private void falloffSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_falloffSliderStateChanged
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                falloffSlider.getValue() != originalFalloff);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_falloffSliderStateChanged
 
@@ -765,8 +907,7 @@ private void distanceAttenuatedRadioButtonActionPerformed(java.awt.event.ActionE
     distanceAttenuated = true;
 
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                distanceAttenuated != originalDistanceAttenuated);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_distanceAttenuatedRadioButtonActionPerformed
 
@@ -775,21 +916,55 @@ private void ambientRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
     distanceAttenuated = false;
 
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                distanceAttenuated != originalDistanceAttenuated);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_ambientRadioButtonActionPerformed
 
 private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
     if (editor != null) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
-                volumeSlider.getValue() != originalVolume);
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
     }
 }//GEN-LAST:event_volumeSliderStateChanged
 
 private void playOnceCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playOnceCheckBoxActionPerformed
     playOnce = playOnceCheckBox.isSelected();
 }//GEN-LAST:event_playOnceCheckBoxActionPerformed
+
+private void showBoundsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showBoundsCheckBoxActionPerformed
+        if (editor == null) {
+            return;
+        }
+
+        editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
+
+        showBounds();
+}//GEN-LAST:event_showBoundsCheckBoxActionPerformed
+
+private void specifyRadiusRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_specifyRadiusRadioButtonActionPerformed
+    useCellBounds = specifyRadiusRadioButton.isSelected() == false;
+
+    extentRadiusSpinner.setEnabled(useCellBounds == false);
+
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
+
+	showBounds();
+    }
+}//GEN-LAST:event_specifyRadiusRadioButtonActionPerformed
+
+private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useCellBoundsRadioButtonActionPerformed
+    
+    useCellBounds = useCellBoundsRadioButton.isSelected();
+
+    extentRadiusSpinner.setEnabled(useCellBounds == false);
+
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
+
+	showBounds();
+    }
+}//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton alwaysRadioButton;
     private javax.swing.JRadioButton ambientRadioButton;
@@ -797,6 +972,7 @@ private void playOnceCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JTextField audioGroupIdTextField;
     private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
     private javax.swing.JRadioButton distanceAttenuatedRadioButton;
     private javax.swing.JSpinner extentRadiusSpinner;
@@ -813,14 +989,16 @@ private void playOnceCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JRadioButton manualRadioButton;
     private javax.swing.JCheckBox playOnceCheckBox;
     private javax.swing.JRadioButton proximityRadioButton;
+    private javax.swing.JCheckBox showBoundsCheckBox;
+    private javax.swing.JRadioButton specifyRadiusRadioButton;
     private javax.swing.JTextField urlTextField;
+    private javax.swing.JRadioButton useCellBoundsRadioButton;
     private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables
 }

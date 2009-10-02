@@ -51,8 +51,12 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
     private double volume = 1;
     @XmlElement(name = "fullVolumeArea")
     private FullVolumeArea fullVolumeArea = new FullVolumeArea();
+    @XmlElement(name = "showBounds")
+    private boolean showBounds = false;
     @XmlElement(name = "activeArea")
     private ActiveArea activeArea = new ActiveArea();
+    @XmlElement(name = "showActiveArea")
+    private boolean showActiveArea = false;
 
     public enum MicrophoneBoundsType {
 	CELL_BOUNDS,
@@ -104,6 +108,15 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
 	return fullVolumeArea;
     }
 
+    public void setShowBounds(boolean showBounds) {
+	this.showBounds = showBounds;
+    }
+
+    @XmlTransient
+    public boolean getShowBounds() {
+	return showBounds;
+    }
+
     public void setActiveArea(ActiveArea activeArea) {
 	this.activeArea = activeArea;
     }
@@ -111,6 +124,15 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
     @XmlTransient
     public ActiveArea getActiveArea() {
 	return activeArea;
+    }
+
+    public void setShowActiveArea(boolean showActiveArea) {
+	this.showActiveArea = showActiveArea;
+    }
+
+    @XmlTransient
+    public boolean getShowActiveArea() {
+	return showActiveArea;
     }
 
     @XmlRootElement(name = "microphone-component-fullVolumeArea")

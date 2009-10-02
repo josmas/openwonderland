@@ -343,6 +343,9 @@ public class UserListHUDPanel
                 }
             }
         }
+
+	userListHUDComponent.setName("Users " + usernameMap.size());
+
         //logger.finest("map: " + usernameMap);
         //logger.finest("out of range index: " + outOfRangeIndex);
     }
@@ -682,6 +685,7 @@ public class UserListHUDPanel
                 }
                 LOGGER.info("changing volume for " + username +
                         " to: " + volume);
+
                 PresenceInfo pi = info;
                 volumeChanged(pi.cellID, pi.callID, volume);
                 volumeChangeMap.put(pi, new Integer(volume));

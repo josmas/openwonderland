@@ -44,11 +44,15 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
 
     public double extent;
 
+    public boolean useCellBounds;
+
     public double fullVolumeAreaPercent;
 
     public boolean distanceAttenuated;
 
     public double falloff;
+
+    public boolean showBounds = false;
 
     public AudioTreatmentComponentClientState() {
 	super(false, false);
@@ -85,10 +89,14 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     }
 
     @XmlElement
+    public boolean getUseCellBounds() {
+        return useCellBounds;
+    }
+
+    @XmlElement
     public double getFullVolumeAreaPercent() {
         return fullVolumeAreaPercent;
     }
-
     @XmlElement
     public boolean getDistanceAttenuated() {
         return distanceAttenuated;
@@ -97,6 +105,11 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     @XmlElement
     public double getFalloff() {
 	return falloff;
+    }
+
+    @XmlElement
+    public boolean getShowBounds() {
+	return showBounds;
     }
 
 }

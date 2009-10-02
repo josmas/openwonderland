@@ -50,6 +50,8 @@ public class ConeOfSilenceComponentServerState
     @XmlElement(name="bounds")
     @XmlJavaTypeAdapter(Vector3fAdapter.class)
     public Vector3f bounds = new Vector3f(1.5f, 1.5f, 1.5f);
+    @XmlElement(name = "showBounds")
+    private boolean showBounds = false;
     @XmlElement(name = "outsideAudioVolume")
     private double outsideAudioVolume = 0;
 
@@ -104,6 +106,15 @@ public class ConeOfSilenceComponentServerState
     @XmlTransient
     public COSBoundsType getBoundsType() {
 	return boundsType;
+    }
+
+    public void setShowBounds(boolean showBounds) {
+	this.showBounds = showBounds;
+    }
+
+    @XmlTransient
+    public boolean getShowBounds() {
+	return showBounds;
     }
 
     public void setBounds(Vector3f bounds) {
