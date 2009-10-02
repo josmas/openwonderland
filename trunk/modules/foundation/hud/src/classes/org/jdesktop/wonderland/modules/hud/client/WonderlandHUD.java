@@ -297,11 +297,11 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
      * {@inheritDoc}
      */
     public void HUDObjectChanged(final HUDEvent event) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
+        // Note: commented out code as a temporary workaround for various Apps-in-HUD bugs
+        //SwingUtilities.invokeLater(new Runnable() {
+        //    public void run() {
                 notifyEventListeners(event);
-            }
-        });
+        //    }
+        //});
     }
 }

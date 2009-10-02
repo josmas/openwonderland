@@ -148,6 +148,11 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         window.addEventListener(new EnterExitEvent3DLogger() {
 
+                @Override
+                public boolean propagatesToParent (Event event) {
+                    return false;
+                }
+
             @Override
             public void commitEvent(Event event) {
                 MouseEnterExitEvent3D mouseEvent = (MouseEnterExitEvent3D) event;
@@ -454,7 +459,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         // add a frame if this component wants to be decorated
         if (component.getDecoratable()) {
             Type windowType = state.getWindow().getType();
-            if ((windowType != Type.POPUP) && (windowType != Type.UNKNOWN)) {
+            if (windowType != Type.POPUP) {
                 showFrame(component, true);
             }
         }

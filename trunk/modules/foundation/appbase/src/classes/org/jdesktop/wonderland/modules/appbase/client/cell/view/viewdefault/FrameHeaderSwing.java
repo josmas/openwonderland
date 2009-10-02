@@ -181,15 +181,19 @@ public class FrameHeaderSwing
     }
 
     /** {@inheritDoc} */
-    protected void updateLayout(float newWidth3D, float newHeight3D) {
-        Vector2f pixelScale = view.getPixelScale();
+    protected void updateLayout(final float newWidth3D, final float newHeight3D) {
+        updateTheLayout(newWidth3D, newHeight3D);
+    }
 
+    private void updateTheLayout (float newWidth3D, float newHeight3D) {
+        Vector2f pixelScale = view.getPixelScale();
 
         // Get the preferred height
         Component embeddedComp = headerWindow.getComponent();
         int preferredHeight = embeddedComp.getPreferredSize().height;
 
-        // Calculate size. This is essentially the same as for FrameSide TOP, but converted to pixels.
+        // Calculate size. This is essentially the same as for FrameSide TOP, but 
+        // converted to pixels.
         float innerWidth = newWidth3D;
         float innerHeight = newHeight3D;
         float sideThickness = Frame2DCell.SIDE_THICKNESS;

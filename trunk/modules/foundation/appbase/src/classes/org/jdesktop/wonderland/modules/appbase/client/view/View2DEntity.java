@@ -738,7 +738,11 @@ public abstract class View2DEntity implements View2D {
     /** Return the pixel scale used when the view is displayed in cell mode. */
     public Vector2f getPixelScale () {
         if (pixelScaleCell == null) {
-            return window.getPixelScale();
+            if (window != null) {
+                return window.getPixelScale();
+            } else {
+                return new Vector2f(0.01f, 0.01f);
+            }
         } else {
             return pixelScaleCell.clone();
         }
@@ -1208,9 +1212,15 @@ public abstract class View2DEntity implements View2D {
         // Note: all of the scene graph changes are queued up and executed at the end
         boolean windowNeedsValidate = false;
 
+        // For Debug - Part 1: Uncomment this to print info for HUD views only
+        //if (!("View2DCell".equals(this.getClass().getName()))) {
+
         logger.info("------------------ Processing changes for view " + this);
         logger.info("type " + type);
         logChangeMask(changeMask);
+
+        // For Debug - Part 2: Uncomment this to print info for HUD views only
+        //        }
 
         // React to topology related changes
         if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP | CHANGED_TYPE | CHANGED_PARENT | 
@@ -1620,36 +1630,60 @@ public abstract class View2DEntity implements View2D {
                 if (parent == null) return translation;
 
                 // Initialize to the first part of the offset (the local coordinate translation)
+                logger.fine("view = " + this);
+                logger.fine("parent = " + parent);
+                logger.fine("locationOrtho = " + locationOrtho);
+                logger.fine("offset = " + offset);
                 translation.x = locationOrtho.x + offset.x;
                 translation.y = locationOrtho.y + offset.y;
-
+                logger.fine("translation 1 = " + translation);
+                
                 // Convert pixel offset to local coords and add it in
                 Dimension parentSize = parent.getSizeApp();
-                translation.x += -parentSize.width / 2f;
-                translation.y += parentSize.height / 2f;
-                translation.x += sizeApp.width / 2f;
-                translation.y -= sizeApp.height / 2f;
-                translation.x += pixelOffset.x;
-                translation.y -= pixelOffset.y;
+                Vector2f pixelScaleOrtho = parent.getPixelScaleOrtho();
+                logger.fine("parentSize = " + parentSize);
+                translation.x += -parentSize.width * pixelScaleOrtho.x / 2f;
+                translation.y += parentSize.height * pixelScaleOrtho.y / 2f;
+                logger.fine("translation 2 = " + translation);
+                logger.fine("sizeApp = " + sizeApp);
+                pixelScaleOrtho = getPixelScaleOrtho();
+                translation.x += sizeApp.width * pixelScaleOrtho.x / 2f;
+                translation.y -= sizeApp.height * pixelScaleOrtho.y / 2f;
+                logger.fine("translation 3 = " + translation);
+                logger.fine("pixelOffset = " + pixelOffset);
+                translation.x += pixelOffset.x * pixelScaleOrtho.x;
+                translation.y -= pixelOffset.y * pixelScaleOrtho.y;
+                logger.fine("translation 4 = " + translation);
             }
         } else {    
 
             // Initialize to the first part of the offset (the local coordinate translation)
+            logger.fine("view = " + this);
+            logger.fine("parent = " + parent);
+            logger.fine("offset = " + offset);
             translation.x = offset.x;
             translation.y = offset.y;
+            logger.fine("translation 1 = " + translation);
 
             if (type != Type.PRIMARY && type != Type.UNKNOWN && parent != null) {
 
                 // Convert pixel offset to local coords and add it in
                 // TODO: does the width/height need to include the scroll bars?
-                Vector2f pixelScale = getPixelScaleCurrent();
+                Vector2f pixelScale = parent.getPixelScaleCurrent();
                 Dimension parentSize = parent.getSizeApp();
+                logger.fine("parentSize = " + parentSize);
                 translation.x += -parentSize.width * pixelScale.x / 2f;
                 translation.y += parentSize.height * pixelScale.y / 2f;
+                logger.fine("translation 2 = " + translation);
+                logger.fine("sizeApp = " + sizeApp);
+                pixelScale = getPixelScaleCurrent();
                 translation.x += sizeApp.width * pixelScale.x / 2f;
                 translation.y -= sizeApp.height * pixelScale.y / 2f;
+                logger.fine("translation 3 = " + translation);
+                logger.fine("pixelOffset = " + pixelOffset);
                 translation.x += pixelOffset.x * pixelScale.x;
                 translation.y -= pixelOffset.y * pixelScale.y;
+                logger.fine("translation 4 = " + translation);
             }
         }
 
@@ -2184,7 +2218,9 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public void removeEntityComponent(Class clazz) {
-        entity.removeComponent(clazz);
+        if (entity != null) {
+            entity.removeComponent(clazz);
+        }
     }
 
     /**
