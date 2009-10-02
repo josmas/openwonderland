@@ -173,6 +173,7 @@ public abstract class GeometryNode extends Node {
             }
         }
 
+        // TODO
         Window2D window = view.getWindow();
         int winWidth = window.getWidth();
         int winHeight = window.getHeight();

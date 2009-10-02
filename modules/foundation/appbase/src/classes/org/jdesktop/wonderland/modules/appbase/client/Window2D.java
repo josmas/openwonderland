@@ -237,7 +237,6 @@ public abstract class Window2D implements HUDDisplayable {
     private ContextMenuItem toBackMenuItem;
     private ContextMenuItem releaseControlMenuItem;
     private ContextMenuItem takeControlMenuItem;
-    private ContextMenuItem showInHudMenuItem;
 
     /**
      * Create an instance of Window2D with a default name. The first such window
@@ -515,7 +514,7 @@ public abstract class Window2D implements HUDDisplayable {
 
         if (type == Type.PRIMARY) {
             // Is there already a primary window? 
-            if (app.getPrimaryWindow() != null) {
+            if (app != null && app.getPrimaryWindow() != null) {
                 throw new IllegalStateException(
                         "This app already has a primary window.");
             }
@@ -2078,18 +2077,23 @@ public abstract class Window2D implements HUDDisplayable {
     }
 
     private synchronized ContextMenuItem getShowInHudMenuItem() {
-        if (showInHudMenuItem == null) {
-            showInHudMenuItem = new SimpleContextMenuItem(
-                    BUNDLE.getString("Show_in_HUD"),
-                    new ContextMenuActionListener() {
-
-                        public void actionPerformed(
-                                ContextMenuItemEvent event) {
-                            app.setShowInHUD(true);
-                        }
-                    });
+        if (app.isShownInHUD()) {
+            return new SimpleContextMenuItem(
+                                    BUNDLE.getString("Remove_from_HUD"),
+                                    new ContextMenuActionListener() {
+                                        public void actionPerformed(ContextMenuItemEvent event) {
+                                            app.setShowInHUD(false);
+                                        }
+                                    });
+        } else {
+            return new SimpleContextMenuItem(
+                                    BUNDLE.getString("Show_in_HUD"),
+                                    new ContextMenuActionListener() {
+                                        public void actionPerformed(ContextMenuItemEvent event) {
+                                            app.setShowInHUD(true);
+                                        }
+                                    });
         }
-        return showInHudMenuItem;
     }
 
     /**

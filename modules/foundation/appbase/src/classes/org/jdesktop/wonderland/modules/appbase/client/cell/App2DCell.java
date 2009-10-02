@@ -333,28 +333,38 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Return the app-specific window menu items for the case where the app
      * doesn't have control.
      */
-    private ContextMenuItem[] windowMenuItemsForNoControl(
-            ContextMenuComponent contextMenuComp) {
+    private ContextMenuItem[] windowMenuItemsForNoControl(ContextMenuComponent contextMenuComp) {
         contextMenuComp.setShowStandardMenuItems(true);
 
-        return new ContextMenuItem[]{
-                    new SimpleContextMenuItem(BUNDLE.getString("Take_Control"),
-                    new ContextMenuActionListener() {
+        ContextMenuItem[] menuItems = new ContextMenuItem[2];
 
-                        public void actionPerformed(
-                                ContextMenuItemEvent event) {
-                            app.getControlArb().takeControl();
-                        }
-                    }),
-                    new SimpleContextMenuItem(BUNDLE.getString("Show_in_HUD"),
-                    new ContextMenuActionListener() {
+        menuItems[0] = new SimpleContextMenuItem(
+                               BUNDLE.getString("Take_Control"),
+                               new ContextMenuActionListener() {
+                                   public void actionPerformed(ContextMenuItemEvent event) {
+                                       app.getControlArb().takeControl();
+                                   }
+                               });
 
-                        public void actionPerformed(
-                                ContextMenuItemEvent event) {
-                            app.setShowInHUD(true);
-                        }
-                    })
-                };
+        if (app.isShownInHUD()) {
+            menuItems[1] = new SimpleContextMenuItem(
+                               BUNDLE.getString("Remove_from_HUD"),
+                               new ContextMenuActionListener() {
+                                   public void actionPerformed(ContextMenuItemEvent event) {
+                                       app.setShowInHUD(false);
+                                   }
+                               });
+        } else {
+            menuItems[1] = new SimpleContextMenuItem(
+                               BUNDLE.getString("Show_in_HUD"),
+                               new ContextMenuActionListener() {
+                                   public void actionPerformed(ContextMenuItemEvent event) {
+                                       app.setShowInHUD(true);
+                                   }
+                               });
+        }
+
+        return menuItems;
     }
 
     /**
