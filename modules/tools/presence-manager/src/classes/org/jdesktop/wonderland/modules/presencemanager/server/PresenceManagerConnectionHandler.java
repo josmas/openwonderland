@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.presencemanager.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ObjectNotFoundException;
 
 import com.sun.mpk20.voicelib.app.ManagedCallBeginEndListener;
 import com.sun.mpk20.voicelib.app.Player;
@@ -299,9 +300,17 @@ public class PresenceManagerConnectionHandler implements
 	    WonderlandClientID clientID =
                CommsManagerFactory.getCommsManager().getWonderlandClientID(presenceInfo.clientID);
 
-            if (clientID != null) {
+            if (clientID == null) {
+		return;
+	    }
+
+	    /*
+	     * When the client disconnects, there is a race between this thread and the disconnect thread.
+	     */
+	    try {
                 sender.send(clientID, new PlayerInRangeMessage(playerInRange.getId(), isInRange));
-            }
+            } catch (ObjectNotFoundException e) {
+	    }
         }
 
     }

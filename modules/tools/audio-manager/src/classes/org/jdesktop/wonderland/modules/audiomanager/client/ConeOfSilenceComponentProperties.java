@@ -55,6 +55,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     private String originalName = null;
     private COSBoundsType originalBoundsType = COSBoundsType.CELL_BOUNDS;
     private Vector3f originalBounds = new Vector3f();
+    private boolean originalShowBounds = false;
     private int originalOutsideAudioVolume = 0;
     private SpinnerNumberModel fullVolumeRadiusModel = null;
     private SpinnerNumberModel xExtentModel = null;
@@ -69,6 +70,10 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     public ConeOfSilenceComponentProperties() {
         initComponents();
 
+	initialize();
+    }
+
+    private void initialize() {
         // Set the maximum and minimum values for the volume radius spinner
         fullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0), 
 	    new Float(100), new Float(.1));
@@ -121,6 +126,8 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
+	initialize();
+
         CellServerState cellServerState = editor.getCellServerState();
         ConeOfSilenceComponentServerState state =
                 (ConeOfSilenceComponentServerState) cellServerState.getComponentServerState(
@@ -133,6 +140,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         originalName = state.getName();
 	originalBoundsType = state.getBoundsType();
 	originalBounds = state.getBounds();
+	originalShowBounds = state.getShowBounds();
 
         originalOutsideAudioVolume = VolumeUtil.getClientVolume(
             state.getOutsideAudioVolume());
@@ -169,12 +177,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void close() {
-	if (true) {
-	    return;
-	}
-
-	showBoundsCheckBox.setSelected(false);
-
 	if (boundsViewerEntity != null) {
 	    boundsViewerEntity.dispose();
 	    boundsViewerEntity = null;
@@ -212,6 +214,8 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         state.setOutsideAudioVolume(VolumeUtil.getServerVolume(
                 outsideAudioVolumeSlider.getValue()));
 
+	state.setShowBounds(showBoundsCheckBox.isSelected());
+
         editor.addToUpdateList(state);
     }
 
@@ -248,20 +252,88 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         outsideAudioVolumeSlider.setValue(originalOutsideAudioVolume);
         fullVolumeRadiusSpinner.setValue(originalBounds.getX());
 
-	if (showBoundsCheckBox.isSelected()) {
-	    showBounds();
-	}
+	showBoundsCheckBox.setSelected(originalShowBounds);
+
+	showBounds();
     }
 
     private void showBounds() {
-	if (useCellBoundsRadioButton.isSelected()) {
-	    boundsViewerEntity.showBounds();
-	} else if (specifyRadiusRadioButton.isSelected()) {
-	    boundsViewerEntity.showBounds((Float) fullVolumeRadiusModel.getValue());
-	} else {
-	    boundsViewerEntity.showBounds((Float) xExtentModel.getValue(),
-		(Float) yExtentModel.getValue(), (Float) zExtentModel.getValue());
+	if (boundsViewerEntity != null) {
+	    boundsViewerEntity.dispose();
+	    boundsViewerEntity = null;
 	}
+
+	if (showBoundsCheckBox.isSelected() == false) {
+	    return;
+	}
+
+	boundsViewerEntity = new BoundsViewerEntity(editor.getCell());
+
+	if (useCellBoundsRadioButton.isSelected()) {
+	    boundsViewerEntity.showBounds(editor.getCell().getLocalBounds());
+	} else if (specifyRadiusRadioButton.isSelected()) {
+	    boundsViewerEntity.showBounds(new BoundingSphere(
+		(Float) fullVolumeRadiusModel.getValue(), new Vector3f()));
+	} else {
+	    boundsViewerEntity.showBounds(new BoundingBox(new Vector3f(), 
+		(Float) xExtentModel.getValue(), 
+		(Float) yExtentModel.getValue(), 
+		(Float) zExtentModel.getValue()));
+	}
+    }
+
+    private boolean isDirty() {
+	if (nameTextField.getText().equals(originalName) == false) {
+	    return true;
+	}
+
+	if (boundsType.equals(COSBoundsType.CELL_BOUNDS)) {
+	    if (originalBoundsType.equals(COSBoundsType.CELL_BOUNDS) == false) {
+		return true;
+	    }
+	} else if (boundsType.equals(COSBoundsType.SPHERE)) {
+	    if (originalBoundsType.equals(COSBoundsType.SPHERE) == false) {
+		return true;
+	    }
+
+	    Float radius = (Float) fullVolumeRadiusModel.getValue();
+
+            if (radius != originalBounds.getX()) {
+	        return true;
+	    }
+	} else {
+            if (originalBoundsType.equals(COSBoundsType.BOX) == false) {
+		return true;
+	    }
+
+	    Float xExtent = (Float) xExtentModel.getValue();
+
+	    if (xExtent != originalBounds.getX()) {
+	        return true;
+	    }
+
+	    Float yExtent = (Float) yExtentModel.getValue();
+
+	    if (yExtent != originalBounds.getY()) {
+	        return true;
+	    }
+
+	    Float zExtent = (Float) zExtentModel.getValue();
+
+	    if (zExtent != originalBounds.getZ()) {
+	        return true;
+	    }
+	}
+
+        if (originalOutsideAudioVolume != outsideAudioVolumeSlider.getValue()) {
+	    return true;
+	}
+
+	if (originalShowBounds != showBoundsCheckBox.isSelected()) {
+	    return true;
+	}
+
+	return false;
     }
 
     /**
@@ -272,16 +344,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float radius = (Float) fullVolumeRadiusModel.getValue();
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
 
-	        boolean dirty = originalBoundsType.equals(COSBoundsType.SPHERE) == false ||
-                    radius != originalBounds.getX();
-		    
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, dirty);
-
-		if (showBoundsCheckBox.isSelected()) {
-		    boundsViewerEntity.showBounds(radius);
-		}
+		showBounds();
             }
         }
     }
@@ -294,16 +359,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float xExtent = (Float) xExtentModel.getValue();
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
 
-	        boolean dirty = originalBoundsType.equals(COSBoundsType.BOX) == false ||
-                    xExtent != originalBounds.getX();
-
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, dirty);
-
-		if (showBoundsCheckBox.isSelected()) {
-		    boundsViewerEntity.showBounds(xExtent, (Float) yExtentModel.getValue(), (Float) zExtentModel.getValue());
-		}
+		showBounds();
             }
         }
     }
@@ -316,16 +374,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float yExtent = (Float) yExtentModel.getValue();
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
 
-	        boolean dirty = originalBoundsType.equals(COSBoundsType.BOX) == false ||
-                    yExtent != originalBounds.getY();
-
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, dirty);
-
-		if (showBoundsCheckBox.isSelected()) {
-		    boundsViewerEntity.showBounds((Float) xExtentModel.getValue(), yExtent, (Float) zExtentModel.getValue());
-		}
+		showBounds();
             }
         }
     }
@@ -338,16 +389,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         public void stateChanged(ChangeEvent e) {
             if (editor != null) {
-                Float zExtent = (Float) zExtentModel.getValue();
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
 
-	        boolean dirty = originalBoundsType.equals(COSBoundsType.BOX) == false ||
-                    zExtent != originalBounds.getZ();
-
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, dirty);
-
-		if (showBoundsCheckBox.isSelected()) {
-		    boundsViewerEntity.showBounds((Float) xExtentModel.getValue(), (Float) yExtentModel.getValue(), zExtent);
-		}
+		showBounds();
             }
         }
     }
@@ -372,8 +416,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         private void checkDirty() {
             if (editor != null) {
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class,
-                        !nameTextField.getText().equals(originalName));
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
             }
         }
     }
@@ -541,9 +584,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
     private void outsideAudioVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_outsideAudioVolumeSliderStateChanged
         if (editor != null) {
-            int outsideAudioVolume = outsideAudioVolumeSlider.getValue();
-            editor.setPanelDirty(ConeOfSilenceComponentProperties.class,
-                    originalOutsideAudioVolume != outsideAudioVolume);
+            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
         }
     }//GEN-LAST:event_outsideAudioVolumeSliderStateChanged
 
@@ -564,13 +605,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	zExtentSpinner.setEnabled(false);
 
         if (editor != null) {
-            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, 
-	        originalBoundsType.equals(COSBoundsType.CELL_BOUNDS) == false);
+            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
 
-
-	    if (showBoundsCheckBox.isSelected()) {
-	        boundsViewerEntity.showBounds(editor.getCell().getLocalBounds());
-	    }
+	    showBounds();
 	}
     }//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
 
@@ -586,12 +623,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	boundsType = COSBoundsType.SPHERE;
 
         if (editor != null) {
-            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, 
-	        originalBoundsType.equals(COSBoundsType.SPHERE) == false);
+            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
 
-	    if (showBoundsCheckBox.isSelected()) {
-	        boundsViewerEntity.showBounds((Float) fullVolumeRadiusModel.getValue());
-	    }
+	    showBounds();
 	}
     }//GEN-LAST:event_specifyRadiusRadioButtonActionPerformed
 
@@ -607,26 +641,20 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	boundsType = COSBoundsType.BOX;
 
         if (editor != null) {
-            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, 
-	        originalBoundsType.equals(COSBoundsType.BOX) == false);
+            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
 
-	    if (showBoundsCheckBox.isSelected()) {
-	        boundsViewerEntity.showBounds((Float) xExtentModel.getValue(), 
-		    (Float) yExtentModel.getValue(), (Float) zExtentModel.getValue());
-	    }
+	    showBounds();
 	}
     }//GEN-LAST:event_specifyBoxRadioButtonActionPerformed
 
     private void showBoundsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showBoundsCheckBoxActionPerformed
-	if (boundsViewerEntity != null) {
-	    boundsViewerEntity.dispose();
-	    boundsViewerEntity = null;
+	if (editor == null) {
+	    return;
 	}
 
-	if (showBoundsCheckBox.isSelected()) {
-            boundsViewerEntity = new BoundsViewerEntity(editor.getCell());
-	    showBounds();
-	}
+        editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
+
+	showBounds();
     }//GEN-LAST:event_showBoundsCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

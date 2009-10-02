@@ -52,11 +52,15 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceComponentMO.class.getName());
 
-    private String name = "COS";
+    private static final String DEFAULT_NAME = "Cone_of_Silence";
+
+    private String name = null;
 
     private COSBoundsType boundsType = COSBoundsType.CELL_BOUNDS;
 
     private Vector3f bounds = new Vector3f(1.6f, 1.6f, 1.6f);
+
+    private boolean showBounds = false;
 
     private double outsideAudioVolume = 0;
 
@@ -86,11 +90,21 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         // Fetch the component-specific state and set member variables
         ConeOfSilenceComponentServerState cs = (ConeOfSilenceComponentServerState) serverState;
 
-	name = cs.getName() + "-" + cellRef.get().getCellID();
+	if (name == null) {
+	    name = DEFAULT_NAME;
+	} else {
+	    name = cs.getName();
+	}
+
+	if (name.equals(DEFAULT_NAME)) {
+	    name += "-" + cellRef.get().getCellID();
+	}
 
 	boundsType = cs.getBoundsType();
 
 	bounds = cs.getBounds();
+
+	showBounds = cs.getShowBounds();
 
 	outsideAudioVolume = cs.getOutsideAudioVolume();
 
@@ -109,9 +123,14 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             state = new ConeOfSilenceComponentServerState();
         }
 
+	if (name.equals(DEFAULT_NAME)) {
+	    name += "-" + cellRef.get().getCellID();
+	}
+
         state.setName(name);
 	state.setBoundsType(boundsType);
 	state.setBounds(bounds);
+	state.setShowBounds(showBounds);
         state.setOutsideAudioVolume(outsideAudioVolume);
 
         return super.getServerState(state);

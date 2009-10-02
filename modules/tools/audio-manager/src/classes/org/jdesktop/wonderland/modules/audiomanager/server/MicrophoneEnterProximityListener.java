@@ -43,6 +43,15 @@ import com.jme.bounding.BoundingVolume;
 
 import java.io.Serializable;
 
+import org.jdesktop.wonderland.common.cell.security.ViewAction;
+import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.server.cell.CellResourceManager;
+import org.jdesktop.wonderland.server.security.ActionMap;
+import org.jdesktop.wonderland.server.security.Resource;
+import org.jdesktop.wonderland.server.security.ResourceMap;
+import org.jdesktop.wonderland.server.security.SecureTask;
+import org.jdesktop.wonderland.server.security.SecurityManager;
+
 /**
  * A server cell that provides a microphone proximity listener
  * @author jprovino
@@ -67,8 +76,11 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv, S
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
+	logger.info("viewEnterExit bounds:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
+
+	new Exception("viewEnterExit bounds:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID + " bounds " + proximityVolume).printStackTrace();
 
 	String callId = CallID.getCallID(viewCellID);
 
@@ -91,6 +103,49 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv, S
          */
         logger.info(callId + " entered microphone " + name);
 
+        // get the security manager
+        SecurityManager security = AppContext.getManager(SecurityManager.class);
+        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+
+        // create a request
+        Action viewAction = new ViewAction();
+        Resource resource = crm.getCellResource(this.cellID);
+        if (resource != null) {
+            // there is security on this cell perform the enter notification
+            // securely
+            ActionMap am = new ActionMap(resource, new Action[] { viewAction });
+            ResourceMap request = new ResourceMap();
+            request.put(resource.getId(), am);
+
+            // perform the security check
+            security.doSecure(request, new CellBoundsEnteredTask(resource.getId(), callId));
+        } else {
+            // no security, just make the call directly
+            cellBoundsEntered(callId);
+        }
+    }
+
+    private class CellBoundsEnteredTask implements SecureTask, Serializable {
+        private String resourceID;
+        private String callId;
+
+        public CellBoundsEnteredTask(String resourceID, String callId) {
+            this.resourceID = resourceID;
+            this.callId = callId;
+        }
+
+        public void run(ResourceMap granted) {
+            ActionMap am = granted.get(resourceID);
+            if (am != null && !am.isEmpty()) {
+                // request was granted -- the user has permission to enter
+                cellBoundsEntered(callId);
+            } else {
+                logger.warning("Access denied to enter microphone bounds");
+            }
+        }
+    }
+
+    private void cellBoundsEntered(String callId) {
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         Player player = vm.getPlayer(callId);

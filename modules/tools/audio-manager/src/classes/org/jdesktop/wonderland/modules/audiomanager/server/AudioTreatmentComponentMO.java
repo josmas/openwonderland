@@ -116,9 +116,11 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     private PlayWhen playWhen = PlayWhen.ALWAYS;
     private boolean playOnce = false;
     private double extent = 10;
+    private boolean useCellBounds = false;
     private double fullVolumeAreaPercent = 25;
     private boolean distanceAttenuated = true;
     private double falloff = 50;
+    private boolean showBounds = false;
 
     /** the channel from that cell */
     @UsesCellComponentMO(ChannelComponentMO.class)
@@ -178,11 +180,15 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
 	extent = state.getExtent();
 
+	useCellBounds = state.getUseCellBounds();
+
 	fullVolumeAreaPercent = state.getFullVolumeAreaPercent();
 
  	distanceAttenuated = state.getDistanceAttenuated();
 
 	falloff = state.getFalloff();
+
+	showBounds = state.getShowBounds();
 
 	if (isLive()) {
 	    initialize();
@@ -196,15 +202,21 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         if (state == null) {
             state = new AudioTreatmentComponentServerState();
 
+	    if (groupId == null || groupId.length() == 0) {
+	        groupId = CallID.getCallID(cellID);
+	    }
+
             state.setGroupId(groupId);
             state.setTreatments(treatments);
 	    state.setVolume(volume);
 	    state.setPlayWhen(playWhen);
 	    state.setPlayOnce(playOnce);
 	    state.setExtent(extent);
+	    state.setUseCellBounds(useCellBounds);
 	    state.setFullVolumeAreaPercent(fullVolumeAreaPercent);
 	    state.setDistanceAttenuated(distanceAttenuated);
 	    state.setFalloff(falloff);
+	    state.setShowBounds(showBounds);
         }
 
         return super.getServerState(state);
@@ -227,9 +239,11 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    state.playWhen = playWhen;
 	    state.playOnce = playOnce;
 	    state.extent = extent;
+	    state.useCellBounds = useCellBounds;
 	    state.fullVolumeAreaPercent = fullVolumeAreaPercent;
 	    state.distanceAttenuated = distanceAttenuated;
 	    state.falloff = falloff;
+	    state.showBounds = showBounds;
 	}
 
         return super.getClientState(state, clientID, capabilities);
@@ -391,12 +405,40 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
 	Player player = AppContext.getManager(VoiceManager.class).getPlayer(callID);
 	  
+	if (player == null) {
+	    logger.warning("no player for " + callID);
+	    return;
+	}
+
 	if (inConeOfSilence) {
-	    if (player != null) {
-		player.setPublicSpatializer(new FullVolumeSpatializer());
+	    CellMO cellMO = cellRef.get();
+
+	    BoundingVolume bounds = cellMO.getLocalBounds();
+
+	    double extent = this.extent;
+	    
+	    if (bounds instanceof BoundingSphere) {
+		float radius = ((BoundingSphere) bounds).getRadius();
+
+		if (useCellBounds) {
+		    extent = radius;
+		    System.out.println("Using cell bounds " + extent);
+		} else {
+		    if (extent > radius) {
+		        extent = radius;
+			System.out.println("Limiting extent to " + extent);
+		    }
+		} 
 	    } else {
-	        logger.warning("no player for " + callID);
+		if (useCellBounds) {
+		    logger.warning("Only BoundingSphere is supported: " + bounds
+		        + " using sphere with radius " + extent);
+	        } 
 	    }
+
+	    System.out.println("Extent is " + extent);
+
+	    player.setPublicSpatializer(new FullVolumeSpatializer(extent));
 	} else {
 	    player.setPublicSpatializer(getSpatializer());
 	}
@@ -414,8 +456,26 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	}
 
 	logger.warning("id " + groupId + " cellRadius " + cellRadius 
-	    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
+	    + " extent " + extent + " use cell bounds " + useCellBounds 
+	    + " fvr " + fullVolumeRadius + " falloff " 
 	    + falloff + " volume " + volume);
+
+	double extent = this.extent;
+
+	/*
+	 * TODO if useCellBounds is specified and the bounds type is not
+	 * a SPHERE, we will need to add walls to spatialize properly.
+	 */
+	if (useCellBounds == true) {
+	    BoundingVolume boundingVolume = cellRef.get().getLocalBounds();
+
+	    if (boundingVolume instanceof BoundingSphere) {
+		extent = ((BoundingSphere) boundingVolume).getRadius();
+	    } else {
+		logger.warning("Only BoundingSphere is supported: " + boundingVolume
+		    + " using sphere with radius " + extent);
+	    }
+	}
 
         if (distanceAttenuated == true) {
             DefaultSpatializer spatializer = new DefaultSpatializer();
