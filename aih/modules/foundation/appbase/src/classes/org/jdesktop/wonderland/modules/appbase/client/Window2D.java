@@ -514,7 +514,7 @@ public abstract class Window2D implements HUDDisplayable {
 
         if (type == Type.PRIMARY) {
             // Is there already a primary window? 
-            if (app.getPrimaryWindow() != null) {
+            if (app != null && app.getPrimaryWindow() != null) {
                 throw new IllegalStateException(
                         "This app already has a primary window.");
             }
