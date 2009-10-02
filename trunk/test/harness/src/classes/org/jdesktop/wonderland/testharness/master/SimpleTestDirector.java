@@ -228,7 +228,9 @@ public class SimpleTestDirector implements TestDirector {
         
         Properties props = new Properties();
         props.setProperty("serverURL", serverURL);
-        LoginRequest lr = new LoginRequest("client3D.Client3DSim", props,
+//        LoginRequest lr = new LoginRequest("client3D.Client3DSim", props,
+//                                           user.getUsername());
+        LoginRequest lr = new LoginRequest("webstart.WebstartClientSim", props,
                                            user.getUsername());
         slaveInfo.getConnection().send(lr);
 
