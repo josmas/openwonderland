@@ -111,8 +111,8 @@ class WindowSwingEmbeddedToolkit
             // Note: event is in frame coordinates
             public Point2D transform(Point2D src, Point2D dst, MouseEvent event) {
 
-                logger.fine("src = " + src);
                 logger.fine("event = " + event);
+                logger.fine("src = " + src);
 
                 Point pt;
                 if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
