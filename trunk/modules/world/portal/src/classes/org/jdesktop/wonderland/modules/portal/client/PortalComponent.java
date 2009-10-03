@@ -118,7 +118,7 @@ public class PortalComponent extends CellComponent
                     // teleport!
                     ClientContextJME.getClientMain().gotoLocation(serverURL, location, look);
 
-                    System.out.println("[PortalComponent] going to " + serverURL +
+                    logger.warning("[PortalComponent] going to " + serverURL +
                                        " at " + location + ", " + look);
                 } catch (IOException ex) {
                     logger.log(Level.WARNING, "Error teleporting", ex);
