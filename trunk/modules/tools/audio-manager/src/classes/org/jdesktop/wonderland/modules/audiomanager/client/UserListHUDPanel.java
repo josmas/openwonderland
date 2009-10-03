@@ -344,7 +344,11 @@ public class UserListHUDPanel
             }
         }
 
-	userListHUDComponent.setName("Users " + usernameMap.size());
+        // Update the name of the Users List HUD to match the number of users
+        if (userListHUDComponent != null) {
+            userListHUDComponent.setName(BUNDLE.getString("Users") + " (" +
+                    usernameMap.size() + ")");
+        }
 
         //logger.finest("map: " + usernameMap);
         //logger.finest("out of range index: " + outOfRangeIndex);

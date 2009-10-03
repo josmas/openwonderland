@@ -260,7 +260,7 @@ public class AudioManagerClient extends BaseConnection implements
             userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
             userListHUDPanel.setHUDComponent(userListHUDComponent);
             userListHUDComponent.setPreferredLocation(Layout.NORTHWEST);
-            userListHUDComponent.setName(BUNDLE.getString("Users"));
+            userListHUDComponent.setName(BUNDLE.getString("Users") + " (0)");
             userListHUDComponent.setIcon(userListIcon);
 
             mainHUD.addComponent(userListHUDComponent);
