@@ -19,15 +19,18 @@
         <title>Manage Snapshots</title>
     </head>
     <body>
-        <h3>Initial Worlds</h3>
+        <h2>Manage Snapshots</h2>
 
         <c:set var="currentRoot" value="${requestScope['currentroot']}"/>
 
-        <table class="installed">
+        <table class="installed" id="runnerTable">
+            <caption>
+              <span class="heading">Initial Worlds</span>
+            </caption>
             <tr class="header">
-                <td class="installed"><b>World Name</b></td>
-                <td class="installed"><b>Path</b></td>
-                <td class="installed"><b>Actions</b></td>
+                <td class="installed">World Name</td>
+                <td class="installed">Path</td>
+                <td class="installed">Actions</td>
             </tr>
             <c:forEach var="root" items="${requestScope['roots']}">
                 <tr class="installed_a">
@@ -47,14 +50,17 @@
             </c:forEach>
         </table>
 
-        <h3>World Snapshots</h3>
+        <br>
 
-        <table class="installed">
+        <table class="installed" id="runnerTable">
+            <caption>
+              <span class="heading">Snapshots</span>
+            </caption>
             <tr class="header">
-                <td class="installed"><b>Name</b></td>
-                <td class="installed"><b>Date</b></td>
-                <td class="installed"><b>Description</b></td>
-                <td class="installed"><b>Actions</b></td>
+                <td class="installed">Name</td>
+                <td class="installed">Date</td>
+                <td class="installed">Description</td>
+                <td class="installed">Actions</td>
             </tr>
             <c:forEach var="snapshot" items="${requestScope['snapshots']}">
                 <tr class="installed_a">
@@ -75,9 +81,7 @@
                     </td>
                 </tr>
             </c:forEach>
-            <tr>
-                <td colspan="4" align="right"><a href="?action=snapshot">Create snapshot</a></td>
-            </tr>
         </table>
+        <div style="margin-top: 5px"><a href="?action=snapshot">Create snapshot</a></div>
     </body>
 </html>
