@@ -105,16 +105,18 @@ public class JmeClientMain {
     public JmeClientMain(String[] args) {
         checkVmVersion();
 
-        // Check whether there is another JVM processing running that is
-        // attached to the database.
-        checkDBException();
-
         // process command line arguments
         processArgs(args);
 
         // load properties in a properties file
         URL propsURL = getPropsURL();
         loadProperties(propsURL);
+
+        // Check whether there is another JVM processing running that is
+        // attached to the database. Note we need to do this check AFTER the
+        // client properties are loaded, otherwise, the wrong user directory
+        // is used.
+        checkDBException();
 
         // set up the context
         ClientContextJME.setClientMain(this);
