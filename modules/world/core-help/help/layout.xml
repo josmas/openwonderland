@@ -2,5 +2,6 @@
 <wl-help-layout>
 
     <category name="standard"/>
+    <category name="modules"/>
 
 </wl-help-layout>

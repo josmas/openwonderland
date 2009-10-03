@@ -2,6 +2,10 @@
 <wl-help-content>
     <content category="standard">
         <item>
+            <name>User Guide...</name>
+            <help-page-uri>http://wonderland.dev.java.net/user-guide-05/index.html</help-page-uri>
+        </item>
+        <item>
             <name>Wonderland Blog...</name>
             <help-page-uri>http://blogs.sun.com/wonderland</help-page-uri>
         </item>
