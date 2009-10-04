@@ -335,7 +335,7 @@ public class PlacemarksServlet extends HttpServlet implements ServletContextList
     public void contextInitialized(ServletContextEvent sce) {
         // register with the admininstration page
         context = sce.getServletContext();
-        ar = new AdminRegistration("Manage Placemarks",
+        ar = new AdminRegistration("Edit Placemarks",
                                    "/placemarks/wonderland-placemarks/browse");
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
