@@ -18,8 +18,11 @@
         <title>Manage Placemarks</title>
     </head>
     <body>
-        <h2>Server Placemarks</h2>
+        <h2>Manage Placemarks</h2>
         <table class="installed" id="runnerTable">
+            <caption>
+              <span class="heading">Server Placemarks</span>
+            </caption>
             <tr class="header">
                 <td class="installed">Name</td>
                 <td class="installed">Server URL</td>
