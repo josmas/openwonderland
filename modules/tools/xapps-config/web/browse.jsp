@@ -6,7 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="MacRoman"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
+    "http://www.w3.org/TR/html4/loose.dtd">
 
 <%@ taglib uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
@@ -15,14 +15,12 @@
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
         <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
-        <title>Project Wonderland X11 Apps Configuration</title>
+        <title>Manage Apps</title>
     </head>
     <body>
+        <h2>Manage Apps</h2>
+        <p>Use this page to configure desktop (X11) applications (such as Firefox) that will be shared by all users.</p>
         <table class="installed" id="runnerTable">
-            <tr>
-                <td colspan="3"><h3>System-wide X11 Applications</h3></td>
-                <td class="refresh" id="periods"></td>
-            </tr>
             <tr class="header">
                 <td class="installed"><b>App Name</b></td>
                 <td class="installed"><b>Command</b></td>
@@ -33,14 +31,15 @@
                     <td class="installed">${entry.appName}</td>
                     <td class="installed">${entry.command}</td>
                     <td class="installed">
-                        <c:forEach var="action" items="${entry.actions}">
-                            <a href="${pageContext.servletContext.contextPath}/browse${entry.path}?action=${action.url}">${action.name}</a>
-                        </c:forEach>
-                    </td>
+                <c:forEach var="action" items="${entry.actions}">
+                    <a href="${pageContext.servletContext.contextPath}/browse${entry.path}?action=${action.url}">${action.name}</a>
+                </c:forEach>
+                </td>
                 </tr>
             </c:forEach>
         </table>
-        <br>
-        <a href="/xapps-config/wonderland-xapps-config/add.jsp">Add X11 App</a>
+        <div id="actionLinks">
+            <a href="/xapps-config/wonderland-xapps-config/add.jsp">Add App</a>
+        <div>
     </body>
 </html>
