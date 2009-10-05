@@ -524,7 +524,7 @@ public class SnapshotManagerServlet extends HttpServlet
 
     public void contextInitialized(ServletContextEvent sce) {
         // register with web admin
-        reg = new AdminRegistration("Manage Snapshots",
+        reg = new AdminRegistration("Manage Worlds",
                                     "/snapshot-manager/snapshot/SnapshotManager");
         reg.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(reg, sce.getServletContext());

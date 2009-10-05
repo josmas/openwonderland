@@ -16,10 +16,10 @@
         <meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
         <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
-        <title>Manage Snapshots</title>
+        <title>Manage Worlds</title>
     </head>
     <body>
-        <h2>Manage Snapshots</h2>
+        <h2>Manage Worlds</h2>
 
         <c:set var="currentRoot" value="${requestScope['currentroot']}"/>
 
@@ -82,6 +82,8 @@
                 </tr>
             </c:forEach>
         </table>
-        <div style="margin-top: 5px"><a href="?action=snapshot">Create snapshot</a></div>
+        <div id="actionLinks">
+            <a href="?action=snapshot">Create snapshot</a>
+        </div>
     </body>
 </html>
