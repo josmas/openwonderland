@@ -78,10 +78,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         nameTextField.getDocument().addDocumentListener(
                 new NameTextFieldListener());
 
-	initialize();
-    }
-
-    private void initialize() {
         // Set the maximum and minimum values for the volume radius spinner
         fullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0),
             new Float(100), new Float(.1));
@@ -168,8 +164,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
-	initialize();
-
         CellServerState cellServerState = editor.getCellServerState();
         MicrophoneComponentServerState state =
                 (MicrophoneComponentServerState) cellServerState.getComponentServerState(

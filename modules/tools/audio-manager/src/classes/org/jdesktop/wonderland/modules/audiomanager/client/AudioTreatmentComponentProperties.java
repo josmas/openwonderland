@@ -54,9 +54,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private CellPropertiesEditor editor;
-    private String originalGroupId;
-    private String originalFileTreatments;
-    private String originalUrlTreatments;
+    private String originalGroupId = "";
+    private String originalFileTreatments = "";
+    private String originalUrlTreatments = "";
     private int originalVolume;
     private PlayWhen originalPlayWhen;
     private boolean originalPlayOnce;
@@ -86,10 +86,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         Icon icon = new ImageIcon(getClass().getResource(resourceName));
         audioCapabilitiesLabel.setIcon(icon);
 
-	initialize();
-    }
-
-    private void initialize() {
         // Set the maximum and minimum values for the spinners
         Float value = new Float(25);
         Float min = new Float(0);
@@ -143,8 +139,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
-	initialize();
-
         CellServerState state = editor.getCellServerState();
 
         AudioTreatmentComponentServerState compState =
@@ -156,7 +150,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         }
 
         originalGroupId = compState.getGroupId();
-        audioGroupIdTextField.setText(originalGroupId);
 
         String[] treatmentList = compState.getTreatments();
 
@@ -179,73 +172,37 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         originalFileTreatments = originalFileTreatments.trim();
 
-        fileTextField.setText(originalFileTreatments);
-
         originalUrlTreatments = originalUrlTreatments.trim();
 
-        urlTextField.setText(originalUrlTreatments);
-
         originalVolume = VolumeUtil.getClientVolume(compState.getVolume());
-        volumeSlider.setValue(originalVolume);
 
         originalPlayWhen = compState.getPlayWhen();
         playWhen = originalPlayWhen;
 
-        switch (originalPlayWhen) {
-            case ALWAYS:
-                alwaysRadioButton.setSelected(true);
-                break;
-
-            case FIRST_IN_RANGE:
-                proximityRadioButton.setSelected(true);
-                break;
-
-            case MANUAL:
-                manualRadioButton.setSelected(true);
-                break;
-        }
-
         originalPlayOnce = compState.getPlayOnce();
-        playOnce = originalPlayOnce;
-
-        playOnceCheckBox.setSelected(playOnce);
 
         originalExtentRadius = (float) compState.getExtent();
         extentRadius = originalExtentRadius;
-        extentRadiusSpinner.setValue(originalExtentRadius);
-
-        extentRadiusSpinner.setEnabled(originalUseCellBounds == false);
-        extentRadiusSpinner.setValue((Float) extentRadius);
 
         originalFullVolumeAreaPercent = (float) compState.getFullVolumeAreaPercent();
-        fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
 
         originalDistanceAttenuated = compState.getDistanceAttenuated();
         distanceAttenuated = originalDistanceAttenuated;
-        distanceAttenuatedRadioButton.setSelected(originalDistanceAttenuated);
 
         originalFalloff = (int) compState.getFalloff();
-        falloffSlider.setValue(originalFalloff);
 
-        if (originalDistanceAttenuated == true) {
-            falloffSlider.setEnabled(true);
-        } else {
-            falloffSlider.setEnabled(false);
-        }
+	originalUseCellBounds = compState.getUseCellBounds();
 
 	BoundingVolume bounds = editor.getCell().getLocalBounds();
 
-	if (bounds instanceof BoundingSphere) {
-	    originalUseCellBounds = compState.getUseCellBounds();
-	    useCellBoundsRadioButton.setEnabled(true);
-	    useCellBoundsRadioButton.setSelected(originalUseCellBounds);
-	} else {
-	    originalUseCellBounds = false;
-	    useCellBoundsRadioButton.setEnabled(false);
-	    useCellBoundsRadioButton.setSelected(false);
+	if (originalUseCellBounds == true && bounds instanceof BoundingBox) {
+	    originalDistanceAttenuated = false;
+	    distanceAttenuated = false;
 	} 
 
 	originalShowBounds = compState.getShowBounds();
+
+	restore();
     }
 
     /**
@@ -274,14 +231,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             return;
         }
 
-        compState.setGroupId(audioGroupIdTextField.getText());
+        compState.setGroupId(audioGroupIdTextField.getText().trim());
 
-        String treatments = fileTextField.getText();
+        String treatments = fileTextField.getText().trim();
 
         treatments = treatments.replaceAll(",", " ");
         treatments = treatments.replaceAll("  ", " ");
 
-        String urls = urlTextField.getText();
+        String urls = urlTextField.getText().trim();
 
         urls = urls.replaceAll(",", " ");
         urls = urls.replaceAll("  ", " ");
@@ -313,6 +270,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      */
     public void restore() {
         // Reset the GUI values to the original values
+
         audioGroupIdTextField.setText(originalGroupId);
         fileTextField.setText(originalFileTreatments);
         urlTextField.setText(originalUrlTreatments);
@@ -333,24 +291,32 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         }
 
         playOnceCheckBox.setSelected(originalPlayOnce);
+
         extentRadiusSpinner.setValue(originalExtentRadius);
         extentRadiusSpinner.setEnabled(useCellBounds == false);
+
         fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
-        distanceAttenuatedRadioButton.setSelected(originalDistanceAttenuated);
+
+
         falloffSlider.setValue(originalFalloff);
         falloffSlider.setEnabled(originalDistanceAttenuated);
 
-	showBoundsCheckBox.setSelected(originalShowBounds);
-
 	BoundingVolume bounds = editor.getCell().getLocalBounds();
 
-	if (bounds instanceof BoundingSphere) {
-	    useCellBoundsRadioButton.setEnabled(true);
-	    useCellBoundsRadioButton.setSelected(originalUseCellBounds);
+	if (originalUseCellBounds == true && bounds instanceof BoundingBox) {
+            distanceAttenuatedRadioButton.setSelected(false);
+            distanceAttenuatedRadioButton.setEnabled(false);
+	    distanceAttenuated = false;
 	} else {
-	    useCellBoundsRadioButton.setEnabled(false);
-	    useCellBoundsRadioButton.setSelected(false);
-	} 
+            distanceAttenuatedRadioButton.setSelected(originalDistanceAttenuated);
+	}
+
+	falloffSlider.setEnabled(distanceAttenuatedRadioButton.isSelected());
+
+	useCellBoundsRadioButton.setEnabled(true);
+	useCellBoundsRadioButton.setSelected(originalUseCellBounds);
+
+	showBoundsCheckBox.setSelected(originalShowBounds);
 
 	showBounds();
     }
@@ -376,19 +342,19 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     }
 
     private boolean isDirty() {
-	String audioGroupId = audioGroupIdTextField.getText();
+	String audioGroupId = audioGroupIdTextField.getText().trim();
 
 	if (audioGroupId.equals(originalGroupId) == false) {
 	    return true;
 	}
 
-	String treatments = fileTextField.getText();
+	String treatments = fileTextField.getText().trim();
 
 	if (treatments.equals(originalFileTreatments) == false) {
 	    return true;
 	}
 
-	treatments = urlTextField.getText();
+	treatments = urlTextField.getText().trim();
 
 	if (treatments.equals(originalUrlTreatments) == false) {
 	    return true;
@@ -575,6 +541,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         showBoundsCheckBox = new javax.swing.JCheckBox();
         specifyRadiusRadioButton = new javax.swing.JRadioButton();
         useCellBoundsRadioButton = new javax.swing.JRadioButton();
+        cellBoundsLabel = new javax.swing.JLabel();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         jLabel5.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel5.text")); // NOI18N
@@ -651,6 +618,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         });
 
         buttonGroup3.add(distanceAttenuatedRadioButton);
+        distanceAttenuatedRadioButton.setSelected(true);
         distanceAttenuatedRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.distanceAttenuatedRadioButton.text")); // NOI18N
         distanceAttenuatedRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -698,6 +666,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         });
 
         buttonGroup2.add(specifyRadiusRadioButton);
+        specifyRadiusRadioButton.setSelected(true);
         specifyRadiusRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.specifyRadiusRadioButton.text")); // NOI18N
         specifyRadiusRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -713,12 +682,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
+        cellBoundsLabel.setText(bundle.getString("AudioTreatmentComponentProperties.cellBoundsLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(23, 23, 23)
@@ -733,9 +704,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(proximityRadioButton)
                             .add(alwaysRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, urlTextField)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 255, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                            .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 255, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(manualRadioButton)
                             .add(layout.createSequentialGroup()
                                 .add(29, 29, 29)
@@ -745,7 +715,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, fileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 251, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))))
+                                .add(browseButton)))
+                        .add(12, 12, 12))
                     .add(layout.createSequentialGroup()
                         .add(151, 151, 151)
                         .add(jLabel3)
@@ -773,12 +744,16 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(layout.createSequentialGroup()
-                                .add(specifyRadiusRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(18, 18, 18)
-                                .add(useCellBoundsRadioButton))
-                            .add(showBoundsCheckBox))))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(specifyRadiusRadioButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(showBoundsCheckBox))
+                                .add(12, 12, 12)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(useCellBoundsRadioButton)
+                                    .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
                 .add(13, 13, 13))
         );
 
@@ -823,7 +798,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                     .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(useCellBoundsRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(showBoundsCheckBox)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(showBoundsCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -846,7 +823,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                     .add(jLabel15)
                     .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -904,7 +881,8 @@ private void falloffSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
 
 private void distanceAttenuatedRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_distanceAttenuatedRadioButtonActionPerformed
     falloffSlider.setEnabled(true);
-    distanceAttenuated = true;
+
+    distanceAttenuated = distanceAttenuatedRadioButton.isSelected();
 
     if (editor != null) {
         editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
@@ -912,8 +890,8 @@ private void distanceAttenuatedRadioButtonActionPerformed(java.awt.event.ActionE
 }//GEN-LAST:event_distanceAttenuatedRadioButtonActionPerformed
 
 private void ambientRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ambientRadioButtonActionPerformed
-    falloffSlider.setEnabled(false);
-    distanceAttenuated = false;
+    falloffSlider.setEnabled(ambientRadioButton.isSelected() == false);
+    distanceAttenuated = (ambientRadioButton.isSelected() == false);
 
     if (editor != null) {
         editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
@@ -943,6 +921,8 @@ private void showBoundsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
 private void specifyRadiusRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_specifyRadiusRadioButtonActionPerformed
     useCellBounds = specifyRadiusRadioButton.isSelected() == false;
 
+    distanceAttenuatedRadioButton.setEnabled(useCellBounds == false);
+
     extentRadiusSpinner.setEnabled(useCellBounds == false);
 
     if (editor != null) {
@@ -957,6 +937,18 @@ private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent 
     useCellBounds = useCellBoundsRadioButton.isSelected();
 
     extentRadiusSpinner.setEnabled(useCellBounds == false);
+
+    BoundingVolume bounds = editor.getCell().getLocalBounds();
+
+    if (useCellBounds == true) {
+	if (bounds instanceof BoundingBox) {
+	    distanceAttenuatedRadioButton.setSelected(false);
+	    distanceAttenuatedRadioButton.setEnabled(false);
+	    ambientRadioButton.setSelected(true);
+	}
+    } else {
+	distanceAttenuatedRadioButton.setEnabled(true);
+    }
 
     if (editor != null) {
         editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
@@ -974,6 +966,7 @@ private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent 
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
+    private javax.swing.JLabel cellBoundsLabel;
     private javax.swing.JRadioButton distanceAttenuatedRadioButton;
     private javax.swing.JSpinner extentRadiusSpinner;
     private javax.swing.JSlider falloffSlider;

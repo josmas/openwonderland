@@ -21,9 +21,9 @@ import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
 import com.sun.sgs.app.AppContext;
@@ -162,8 +162,7 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv, S
 
             ags.spatializer = new FullVolumeSpatializer();
 
-            ags.spatializer.setAttenuator(
-                    DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+            ags.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
 
 	    ags.audioGroupListener = this;
 
@@ -227,8 +226,7 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv, S
 
         ags.spatializer = new FullVolumeSpatializer();
 
-        ags.spatializer.setAttenuator(
-            DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+        ags.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
 
         AudioGroup newAudioGroup = vm.createAudioGroup(name, ags);
 

@@ -370,7 +370,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	if (audioGroup == null) {
 	    AudioGroupSetup setup = new AudioGroupSetup();
 	    setup.spatializer = new FullVolumeSpatializer();
-	    setup.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+	    setup.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
 	    setup.virtualPlayerListener = this;
 	    setup.audioGroupListener = this;
 	    audioGroup = vm.createAudioGroup(group, setup);

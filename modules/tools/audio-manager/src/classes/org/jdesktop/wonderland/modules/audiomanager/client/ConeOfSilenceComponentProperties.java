@@ -70,10 +70,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     public ConeOfSilenceComponentProperties() {
         initComponents();
 
-	initialize();
-    }
-
-    private void initialize() {
         // Set the maximum and minimum values for the volume radius spinner
         fullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0), 
 	    new Float(100), new Float(.1));
@@ -126,8 +122,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
-	initialize();
-
         CellServerState cellServerState = editor.getCellServerState();
         ConeOfSilenceComponentServerState state =
                 (ConeOfSilenceComponentServerState) cellServerState.getComponentServerState(
@@ -144,23 +138,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         originalOutsideAudioVolume = VolumeUtil.getClientVolume(
             state.getOutsideAudioVolume());
-
-	BoundingVolume bounds = editor.getCell().getLocalBounds();
-
-	if (bounds instanceof BoundingSphere) {
-	    float radius = ((BoundingSphere) bounds).getRadius();
-	    
-	    boundsLabel.setText("Sphere with radius " + (Math.round(radius * 10) / 10f));
-	} else if (bounds instanceof BoundingBox) {
-	    Vector3f extent = new Vector3f();
-	    extent = ((BoundingBox) bounds).getExtent(extent);
-	    showBoxBounds("Box", extent);
-	} else if (bounds instanceof OrientedBoundingBox) {
-	    Vector3f extent = ((OrientedBoundingBox) bounds).getExtent();
-	    showBoxBounds("OrientedBox", extent);
-	} else {
-	    boundsLabel.setText(bounds.toString());
-	}
 
 	restore();
     }
@@ -253,6 +230,23 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         fullVolumeRadiusSpinner.setValue(originalBounds.getX());
 
 	showBoundsCheckBox.setSelected(originalShowBounds);
+
+	BoundingVolume bounds = editor.getCell().getLocalBounds();
+
+	if (bounds instanceof BoundingSphere) {
+	    float radius = ((BoundingSphere) bounds).getRadius();
+	    
+	    boundsLabel.setText("Sphere with radius " + (Math.round(radius * 10) / 10f));
+	} else if (bounds instanceof BoundingBox) {
+	    Vector3f extent = new Vector3f();
+	    extent = ((BoundingBox) bounds).getExtent(extent);
+	    showBoxBounds("Box", extent);
+	} else if (bounds instanceof OrientedBoundingBox) {
+	    Vector3f extent = ((OrientedBoundingBox) bounds).getExtent();
+	    showBoxBounds("OrientedBox", extent);
+	} else {
+	    boundsLabel.setText(bounds.toString());
+	}
 
 	showBounds();
     }
