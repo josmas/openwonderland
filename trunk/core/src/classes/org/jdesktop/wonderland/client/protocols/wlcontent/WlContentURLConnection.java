@@ -18,14 +18,11 @@
 package org.jdesktop.wonderland.client.protocols.wlcontent;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.common.ContentURI;
@@ -53,7 +50,7 @@ public class WlContentURLConnection extends URLConnection {
     }
     
     @Override
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws IOException {
         try {
             // First create a factory to handle the loading from a url
             ContentURI uri = new ContentURI(this.url.toExternalForm());
@@ -62,15 +59,13 @@ public class WlContentURLConnection extends URLConnection {
             // be loaded
             Asset asset = AssetManager.getAssetManager().getAsset(uri);
             if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
-                return null;
+                throw new IOException("No such asset "+url);
             }
             return new FileInputStream(asset.getLocalCacheFile());
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(WlContentURLConnection.class.getName()).log(Level.SEVERE, null, ex);
         } catch (URISyntaxException excp) {
-            Logger.getLogger(WlContentURLConnection.class.getName()).log(Level.SEVERE, null, excp);
-        }
-        return null;
-        
+            IOException ioe = new IOException("Error in URI syntax");
+            ioe.initCause(excp);
+            throw ioe;
+        }        
     }
 }

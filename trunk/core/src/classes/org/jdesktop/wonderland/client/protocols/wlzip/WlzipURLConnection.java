@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * URLConnection for the wlzip protocol
@@ -40,14 +38,8 @@ public class WlzipURLConnection extends URLConnection {
     }
     
     @Override
-    public InputStream getInputStream() {
-        try {
-            return WlzipManager.getWlzipManager().getInputStream(url.getHost(), url.getPath());
-        } catch (IOException ex) {
-            Logger.getLogger(WlzipURLConnection.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-        
+    public InputStream getInputStream() throws IOException {
+        return WlzipManager.getWlzipManager().getInputStream(url.getHost(), url.getPath());
     }
     
     /**
