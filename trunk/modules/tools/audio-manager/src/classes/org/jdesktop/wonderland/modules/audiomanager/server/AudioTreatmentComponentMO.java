@@ -54,6 +54,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellParentChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
@@ -75,6 +76,7 @@ import com.sun.voip.client.connector.CallStatus;
 import com.sun.voip.client.connector.CallStatusListener;
 
 import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.AmbientSpatializer;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FalloffFunction;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
@@ -82,6 +84,7 @@ import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.Treatment;
+import com.sun.mpk20.voicelib.app.TreatmentCreatedListener;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
@@ -110,7 +113,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
     private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
 
-    private String groupId;
+    private String groupId = "";
     private String[] treatments = new String[0];
     private double volume = 1;
     private PlayWhen playWhen = PlayWhen.ALWAYS;
@@ -121,6 +124,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     private boolean distanceAttenuated = true;
     private double falloff = 50;
     private boolean showBounds = false;
+
+    private boolean treatmentCreated;
 
     /** the channel from that cell */
     @UsesCellComponentMO(ChannelComponentMO.class)
@@ -299,7 +304,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
 
-	    setup.spatializer = getSpatializer();
+	    setup.treatmentCreatedListener = new TreatmentCreatedListenerImpl(cellID);
+
+	    setup.spatializer = getSpatializer(false);
 
             String treatment = treatments[i];
 
@@ -400,6 +407,29 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         }
     }
 
+    static class TreatmentCreatedListenerImpl implements TreatmentCreatedListener {
+
+	private CellID cellID;
+
+	public TreatmentCreatedListenerImpl(CellID cellID) {
+	    this.cellID = cellID;
+	}
+
+        public void treatmentCreated(Treatment treatment, Player player) {
+	    CellMO cellMO = CellManagerMO.getCellManager().getCell(cellID);
+
+	    if (cellMO == null) {
+		logger.warning("No cellMO for " + cellID);
+		return;
+	    }
+
+            AudioTreatmentComponentMO audioTreatmentComponentMO = 
+		cellMO.getComponent(AudioTreatmentComponentMO.class);
+
+	    checkForParentWithCOS(cellMO, audioTreatmentComponentMO);
+        }
+    }
+
     public void setSpatializer(boolean inConeOfSilence) {
 	String callID = CallID.getCallID(cellID);
 
@@ -410,43 +440,43 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    return;
 	}
 
-	if (inConeOfSilence) {
-	    CellMO cellMO = cellRef.get();
+	player.setPublicSpatializer(getSpatializer(inConeOfSilence));
+    }
 
-	    BoundingVolume bounds = cellMO.getLocalBounds();
+    private Spatializer getSpatializer(boolean inConeOfSilence) {
+	float cellRadius = getCellRadius();
 
-	    double extent = this.extent;
+	CellMO cellMO = cellRef.get();
+
+	BoundingVolume bounds = cellMO.getWorldBounds();
+
+	double extent = this.extent;
 	    
-	    if (bounds instanceof BoundingSphere) {
-		float radius = ((BoundingSphere) bounds).getRadius();
+	if (useCellBounds) {
+	    if (bounds instanceof BoundingBox) {
+	        System.out.println("BoundingBox:  " + bounds);
+	        return getSpatializer((BoundingBox) bounds);
+	    }
 
-		if (useCellBounds) {
+	    double radius = ((BoundingSphere) bounds).getRadius();
+	    System.out.println("Using cell bounds " + radius);
+	    return new FullVolumeSpatializer(radius);
+	} 
+
+	if (inConeOfSilence) {
+	    if (bounds instanceof BoundingSphere) {
+	        double radius = ((BoundingSphere) bounds).getRadius();
+
+	        if (extent > radius) {
 		    extent = radius;
-		    System.out.println("Using cell bounds " + extent);
-		} else {
-		    if (extent > radius) {
-		        extent = radius;
-			System.out.println("Limiting extent to " + extent);
-		    }
-		} 
-	    } else {
-		if (useCellBounds) {
-		    logger.warning("Only BoundingSphere is supported: " + bounds
-		        + " using sphere with radius " + extent);
-	        } 
+		    System.out.println("Limiting extent to " + extent);
+	        }     
 	    }
 
 	    System.out.println("Extent is " + extent);
-
-	    player.setPublicSpatializer(new FullVolumeSpatializer(extent));
-	} else {
-	    player.setPublicSpatializer(getSpatializer());
+	    return new FullVolumeSpatializer(extent);
 	}
-    }
-
-    private Spatializer getSpatializer() {
-	float cellRadius = getCellRadius();
-
+	
 	double fullVolumeRadius = fullVolumeAreaPercent / 100. * cellRadius;
 
 	double falloff = .92 + ((50 - this.falloff) * ((1 - .92) / 50));
@@ -459,8 +489,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    + " extent " + extent + " use cell bounds " + useCellBounds 
 	    + " fvr " + fullVolumeRadius + " falloff " 
 	    + falloff + " volume " + volume);
-
-	double extent = this.extent;
 
 	/*
 	 * TODO if useCellBounds is specified and the bounds type is not
@@ -497,7 +525,27 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         return new FullVolumeSpatializer(extent);
     }
 
+    private Spatializer getSpatializer(BoundingBox bounds) {
+	BoundingBox boundingBox = (BoundingBox) bounds;
+
+	Vector3f center = boundingBox.getCenter();
+	Vector3f extent = boundingBox.getExtent(null);
+
+	double lowerLeftX = center.getX() - extent.getX();
+        double lowerLeftY = center.getY() - extent.getY();
+	double lowerLeftZ = center.getZ() - extent.getZ();
+
+	double upperRightX = center.getX() + extent.getX();
+        double upperRightY = center.getY() + extent.getY();
+	double upperRightZ = center.getZ() + extent.getZ();
+
+	return new AmbientSpatializer(lowerLeftX, lowerLeftY, lowerLeftZ,
+	    upperRightX, upperRightY, upperRightZ);
+    }
+
     private void cleanup() {
+	treatmentCreated = false;
+
 	CellMO parent = cellRef.get();
 
 	while (parent != null) {
@@ -582,18 +630,18 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    return;
 	}
 
-	checkForParentWithCOS();
+	checkForParentWithCOS(cellMO, this);
     }
 
-    private void checkForParentWithCOS() {
-	CellMO cellMO = cellRef.get();
+    private static void checkForParentWithCOS(CellMO cellMO, AudioTreatmentComponentMO audioTreatmentComponentMO) {
+	CellMO child = cellMO;
 
 	while (cellMO != null) {
             ConeOfSilenceComponentMO coneOfSilenceComponentMO = 
 	        cellMO.getComponent(ConeOfSilenceComponentMO.class);
 
 	    if (coneOfSilenceComponentMO != null) {
-	        coneOfSilenceComponentMO.addAudioTreatmentComponentMO(cellRef.get(), this);
+	        coneOfSilenceComponentMO.addAudioTreatmentComponentMO(child, audioTreatmentComponentMO);
 		break;
 	    } 
 
@@ -611,7 +659,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
         switch (callStatus.getCode()) {
 	case CallStatus.ESTABLISHED:
-	    checkForParentWithCOS();
             break;
 
         case CallStatus.TREATMENTDONE:

@@ -25,9 +25,9 @@ import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import java.util.logging.Logger;
@@ -170,7 +170,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
 	    setup.spatializer = new FullVolumeSpatializer();
 
-            setup.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+            setup.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
 
 	    //System.out.println("Creating audio group for " + name);
 
