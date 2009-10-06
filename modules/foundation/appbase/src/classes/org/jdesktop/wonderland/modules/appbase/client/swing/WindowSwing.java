@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer;
 import com.sun.embeddedswing.EmbeddedPeer;
 import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -42,6 +43,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
@@ -115,6 +117,34 @@ public class WindowSwing extends Window2D {
         View2D getView() {
             return view;
         }
+    }
+
+    /**
+     * The structure passed to EventHook.specifyHookInfoForEvent.
+     */
+    @InternalAPI
+    public static class EventHookInfo {
+        public Vector3f pointWorld;
+        public int eventX, eventY;
+        public EventHookInfo (Vector3f pointWorld, int eventX, int eventY) {
+            this.pointWorld = pointWorld;
+            this.eventX = eventX;
+            this.eventY = eventY;
+        }
+        public String toString () {
+            return "pointWorld=" + pointWorld +
+                ", eventXY = " + eventX + "," + eventY;
+        }
+    }
+
+    /**
+     * This is used to pass event world coordinates to the Swing mouse event listeners.
+     * This is useful for correct dragging of WindowSwings in the world.
+     */
+    @InternalAPI
+    public interface EventHook {
+        /** Specify various info for the given AWT mouse event. */
+        public void specifyHookInfoForEvent(MouseEvent e, EventHookInfo hookInfo);
     }
 
     /**
@@ -482,5 +512,11 @@ public class WindowSwing extends Window2D {
         view.removeEntityComponent(InputManager.WindowSwingViewMarker.class);
         view.removeEntityComponent(WindowSwingViewReference.class);
         view.removeEntityComponent(InputManager.WindowSwingEventConsumer.class); 
+    }
+
+    /** Return the world coordinate event hook for this WindowSwing. */
+    @InternalAPI
+    public EventHook getEventHook() {
+        return null;
     }
 }

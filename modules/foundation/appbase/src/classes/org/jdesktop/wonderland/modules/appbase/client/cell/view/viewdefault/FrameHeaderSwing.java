@@ -18,9 +18,12 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Node;
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
@@ -33,12 +36,13 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
-import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import javax.swing.SwingUtilities;
 import java.awt.Dimension;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -53,7 +57,7 @@ public class FrameHeaderSwing
     private static Logger logger = Logger.getLogger(FrameHeaderSwing.class.getName());
 
     // TODO: New UI: add zones: move planar, move z, rotate
-    private WindowSwingHeader headerWindow;
+    private FrameHeaderSwingWindow headerWindow;
 
     /** The AWT background color of the header window. */
     private Color bkgdColor;
@@ -79,10 +83,16 @@ public class FrameHeaderSwing
     /** True if a drag is active. */
     private boolean dragging;
 
-    /** The mouse press point in local coordinates. */
-    private Vector2f dragStartLocal;
-
     private int x, y, width, height;
+
+    /** The intersection point on the entity over which the button was pressed, in world coordinates. */
+    protected Vector3f dragStartWorld;
+    /** The intersection point in parent local coordinates. */
+    protected Vector3f dragStartLocal;
+    /** The screen coordinates of the button press event. */
+    protected Point dragStartScreen;
+    /** The amount that the cursor has been dragged in local coordinates. */
+    protected Vector3f dragVectorLocal;
 
     /**
      * Create a new instance of FrameHeaderSwing.
@@ -96,8 +106,8 @@ public class FrameHeaderSwing
         this.view = view;
         Window2D viewWindow = view.getWindow();
         app = viewWindow.getApp();
-        headerWindow = new WindowSwingHeader(app, viewWindow, 1, 1, view.getPixelScale(), 
-                                             "Header Window for " + view.getName(), view);
+        headerWindow = new FrameHeaderSwingWindow(app, viewWindow, 1, 1, view.getPixelScale(), 
+                                                  "Header Window for " + view.getName(), view);
         headerWindow.setCoplanar(true);
 
         try {
@@ -165,6 +175,7 @@ public class FrameHeaderSwing
      *
      * @throw InstantiationException if couldn't allocate resources for the visual representation.
      */
+    @Override
     public void update() throws InstantiationException {
         updateLayout();
         headerWindow.setPixelOffset(x, y);
@@ -302,12 +313,25 @@ public class FrameHeaderSwing
             e.getButton() == MouseEvent.BUTTON1 &&
             e.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
 
+            WindowSwing.EventHookInfo hookInfo = headerWindow.getHookInfoForEvent(e);
+            if (hookInfo == null) {
+                logger.warning("Cannot drag window because can't get hook info for event " + e);
+                return;
+            }
+
             dragging = true;
 
-            Vector2f pixelScale = view.getPixelScale();
-            dragStartLocal = new Vector2f();
-            dragStartLocal.x = e.getX() * pixelScale.x;
-            dragStartLocal.y = -e.getY() * pixelScale.y;
+            // Remember: the move occurs in parent coords
+            View2DEntity parentView = (View2DEntity) view.getParent();
+            if (parentView == null) {            
+                // Note: we don't yet support dragging of primaries
+                logger.warning("Drag secondary operation can't get parent of secondary");
+                return;
+            }
+
+            dragStartScreen = new Point(hookInfo.eventX, hookInfo.eventY);
+            dragStartWorld = hookInfo.pointWorld;
+            dragStartLocal = parentView.getNode().worldToLocal(dragStartWorld, new Vector3f());
 
             view.userMovePlanarStart();
         }
@@ -320,15 +344,34 @@ public class FrameHeaderSwing
         // upgrade it to work with primary windows also.
         if (view.getType() != View2D.Type.SECONDARY) return;
 
+        WindowSwing.EventHookInfo hookInfo = headerWindow.getHookInfoForEvent(e);
+        if (hookInfo == null) {
+            logger.warning("Cannot drag window because can't get hook info for event " + e);
+            return;
+        }
+
         //System.err.println("******* Drag event " + e);
         if (dragging) {
 
+            /*
             Vector2f pixelScale = view.getPixelScale();
             Vector2f dragCurrentLocal = new Vector2f();
             dragCurrentLocal.x = e.getX() * pixelScale.x;
             dragCurrentLocal.y = -e.getY() * pixelScale.y;
 
             Vector2f dragVectorLocal = dragCurrentLocal.subtractLocal(dragStartLocal);
+            */
+
+            Vector3f dragVectorWorld = 
+                MouseDraggedEvent3D.getDragVectorWorld(hookInfo.eventX, hookInfo.eventY,
+                                                       dragStartWorld, dragStartScreen,
+                                                       new Vector3f());
+
+            // Convert from world to parent coordinates.
+            Node viewNode = ((View2DEntity)view.getParent()).getNode();
+            Vector3f curWorld = dragStartWorld.add(dragVectorWorld, new Vector3f());
+            Vector3f curLocal = viewNode.worldToLocal(curWorld, new Vector3f());
+            dragVectorLocal = curLocal.subtract(dragStartLocal);
 
             //System.err.println("dragVectorLocal = " + dragVectorLocal);
             view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
