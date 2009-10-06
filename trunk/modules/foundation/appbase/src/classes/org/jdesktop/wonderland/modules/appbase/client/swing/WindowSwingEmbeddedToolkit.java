@@ -56,6 +56,7 @@ class WindowSwingEmbeddedToolkit
     private static final Logger logger = Logger.getLogger(WindowSwingEmbeddedToolkit.class.getName());
     private static final WindowSwingEmbeddedToolkit embeddedToolkit = new WindowSwingEmbeddedToolkit();
     private Point lastPressPointScreen;
+    private WindowSwing.EventHook lastPressEventHook;
 
     public static WindowSwingEmbeddedToolkit getWindowSwingEmbeddedToolkit() {
         return embeddedToolkit;
@@ -99,6 +100,13 @@ class WindowSwingEmbeddedToolkit
 
         if (e.getID() == MouseEvent.MOUSE_PRESSED) {
             lastPressPointScreen = new Point(e.getX(), e.getY());
+
+            lastPressEventHook = windowSwing.getEventHook();
+            if (lastPressEventHook != null) {
+                WindowSwing.EventHookInfo hookInfo = new WindowSwing.EventHookInfo(intersectionPointWorld, 
+                                                                                   e.getX(), e.getY());
+                lastPressEventHook.specifyHookInfoForEvent(e, hookInfo);
+            }
         }
 
         final EmbeddedPeer targetEmbeddedPeer = windowSwing.getEmbeddedPeer();
@@ -125,6 +133,13 @@ class WindowSwingEmbeddedToolkit
                     int canvasX = event.getX() + canvasPoint.x - framePoint.x;
                     int canvasY = event.getY() + canvasPoint.y - framePoint.y;
                     pt = view.calcIntersectionPixelOfEyeRay(canvasX, canvasY);
+
+                    if (lastPressEventHook != null) {
+                        WindowSwing.EventHookInfo hookInfo = 
+                            new WindowSwing.EventHookInfo(intersectionPointWorld, canvasX, canvasY);
+                        lastPressEventHook.specifyHookInfoForEvent(event, hookInfo);
+                    }
+
                 } else {
                     pt = view.calcPositionInPixelCoordinates(intersectionPointWorld, true);
                 }
