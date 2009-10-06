@@ -30,9 +30,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkListener;
-import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkType;
-import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkListener;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkType;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
 
 /**
@@ -91,7 +93,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
 
         // Listen for changes in the list of registered Placemarks in the
         // system and update the table model accordingly
-        PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+        PlacemarkRegistry registry = PlacemarkRegistryFactory.getInstance();
         registry.addPlacemarkRegistryListener(new PlacemarkListener() {
 
             public void placemarkAdded(
@@ -291,7 +293,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // Fetch the list of known USER Placemark names
-        PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+        PlacemarkRegistry registry = PlacemarkRegistryFactory.getInstance();
         Set<Placemark> placemarkSet =
                 registry.getAllPlacemarks(PlacemarkType.USER);
 
@@ -348,13 +350,13 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
 
         // Tell the client-side registry of placemarks that a new one has
         // been added
-        PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+        PlacemarkRegistry registry = PlacemarkRegistryFactory.getInstance();
         registry.unregisterPlacemark(placemark, PlacemarkType.USER);
 }//GEN-LAST:event_removeButtonActionPerformed
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         // Fetch the list of known USER Placemark names
-        PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+        PlacemarkRegistry registry = PlacemarkRegistryFactory.getInstance();
         Set<Placemark> placemarkSet =
                 registry.getAllPlacemarks(PlacemarkType.USER);
 

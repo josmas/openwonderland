@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.darkstar.server;
+package org.jdesktop.wonderland.modules.darkstar.api.weblib;
 
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;

@@ -24,7 +24,8 @@ import java.util.Set;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 
 /**
  * The placemarks registry manages a list of user and system-wide placemarks
@@ -32,11 +33,8 @@ import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class PlacemarkRegistry implements PrimaryServerListener {
-
-    /** The type of placemark: USER or SYSTEM */
-    public enum PlacemarkType { USER, SYSTEM };
-
+public class PlacemarkRegistryImpl implements PlacemarkRegistry, PrimaryServerListener {
+    
     // A map of user and system-wide placemarks, where the key is the placemark
     // name.
     private Map<String, Placemark> systemPlacemarkMap = null;
@@ -50,7 +48,7 @@ public class PlacemarkRegistry implements PrimaryServerListener {
     private Set<PlacemarkListener> listeners = new HashSet();
 
     /** Default constructor */
-    public PlacemarkRegistry() {
+    public PlacemarkRegistryImpl() {
         systemPlacemarkMap = new HashMap();
         userPlacemarkMap = new HashMap();
         systemPlacemarkSet = new HashSet();
@@ -60,24 +58,7 @@ public class PlacemarkRegistry implements PrimaryServerListener {
         // system-wide placemarks whenever we connect to a new server.
         LoginManager.addPrimaryServerListener(this);
     }
-    
-    /**
-     * Singleton to hold instance of PlacemarksRegistry. This holder class is loaded
-     * on the first execution of PlacemarksRegistry.getPlacemarkRegistry().
-     */
-    private static class PlacemarkRegistryHolder {
-        private final static PlacemarkRegistry cellRegistry = new PlacemarkRegistry();
-    }
-    
-    /**
-     * Returns a single instance of this class
-     * <p>
-     * @return Single instance of this class.
-     */
-    public static final PlacemarkRegistry getPlacemarkRegistry() {
-        return PlacemarkRegistryHolder.cellRegistry;
-    }
-    
+     
     /**
      * Registers a Placemark given its type (USER or SYSTEM).
      * 
@@ -210,27 +191,5 @@ public class PlacemarkRegistry implements PrimaryServerListener {
                 listener.placemarkRemoved(placemark, type);
             }
         }
-    }
-
-    /**
-     * A listener indicating that a change has happened to the set of registered
-     * placemarks.
-     */
-    public interface PlacemarkListener {
-        /**
-         * A Placemark has been added.
-         *
-         * @param placemark The Placemark added
-         * @param type Either USER or SYSTEM
-         */
-        public void placemarkAdded(Placemark placemark, PlacemarkType type);
-
-        /**
-         * A Placemark has been removed.
-         *
-         * @param placemark The Placemark removed
-         * @param type Either USER or SYSTEM
-         */
-        public void placemarkRemoved(Placemark placemark, PlacemarkType type);
     }
 }

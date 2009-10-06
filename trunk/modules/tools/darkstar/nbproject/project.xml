@@ -55,7 +55,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jsr173_1.0_api.jar:../../../web/lib/glassfish/glassfish-embedded-custom-v3-prelude-b11-02_21_2009.jar:../../../web/lib/restlib/jsr311-api-1.0.jar:../../../web/utils/dist/wonderland-web-utils.jar:../../../web/runner/dist/wonderland-runner-core.jar:../../../web/modules/dist/wonderland-modules-core.jar:../../../web/front/dist/wonderland-webadmin-core.jar:../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../web/wfs/dist/wonderland-wfs.jar:../../../web/asset/dist/wonderland-asset-core.jar:../../../web/checksums/dist/wonderland-checksums-core.jar</classpath>
+                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jsr173_1.0_api.jar:../../../web/lib/glassfish/glassfish-embedded-custom-v3-prelude-b11-02_21_2009.jar:../../../web/lib/restlib/jsr311-api-1.0.jar:../../../web/utils/dist/wonderland-web-utils.jar:../../../web/runner/dist/wonderland-runner-core.jar:../../../web/modules/dist/wonderland-modules-core.jar:../../../web/front/dist/wonderland-webadmin-core.jar:../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../web/wfs/dist/wonderland-wfs.jar:../../../web/asset/dist/wonderland-asset-core.jar:../../../web/checksums/dist/wonderland-checksums-core.jar:../../foundation/darkstar-api/build/lib/darkstar-api.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

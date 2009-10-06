@@ -49,10 +49,11 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.contentrepo.web.spi.WebContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.web.spi.WebContentRepositoryRegistry;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin.DarkstarServerListener;
-import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin.DarkstarServerListener;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLoginFactory;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
 import org.jdesktop.wonderland.modules.placemarks.web.PlacemarkWebConfigConnection;
 
@@ -341,12 +342,12 @@ public class PlacemarksServlet extends HttpServlet implements ServletContextList
         AdminRegistration.register(ar, context);
 
         // add ourselves as a listener for when the Darkstar server changes
-        DarkstarWebLogin.getInstance().addDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().addDarkstarServerListener(this);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
         // remove the Darkstar server listener
-        DarkstarWebLogin.getInstance().removeDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().removeDarkstarServerListener(this);
 
         // register with the admininstration page
         AdminRegistration.unregister(ar, context);

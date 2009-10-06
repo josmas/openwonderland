@@ -29,9 +29,9 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin.DarkstarServerListener;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin.DarkstarServerListener;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLoginFactory;
 import org.jdesktop.wonderland.modules.securitygroups.weblib.db.GroupDAO;
 import org.jdesktop.wonderland.modules.securitygroups.weblib.db.GroupEntity;
 import org.jdesktop.wonderland.modules.securitygroups.weblib.db.MemberEntity;
@@ -76,7 +76,7 @@ public class GroupContextListener
         createInitialGroups();
 
         // add ourselves as a listener for when the Darkstar server changes
-        DarkstarWebLogin.getInstance().addDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().addDarkstarServerListener(this);
 
         // register with the UI
         ar = new AdminRegistration("Manage Groups",
@@ -87,7 +87,7 @@ public class GroupContextListener
 
     public void contextDestroyed(ServletContextEvent sce) {
         // remove the Darkstar server listener
-        DarkstarWebLogin.getInstance().removeDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().removeDarkstarServerListener(this);
 
         // unregister from the UI
         if (ar != null) {

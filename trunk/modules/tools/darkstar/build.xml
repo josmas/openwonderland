@@ -26,6 +26,7 @@
         <path location="${core.dir}/build/lib/wonderland-client.jar"/>
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
     </pathconvert>   
 
     <pathconvert property="module-web.classpath">
@@ -34,6 +35,7 @@
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         <path location="${web.dir}/wfs/dist/wonderland-wfs.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
     </pathconvert>
     
     <target name="build" depends="-module-init, -module-compile-server, -darkstar-compile-web"/>

@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.servermanager.client;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,14 +35,9 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin.DarkstarServerListener;
-import org.jdesktop.wonderland.runner.RunManager;
-import org.jdesktop.wonderland.runner.RunManager.RunnerListener;
-import org.jdesktop.wonderland.runner.Runner;
-import org.jdesktop.wonderland.runner.Runner.RunnerStatusListener;
-import org.jdesktop.wonderland.runner.Runner.Status;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin.DarkstarServerListener;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLoginFactory;
 
 /**
  * Montitor the server, and periodically collect data
@@ -69,7 +62,7 @@ public class PingDataCollector
                 new HashMap<DarkstarRunner, ServerManagerSession>());
     
     public PingDataCollector() {
-        DarkstarWebLogin.getInstance().addDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().addDarkstarServerListener(this);
     }
 
     /**
@@ -190,7 +183,7 @@ public class PingDataCollector
      */
     public synchronized void shutdown() {
         // remove runner listener
-        DarkstarWebLogin.getInstance().removeDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().removeDarkstarServerListener(this);
 
         // shutdown sessions
         for (ServerManagerSession session : sessions.values()) {
