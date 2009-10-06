@@ -54,7 +54,8 @@ public class WebstartClientSim implements RequestProcessor {
             props.list(System.err);
             String serverURL = props.getProperty("serverURL");
             System.err.println("javaws " + serverURL + "wonderland-web-front/app/Wonderland.jnlp");
-            ProcessBuilder builder = new ProcessBuilder("javaws", "-open", "-p /Users/paulby/src/java.net/wonderland/trunk/wonderland/test/harness/run-client.properties", serverURL + "wonderland-web-front/app/Wonderland.jnlp");
+            ProcessBuilder builder = new ProcessBuilder("javaws", "-open", "-b -username "+username, serverURL + "wonderland-web-front/app/Wonderland.jnlp");
+
             process = builder.start();
         } catch (IOException ex) {
             Logger.getLogger(WebstartClientSim.class.getName()).log(Level.SEVERE,null, ex);
