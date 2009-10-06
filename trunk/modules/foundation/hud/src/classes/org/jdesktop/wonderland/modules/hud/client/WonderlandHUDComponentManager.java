@@ -347,8 +347,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
                 // calculate new location of HUD component
                 Point location = hudComponent.getLocation();
-                int xDelta = e.getX() - dragX;
-                int yDelta = e.getY() - dragY;
+                float xDelta = hudPixelScale.x * (float)(e.getX() - dragX);
+                float yDelta = hudPixelScale.y * (float)(e.getY() - dragY);
                 location.setLocation(location.getX() + xDelta, location.getY() - yDelta);
 
                 // move the HUD component
