@@ -156,6 +156,10 @@ public class ViewManager implements ViewPropertiesListener {
 
         canvas.setVisible(true);
         canvas.setBounds(0, 0, width, height);
+
+        // Fix bug 884
+        canvas.setFocusTraversalKeysEnabled(false);
+
         panel.add(canvas, BorderLayout.CENTER);
 
         panel.addComponentListener(new ComponentListener() {
