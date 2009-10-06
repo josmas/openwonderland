@@ -49,18 +49,27 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
     private JMenuItem item;
 
     public AssetMeterClientPlugin() {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
+        Runnable createCB = new Runnable() {
+            public void run() {
+                item = new JCheckBoxMenuItem("Asset Meter");
+                item.setSelected(true);
+            }
+        };
 
-                public void run() {
-                    item = new JCheckBoxMenuItem("Asset Meter");
-                    item.setSelected(true);
-                }
-            });
-        } catch (InterruptedException ie) {
-            throw new IllegalStateException("Interrupt creating menu", ie);
-        } catch (InvocationTargetException ise) {
-            throw new IllegalStateException("Exception creating menu", ise);
+        // issue #859 - only invokeAndWait() if we are not on the awt event
+        // thread
+        if (SwingUtilities.isEventDispatchThread()) {
+            // we are already on the awt thread, just execute immediately
+            createCB.run();
+        } else {
+            // we are on some other thread -- invoke and wait
+            try {
+                SwingUtilities.invokeAndWait(createCB);
+            } catch (InterruptedException ie) {
+                throw new IllegalStateException("Interrupt creating menu", ie);
+            } catch (InvocationTargetException ise) {
+                throw new IllegalStateException("Exception creating menu", ise);
+            }
         }
     }
 

@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.placemarks.common;
+package org.jdesktop.wonderland.modules.placemarks.api.common;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;

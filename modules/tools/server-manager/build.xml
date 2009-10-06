@@ -17,13 +17,13 @@
 
     <pathconvert property="module-client.classpath">
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
-        <path location="${current.dir}/../darkstar/build/weblib/darkstar-runner.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         <path path="${web.classpath}"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${current.dir}/../../foundation/security/build/lib/server/security-server.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 
@@ -38,7 +38,7 @@
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
 
-            <requires name="darkstar" version="1"/>
+            <requires name="darkstar-api" version="1"/>
 
             <part name="web">
                 <jar name="servermanager-web.war">

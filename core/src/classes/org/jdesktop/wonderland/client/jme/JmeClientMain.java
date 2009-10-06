@@ -30,6 +30,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -269,8 +270,8 @@ public class JmeClientMain {
      * direction
      * @throws IOException if there is an error going to the new location
      */
-    public void gotoLocation(String serverURL, Vector3f translation,
-            Quaternion look)
+    public void gotoLocation(String serverURL, final Vector3f translation,
+            final Quaternion look)
             throws IOException {
         if (serverURL == null) {
             // get the server from the current session
@@ -282,17 +283,33 @@ public class JmeClientMain {
         }
 
         // see if we need to change servers
+        // issue #859 - compare URLs as URLs
         if (curSession != null &&
-                serverURL.equals(
-                curSession.getSessionManager().getServerURL())) {
-            // no need to change - make a local move request
+                urlEquals(serverURL, curSession.getSessionManager().getServerURL()))
+        {   // no need to change - make a local move request
             ViewCell vc = curSession.getLocalAvatar().getViewCell();
             if (vc instanceof AvatarCell) {
                 ((AvatarCell) vc).triggerGoto(translation, look);
             }
 
         } else {
-            loadServer(serverURL, translation, look);
+            // issue #859 - load the server in a separate thread to
+            // guarantee it won't get loaded in the awt event thread
+            ServerLoader sl = new ServerLoader(serverURL, translation, look);
+            Thread t = new Thread(sl);
+            t.start();
+
+            // wait for the thread to finish
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.WARNING, "Join interrupted", ex);
+            }
+
+            // see if there was an exception
+            if (sl.getException() != null) {
+                throw sl.getException();
+            }
         }
     }
 
@@ -434,6 +451,29 @@ public class JmeClientMain {
             LoginManager.setPrimary(null);
         }
     }
+
+    /**
+     * Compare two Strings as URLs.
+     * @param url1 the first URL to compare
+     * @param url2 the second URL to compare
+     * @return true if the URLs match
+     */
+    private boolean urlEquals(String url1, String url2) {
+        try {
+            URL u1 = new URL(url1);
+            URL u2 = new URL(url2);
+
+            System.out.println("Compare " + url1 + " to " + url2 + ": "  +
+                               u1.equals(u2));
+
+            return u1.equals(u2);
+        } catch (MalformedURLException mue) {
+            LOGGER.log(Level.WARNING, "Comparing non URL: " + url1 + ", " +
+                       url2, mue);
+            return url1.equalsIgnoreCase(url2);
+        }
+    }
+
 
     /**
      * returns the properties URL
@@ -643,5 +683,34 @@ public class JmeClientMain {
             System.exit(1);
         }
         assetDB.disconnect();
+    }
+    
+    /** runnable for loading the server and remembering the exception */
+    class ServerLoader implements Runnable {
+        private String serverURL;
+        private Vector3f translation;
+        private Quaternion look;
+        private IOException ioe;
+
+        public ServerLoader(String serverURL, Vector3f translation,
+                            Quaternion look)
+        {
+            this.serverURL = serverURL;
+            this.translation = translation;
+            this.look = look;
+        }
+
+        public void run() {
+            try {
+                loadServer(serverURL, translation, look);
+            } catch (IOException ioe) {
+                // remember the exception
+                this.ioe = ioe;
+            }
+        }
+
+        public IOException getException() {
+            return ioe;
+        }
     }
 }

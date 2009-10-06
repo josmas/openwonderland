@@ -22,10 +22,11 @@ import java.util.Set;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkConfigConnectionType;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkNewMessage;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkRemoveMessage;
+import org.jdesktop.wonderland.modules.placemarks.common.PlacemarksMessage;
 
 /**
  * A client-side connection to send and receive messages that a Placemark has
@@ -65,6 +66,18 @@ public class PlacemarkClientConfigConnection extends BaseConnection {
                 }
             }
             return;
+        }
+
+        // If we receive a message with a number of placemarks, add them
+        // all
+        if (message instanceof PlacemarksMessage) {
+            for (Placemark placemark : ((PlacemarksMessage) message).getPlacemarks()) {
+                synchronized (listeners) {
+                    for (PlacemarkConfigListener listener : listeners) {
+                        listener.placemarkAdded(placemark);
+                    }
+                }
+            }
         }
     }
 

@@ -45,9 +45,11 @@ import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkClientConfigConnection.PlacemarkConfigListener;
-import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkListener;
-import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkType;
-import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkListener;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkType;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
 
 /**
@@ -131,7 +133,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
                 // Fetch the list of known USER Placemark names
                 PlacemarkRegistry registry =
-                        PlacemarkRegistry.getPlacemarkRegistry();
+                        PlacemarkRegistryFactory.getInstance();
                 Set<Placemark> placemarkSet =
                         registry.getAllPlacemarks(PlacemarkType.USER);
 
@@ -212,7 +214,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
         // Listen for changes to the list of Placemarks. This needs to come
         // first before we actually add the Placemarks from WebDav
-        PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+        PlacemarkRegistry registry = PlacemarkRegistryFactory.getInstance();
         registry.addPlacemarkRegistryListener(listener);
 
         // Fetch the list of system-wide placemarks and add them to the
@@ -350,13 +352,13 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
         public void placemarkAdded(Placemark placemark) {
             PlacemarkRegistry registry =
-                    PlacemarkRegistry.getPlacemarkRegistry();
+                    PlacemarkRegistryFactory.getInstance();
             registry.registerPlacemark(placemark, PlacemarkType.SYSTEM);
         }
 
         public void placemarkRemoved(Placemark placemark) {
             PlacemarkRegistry registry =
-                    PlacemarkRegistry.getPlacemarkRegistry();
+                    PlacemarkRegistryFactory.getInstance();
             registry.unregisterPlacemark(placemark, PlacemarkType.SYSTEM);
         }
     }

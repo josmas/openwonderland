@@ -14,18 +14,27 @@
     <!-- import web build file -->
     <import file="${web.dir}/build-tools/build-scripts/web-build.xml"/>
 
-    <!-- pathconvert property="module-common.classpath">
-    </pathconvert -->
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/foundation/placemarks-api/build/classes"/>
+    </pathconvert>
 
     <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/placemarks-api/build/client/placemarks-api-client.jar"/>
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/foundation/placemarks-api/build/server/placemarks-api-server.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
+
+    </pathconvert>
+
     <pathconvert property="module-web.classpath">
+        <path location="${modules.dir}/foundation/placemarks-api/build/client/placemarks-api-client.jar"/>
         <path location="${modules.dir}/foundation/content-repository/build/lib/contentrepo-spi.jar"/>
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
-        <path location="${modules.dir}/tools/darkstar/build/weblib/darkstar-runner.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
         <path location="${core.dir}/build/lib/wonderland-client.jar"/>
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
@@ -60,8 +69,10 @@
         <module name="placemarks" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Placemark API and library" builddir="${build.dir}">
 
+            <requires name="placemarks-api" version="1"/>
             <requires name="content-repository" version="1"/>
-            <requires name="darkstar" version="1"/>
+            <requires name="darkstar-api" version="1"/>
+
 
             <client>
                 <clientjar name="placemarks-client" basedir="${build.classes.dir}">
@@ -85,6 +96,11 @@
                     <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
                         <include name="${module.src}/web/**"/>
                         <include name="${module.src}/common/**"/>
+                    </zipfileset>
+
+                    <!-- include placemarks API -->
+                    <zipfileset dir="${modules.dir}/foundation/placemarks-api/build/client" prefix="WEB-INF/lib">
+                        <include name="placemarks-api-client.jar"/>
                     </zipfileset>
 
                     <fileset dir="${current.dir}/web"/>

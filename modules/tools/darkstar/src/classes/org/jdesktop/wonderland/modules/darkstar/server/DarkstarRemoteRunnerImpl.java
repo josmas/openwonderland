@@ -24,6 +24,7 @@ import java.net.URLEncoder;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
 import org.jdesktop.wonderland.runner.BaseRemoteRunner;
 import org.jdesktop.wonderland.runner.RunnerException;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;

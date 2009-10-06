@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.runner.RunManager;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
 
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
 import org.jdesktop.wonderland.utils.Constants;
 
 /**

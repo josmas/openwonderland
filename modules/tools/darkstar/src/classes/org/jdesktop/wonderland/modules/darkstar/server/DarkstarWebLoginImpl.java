@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginCont
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.RunManager.RunnerListener;
 import org.jdesktop.wonderland.runner.Runner;
@@ -48,9 +49,9 @@ import org.jdesktop.wonderland.runner.Runner.Status;
  * Singleton for managing login to the Darkstar server from the web server.
  * @author jkaplan
  */
-public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
+public class DarkstarWebLoginImpl implements DarkstarWebLogin, RunnerListener, RunnerStatusListener {
     private static final Logger logger =
-            Logger.getLogger(DarkstarWebLogin.class.getName());
+            Logger.getLogger(DarkstarWebLoginImpl.class.getName());
 
     private static final String USERNAME_PROP = "wonderland.webserver.user";
     private static final String USERNAME_DEFAULT = "webserver";
@@ -66,17 +67,9 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     private File passwordFile;
 
     /**
-     * Get an instance of the DarkstarWebLogin class
-     * @return a shared instance of Darkstar web login
-     */
-    public static DarkstarWebLogin getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
-
-    /**
      * Protected singleton constructor -- use getInstance() instead.
      */
-    protected DarkstarWebLogin() {
+    public DarkstarWebLoginImpl() {
         LoginManager.setLoginUI(new DarkstarWebLoginUI());
         LoginManager.setPluginFilter(new PluginFilter.NoPluginFilter());
 
@@ -207,26 +200,6 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     }
 
     /**
-     * Listener to notify of server connects and disconnects
-     */
-    public interface DarkstarServerListener {
-        /**
-         * Notification that the server has started up
-         * @param runner the DarkstarRunnerImpl that started up
-         * @param sessionManager a server sesssion manager that can be
-         * used to connect to this server
-         */
-        public void serverStarted(DarkstarRunner runner,
-                                  ServerSessionManager sessionManager);
-
-        /**
-         * Notification that the server has shut down
-         * @param runner the DarkstarRunnerImpl that shut down
-         */
-        public void serverStopped(DarkstarRunner runner);
-    }
-
-    /**
      * Internal class for handling login to the Darkstar server
      */
     private class DarkstarWebLoginUI implements LoginUI {
@@ -263,12 +236,4 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
             throw new UnsupportedOperationException("Not supported");
         }
     }
-
-    /**
-     * Holder for the singleton instance
-     */
-    private static final class SingletonHolder {
-        private static final DarkstarWebLogin INSTANCE = new DarkstarWebLogin();
-    }
-
 }

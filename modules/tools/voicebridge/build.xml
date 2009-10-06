@@ -14,7 +14,7 @@
     <pathconvert property="module-server.classpath">
         <path location="${top.dir}/web/runner/dist/wonderland-runner-core.jar"/>
         <path location="${top.dir}/web/utils/dist/wonderland-web-utils.jar"/>
-        <path location="${current.dir}/../darkstar/build/weblib/darkstar-runner.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
     </pathconvert>   
        
     <target name="build" depends="-module-init,  -module-compile-server"/>
@@ -24,6 +24,8 @@
         
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
                 moduleDescription="jVoicebridge server" builddir="${build.dir}">
+
+            <requires name="darkstar-api" version="1"/>
 
             <part name="runner" dir="${current.dir}/lib/zip">
                 <include name="voicebridge-dist.zip"/>
