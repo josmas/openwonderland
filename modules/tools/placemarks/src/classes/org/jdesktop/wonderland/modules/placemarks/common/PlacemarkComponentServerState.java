@@ -18,22 +18,17 @@
 
 package org.jdesktop.wonderland.modules.placemarks.common;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
-import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  * Server state for placemark cell component
  *
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-@XmlRootElement(name="portal-component")
+@XmlRootElement(name="placemark-component")
 @ServerState
 public class PlacemarkComponentServerState extends CellComponentServerState {
     /** the name of the placemark to create */
