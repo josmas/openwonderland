@@ -17,11 +17,23 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import com.jme.math.Vector2f;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.hud.HUDView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
@@ -31,10 +43,17 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
  *
  * @author nsimpson
  */
-public class HUDView2D extends View2DEntity implements HUDView {
+public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListener,
+        ActionListener {
 
     private static final Logger logger = Logger.getLogger(HUDView2D.class.getName());
     private View2DDisplayer displayer;
+    private HUDView2DDisplayer hudDisplayer;
+    private HUDFrameHeader2D frame;
+    private HUDView2D frameView;
+    private Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
+    private List<ActionListener> actionListeners;
+    private List<MouseMotionListener> mouseMotionListeners;
 
     /**
      * Create an instance of HUDView2D with default geometry node.
@@ -43,7 +62,6 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     public HUDView2D(View2DDisplayer displayer, Window2D window) {
         this(displayer, window, null);
-        name = "HUDView2D for " + window.getName();
     }
 
     /**
@@ -56,8 +74,53 @@ public class HUDView2D extends View2DEntity implements HUDView {
         super(window, geometryNode);
         this.displayer = displayer;
         changeMask = CHANGED_ALL;
-        update();
         name = "HUDView2D for " + window.getName();
+        update();
+    }
+
+    private void createFrame() {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("creating frame header for: " + this);
+        }
+
+        HUDApp2D app = new HUDApp2D("HUD", new ControlArbHUD(), hudPixelScale);
+        if (hudDisplayer == null) {
+            hudDisplayer = new HUDView2DDisplayer();
+        }
+
+        // create the Swing frame component and resize it to fit this view's
+        // window
+        HUDFrameHeader2DImpl frameImpl = new HUDFrameHeader2DImpl();
+        Dimension frameSize = new Dimension(getWindow().getWidth(), frameImpl.getPreferredSize().height);
+        frameImpl.setPreferredSize(frameSize);
+        frame = new HUDFrameHeader2D(frameImpl);
+
+        try {
+            // create a window
+            WindowSwing frameWindow = app.createWindow(frameSize.width, frameSize.height, Window2D.Type.PRIMARY, false, hudPixelScale, name);
+            frameWindow.setComponent(frameImpl);
+            frame.setWindow(frameWindow);
+            frame.setTitle(getTitle());
+
+            // create a view
+            frameView = hudDisplayer.createView(frameWindow);
+            frameWindow.addView(frameView);
+
+            // set view properties
+            frameView.setPixelScaleOrtho(hudPixelScale, false);
+            frameView.setSizeApp(new Dimension((int) (frameWindow.getWidth()), frameWindow.getHeight()), false);
+            frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * getWindow().getHeight() / 2 + 0.75f * frameImpl.getPreferredSize().height / 2)), false);
+            frameView.setOrtho(true, false);
+
+            // register listeners for events on the frame
+            frameImpl.addMouseMotionListener(frame);
+            frame.addMouseMotionListener(this);
+
+            frameImpl.addActionListener(frame);
+            frame.addActionListener(this);
+        } catch (InstantiationException e) {
+            logger.warning("failed to create window from HUD frame: " + e);
+        }
     }
 
     /** 
@@ -82,27 +145,47 @@ public class HUDView2D extends View2DEntity implements HUDView {
      * {@inheritDoc}
      */
     @Override
+    public void setType(Type type, boolean update) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest(getType() + " > " + type + " for " + this);
+        }
+
+        super.setType(type, update);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected boolean hasFrame() {
-        return false;
+        return (frameView != null);
+    }
+
+    public void setFrameView(HUDView2D frameView) {
+        this.frameView = frameView;
     }
 
     public HUDView2D getFrameView() {
-        return null;
-    }
-
-    public Window2D getFrameWindow() {
-        return null;
+        return frameView;
     }
 
     public void attachView(HUDView2D view) {
-        logger.fine("attach view: " + view + "to: " + this);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("attach view: " + view);
+            logger.finest("to: " + this);
+        }
+
         Entity e = view.getEntity();
         RenderComponent rcFrame = (RenderComponent) e.getComponent(RenderComponent.class);
         rcFrame.setAttachPoint(this.getGeometryNode());
     }
 
     public void detachView(HUDView2D view) {
-        logger.fine("detach view: " + view + "from: " + this);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("detach view: " + view);
+            logger.finest("from: " + this);
+        }
+
         Entity viewEntity = view.getEntity();
         if (viewEntity == null) {
             return;
@@ -119,7 +202,10 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void reattachFrame() {
-        logger.fine("reattach frame");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("reattaching frame");
+        }
+
         detachFrame();
         attachFrame();
     }
@@ -129,7 +215,18 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void attachFrame() {
-        logger.fine("attach frame");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("attaching frame");
+        }
+
+        if (frameView == null) {
+            createFrame();
+        }
+        if (frameView != null) {
+            attachView(frameView);
+            frameView.setVisibleApp(true, false);
+            frameView.setVisibleUser(true);
+        }
     }
 
     /**
@@ -137,7 +234,16 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void detachFrame() {
-        logger.fine("detach frame");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("detaching frame");
+        }
+
+        if (frameView != null) {
+            frameView.setVisibleUser(false, false);
+            frameView.setVisibleApp(false);
+            detachView(frameView);
+            frameView = null;
+        }
     }
 
     /**
@@ -145,7 +251,13 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void frameUpdateTitle() {
-        logger.fine("update frame title");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("updating frame title");
+        }
+
+        if (frame != null) {
+            frame.setTitle(getTitle());
+        }
     }
 
     /**
@@ -153,7 +265,89 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void frameUpdate() {
-        logger.fine("update frame");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("updating frame");
+        }
+    }
+
+    public void setControlled(boolean controlled) {
+        if (frame != null) {
+            frame.setControlled(controlled);
+        }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        e.setSource(this);
+        notifyActionListeners(e);
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        e.setSource(this);
+        notifyMouseMotionListeners(e);
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        e.setSource(this);
+        notifyMouseMotionListeners(e);
+    }
+
+    public void addActionListener(ActionListener listener) {
+        if (actionListeners == null) {
+            actionListeners = Collections.synchronizedList(new LinkedList());
+        }
+        actionListeners.add(listener);
+    }
+
+    public void removeActionListener(ActionListener listener) {
+        if (actionListeners != null) {
+            actionListeners.remove(listener);
+        }
+    }
+
+    public void notifyActionListeners(ActionEvent e) {
+        if (actionListeners != null) {
+            ListIterator<ActionListener> iter = actionListeners.listIterator();
+            while (iter.hasNext()) {
+                ActionListener listener = iter.next();
+                listener.actionPerformed(e);
+            }
+            iter = null;
+        }
+    }
+
+    public void addMouseMotionListener(MouseMotionListener listener) {
+        if (mouseMotionListeners == null) {
+            mouseMotionListeners = Collections.synchronizedList(new LinkedList());
+        }
+        mouseMotionListeners.add(listener);
+    }
+
+    public void removeMouseMotionListener(MouseMotionListener listener) {
+        if (mouseMotionListeners != null) {
+            mouseMotionListeners.remove(listener);
+        }
+    }
+
+    public void notifyMouseMotionListeners(MouseEvent e) {
+        if (mouseMotionListeners != null) {
+            e.setSource(this);
+            ListIterator<MouseMotionListener> iter = mouseMotionListeners.listIterator();
+            while (iter.hasNext()) {
+                MouseMotionListener listener = iter.next();
+
+                switch (e.getID()) {
+                    case MouseEvent.MOUSE_MOVED:
+                        listener.mouseMoved(e);
+                        break;
+                    case MouseEvent.MOUSE_DRAGGED:
+                        listener.mouseDragged(e);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            iter = null;
+        }
     }
 
     /**
@@ -167,7 +361,8 @@ public class HUDView2D extends View2DEntity implements HUDView {
 
     @Override
     public String toString() {
-        String string = "view: " + getName() +
+        String string = "view type: " + getClass().getSimpleName() +
+                ", name: " + getName() +
                 ", size: " + getSizeApp() +
                 ", ortho: " + isOrtho();
 
