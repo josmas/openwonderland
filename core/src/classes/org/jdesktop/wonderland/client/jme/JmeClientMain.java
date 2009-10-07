@@ -553,6 +553,7 @@ public class JmeClientMain {
 
         // This call will block until the render buffer is ready, for it to
         // become ready the canvas3D must be visible
+        // Note: this disables focus traversal keys for the canvas it creates.
         ViewManager viewManager = ViewManager.getViewManager();
         viewManager.attachViewCanvas(canvas3D);
 
