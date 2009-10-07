@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
 
 /**
  * Utility class to handle login to a Wonderland server.  Given a serverURL,
@@ -210,9 +210,15 @@ public class ProgrammaticLogin<T extends WonderlandSession> {
             }
         }
 
-        // Not used.
-        public void requestLogin(WebURLLoginControl control) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        // Use a password if we have one, or a guest login if not
+        public void requestLogin(EitherLoginControl control) {
+            if (passwordFile != null) {
+                // use a password
+                requestLogin(control.getUserPasswordLogin());
+            } else {
+                // use a guest login
+                requestLogin(control.getNoAuthLogin());
+            }
         }
 
         // The LoginManager calls this to create the WonderlandSession

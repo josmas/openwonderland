@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
 import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionCreator;
@@ -102,8 +102,18 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
         });
     }
 
-    public void requestLogin(WebURLLoginControl control) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void requestLogin(final EitherLoginControl control) {
+        // start the login panel in the AWT event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                LoginPanel lp = new EitherLoginPanel(control.getServerURL(),
+                                                     control);
+                WonderlandLoginDialog dialog = new WonderlandLoginDialog(
+                                                   parent.getFrame(), true, lp);
+                dialog.setLocationRelativeTo(parent.getFrame());
+                dialog.setVisible(true);
+            }
+        });
     }
 
     public void setInitialPosition(Vector3f position, Quaternion look) {

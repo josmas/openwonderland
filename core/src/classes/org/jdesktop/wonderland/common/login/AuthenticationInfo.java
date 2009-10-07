@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class AuthenticationInfo implements Cloneable {
-    public enum Type { NONE, WEB_SERVICE, WEB };
+    public enum Type { NONE, WEB_SERVICE, EITHER };
 
     private Type type;
     private String authURL;

@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.client.login.PluginFilter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin;
 import org.jdesktop.wonderland.runner.RunManager;
@@ -232,8 +232,14 @@ public class DarkstarWebLoginImpl implements DarkstarWebLogin, RunnerListener, R
             }
         }
 
-        public void requestLogin(WebURLLoginControl control) {
-            throw new UnsupportedOperationException("Not supported");
+        public void requestLogin(EitherLoginControl control) {
+            if (passwordFile != null) {
+                // if we have a password, use it
+                requestLogin(control.getUserPasswordLogin());
+            } else {
+                // no password, try as a guest
+                requestLogin(control.getNoAuthLogin());
+            }
         }
     }
 }
