@@ -149,6 +149,9 @@ public class ViewManager implements ViewPropertiesListener {
         return viewProperties;
     }
 
+    /**
+     * Note: this disables focus traversal keys for the canvas it creates.
+     */
     void attachViewCanvas(JPanel panel) {
         rb = ClientContextJME.getWorldManager().getRenderManager().createRenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
         ClientContextJME.getWorldManager().getRenderManager().addRenderBuffer(rb);

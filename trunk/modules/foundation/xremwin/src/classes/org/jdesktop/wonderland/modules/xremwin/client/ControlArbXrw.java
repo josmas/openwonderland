@@ -104,7 +104,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * controlArb will be called with the user name of this client. 
      */
     private synchronized void take(boolean impolite) {
-        AppXrw.logger.info("Enter take");
+        AppXrw.logger.severe("Enter take");
 
         // Enable our client to send events to the server ("event ahead").
         // If control is refused the events will just be ignored.
@@ -125,7 +125,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * Tell the server to release control.
      */
     private synchronized void release() {
-        AppXrw.logger.info("Enter release");
+        AppXrw.logger.severe("Enter release");
 
         eventsEnabled = false;
         takeControlPending = false;
@@ -145,7 +145,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * attempt was polite get confirmation from the user to continue.
      */
     synchronized void controlRefused() {
-        AppXrw.logger.info("Control refused");
+        AppXrw.logger.severe("Control refused");
 
         String currentController = serverProxy.getControllingUser();
 
@@ -165,6 +165,7 @@ public class ControlArbXrw extends ControlArbSingle {
             }
         }
 
+        releaseControl();
         takeControlPending = false;
         eventsEnabled = false;
         appControl = false;
@@ -176,7 +177,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * The server has told us that our request for control has succeeded. 
      */
     synchronized void controlGained() {
-        AppXrw.logger.info("Control gained");
+        AppXrw.logger.severe("Control gained");
 
         String currentController = serverProxy.getControllingUser();
 
@@ -197,7 +198,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * The server has taken control away from us.
      */
     synchronized void controlLost() {
-        AppXrw.logger.info("Control lost");
+        AppXrw.logger.severe("Control lost");
         super.releaseControl();
         takeControlPending = false;
         eventsEnabled = false;
