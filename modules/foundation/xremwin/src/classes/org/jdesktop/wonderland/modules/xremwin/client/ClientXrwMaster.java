@@ -235,6 +235,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * @param parent The new parent of the popup window.
      */
     public void setPopupParent(WindowXrw window, WindowXrw parent) {
+        if (parent == null) return;
         int wid = window.getWid();
         int parentWid = parent.getWid();
         ((ServerProxyMaster) serverProxy).setPopupParent(wid, parentWid);
