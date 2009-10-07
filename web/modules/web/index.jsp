@@ -85,7 +85,6 @@
             Iterator<Map.Entry<String, ModuleInfo>> it3 = uninstall.entrySet().iterator();
             while (it3.hasNext() == true) {
                 Map.Entry<String, ModuleInfo> entry = it3.next();
-                String moduleName = entry.getKey();
                 ModuleInfo moduleInfo = entry.getValue();
         %>
         <tr class="installed_a">
