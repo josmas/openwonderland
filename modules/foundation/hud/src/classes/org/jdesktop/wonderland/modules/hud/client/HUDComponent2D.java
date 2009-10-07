@@ -225,9 +225,11 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent, Control
 
         if (window != null) {
             App2D app = window.getApp();
-            ControlArb arbiter = app.getControlArb();
-            if (arbiter != null) {
-                control = arbiter.hasControl();
+            if (app != null) {
+                ControlArb arbiter = app.getControlArb();
+                if (arbiter != null) {
+                    control = arbiter.hasControl();
+                }
             }
         }
 
@@ -236,10 +238,10 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent, Control
 
     @Override
     public String toString() {
-        return "HUDComponent2D: " +
-                "cell: " + cell + " " +
+        return getClass().getSimpleName() +
+                ", cell: " + cell + " " +
                 ((component != null) ? component.getClass().getName() : "") +
-                "window: " + window + " " +
+                ", window: " + window + " " +
                 super.toString();
     }
 }

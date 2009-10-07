@@ -201,6 +201,10 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
 
         HUDComponent2D component2D = (HUDComponent2D) component;
         Vector2f positionPercent = positionMap.get(component2D);
+        if (positionPercent == null) {
+            logger.warning("no position for component: " + component2D);
+            return;
+        }
         float compX = hud.getX() + positionPercent.x * hudWidth;
         float compY = hud.getY() + positionPercent.y * hudHeight;
 
