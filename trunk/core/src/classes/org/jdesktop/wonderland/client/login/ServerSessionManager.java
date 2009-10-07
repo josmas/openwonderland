@@ -546,8 +546,8 @@ public class ServerSessionManager {
                 return new NoAuthLoginControl(info);
             case WEB_SERVICE:
                 return new UserPasswordLoginControl(info);
-            case WEB:
-                return new WebURLLoginControl(info);
+            case EITHER:
+                return new EitherLoginControl(info);
             default:
                 throw new IllegalStateException("Unknown login type " +
                                                 info.getType());
@@ -763,9 +763,14 @@ public class ServerSessionManager {
          * Request a login from the given login UI
          */
         public void requestLogin(LoginUI ui) {
-            synchronized (this) {
-                started = true;
-            }
+            setStarted();
+        }
+
+        /**
+         * Indicate that a login is in progress with this control object
+         */
+        protected synchronized void setStarted() {
+            started = true;
         }
 
         /**
@@ -914,6 +919,22 @@ public class ServerSessionManager {
             return true;
         }
 
+        public void authenticate(String username, Object... credentials)
+            throws LoginFailureException
+        {
+            fireConnecting(BUNDLE.getString(
+                    "Sending authentication details..."));
+            try {
+                AuthenticationService as =
+                        AuthenticationManager.login(getAuthInfo(), username,
+                                                    credentials);
+                setAuthService(as);
+                loginComplete(username, as.getAuthenticationToken());
+            } catch (AuthenticationException ae) {
+                throw new LoginFailureException(ae);
+            }
+        }
+
         protected void loginComplete(String username, String token) {
             setUsername(username);
 
@@ -941,17 +962,7 @@ public class ServerSessionManager {
         public void authenticate(String username, String fullname)
             throws LoginFailureException
         {
-            fireConnecting(BUNDLE.getString(
-                    "Sending authentication details..."));
-            try {
-                AuthenticationService authService =
-                        AuthenticationManager.login(getAuthInfo(), username,
-                                                    fullname);
-                setAuthService(authService);
-                loginComplete(username, authService.getAuthenticationToken());
-            } catch (AuthenticationException ae) {
-                throw new LoginFailureException(ae);
-            }
+            super.authenticate(username, fullname);
         }
     }
 
@@ -974,22 +985,19 @@ public class ServerSessionManager {
         public void authenticate(String username, String password)
             throws LoginFailureException
         {
-            fireConnecting(BUNDLE.getString(
-                    "Sending authentication details..."));
-            try {
-                AuthenticationService authService =
-                        AuthenticationManager.login(getAuthInfo(), username,
-                                                    password);
-                setAuthService(authService);
-                loginComplete(username, authService.getAuthenticationToken());
-            } catch (AuthenticationException ae) {
-                throw new LoginFailureException(ae);
-            }
+            super.authenticate(username, password);
         }
     }
 
-    public class WebURLLoginControl extends LoginControl {
-        public WebURLLoginControl(AuthenticationInfo info) {
+    /**
+     * A wrapper that works with either a NoAuthLoginControl or a
+     * WebServiceLoginControl, depending on which method the UI uses.
+     */
+    public class EitherLoginControl extends LoginControl {
+        private LoginControl wrapped;
+        private boolean cancelled = false;
+
+        public EitherLoginControl(AuthenticationInfo info) {
             super (info);
         }
 
@@ -999,13 +1007,109 @@ public class ServerSessionManager {
             ui.requestLogin(this);
         }
 
+        public NoAuthLoginControl getNoAuthLogin() {
+            // create a web service object to log in with
+            AuthenticationInfo info = super.getAuthInfo().clone();
+            info.setType(AuthenticationInfo.Type.NONE);
+            NoAuthLoginControl control = new NoAuthLoginControl(info);
+            control.setStarted();
+            setWrapped(control);
+            return control;
+        }
+
+        public UserPasswordLoginControl getUserPasswordLogin() {
+            // create a web service object to log in with
+            AuthenticationInfo info = super.getAuthInfo().clone();
+            info.setType(AuthenticationInfo.Type.WEB_SERVICE);
+            UserPasswordLoginControl control = new UserPasswordLoginControl(info);
+            control.setStarted();
+            setWrapped(control);
+            return control;
+        }
+
         public String getUsername() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return getWrapped().getUsername();
         }
 
         @Override
         public CredentialManager getCredentialManager() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return getWrapped().getCredentialManager();
+        }
+
+        @Override
+        public LoginParameters getLoginParameters() {
+            return getWrapped().getLoginParameters();
+        }
+
+        @Override
+        public synchronized ScannedClassLoader getClassLoader() {
+            return getWrapped().getClassLoader();
+        }
+        
+        @Override
+        public boolean isAuthenticated() {
+            if (getWrapped() == null) {
+                return false;
+            }
+
+            return getWrapped().isAuthenticated();
+        }
+
+        @Override
+        public boolean isAuthenticating() {
+            if (getWrapped() == null) {
+                return false;
+            }
+
+            return getWrapped().isAuthenticating();
+        }
+
+        @Override
+        public synchronized void cancel() {
+            cancelled = true;
+
+            if (getWrapped() != null) {
+                getWrapped().cancel();
+            }
+        }
+
+        @Override
+        protected boolean waitForLogin() throws InterruptedException {
+            synchronized (this) {
+                // wait for a wrapper to show up
+                while (getWrapped() == null) {
+                    wait();
+                }
+            }
+
+            // when the wrapper changes, we will cancel the pending login
+            // to make sure that the call to waitForLogin() returns.  Therefore
+            // we ignore when the wrapper returns fals (cancellation), and
+            // only pay attention to our own cancelled value.
+            while (!isCancelled()) {
+                if (getWrapped().waitForLogin()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected synchronized void setWrapped(LoginControl wrapped) {
+            if (this.wrapped != null) {
+                this.wrapped.cancel();
+            }
+
+            this.wrapped = wrapped;
+            notify();
+        }
+
+        protected synchronized LoginControl getWrapped() {
+            return wrapped;
+        }
+
+        protected synchronized boolean isCancelled() {
+            return cancelled;
         }
     }
 
