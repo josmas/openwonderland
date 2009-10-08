@@ -7,14 +7,14 @@
         <Menu class="javax.swing.JMenu" name="fileMenu">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/bundle.properties" key="File" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/Bundle.properties" key="File" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Menu>
         <Menu class="javax.swing.JMenu" name="editMenu">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/bundle.properties" key="Edit" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/Bundle.properties" key="Edit" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Menu>
@@ -42,7 +42,7 @@
         <Menu class="javax.swing.JMenu" name="toolsMenu">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/bundle.properties" key="Tools" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/Bundle.properties" key="Tools" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Menu>
@@ -142,7 +142,7 @@
               </FontInfo>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/bundle.properties" key="Location:" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/Bundle.properties" key="Location:" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
@@ -154,7 +154,7 @@
         <Component class="javax.swing.JButton" name="goButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/bundle.properties" key="Go!" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/jdesktop/wonderland/client/jme/resources/Bundle.properties" key="Go!" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Events>

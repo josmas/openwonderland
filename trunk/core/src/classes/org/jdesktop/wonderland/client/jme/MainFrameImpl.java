@@ -58,7 +58,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private static final Logger LOGGER =
             Logger.getLogger(MainFrameImpl.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/client/jme/resources/bundle");
+            "org/jdesktop/wonderland/client/jme/resources/Bundle");
     private JMenuItem logoutMI;
     private JMenuItem exitMI;
     private ButtonGroup cameraButtonGroup = new ButtonGroup();
@@ -730,7 +730,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverPanel.setPreferredSize(new java.awt.Dimension(692, 35));
 
         serverLabel.setFont(serverLabel.getFont());
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/Bundle"); // NOI18N
         serverLabel.setText(bundle.getString("Location:")); // NOI18N
 
         serverField.addActionListener(new java.awt.event.ActionListener() {

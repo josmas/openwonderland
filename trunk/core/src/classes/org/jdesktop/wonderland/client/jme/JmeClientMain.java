@@ -73,7 +73,7 @@ public class JmeClientMain {
     private static final Logger LOGGER =
             Logger.getLogger(JmeClientMain.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/client/jme/resources/bundle");
+            "org/jdesktop/wonderland/client/jme/resources/Bundle");
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
     // standard properties
