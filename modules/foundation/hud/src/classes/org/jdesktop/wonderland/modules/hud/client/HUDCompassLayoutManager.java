@@ -132,13 +132,7 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
                         location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, hudCenterY - compHeight / 2f);
                         break;
                     case CENTER:
-                        float compY = hudCenterY - compHeight/2f;
-                        if (compHeight > hudHeight) {
-                            compY = hudY + hudHeight - compHeight - MIN_TOP_MARGIN;
-                        } else {
-                            compY = hudCenterY - compHeight / 2f;
-                        }
-                        location.set(hudCenterX - compWidth / 2f, compY);
+                        location.set(hudCenterX - compWidth / 2f, hudCenterY - compHeight / 2f);
                         break;
                     case NORTHWEST:
                         location.set(MIN_LEFT_MARGIN, hudHeight - MIN_TOP_MARGIN - compHeight);
@@ -183,6 +177,11 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
                 }
 
                 location.set(x, y);
+            }
+
+            if (location.y + compHeight > hudY + hudHeight) {
+                // make sure frame header isn't off top of HUD
+                location.set(location.x, hudY + hudHeight - MIN_TOP_MARGIN - compHeight);
             }
 
             Vector2f currentPosition = positionMap.get(component);
