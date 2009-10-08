@@ -64,7 +64,7 @@ public class HUDDisplayer implements View2DDisplayer {
 
         HUDComponent component = mainHUD.createComponent(window);
         component.setName(app.getName());
-        component.setPreferredLocation(Layout.NORTH);
+        component.setPreferredLocation(Layout.CENTER);
 
         // Maintain an association between components and their windows.
         // Note: it would be nice of the HUD could do this but its tricky.
