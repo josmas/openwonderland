@@ -42,7 +42,7 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
     private static final int MIN_LEFT_MARGIN = 10;
     private static final int MIN_RIGHT_MARGIN = 10;
     private static final int MIN_TOP_MARGIN = 20;
-    private static final int MIN_BOTTOM_MARGIN = 10;
+    private static final int MIN_BOTTOM_MARGIN = 5;
     protected Map<HUDComponent, Vector2f> positionMap;
 
     public HUDCompassLayoutManager(HUD hud) {
@@ -156,16 +156,24 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
                 int x = component.getX();
                 int y = component.getY();
 
-                if (x < hud.getX() + MIN_LEFT_MARGIN) {
-                    x = hud.getX() + MIN_LEFT_MARGIN;
-                } else if (x + compWidth > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
-                    x = (int) (hud.getX() + hudWidth - MIN_RIGHT_MARGIN - compWidth);
+                if (x + compWidth < hud.getX() + MIN_LEFT_MARGIN*4) {
+                    // allow component to move off left edge, with at least
+                    // MIN_LEFT_MARGIN visible (close button visible)
+                    x = (int) (hud.getX() + MIN_LEFT_MARGIN*4 - compWidth);
+                } else if (x > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
+                    // allow component to move off right edge, with at least
+                    // MIN_RIGHT_MARGIN visible
+                    x = hud.getX() + hudWidth - MIN_RIGHT_MARGIN;
                 }
-                if (y < hud.getY() + MIN_BOTTOM_MARGIN) {
-                    y = hud.getY() + MIN_BOTTOM_MARGIN;
+                if (y + compHeight < hud.getY() + MIN_BOTTOM_MARGIN) {
+                    // allow component to move off bottom edge, with at least
+                    // MIN_BOTTOM_MARGIN visible (header visible)
+                    y = (int) (hud.getY() + MIN_BOTTOM_MARGIN - compHeight);
                 } else if (y + compHeight > hud.getY() + hudHeight - MIN_TOP_MARGIN) {
+                    // do not allow component to move off top of HUD
                     y = (int) (hud.getY() + hudHeight - MIN_TOP_MARGIN - compHeight);
                 }
+
                 location.set(x, y);
             }
 
