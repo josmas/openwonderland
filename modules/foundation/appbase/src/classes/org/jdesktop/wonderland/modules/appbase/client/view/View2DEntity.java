@@ -1198,7 +1198,6 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void update () {
-       
         // Only-Update-When-Visible Optimization
         // 1. Always perform any visibility or size changes immediately.
         if ((changeMask & (CHANGED_VISIBLE | CHANGED_SIZE_APP)) == 0) {
@@ -1380,7 +1379,7 @@ public abstract class View2DEntity implements View2D {
                 // Some popups initiall are decorated and then are set to undecorated before
                 // the popup becomes visible. So to avoid wasting time, wait until the window
                 // becomes visible before attaching its frame.
-                if (decorated && !ortho && isActuallyVisible()) {
+                if (decorated && isActuallyVisible()) {
                     if (!hasFrame()) {
                         logger.fine("Attach frame");
                         attachFrame();
@@ -1394,18 +1393,18 @@ public abstract class View2DEntity implements View2D {
             }
             
             if ((changeMask & CHANGED_TITLE) != 0) {
-                if (decorated && !ortho && hasFrame()) {
+                if (decorated && hasFrame()) {
                     frameUpdateTitle();
                 }
             }
 
             if ((changeMask & (CHANGED_TYPE | CHANGED_ORTHO)) != 0) {
-                if (decorated && !ortho) {
+                if (decorated) {
                     reattachFrame();
                 }
             }
             if ((changeMask & (CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) {
-                if (decorated && !ortho) {
+                if (decorated) {
                     frameUpdateUserResizable();
                 }
             }
@@ -1544,10 +1543,8 @@ public abstract class View2DEntity implements View2D {
         }
 
         sgProcessChanges();
-        
-        if (!ortho) {
-            frameUpdate();
-        }
+
+        frameUpdate();
 
         /* For Debug 
         System.err.println("************* After View2DEntity.processChanges, viewNode = ");
