@@ -32,7 +32,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
@@ -252,11 +251,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 });
 
                 addToWindowMenu(fpsMI, -1);
-
-                // Help menu
-                HelpSystem helpSystem = new HelpSystem();
-                JMenu helpMenu = helpSystem.getHelpJMenu();
-                mainMenuBar.add(helpMenu);
             }
         });
     }
@@ -568,6 +562,27 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public void addToHelpMenu(JMenuItem menuItem) {
+        addToMenu(helpMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToHelpMenu(JMenuItem menuItem, int index) {
+        addToMenu(helpMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeFromHelpMenu(JMenuItem menuItem) {
+        removeFromMenu(helpMenu, menuItem);
+    }
+
+    /**
      * Set the server URL in the location field
      * @param serverURL the server URL to set
      */
@@ -702,6 +717,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         placemarksMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
         windowMenu = new javax.swing.JMenu();
+        helpMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -779,6 +795,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         windowMenu.setText(bundle1.getString("MainFrameImpl.windowMenu.text")); // NOI18N
         mainMenuBar.add(windowMenu);
 
+        helpMenu.setText(bundle1.getString("MainFrameImpl.helpMenu.text")); // NOI18N
+        mainMenuBar.add(helpMenu);
+
         setJMenuBar(mainMenuBar);
 
         pack();
@@ -807,6 +826,7 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JButton goButton;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JMenu insertMenu;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JMenu placemarksMenu;

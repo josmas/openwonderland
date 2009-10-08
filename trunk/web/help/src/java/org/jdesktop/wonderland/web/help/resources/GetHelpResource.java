@@ -48,7 +48,9 @@ public class GetHelpResource {
      */
     @GET
     @Produces({"text/html", "images/*"})
-    public Response getHelp(@PathParam("modulename") String moduleName, @PathParam("path") String path) {
+    public Response getHelp(@PathParam("modulename") String moduleName,
+            @PathParam("path") String path) {
+        
         Logger logger = Logger.getLogger(GetHelpResource.class.getName());
         
         /*
