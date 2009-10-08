@@ -29,7 +29,7 @@ public enum AudioQuality {
     BEST    (44100, 2, 44100, 1, "High (44.1k stereo)");
     
     private final ResourceBundle bundle = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/client/jme/resources/bundle");
+            "org/jdesktop/wonderland/client/jme/resources/Bundle");
 
     private final int sampleRate;
     private final int channels;
