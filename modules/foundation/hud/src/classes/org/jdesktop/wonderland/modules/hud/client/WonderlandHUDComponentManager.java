@@ -302,7 +302,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         view.setPixelScaleOrtho(hudPixelScale, false);
 
         // position the component on the screen.
-        if (view.getType() == View2D.Type.PRIMARY) {
+        if ((view.getType() == View2D.Type.PRIMARY) || (view.getType() == View2D.Type.UNKNOWN)) {
             Vector2f location = (layout != null) ? layout.getLocation(component) : new Vector2f(component.getX(), component.getY());
             component.setLocation((int) location.x, (int) location.y, false);
             view.setLocationOrtho(new Vector2f(location.x + view.getDisplayerLocalWidth() / 2, location.y + view.getDisplayerLocalHeight() / 2), false);
