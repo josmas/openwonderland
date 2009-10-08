@@ -274,6 +274,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         xTranslationPanel.setLayout(new javax.swing.BoxLayout(xTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
+        jLabel1.setForeground(new java.awt.Color(255, 0, 0));
         jLabel1.setText(bundle.getString("PositionHUDPanel.jLabel1.text")); // NOI18N
         xTranslationPanel.add(jLabel1);
 
@@ -285,6 +286,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         yTranslationPanel.setLayout(new javax.swing.BoxLayout(yTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
+        jLabel2.setForeground(new java.awt.Color(0, 255, 0));
         jLabel2.setText(bundle.getString("PositionHUDPanel.jLabel2.text")); // NOI18N
         yTranslationPanel.add(jLabel2);
 
@@ -296,6 +298,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         zTranslationPanel.setLayout(new javax.swing.BoxLayout(zTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
+        jLabel3.setForeground(new java.awt.Color(0, 0, 255));
         jLabel3.setText(bundle.getString("PositionHUDPanel.jLabel3.text")); // NOI18N
         zTranslationPanel.add(jLabel3);
 
@@ -322,6 +325,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         xRotationPanel.setLayout(new javax.swing.BoxLayout(xRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
+        jLabel11.setForeground(new java.awt.Color(255, 0, 0));
         jLabel11.setText(bundle.getString("PositionHUDPanel.jLabel11.text")); // NOI18N
         xRotationPanel.add(jLabel11);
 
@@ -333,6 +337,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         yRotationPanel.setLayout(new javax.swing.BoxLayout(yRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
+        jLabel12.setForeground(new java.awt.Color(0, 255, 0));
         jLabel12.setText(bundle.getString("PositionHUDPanel.jLabel12.text")); // NOI18N
         yRotationPanel.add(jLabel12);
 
@@ -344,6 +349,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         zRotationPanel.setLayout(new javax.swing.BoxLayout(zRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
+        jLabel13.setForeground(new java.awt.Color(0, 0, 255));
         jLabel13.setText(bundle.getString("PositionHUDPanel.jLabel13.text")); // NOI18N
         zRotationPanel.add(jLabel13);
 
