@@ -65,7 +65,7 @@ public class ServerSessionManager {
             Logger.getLogger(ServerSessionManager.class.getName());
 
     private static final ResourceBundle BUNDLE =  ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/client/login/bundle");
+            "org/jdesktop/wonderland/client/login/Bundle");
 
     /** where on the server to find the details object */
     private static final String DETAILS_URL =
