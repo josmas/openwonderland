@@ -104,7 +104,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * controlArb will be called with the user name of this client. 
      */
     private synchronized void take(boolean impolite) {
-        AppXrw.logger.severe("Enter take");
+        AppXrw.logger.info("Enter take");
 
         // Enable our client to send events to the server ("event ahead").
         // If control is refused the events will just be ignored.
@@ -125,7 +125,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * Tell the server to release control.
      */
     private synchronized void release() {
-        AppXrw.logger.severe("Enter release");
+        AppXrw.logger.info("Enter release");
 
         eventsEnabled = false;
         takeControlPending = false;
@@ -145,7 +145,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * attempt was polite get confirmation from the user to continue.
      */
     synchronized void controlRefused() {
-        AppXrw.logger.severe("Control refused");
+        AppXrw.logger.info("Control refused");
 
         String currentController = serverProxy.getControllingUser();
 
@@ -177,7 +177,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * The server has told us that our request for control has succeeded. 
      */
     synchronized void controlGained() {
-        AppXrw.logger.severe("Control gained");
+        AppXrw.logger.info("Control gained");
 
         String currentController = serverProxy.getControllingUser();
 
@@ -198,7 +198,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * The server has taken control away from us.
      */
     synchronized void controlLost() {
-        AppXrw.logger.severe("Control lost");
+        AppXrw.logger.info("Control lost");
         super.releaseControl();
         takeControlPending = false;
         eventsEnabled = false;
