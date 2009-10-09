@@ -6,7 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
+    "http://www.w3.org/TR/html4/loose.dtd">
 
 <%@ taglib uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
@@ -14,8 +14,8 @@
     <head>
         <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
-<script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
-<script type="text/javascript">
+        <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
+        <script type="text/javascript">
     var groupId = "${requestScope['id']}";
     var create = "${requestScope['create']}";
     var group;
@@ -49,17 +49,10 @@
             updateMember(group.membersInternal[i], i);
         }
         
-        var lastRow = $('memberTable').down('tr', group.membersInternal.length + 1);
+        var lastRow = $('memberTable').down('tr', group.membersInternal.length);
         while (lastRow.next() != null) {
             lastRow.next().remove();
         }
-
-        lastRow = new Element('tr');
-        var lastTD = new Element('td', { 'class': 'installed'});
-        lastTD.insert(new Element('a', { 'href': 'javascript:void(0);',
-                                  'onclick': 'addMember()' }).update("new member"));
-        lastRow.insert(lastTD);
-        $('memberTable').insert(lastRow);
     }
 
     function addMember() {
@@ -74,7 +67,7 @@
         var links = [];
         processMember(member, index, links);
         
-        var row = $('memberTable').down('tr', index + 2);
+        var row = $('memberTable').down('tr', index + 1);
         if (row == null) {
             row = new Element('tr');
             $('memberTable').insert(row);
@@ -89,14 +82,14 @@
         var name = row.down('td', 0);
         name.update();
         name.insert(new Element('input', { 'type': 'text', 'name': 'id',
-                                           'value': member.id,
-                                           'onChange': 'changeMember(' + index + ')' }));
+            'value': member.id,
+            'onChange': 'changeMember(' + index + ')' }));
 
         var owner = row.down('td', 1);
         owner.update();
         owner.insert(new Element('input', { 'type': 'checkbox', 'name': 'owner',
-                                            'checked': (member.owner == "true"),
-                                            'onChange': 'changeMember(' + index + ')'}));
+            'checked': (member.owner == "true"),
+            'onChange': 'changeMember(' + index + ')'}));
 
         var actions = row.down('td', 2);
         actions.update();
@@ -107,7 +100,7 @@
     }
 
     function changeMember(index) {
-        var row = $('memberTable').down('tr', index + 2);
+        var row = $('memberTable').down('tr', index + 1);
         
         var id = row.down('td', 0).down('input', 0);
         group.membersInternal[index].id = id.getValue();
@@ -127,7 +120,7 @@
 
     function processMember(member, index, links) {
         links.push(new Element('a', { 'href': 'javascript:void(0);',
-                        'onclick': 'removeMember(\'' + index + '\')' }).update("delete"));
+            'onclick': 'removeMember(\'' + index + '\')' }).update("delete"));
     }
 
     function submitForm() {
@@ -145,36 +138,35 @@
         }
 
         new Ajax.Request('resources/groups/' + groupId, {
-                method: 'post',
-                contentType: 'application/json',
-                postBody: Object.toJSON(group),
-                onSuccess: function(response) {
-                    parent.location.replace("/wonderland-web-front/admin?pageURL=/security-groups/security-groups/editor");
-                },
-                onFailure: function(response) {
-                    alert("Error " + response.statusText + "<br>" +
-                          response.responseText);
-                }
+            method: 'post',
+            contentType: 'application/json',
+            postBody: Object.toJSON(group),
+            onSuccess: function(response) {
+                parent.location.replace("/wonderland-web-front/admin?pageURL=/security-groups/security-groups/editor");
+            },
+            onFailure: function(response) {
+                alert("Error " + response.statusText + "<br>" +
+                    response.responseText);
+            }
         });
     }
-</script>
-</head>
-<body onload="updateMembers();">
-<h1>Details for group ${requestScope['id']}</h1>
+        </script>
+    </head>
+    <body onload="updateMembers();">
+        <h2>Group Members for ${requestScope['id']}</h2>
 
-<form id="memberForm" action="javascript:void(0)">
-<table class="installed" id="memberTable">
-    <tr>
-        <td colspan="3"><h3>Members</h3></td>
-    </tr>
-    <tr class="header">
-        <td class="installed"><b>Name</b></td>
-        <td class="installed"><b>Owner</b></td>
-        <td class="installed"><b>Actions</b></td>
-    </tr>
-</table>
-
-<a href="/wonderland-web-front/admin?pageURL=/security-groups/security-groups/editor" target="_top">Cancel</a>
-<a href="javascript:void(0)" onclick="submitForm()">Update group</a>
-</form>
-</body>
+        <form id="memberForm" action="javascript:void(0)">
+            <table class="installed" id="memberTable">
+                <tr class="header">
+                    <td class="installed"><b>Name</b></td>
+                    <td class="installed"><b>Owner</b></td>
+                    <td class="installed"><b>Actions</b></td>
+                </tr>
+            </table>
+            <div id="actionLinks">
+                <a href="/wonderland-web-front/admin?pageURL=/security-groups/security-groups/editor" target="_top">Cancel</a>
+                <a href="javascript:void(0)" onclick="addMember()">Add Group Member</a>
+                <a href="javascript:void(0)" onclick="submitForm()">Save</a>
+            </div>
+        </form>
+    </body>

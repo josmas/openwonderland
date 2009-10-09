@@ -16,18 +16,19 @@
         <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
         <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
-        <title>Select group name</title>
+        <title>Group Name</title>
     </head>
     <body>
-        <h1>Select Group Name</h1>
+        <h2>Group Name</h2>
 
         <form id="nameForm" action="/security-groups/security-groups/editor">
             <input type="hidden" name="action" value="edit"/>
             <input type="hidden" name="create" value="true"/>
 
             Group name: <input type="text" name="id"/>
-            <br>
-            <a href="javascript:void(0)" onclick="$('nameForm').submit()">Edit group</a>
+            <div id="actionLinks">
+                <a href="javascript:void(0)" onclick="$('nameForm').submit()">Edit Group Members</a>
+            </div>
         </form>
     </body>
 </html>
