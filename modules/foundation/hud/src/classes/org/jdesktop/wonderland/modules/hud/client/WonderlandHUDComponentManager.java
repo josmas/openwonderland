@@ -459,6 +459,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 worldView.setVisibleUser(true, false);
                 componentMovedWorld(component);
                 worldView.update();
+                worldView.updateFrame();
             }
         }
     }
@@ -478,6 +479,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 worldView.setVisibleApp(false, false);
                 worldView.setVisibleUser(false, false);
                 worldView.update();
+                worldView.updateFrame();
             } else {
                 logger.warning("attempt to set world invisible with no world view");
             }

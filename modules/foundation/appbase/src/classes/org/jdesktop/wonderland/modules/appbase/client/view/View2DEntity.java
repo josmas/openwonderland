@@ -68,6 +68,10 @@ public abstract class View2DEntity implements View2D {
 
     private static enum AttachState { DETACHED, ATTACHED_TO_ENTITY, ATTACHED_TO_WORLD };
 
+    private static enum FrameChange { 
+        ATTACH_FRAME, DETACH_FRAME, REATTACH_FRAME, UPDATE_TITLE, UPDATE_USER_RESIZABLE
+    };
+            
     // Attribute changed flags 
     protected static final int CHANGED_TYPE             = 0x0001;
     protected static final int CHANGED_PARENT           = 0x0002;
@@ -222,6 +226,9 @@ public abstract class View2DEntity implements View2D {
     private int pointerLastX;
     private int pointerLastY;
 
+    /** A list of frame changes to be performed outside the window lock. */
+    private LinkedList<FrameChange> frameChanges = new LinkedList<FrameChange>();
+
     /**
      * Create an instance of View2DEntity with default geometry node.
      * @param The entity in which the view is displayed.
@@ -274,6 +281,7 @@ public abstract class View2DEntity implements View2D {
         setOrtho(false, false);
         setGeometryNode(null, false);
         update();
+        updateFrame();
         children.clear();
 
         if (gui != null) {
@@ -391,6 +399,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_TYPE;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -436,6 +445,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PARENT;
         if (update) {
             update();
+            updateFrame();
         }
 
         // Inherit ortho state of parent (must do this after self update)
@@ -463,7 +473,8 @@ public abstract class View2DEntity implements View2D {
         this.visibleApp = visibleApp;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
-             update();
+            update();
+            updateFrame();
         }
     }
 
@@ -486,6 +497,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -498,6 +510,7 @@ public abstract class View2DEntity implements View2D {
     private synchronized void updateVisibility () {
         changeMask |= CHANGED_VISIBLE;
         update();
+        updateFrame();
     }
 
     /** {@inheritDoc} */
@@ -523,6 +536,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_DECORATED;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -542,6 +556,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_TITLE;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -564,6 +579,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_USER_RESIZABLE;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -579,6 +595,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_STACK;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -629,6 +646,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_GEOMETRY;
         if (update) {
             update();
+            updateFrame();
         }
     }
     
@@ -658,6 +676,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_SIZE_APP;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -732,6 +751,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -767,6 +787,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -825,6 +846,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_LOCATION_ORTHO;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -849,6 +871,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -879,6 +902,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -898,6 +922,7 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -958,6 +983,7 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Called by the UI to indicate a drag vector update during interactive resize.
+     * This is called on the EDT.
      */
     public synchronized void userResizeUpdate (Vector2f dragVector) {
         //System.err.println("********* Resize update, dragVector = " + dragVector);
@@ -982,10 +1008,12 @@ public abstract class View2DEntity implements View2D {
                 geometryNode.setSize(width, height);
                 geometryNode.setTexCoords(widthRatio, heightRatio);
                 ClientContextJME.getWorldManager().addToUpdateList(viewNode);
-                
-                userResizeFrameUpdate(width, height, userResizeNewSize);
             }
-        }, null, true);
+        }, null, false);
+
+        // Must do this *outside* the render updater (otherwise a deadlock results between
+        // the Renderer thread and the EDT.
+        userResizeFrameUpdate(width, height, userResizeNewSize);
     }
 
     public synchronized void userResizeFinish () {
@@ -1073,6 +1101,7 @@ public abstract class View2DEntity implements View2D {
 
         if (update) {
             update();
+            updateFrame();
         }
     }
 
@@ -1231,16 +1260,6 @@ public abstract class View2DEntity implements View2D {
             case ATTACHED_TO_ENTITY:
                 if (parentEntity != null) {
                     logger.fine("Remove entity " + entity + " from parent entity " + parentEntity);
-
-                    /* TODO: 597: I thought this might fix it. But it breaks resize. The frame
-                       disappears after a resize
-                    if (hasFrame()) {
-                        logger.fine("Detach frame");
-                        detachFrame();
-                        changeMask |= CHANGED_DECORATED;
-                    }
-                    */
-
                     RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                     sgChangeAttachPointSetAddEntity(rc, null, null, null);
                     parentEntity.removeEntity(entity);
@@ -1369,43 +1388,44 @@ public abstract class View2DEntity implements View2D {
             }            
         } // End Topology Changes
 
-        // React to frame changes (must do before handling size changes)
-        if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_ORTHO | CHANGED_TYPE |
+        // Determine what frame changes need to be performed. But these aren't executed now;
+        // they are executed later by view.updateFrame, which must be invoked outside the window lock.
+        if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_TYPE |
                            CHANGED_PIXEL_SCALE | CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) { 
             logger.fine("Update frame for view " + this);
             logger.fine("decorated " + decorated);
 
-            if ((changeMask & (CHANGED_DECORATED | CHANGED_ORTHO | CHANGED_VISIBLE)) != 0) {
+            if ((changeMask & (CHANGED_DECORATED | CHANGED_VISIBLE)) != 0) {
                 // Some popups initiall are decorated and then are set to undecorated before
                 // the popup becomes visible. So to avoid wasting time, wait until the window
                 // becomes visible before attaching its frame.
                 if (decorated && isActuallyVisible()) {
                     if (!hasFrame()) {
                         logger.fine("Attach frame");
-                        attachFrame();
+                        frameChanges.add(FrameChange.ATTACH_FRAME);
                     }
                 } else {
                     if (hasFrame()) {
                         logger.fine("Detach frame");
-                        detachFrame();
+                        frameChanges.add(FrameChange.DETACH_FRAME);
                     }
                 }
             }
             
             if ((changeMask & CHANGED_TITLE) != 0) {
                 if (decorated && hasFrame()) {
-                    frameUpdateTitle();
+                    frameChanges.add(FrameChange.UPDATE_TITLE);
                 }
             }
 
-            if ((changeMask & (CHANGED_TYPE | CHANGED_ORTHO)) != 0) {
+            if ((changeMask & CHANGED_TYPE) != 0) {
                 if (decorated) {
-                    reattachFrame();
+                    frameChanges.add(FrameChange.REATTACH_FRAME);
                 }
             }
             if ((changeMask & (CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) {
                 if (decorated) {
-                    frameUpdateUserResizable();
+                    frameChanges.add(FrameChange.UPDATE_USER_RESIZABLE);
                 }
             }
         }            
@@ -1543,8 +1563,6 @@ public abstract class View2DEntity implements View2D {
         }
 
         sgProcessChanges();
-
-        frameUpdate();
 
         /* For Debug 
         System.err.println("************* After View2DEntity.processChanges, viewNode = ");
@@ -2277,6 +2295,33 @@ public abstract class View2DEntity implements View2D {
         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
         CollisionComponent cc = collisionSystem.createCollisionComponent(rc.getSceneRoot());
         entity.addComponent(CollisionComponent.class, cc);
+    }
+
+
+    /** {@inheritDoc} */
+    public void updateFrame () {
+        for (FrameChange frameChg : frameChanges) {
+            switch (frameChg) {
+            case ATTACH_FRAME:
+                attachFrame();
+                break;
+            case DETACH_FRAME:
+                detachFrame();
+                break;
+            case REATTACH_FRAME:
+                reattachFrame();
+                break;
+            case UPDATE_TITLE:
+                frameUpdateTitle();
+                break;
+            case UPDATE_USER_RESIZABLE:
+                frameUpdateUserResizable();
+                break;
+            }
+        }
+        frameChanges.clear();
+
+        frameUpdate();
     }
 
     @Override

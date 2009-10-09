@@ -217,38 +217,42 @@ public class WindowXrw extends WindowConventional {
      * @param winTransientFor If non-null, the window whose visibility is being changed
      * is a transient window for winTransientFor.
      */
-    public synchronized void setVisibleApp(boolean visible, boolean isPopup) {
-        if (isVisibleApp() == visible) {
-            return;
-        }
-
-        if (isPopup || !isDecorated()) {
-            setType(Type.POPUP);
-
-            // We assign the popup parent when the popup is first made visible
-            // TODO: This is a kludge. Eventually replace with winTransientFor
-            if (getParent() == null) {
-                setParent(determineParentForPopup());
+    public void setVisibleApp(boolean visible, boolean isPopup) {
+        synchronized (this) {
+            if (isVisibleApp() == visible) {
+                return;
             }
-        } else {
-            // If type hasn't been determined at this point, make window a secondary
-            if (visible && getType() == Type.UNKNOWN) {
-                setType(Type.SECONDARY);
+
+            if (isPopup || !isDecorated()) {
+                setType(Type.POPUP);
+
+                // We assign the popup parent when the popup is first made visible
+                // TODO: This is a kludge. Eventually replace with winTransientFor
+                if (getParent() == null) {
+                    setParent(determineParentForPopup());
             }
+            } else {
+                // If type hasn't been determined at this point, make window a secondary
+                if (visible && getType() == Type.UNKNOWN) {
+                    setType(Type.SECONDARY);
+                }
+            }
+
+            setVisibleAppPart1(visible);
+
+            performFirstVisibleInitialization();
+
+            ((AppXrw)app).trackWindowVisibility(this);
+
+            // If this is still a secondary assign a parent if necessary
+            if (getType() == Type.SECONDARY && getParent() == null) {
+                setParent(app.getPrimaryWindow());
+            }
+
+            setVisibleAppPart2();
         }
 
-        setVisibleAppPart1(visible);
-
-        performFirstVisibleInitialization();
-
-        ((AppXrw)app).trackWindowVisibility(this);
-
-        // If this is still a secondary assign a parent if necessary
-        if (getType() == Type.SECONDARY && getParent() == null) {
-            setParent(app.getPrimaryWindow());
-        }
-
-        setVisibleAppPart2();
+        updateFrames();
     }
 
     // TODO: This is a kludge. Eventually replace with winTransientFor
@@ -342,14 +346,17 @@ public class WindowXrw extends WindowConventional {
      * @param changingView The view the user manipulated to change the transform.
      */
     @Override
-    public synchronized void notifyUserTransformCell (CellTransform transform, View2D changingView) {
+    public void notifyUserTransformCell (CellTransform transform, View2D changingView) {
+        synchronized (this) {
+            // TODO: someday: this is currently only used for planar moves of secondary windows.
+            // Since we cannot currently rotate secondaries, we can just extract the translation and
+            // use the client method windowSetUserDisplacement.
+            Vector3f userTranslation = transform.getTranslation(null);
+            ClientXrw client = ((AppXrw) app).getClient();
+            client.windowSetUserDisplacement(this, userTranslation);
+        }
 
-        // TODO: someday: this is currently only used for planar moves of secondary windows.
-        // Since we cannot currently rotate secondaries, we can just extract the translation and
-        // use the client method windowSetUserDisplacement.
-        Vector3f userTranslation = transform.getTranslation(null);
-        ClientXrw client = ((AppXrw) app).getClient();
-        client.windowSetUserDisplacement(this, userTranslation);
+        super.notifyUserTransformCell(transform, changingView);
     }
 
     /** {@inheritDoc} */

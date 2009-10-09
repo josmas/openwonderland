@@ -121,6 +121,7 @@ public class View2DCell extends View2DEntity {
         changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
+            updateFrame();
         }
     }
         

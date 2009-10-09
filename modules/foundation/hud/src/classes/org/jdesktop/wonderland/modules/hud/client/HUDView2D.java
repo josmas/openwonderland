@@ -76,6 +76,7 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
         changeMask = CHANGED_ALL;
         name = "HUDView2D for " + window.getName();
         update();
+        updateFrame();
     }
 
     private void createFrame() {
