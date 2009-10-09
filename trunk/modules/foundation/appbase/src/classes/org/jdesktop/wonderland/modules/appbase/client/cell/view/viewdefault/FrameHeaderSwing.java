@@ -191,9 +191,25 @@ public class FrameHeaderSwing
         updateLayout(view.getDisplayerLocalWidth(), view.getDisplayerLocalHeight());         
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc} 
+     * <br><br>
+     * Note: sometimes this gets called on the EDT and sometimes it gets called off the EDT.
+     */
     protected void updateLayout(final float newWidth3D, final float newHeight3D) {
-        updateTheLayout(newWidth3D, newHeight3D);
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateTheLayout(newWidth3D, newHeight3D);
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable () {
+                    public void run () {
+                        updateTheLayout(newWidth3D, newHeight3D);
+                    }
+                });
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
     private void updateTheLayout (float newWidth3D, float newHeight3D) {

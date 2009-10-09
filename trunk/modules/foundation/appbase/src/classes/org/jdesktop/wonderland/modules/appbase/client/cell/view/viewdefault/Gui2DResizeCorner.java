@@ -159,7 +159,11 @@ class Gui2DResizeCorner extends Gui2DSide {
     @Override
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
         if (action.type == ActionType.TO_FRONT) {
-            view.getWindow().restackToTop();
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    view.getWindow().restackToTop();
+                }
+            });
             return;
         }
 

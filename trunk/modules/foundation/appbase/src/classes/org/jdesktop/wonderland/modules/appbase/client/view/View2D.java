@@ -276,8 +276,14 @@ public interface View2D {
      */
     public void applyDeltaTranslationUser (Vector3f deltaTranslation, boolean update);
 
-    /** Apply all pending updates. */
+    /** Apply all pending updates to the view. */
     public void update ();
+
+    /** 
+     * Apply all pending updates to the frame of the view. Must be called after the update method.
+     * In addition, it must always be called <b>outside</b> the window lock.
+     */
+    public void updateFrame ();
 
     /** 
      * Converts the given 3D mouse event into a 2D event and forwards it along to the view's controlArb.

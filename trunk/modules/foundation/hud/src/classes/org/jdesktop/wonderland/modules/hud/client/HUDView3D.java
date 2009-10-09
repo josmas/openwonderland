@@ -59,8 +59,9 @@ public class HUDView3D extends View2DEntity implements HUDView {
         this.cell = cell;
 
         changeMask = CHANGED_ALL;
-        update();
         name = "HUDView3D for " + window.getName();
+        update();
+        updateFrame();
     }
 
     /**
