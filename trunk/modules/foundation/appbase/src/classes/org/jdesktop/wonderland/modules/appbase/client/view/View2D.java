@@ -276,7 +276,11 @@ public interface View2D {
      */
     public void applyDeltaTranslationUser (Vector3f deltaTranslation, boolean update);
 
-    /** Apply all pending updates to the view. */
+    /** 
+     * Apply all pending updates to the view. 
+     * <br><br>
+     * NOTE: you must always follow a call to this method with a call to the <code>updateFrame</code> method.
+     */
     public void update ();
 
     /** 
