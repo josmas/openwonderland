@@ -22,14 +22,17 @@
     <%@ page import="org.jdesktop.wonderland.modules.Module" %>
     <%@ page import="org.jdesktop.wonderland.common.modules.ModuleInfo" %>
     <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
-    <h3>Installed Modules</h3>
+    <h2>Manage Modules</h2>
     <form action="removeAll.jsp">
         <table class="installed">
+          <caption>
+              <span class="heading">Installed Modules</span>
+          </caption>
             <tr class="header">
                 <td width="5%" class="installed"></td>
-                <td width="15%" class="installed"><b>Module Name</b></td>
-                <td width="15%" class="installed"><b>Module Version</b></td>
-                <td width="65%" class="installed"><b>Description</b></td>
+                <td width="15%" class="installed">Module Name</td>
+                <td width="15%" class="installed">Module Version</td>
+                <td width="65%" class="installed">Description</td>
             </tr>
             <%
             ModuleManager manager = ModuleManager.getModuleManager();
@@ -40,7 +43,7 @@
                 ModuleInfo moduleInfo = installed.get(moduleName).getInfo();
                 String description = moduleInfo.getDescription();
             %>
-            <tr class="installed_a">
+            <tr class="installed">
                 <td width="5%" class="installed"><input type="checkbox" name="remove" value="<%= moduleName%>"/></td>
                 <td width="15%" class="installed"><%= moduleName%></td>
                 <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
@@ -48,14 +51,20 @@
             </tr>
             <% }%>
         </table>
-        <input type="submit" value="Remove Selected Modules">
+        <div id="actionLinks">
+            <input type="submit" value="Remove Selected Modules">
+        </div>
     </form>
-    <h3>Pending Modules (will be installed during next restart)</h3>
+    <br>
+
     <table class="installed">
+        <caption>
+              <span class="heading">Pending Modules (will be installed during next restart)</span>
+        </caption>
         <tr class="header">
-            <td width="15%" class="installed"><b>Module Name</b></td>
-            <td width="15%" class="installed"><b>Module Version</b></td>
-            <td width="70%" class="installed"><b>Description</b></td>
+            <td width="15%" class="installed">Module Name</td>
+            <td width="15%" class="installed">Module Version</td>
+            <td width="70%" class="installed">Description</td>
         </tr>
         <%
             Map<String, Module> pending = manager.getPendingModules();
@@ -65,7 +74,7 @@
                 String moduleName = entry.getKey();
                 ModuleInfo moduleInfo = entry.getValue().getInfo();
         %>
-        <tr class="installed_a">
+        <tr class="installed">
             <td width="15%" class="installed"><%= moduleName%></td>
             <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
             <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
@@ -73,12 +82,15 @@
         <% }%>
     </table>
     <br>
-    <h3>Removed Modules (will be removed during next restart)</h3>
+
     <table class="installed">
+        <caption>
+              <span class="heading">Removed Modules (will be removed during next restart)</span>
+        </caption>
         <tr class="header">
-            <td width="15%" class="installed"><b>Module Name</b></td>
-            <td width="15%" class="installed"><b>Module Version</b></td>
-            <td width="70%" class="installed"><b>Description</b></td>
+            <td width="15%" class="installed">Module Name</td>
+            <td width="15%" class="installed">Module Version</td>
+            <td width="70%" class="installed">Description</td>
         </tr>
         <%
         Map<String, ModuleInfo> uninstall = manager.getUninstallModuleInfos();
@@ -87,7 +99,7 @@
                 Map.Entry<String, ModuleInfo> entry = it3.next();
                 ModuleInfo moduleInfo = entry.getValue();
         %>
-        <tr class="installed_a">
+        <tr class="installed">
             <td width="15%" class="installed"><%= moduleInfo.getName()%></td>
             <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
             <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
@@ -95,15 +107,20 @@
         <% }%>
     </table>
     <br>
-    <h3>Install a New Module</h3>
-    <p>
-        Select a new module JAR to install and click INSTALL. If successful
-        the module will be installed during the next restart.
-    </p>
-    <form method="post" enctype="multipart/form-data" action="ModuleUploadServlet">
-        Module JAR file: <input type="file" name="moduleJAR">
-        <input type="submit" value="INSTALL">
-    </form>
-    <br>
+
+    <table class="installed">
+        <caption>
+            <span class="heading">Install a New Module</span>
+        </caption>
+        <tr class="installed">
+            <td class="installed">
+                Select a new module JAR to install and click INSTALL.<br>
+                <form method="post" enctype="multipart/form-data" action="ModuleUploadServlet">
+                    Module JAR file: <input type="file" name="moduleJAR">
+                    <input type="submit" value="INSTALL">
+                </form>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
