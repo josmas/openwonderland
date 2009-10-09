@@ -78,19 +78,16 @@
 </script>
 </head>
 <body onload="updateGroups();">
-<h1>View Groups</h1>
+<h2>Manage Groups</h2>
 
 <table class="installed" id="groupTable">
-    <tr>
-        <td colspan="3"><h3>Groups</h3></td>
-    </tr>
     <tr class="header">
-        <td class="installed"><b>Name</b></td>
-        <td class="installed"><b>Members</b></td>
-        <td class="installed"><b>Actions</b></td>
+        <td class="installed">Name</td>
+        <td class="installed">Members</td>
+        <td class="installed">Actions</td>
     </tr>
 </table>
-
-<a href="/security-groups/security-groups/editor?action=edit">Add group</a>
-
+<div id="actionLinks">
+     <a href="/security-groups/security-groups/editor?action=edit">Add group</a>
+</div>
 </body>
