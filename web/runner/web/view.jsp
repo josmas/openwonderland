@@ -142,11 +142,11 @@
     }
 </script>
 
-    <title>Server Status</title>
+    <title>Manage Server</title>
   </head>
 
   <body onload="updateServices(); setUpdatePeriod(15);">
-      <h2>Server Status (Host: <%= request.getLocalName()%>, Port: <%=request.getLocalPort()%>)</h2>
+      <h2>Manage Server</h2>
 
       <table class="installed" id="runnerTable">
           <caption>
@@ -160,6 +160,8 @@
           </tr>
       </table>
 
-      <a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
+      <div id="actionLinks">
+          <a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
+      </div>
   </body>
 </html>
