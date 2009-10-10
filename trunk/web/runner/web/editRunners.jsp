@@ -16,15 +16,15 @@
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
     </head>
     <body>
-        <h3>Edit Server Components</h3>
+        <h2>Edit Server Components</h2>
         <form action="run">
             <input type="hidden" name="action" value="editRunnersForm"/>
-            <table class="installed" id="runnersTable">
+            <table class="installed">
                 <tr class="header">
-                    <td class="installed"><b>Name</b></td>
-                    <td class="installed"><b>Class</b></td>
-                    <td class="installed"><b>Location</b></td>
-                    <td class="installed"><b>Actions</b></td>
+                    <td class="installed">Name</td>
+                    <td class="installed">Class</td>
+                    <td class="installed">Location</td>
+                    <td class="installed">Actions</td>
                 </tr>
                 <c:forEach var="entry" items="${requestScope['entries']}">
                     <tr>
@@ -35,11 +35,13 @@
                     </tr>
                 </c:forEach>
             </table>
-            <a href="/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=addRunner" target="_top">Add component</a>
-            <div style="float: right;">
-                <input type="submit" name="button" value="Save"/>
-                <input type="submit" name="button" value="Restore Defaults"/>
-                <input type="submit" name="button" value="Cancel"/>
+            <div id="actionLinks">
+                <a href="/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=addRunner" target="_top">Add component</a>
+                <div style="float: right;">
+                    <input type="submit" name="button" value="Save"/>
+                    <input type="submit" name="button" value="Restore Defaults"/>
+                    <input type="submit" name="button" value="Cancel"/>
+                </div>
             </div>
         </form>
     </body>
