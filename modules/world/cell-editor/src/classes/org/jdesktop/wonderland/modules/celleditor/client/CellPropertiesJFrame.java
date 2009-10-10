@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
-import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
@@ -61,7 +59,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -197,10 +194,6 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
                             // changed.
                             if (node == null) {
                                 createJTreeNode(cell);
-//
-//                                DefaultMutableTreeNode n = cellNodes.get(cell);
-//                                TreeModel m = cellHierarchyTree.getModel();
-//                                ((DefaultTreeModel)m).nodeStructureChanged(n.getParent());
                             }
                         }
                     }
@@ -940,34 +933,6 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
     }
 
     /**
-     * Adds an individual component panel to the set of panels, given the
-     * cell component factory and the component server state.
-     */
-    private void addComponentToPanelSet(CellComponentServerState state) {
-        // Since this is a new panel since the server state was fetched, add
-        // the component server state to the cell server state.
-        Class clazz = state.getClass();
-        selectedCellServerState.addComponentServerState(state);
-
-        // Next, add the component display name to the list and to the list
-        // of properties panels. We look up the properties in the manager of
-        // all component properties given the class name of the component
-        // server state.
-        PropertiesManager manager = PropertiesManager.getPropertiesManager();
-        PropertiesFactorySPI factory = manager.getPropertiesByClass(clazz);
-        if (factory != null) {
-            JPanel panel = factory.getPropertiesJPanel();
-            if (panel != null) {
-                String displayName = factory.getDisplayName();
-                listModel.addElement(displayName);
-                factoryList.add(factory);
-                factory.setCellPropertiesEditor(this);
-                factory.open();
-            }
-        }
-    }
-
-    /**
      * Given a component factory, adds the component to the server and upates
      * the GUI to indicate its presence
      */
@@ -992,10 +957,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         }
 
         if (response instanceof CellServerComponentResponseMessage) {
-            // If successful, add the component to the GUI
-            CellServerComponentResponseMessage cscrm =
-                    (CellServerComponentResponseMessage) response;
-            addComponentToPanelSet(cscrm.getCellComponentServerState());
+            // If successful, add the component to the GUI by refreshing the
+            // Cell that is selected.
+            setSelectedCell(selectedCell);
         }
         else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog
@@ -1053,10 +1017,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         // update the GUI with the new component. Otherwise, display an error
         // dialog box.
         if (response instanceof OKMessage) {
-            // If successful, add the component to the GUI
-            listModel.removeElement(factory.getDisplayName());
-            capabilityList.setSelectedIndex(-1);
-            factoryList.remove(factory);
+            // If successful, then remove the component from the GUI by
+            // refreshing the Cell that is selected.
+            setSelectedCell(selectedCell);
         }
         else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog
