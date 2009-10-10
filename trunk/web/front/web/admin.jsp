@@ -57,11 +57,11 @@
           </ul>
 
           <div id="footer">
-            <p id="serverInfo">Server: <%= request.getLocalName()%><br />
+            <p id="serverInfo">Server: <%= request.getLocalName()%>, Port: <%= request.getLocalPort()%><br />
              Version: ${requestScope['version'].version} (rev. ${requestScope['version'].revision})<br />
             </p>
           </div>
-		</div>
+        </div>
 		
       <div id="content">    
         <iframe id="contentFrame" frameborder="0" width="100%" height="100%" src="${requestScope['pageURL']}" name="content"/>
