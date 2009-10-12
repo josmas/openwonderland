@@ -20,6 +20,9 @@
         <form action="run">
             <input type="hidden" name="action" value="editRunnersForm"/>
             <table class="installed">
+                <caption>
+                    <span class="heading">Server Components</span>
+                </caption>
                 <tr class="header">
                     <td class="installed">Name</td>
                     <td class="installed">Class</td>
