@@ -39,8 +39,17 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 	MANUAL
     }
 
+    public enum TreatmentType {
+	FILE,
+	CONTENT_REPOSITORY,
+	URL
+    }
+
     @XmlElement(name="groupId")
     private String groupId = "";
+
+    @XmlElement(name="treatmentType")
+    private TreatmentType treatmentType = TreatmentType.FILE;
 
     @XmlElements({
 	@XmlElement(name="treatment")
@@ -85,6 +94,15 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlTransient
     public String getGroupId() {
 	return groupId;
+    }
+
+    public void setTreatmentType(TreatmentType treatmentType) {
+	this.treatmentType = treatmentType;
+    }
+
+    @XmlTransient
+    public TreatmentType getTreatmentType() {
+	return treatmentType;
     }
 
     public void setTreatments(String[] treatments) {
