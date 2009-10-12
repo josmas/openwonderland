@@ -419,8 +419,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
             if (view != null) {
                 logger.fine("hiding HUD view");
-                view.setDecorated(false);
-                view.setVisibleApp(false, false);
+                if (component.isHUDManagedWindow()) {
+                    view.setVisibleApp(false, false);
+                }
                 view.setVisibleUser(false);
             } else {
                 logger.warning("attempt to set HUD invisible with no HUD view");
