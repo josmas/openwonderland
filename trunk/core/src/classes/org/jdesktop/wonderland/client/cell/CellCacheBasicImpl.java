@@ -19,11 +19,15 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -236,8 +240,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      */
     public void unloadCell(CellID cellId) {
         Cell cell = cells.remove(cellId);
-        logger.fine("UNLOADING CELL " + cell.getName());
         if (cell != null) {
+            logger.fine("UNLOADING CELL " + cell.getName());
+
             // notify listeners
             fireCellUnloaded(cell);
 
@@ -248,6 +253,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 logger.fine("UNLOADING ROOT CELL " + cell.getName());
                 rootCells.remove(cell);
             }
+        } else {
+            logger.log(Level.WARNING, "Unloading unknown cell " + cellId);
         }
     }
 
@@ -377,10 +384,32 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         
         // Activate all current cells
         synchronized(cells) {
+            // issue #850 -- make sure to notify parents before their
+            // children
             for(Cell cell : cells.values()) {
-                if (cell.getStatus().ordinal()<CellStatus.VISIBLE.ordinal())
-                    changeCellStatus(cell, CellStatus.VISIBLE);
+                if (cell.getParent() != null) {
+                    // ignore child cells
+                    continue;
+                }
+
+                // change the status of this parent and all its children
+                changeCellTreeStatus(cell, CellStatus.VISIBLE);
             }
+        }
+    }
+
+    /**
+     * Notify a tree of cells to change their status
+     * @param cell the root cell to notify
+     * @param status the status to set
+     */
+    private void changeCellTreeStatus(Cell root, CellStatus status) {
+        if (root.getStatus().ordinal() < status.ordinal()) {
+            changeCellStatus(root, status);
+        }
+
+        for (Cell child : root.getChildren()) {
+            changeCellTreeStatus(child, status);
         }
     }
 
