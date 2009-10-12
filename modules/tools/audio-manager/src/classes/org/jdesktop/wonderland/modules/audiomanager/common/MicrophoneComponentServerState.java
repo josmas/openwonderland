@@ -17,18 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
+import com.jme.math.Vector3f;
+import java.io.Serializable;
 import java.util.ResourceBundle;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-
-import java.io.Serializable;
-
-import com.jme.math.Vector3f;
-
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
@@ -42,11 +39,10 @@ import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 @ServerState
 public class MicrophoneComponentServerState extends CellComponentServerState {
 
-    //private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-    //        "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
     @XmlElement(name = "name")
-    private String name = "Microphone";
-    //private String name = BUNDLE.getString("Microphone");
+    private String name = BUNDLE.getString("Microphone");
     @XmlElement(name = "volume")
     private double volume = 1;
     @XmlElement(name = "fullVolumeArea")

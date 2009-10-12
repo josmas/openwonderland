@@ -32,12 +32,11 @@ import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentSe
 @CellComponentFactory
 public class MicrophoneComponentFactory implements CellComponentFactorySPI {
 
-    //private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-    //        "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
 
     public String getDisplayName() {
-        //return BUNDLE.getString("Microphone");
-        return "Microphone";
+        return BUNDLE.getString("Microphone");
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
@@ -49,5 +48,4 @@ public class MicrophoneComponentFactory implements CellComponentFactorySPI {
         //return BUNDLE.getString("Microphone_Description");
         return "Microphone_Description";
     }
-
 }
