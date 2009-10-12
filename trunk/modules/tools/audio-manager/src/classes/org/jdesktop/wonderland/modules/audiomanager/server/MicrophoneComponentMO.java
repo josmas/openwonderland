@@ -17,29 +17,23 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellComponentMO;
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
-
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ActiveArea;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.FullVolumeArea;
-
-import java.util.logging.Logger;
-
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-
 import com.jme.math.Vector3f;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ActiveArea;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.FullVolumeArea;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server component that provides microphone functionality
@@ -47,10 +41,12 @@ import com.jme.math.Vector3f;
  */
 public class MicrophoneComponentMO extends CellComponentMO {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
         Logger.getLogger(MicrophoneComponentMO.class.getName());
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
      
-    private static final String DEFAULT_NAME = "Microphone";
+    private static final String DEFAULT_NAME = BUNDLE.getString("Microphone");
 
     private String name = null;
 
@@ -104,10 +100,10 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
 	showActiveArea = state.getShowActiveArea();
 
-	logger.info("name " + name + " volume " + volume
+	LOGGER.info("name " + name + " volume " + volume
 	    + " fva " + fullVolumeArea + " aa " + activeArea);
 
-	logger.info("name " + name + " volume " + volume
+	LOGGER.info("name " + name + " volume " + volume
 	    + " fva " + fullVolumeArea + " aa " + activeArea);
 
 	addProximityListeners(isLive());
@@ -176,7 +172,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
         ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
 
         if (component == null) {
-            logger.warning("The Microphone Component does not have a " +
+            LOGGER.warning("The Microphone Component does not have a " +
                     "Proximity Component for Cell ID " + cellID);
             return;
         }
@@ -204,7 +200,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
                                                           (float) activeArea.activeAreaBounds.getZ());
             }
 
-	    logger.info("Active " + bounds[0]);
+	    LOGGER.info("Active " + bounds[0]);
 
             activeAreaProximityListener = new MicrophoneActiveAreaProximityListener(cellRef.get(), name, volume);
             component.addProximityListener(activeAreaProximityListener, bounds);
@@ -213,15 +209,15 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
             if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
-                logger.info("Microphone Using cell bounds:  " + bounds[0]);
+                LOGGER.info("Microphone Using cell bounds:  " + bounds[0]);
             } else if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) fullVolumeArea.bounds.getX(), 
 		    new Vector3f());
-                logger.info("Microphone Using radius:  " + bounds[0]);
+                LOGGER.info("Microphone Using radius:  " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(new Vector3f(), fullVolumeArea.bounds.getX(),
                     fullVolumeArea.bounds.getY(), fullVolumeArea.bounds.getZ());
-                logger.info("Microphone Using Box:  " + bounds[0]);
+                LOGGER.info("Microphone Using Box:  " + bounds[0]);
             }
 
             enterProximityListener = new MicrophoneEnterProximityListener(cellRef.get(), name, volume);
