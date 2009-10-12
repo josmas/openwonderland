@@ -66,6 +66,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentDoneMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEndedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEstablishedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMenuChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -659,6 +661,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
         switch (callStatus.getCode()) {
 	case CallStatus.ESTABLISHED:
+	    channelRef.get().sendAll(null, new AudioTreatmentEstablishedMessage(cellID, callId));
             break;
 
         case CallStatus.TREATMENTDONE:
@@ -670,6 +673,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    break;
 
 	case CallStatus.ENDED:
+	    channelRef.get().sendAll(null, new AudioTreatmentEndedMessage(cellID, callId,
+		callStatus.getOption("Reason")));
 	    break;
         }
     }

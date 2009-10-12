@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.TreatmentType;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
@@ -33,6 +34,8 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 public class AudioTreatmentComponentClientState extends AudioParticipantComponentClientState {
 
     public String groupId = null;
+
+    public TreatmentType treatmentType;
 
     public String[] treatments;
 
@@ -61,6 +64,11 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     @XmlElement
     public String getGroupId() {
 	return groupId;
+    }
+
+    @XmlElement
+    public TreatmentType getTreatmentType() {
+	return treatmentType;
     }
 
     @XmlElement

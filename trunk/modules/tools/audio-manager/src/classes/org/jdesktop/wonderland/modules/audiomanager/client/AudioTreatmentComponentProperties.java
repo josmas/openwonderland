@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
@@ -27,20 +28,38 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.content.ContentBrowserManager;
+import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
+import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI.ContentBrowserListener;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.TreatmentType;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
+
+import org.jdesktop.wonderland.modules.audiomanager.client.AudioTreatmentComponent;
+
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.contentrepo.client.ui.modules.ModuleRootContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
+import org.jdesktop.wonderland.modules.contentrepo.client.utils.ContentRepositoryUtils;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
-
 
 /**
  *
@@ -49,14 +68,14 @@ import com.jme.math.Vector3f;
  */
 @PropertiesFactory(AudioTreatmentComponentServerState.class)
 public class AudioTreatmentComponentProperties extends javax.swing.JPanel
-        implements PropertiesFactorySPI {
+        implements PropertiesFactorySPI, AudioTreatmentStatusListener {
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private CellPropertiesEditor editor;
     private String originalGroupId = "";
-    private String originalFileTreatments = "";
-    private String originalUrlTreatments = "";
+    private TreatmentType originalTreatmentType = TreatmentType.FILE;
+    private String originalTreatments = "";
     private int originalVolume;
     private PlayWhen originalPlayWhen;
     private boolean originalPlayOnce;
@@ -70,9 +89,16 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private SpinnerNumberModel extentRadiusModel;
     private float extentRadius = 0;
     private boolean useCellBounds;
+    private TreatmentType treatmentType = TreatmentType.FILE;
     private PlayWhen playWhen;
     private boolean playOnce;
     private boolean distanceAttenuated;
+
+    private Cell currentCell;
+
+    private String lastFileTreatment;
+    private String lastContentRepositoryTreatment;
+    private String lastURLTreatment;
 
     private BoundsViewerEntity boundsViewerEntity;
 
@@ -105,10 +131,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         // Listen for changes to the text fields and spinners
         audioGroupIdTextField.getDocument().addDocumentListener(
                 new AudioGroupTextFieldListener());
-        fileTextField.getDocument().addDocumentListener(
-                new AudioFileTreatmentsTextFieldListener());
-        urlTextField.getDocument().addDocumentListener(
-                new AudioUrlTreatmentsTextFieldListener());
+        treatmentTextField.getDocument().addDocumentListener(
+                new AudioTreatmentsTextFieldListener());
         fullVolumeAreaPercentModel.addChangeListener(
                 new FullVolumeAreaPercentChangeListener());
         extentRadiusModel.addChangeListener(new ExtentRadiusChangeListener());
@@ -153,26 +177,27 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         String[] treatmentList = compState.getTreatments();
 
-        originalFileTreatments = "";
-        originalUrlTreatments = "";
+	originalTreatmentType = compState.getTreatmentType();
 
-        for (int i = 0; i < treatmentList.length; i++) {
-            String treatment = treatmentList[i];
+        originalTreatments = "";
 
-            if (treatment.indexOf("://") > 0) {
-                if (treatment.indexOf("file://") >= 0) {
-                    originalFileTreatments += treatment + " ";
+	/*
+	 * XXX We only allow a single treatment to be specified
+	 */
+	if (treatmentType.equals(TreatmentType.FILE)) {
+            for (int i = 0; i < treatmentList.length; i++) {
+                String treatment = treatmentList[i];
+
+                if (treatment.indexOf("file://") < 0) {
+                    originalTreatments += "file://" + treatment;
                 } else {
-                    originalUrlTreatments += treatment + " ";
+                    originalTreatments += treatment;
                 }
-            } else {
-                originalFileTreatments += treatment + " ";
-            }
+		break;	// XXX we only allow a single treatment
+	    }
         }
 
-        originalFileTreatments = originalFileTreatments.trim();
-
-        originalUrlTreatments = originalUrlTreatments.trim();
+        originalTreatments = originalTreatments.trim();
 
         originalVolume = VolumeUtil.getClientVolume(compState.getVolume());
 
@@ -201,7 +226,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	} 
 
 	originalShowBounds = compState.getShowBounds();
-
 	restore();
     }
 
@@ -233,27 +257,11 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         compState.setGroupId(audioGroupIdTextField.getText().trim());
 
-        String treatments = fileTextField.getText().trim();
-
-        treatments = treatments.replaceAll(",", " ");
-        treatments = treatments.replaceAll("  ", " ");
-
-        String urls = urlTextField.getText().trim();
-
-        urls = urls.replaceAll(",", " ");
-        urls = urls.replaceAll("  ", " ");
-
-        if (urls.length() > 0) {
-            if (treatments.length() > 0) {
-                treatments += " " + urls.split(" ");
-            } else {
-                treatments = urls;
-            }
-        }
+        String treatments = treatmentTextField.getText().trim();
 
         // Update the component state, add to the list of updated states
-        compState.setTreatments(treatments.split(" "));
-        compState.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
+	compState.setTreatmentType(treatmentType);
+        compState.setTreatments(treatments.split(";"));
         compState.setPlayWhen(playWhen);
         compState.setPlayOnce(playOnce);
         compState.setExtent((Float) extentRadiusModel.getValue());
@@ -263,6 +271,100 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         compState.setDistanceAttenuated(distanceAttenuated);
         compState.setFalloff(falloffSlider.getValue());
         editor.addToUpdateList(compState);
+
+	if (currentCell != null && currentCell.getCellID().equals(editor.getCell().getCellID()) == false) {
+	    AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
+
+	    component.removeTreatmentStatusListener(this);
+	    statusLabel.setText("");
+	}
+
+	if (treatments != null) {
+	    switch (treatmentType) {
+	    case FILE:
+		lastFileTreatment = treatments;
+		uploadFileTreatments();
+	        break;
+
+	    case CONTENT_REPOSITORY:
+	        lastContentRepositoryTreatment = treatmentTextField.getText();
+	        break;
+
+	    case URL:
+	        lastURLTreatment = treatmentTextField.getText();
+	        break;
+	    }
+
+	    currentCell = editor.getCell();
+
+	    AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
+
+	    component.addTreatmentStatusListener(this);
+	}
+    }
+
+    private void uploadFileTreatments() {
+        // make sure specified file exists, create an
+        // entry in the content repository and upload the file.
+	String pattern = "file://";
+
+	String s = lastFileTreatment;
+
+	int ix = lastFileTreatment.indexOf(pattern);
+
+	if (ix >= 0) {
+	    s = s.substring(ix + pattern.length());
+	}
+
+        File file = new File(s);
+
+        if (file.exists() == false) {
+	    error("Non-existent file " + file);
+	    return;
+	}
+
+        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+
+        ContentRepository repo = registry.getRepository(LoginManager.getPrimary());
+	
+        ContentCollection audioCollection;
+
+        try {
+	    ContentCollection c = repo.getUserRoot();
+
+	    audioCollection = (ContentCollection) c.getChild("audioFiles");
+
+	    if (audioCollection == null) {
+		audioCollection = (ContentCollection) c.createChild("audioFiles", Type.COLLECTION);
+  	    }
+        } catch (ContentRepositoryException e) {
+	    error("ContentRepositoryException " + e.getMessage());
+	    return;
+        }
+
+        try {
+            ContentResource r = (ContentResource) audioCollection.createChild(
+                file.getName(), ContentNode.Type.RESOURCE);
+
+            r.put(file);
+        } catch (Exception e) {
+            error("Failed to upload " + file + " " + e.getMessage());
+	}
+    }
+
+    private void error(String msg) {
+	System.out.println(msg);
+	String title = "Content Upload Error";
+	javax.swing.JOptionPane.showMessageDialog(
+            this, msg, title, javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void treatmentEstablished() {
+	statusLabel.setText("Treatment started successfully");
+    }
+
+    public void treatmentEnded(String reason) {
+	statusLabel.setText(reason);
     }
 
     /**
@@ -272,8 +374,22 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         // Reset the GUI values to the original values
 
         audioGroupIdTextField.setText(originalGroupId);
-        fileTextField.setText(originalFileTreatments);
-        urlTextField.setText(originalUrlTreatments);
+	
+	switch (treatmentType) {
+	case FILE:
+	    fileRadioButton.setSelected(true);
+	    break;
+
+	case CONTENT_REPOSITORY:
+	    contentRepositoryRadioButton.setSelected(true);
+	    break;
+
+	case URL:
+	    URLRadioButton.setSelected(true);
+	    break;
+	}
+
+        treatmentTextField.setText(originalTreatments);
         volumeSlider.setValue(originalVolume);
 
         switch (originalPlayWhen) {
@@ -348,15 +464,13 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	    return true;
 	}
 
-	String treatments = fileTextField.getText().trim();
-
-	if (treatments.equals(originalFileTreatments) == false) {
+	if (treatmentType != null && treatmentType.equals(originalTreatmentType) == false) {
 	    return true;
 	}
 
-	treatments = urlTextField.getText().trim();
+	String treatments = treatmentTextField.getText().trim();
 
-	if (treatments.equals(originalUrlTreatments) == false) {
+	if (treatments.equals(originalTreatments) == false) {
 	    return true;
 	}
 
@@ -378,7 +492,11 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	    }
 	}
 
-	if (playWhen != originalPlayWhen) {
+	if (playWhen != null && playWhen.equals(originalPlayWhen) == false) {
+	    return true;
+	}
+
+	if (playWhen.equals(PlayWhen.MANUAL) && playOnce != originalPlayOnce) {
 	    return true;
 	}
 
@@ -432,32 +550,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * Inner class to listen for changes to the text field and fire off dirty
      * or clean indications to the cell properties editor.
      */
-    class AudioFileTreatmentsTextFieldListener implements DocumentListener {
-
-        public void insertUpdate(DocumentEvent e) {
-            checkDirty();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            checkDirty();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            checkDirty();
-        }
-
-        private void checkDirty() {
-            if (editor != null) {
-                editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
-            }
-        }
-    }
-
-    /**
-     * Inner class to listen for changes to the text field and fire off dirty
-     * or clean indications to the cell properties editor.
-     */
-    class AudioUrlTreatmentsTextFieldListener implements DocumentListener {
+    class AudioTreatmentsTextFieldListener implements DocumentListener {
 
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
@@ -510,16 +603,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup3 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
+        buttonGroup4 = new javax.swing.ButtonGroup();
         jLabel5 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        fileTextField = new javax.swing.JTextField();
+        treatmentTextField = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         audioGroupIdTextField = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
-        urlTextField = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
         alwaysRadioButton = new javax.swing.JRadioButton();
         proximityRadioButton = new javax.swing.JRadioButton();
@@ -542,6 +633,11 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         specifyRadiusRadioButton = new javax.swing.JRadioButton();
         useCellBoundsRadioButton = new javax.swing.JRadioButton();
         cellBoundsLabel = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
+        fileRadioButton = new javax.swing.JRadioButton();
+        contentRepositoryRadioButton = new javax.swing.JRadioButton();
+        URLRadioButton = new javax.swing.JRadioButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         jLabel5.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel5.text")); // NOI18N
@@ -551,10 +647,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         jLabel2.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel2.text")); // NOI18N
 
         jLabel7.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel7.text")); // NOI18N
-
-        jLabel8.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel8.text")); // NOI18N
-
-        jLabel9.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel9.text")); // NOI18N
 
         browseButton.setText(bundle.getString("AudioTreatmentComponentProperties.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -566,6 +658,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         jLabel10.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel10.text")); // NOI18N
 
         buttonGroup1.add(alwaysRadioButton);
+        alwaysRadioButton.setSelected(true);
         alwaysRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.alwaysRadioButton.text")); // NOI18N
         alwaysRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -684,156 +777,223 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         cellBoundsLabel.setText(bundle.getString("AudioTreatmentComponentProperties.cellBoundsLabel.text")); // NOI18N
 
+        jLabel4.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel4.text")); // NOI18N
+
+        statusLabel.setText(bundle.getString("AudioTreatmentComponentProperties.statusLabel.text")); // NOI18N
+
+        buttonGroup4.add(fileRadioButton);
+        fileRadioButton.setSelected(true);
+        fileRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.fileRadioButton.text")); // NOI18N
+        fileRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileRadioButtonActionPerformed(evt);
+            }
+        });
+
+        buttonGroup4.add(contentRepositoryRadioButton);
+        contentRepositoryRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.contentRepositoryRadioButton.text")); // NOI18N
+        contentRepositoryRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                contentRepositoryRadioButtonActionPerformed(evt);
+            }
+        });
+
+        buttonGroup4.add(URLRadioButton);
+        URLRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.URLRadioButton.text")); // NOI18N
+        URLRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                URLRadioButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+            .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(23, 23, 23)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jLabel9)
-                            .add(jLabel8)
-                            .add(jLabel7)
-                            .add(jLabel10)
-                            .add(jLabel1)
-                            .add(jLabel2))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(proximityRadioButton)
-                            .add(alwaysRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                            .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 255, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(manualRadioButton)
                             .add(layout.createSequentialGroup()
-                                .add(29, 29, 29)
-                                .add(playOnceCheckBox))
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, fileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 251, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(23, 23, 23)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(jLabel1)
+                                    .add(jLabel2)
+                                    .add(jLabel10))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton)))
-                        .add(12, 12, 12))
-                    .add(layout.createSequentialGroup()
-                        .add(151, 151, 151)
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jLabel15)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 174, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel5))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jLabel11)
-                            .add(jLabel12)
-                            .add(jLabel14))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(alwaysRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(layout.createSequentialGroup()
-                                        .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(fileRadioButton)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel13))
-                                    .add(ambientRadioButton)
-                                    .add(distanceAttenuatedRadioButton))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(contentRepositoryRadioButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(URLRadioButton))
+                                    .add(layout.createSequentialGroup()
+                                        .add(treatmentTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 241, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(browseButton))
+                                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 255, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(proximityRadioButton)
+                                    .add(manualRadioButton)))
                             .add(layout.createSequentialGroup()
+                                .add(151, 151, 151)
+                                .add(jLabel3)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(jLabel15)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 174, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jLabel5))
+                            .add(layout.createSequentialGroup()
+                                .add(13, 13, 13)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(jLabel7)
+                                    .add(jLabel11)
+                                    .add(jLabel14)
+                                    .add(jLabel4))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
                                         .add(specifyRadiusRadioButton)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(showBoundsCheckBox))
-                                .add(12, 12, 12)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(useCellBoundsRadioButton)
-                                    .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
-                .add(13, 13, 13))
+                                        .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(useCellBoundsRadioButton))
+                                    .add(layout.createSequentialGroup()
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(distanceAttenuatedRadioButton)
+                                            .add(ambientRadioButton))
+                                        .add(22, 22, 22)
+                                        .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 157, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(143, 143, 143)
+                                        .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(showBoundsCheckBox)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)))))
+                        .add(6, 6, 6))
+                    .add(layout.createSequentialGroup()
+                        .add(160, 160, 160)
+                        .add(playOnceCheckBox))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jLabel12)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel13)))
+                .add(46, 46, 46))
         );
-
-        layout.linkSize(new java.awt.Component[] {audioGroupIdTextField, fileTextField, urlTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(33, 33, 33)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel7)
-                    .add(audioGroupIdTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(fileRadioButton)
+                    .add(jLabel1)
+                    .add(URLRadioButton)
+                    .add(contentRepositoryRadioButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel8)
-                    .add(fileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(treatmentTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel9))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(alwaysRadioButton)
-                    .add(jLabel10))
+                    .add(jLabel10)
+                    .add(alwaysRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(proximityRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(12, 12, 12)
                 .add(manualRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(playOnceCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                .add(13, 13, 13)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel11)
                     .add(specifyRadiusRadioButton)
                     .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(useCellBoundsRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(showBoundsCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(12, 12, 12)
+                .add(showBoundsCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cellBoundsLabel)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                        .add(11, 11, 11)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel12)
                             .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jLabel13))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(29, 29, 29)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(ambientRadioButton)
                             .add(jLabel14))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(distanceAttenuatedRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(20, 20, 20))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(jLabel3)
-                    .add(jLabel15)
-                    .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel5))
-                .addContainerGap(18, Short.MAX_VALUE))
+                        .add(distanceAttenuatedRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(audioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(6, 6, 6)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(layout.createSequentialGroup()
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                .add(jLabel15)
+                                .add(jLabel3))
+                            .add(21, 21, 21)))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel5)
+                        .add(18, 18, 18)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel7)
+                    .add(audioGroupIdTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE)
+                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE))
+                .add(54, 54, 54))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-    JFileChooser chooser = new JFileChooser(fileTextField.getText());
+    if (treatmentType.equals(TreatmentType.FILE)) {
+        JFileChooser chooser = new JFileChooser(treatmentTextField.getText());
 
-    int returnVal = chooser.showOpenDialog(this);
+        int returnVal = chooser.showOpenDialog(this);
 
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-        fileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            treatmentTextField.setText("file://" + chooser.getSelectedFile().getAbsolutePath());
+        }
+    } else if (treatmentType.equals(TreatmentType.CONTENT_REPOSITORY)) {
+	// display a GUI to browser the content repository. Wait until OK has been
+        // selected and fill in the text field with the URI
+	// Fetch the browser for the webdav protocol and display it.
+        // Add a listener for the result and update the value of the
+        // text field for the URI
+        ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+	final ContentBrowserSPI browser = manager.getDefaultContentBrowser();
+	browser.addContentBrowserListener(new ContentBrowserListener() {
+
+            public void okAction(String uri) {
+                treatmentTextField.setText(uri);
+                browser.removeContentBrowserListener(this);
+            }
+
+            public void cancelAction() {
+                browser.removeContentBrowserListener(this);
+            }
+        });
+        browser.setVisible(true);
     }
 }//GEN-LAST:event_browseButtonActionPerformed
 
@@ -957,7 +1117,47 @@ private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent 
     }
 }//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
 
+private void fileRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileRadioButtonActionPerformed
+    if (treatmentType.equals(TreatmentType.FILE) == false) {
+        treatmentTextField.setText("");
+    } else {
+	if (lastFileTreatment != null) {
+	    treatmentTextField.setText(lastFileTreatment);
+	}
+    }
+
+    treatmentType = TreatmentType.FILE;
+    browseButton.setEnabled(true);
+}//GEN-LAST:event_fileRadioButtonActionPerformed
+
+private void contentRepositoryRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contentRepositoryRadioButtonActionPerformed
+    if (treatmentType.equals(TreatmentType.CONTENT_REPOSITORY) == false) {
+        treatmentTextField.setText("");
+    } else {
+	if (lastContentRepositoryTreatment != null) {
+	    treatmentTextField.setText(lastContentRepositoryTreatment);
+	}
+    }
+
+    treatmentType = TreatmentType.CONTENT_REPOSITORY;
+    browseButton.setEnabled(true);
+}//GEN-LAST:event_contentRepositoryRadioButtonActionPerformed
+
+private void URLRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_URLRadioButtonActionPerformed
+    if (treatmentType.equals(TreatmentType.URL) == false) {
+        treatmentTextField.setText("");
+    } else {
+	if (lastURLTreatment != null) {
+	    treatmentTextField.setText(lastURLTreatment);
+	}
+    }
+
+    treatmentType = TreatmentType.URL;
+    browseButton.setEnabled(false);
+}//GEN-LAST:event_URLRadioButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton URLRadioButton;
     private javax.swing.JRadioButton alwaysRadioButton;
     private javax.swing.JRadioButton ambientRadioButton;
     private javax.swing.JLabel audioCapabilitiesLabel;
@@ -966,11 +1166,13 @@ private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent 
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
+    private javax.swing.ButtonGroup buttonGroup4;
     private javax.swing.JLabel cellBoundsLabel;
+    private javax.swing.JRadioButton contentRepositoryRadioButton;
     private javax.swing.JRadioButton distanceAttenuatedRadioButton;
     private javax.swing.JSpinner extentRadiusSpinner;
     private javax.swing.JSlider falloffSlider;
-    private javax.swing.JTextField fileTextField;
+    private javax.swing.JRadioButton fileRadioButton;
     private javax.swing.JSpinner fullVolumeAreaPercentSpinner;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -981,16 +1183,16 @@ private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent 
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JRadioButton manualRadioButton;
     private javax.swing.JCheckBox playOnceCheckBox;
     private javax.swing.JRadioButton proximityRadioButton;
     private javax.swing.JCheckBox showBoundsCheckBox;
     private javax.swing.JRadioButton specifyRadiusRadioButton;
-    private javax.swing.JTextField urlTextField;
+    private javax.swing.JLabel statusLabel;
+    private javax.swing.JTextField treatmentTextField;
     private javax.swing.JRadioButton useCellBoundsRadioButton;
     private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables

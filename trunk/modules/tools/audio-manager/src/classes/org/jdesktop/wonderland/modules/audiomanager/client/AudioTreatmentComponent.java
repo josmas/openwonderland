@@ -42,6 +42,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentDoneMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEndedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEstablishedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMenuChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -79,6 +81,8 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
             case DISK:
                 if (msgReceiver != null) {
                     channelComp.removeMessageReceiver(AudioTreatmentDoneMessage.class);
+                    channelComp.removeMessageReceiver(AudioTreatmentEndedMessage.class);
+                    channelComp.removeMessageReceiver(AudioTreatmentEstablishedMessage.class);
                     channelComp.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
                     channelComp.removeMessageReceiver(AudioTreatmentRequestMessage.class);
                     channelComp.removeMessageReceiver(AudioVolumeMessage.class);
@@ -98,6 +102,8 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 
                         channelComp = cell.getComponent(ChannelComponent.class);
                         channelComp.addMessageReceiver(AudioTreatmentDoneMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioTreatmentEndedMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioTreatmentEstablishedMessage.class, msgReceiver);
                         channelComp.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, msgReceiver);
                         channelComp.addMessageReceiver(AudioTreatmentRequestMessage.class, msgReceiver);
                         channelComp.addMessageReceiver(AudioVolumeMessage.class, msgReceiver);
@@ -186,10 +192,45 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 	    otherCallID, VolumeUtil.getServerVolume(volume), true));
     }
 
+    private AudioTreatmentStatusListener treatmentStatusListener;
+
+    public void addTreatmentStatusListener(AudioTreatmentStatusListener treatmentStatusListener) {
+	this.treatmentStatusListener = treatmentStatusListener;
+    }
+	
+    public void removeTreatmentStatusListener(AudioTreatmentStatusListener treatmentStatusListener) {
+	treatmentStatusListener = null;
+    }
+
+    private void notifyTreatmentEstablished() {
+	if (treatmentStatusListener != null) {
+	    treatmentStatusListener.treatmentEstablished();
+	}
+    }
+
+    private void notifyTreatmentEnded(String reason) {
+	if (treatmentStatusListener != null) {
+	    treatmentStatusListener.treatmentEnded(reason);
+	}
+    }
+
     private void receive(CellMessage message) {
 	if (message instanceof AudioTreatmentDoneMessage) {
 	    addMenuItems(new String[] {"Play", "Volume"});
 	    channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
+	    return;
+	}
+
+	if (message instanceof AudioTreatmentEndedMessage) {
+	    AudioTreatmentEndedMessage msg = (AudioTreatmentEndedMessage) message;
+	    logger.warning("Treatment ended:  " + msg.getReason());
+	    notifyTreatmentEnded(msg.getReason());
+	    return;
+	}
+
+	if (message instanceof AudioTreatmentEstablishedMessage) {
+	    logger.warning("Treatment established");
+	    notifyTreatmentEstablished();
 	    return;
 	}
 
