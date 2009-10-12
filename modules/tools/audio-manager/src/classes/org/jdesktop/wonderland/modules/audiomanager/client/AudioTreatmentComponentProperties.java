@@ -343,12 +343,19 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         }
 
         try {
+	    /*
+	     * Remove file if it exists.
+	     */
+            ContentResource r = (ContentResource) audioCollection.removeChild(file.getName());
+	} catch (Exception e) {
+	}
+
+        try {
             ContentResource r = (ContentResource) audioCollection.createChild(
                 file.getName(), ContentNode.Type.RESOURCE);
 
             r.put(file);
         } catch (Exception e) {
-	    e.printStackTrace();
             error("Failed to upload " + file + " " + e.getMessage());
 	}
     }
