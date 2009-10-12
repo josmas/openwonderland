@@ -332,10 +332,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         try {
 	    ContentCollection c = repo.getUserRoot();
 
-	    audioCollection = (ContentCollection) c.getChild("audioFiles");
+	    audioCollection = (ContentCollection) c.getChild("audio");
 
 	    if (audioCollection == null) {
-		audioCollection = (ContentCollection) c.createChild("audioFiles", Type.COLLECTION);
+		audioCollection = (ContentCollection) c.createChild("audio", Type.COLLECTION);
   	    }
         } catch (ContentRepositoryException e) {
 	    error("ContentRepositoryException " + e.getMessage());
@@ -348,6 +348,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
             r.put(file);
         } catch (Exception e) {
+	    e.printStackTrace();
             error("Failed to upload " + file + " " + e.getMessage());
 	}
     }
