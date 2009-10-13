@@ -109,7 +109,6 @@ public class NameTagNode extends Node {
     private Spatial q;
     private String usernameAlias;
     private boolean visible;
-    private static HashMap<String, NameTagNode> nameTagMap = new HashMap();
 
     private static Font fontDecode(String fontName, String fontType, int fontSize) {
         return Font.decode(fontName + " " + fontType + " " + fontSize);
@@ -120,15 +119,9 @@ public class NameTagNode extends Node {
         this.heightAbove = heightAbove;
         visible = true;
 
-        nameTagMap.put(name, this);
-
 	usernameAlias = name;
 
 	setNameTag(EventType.REGULAR_FONT, name, usernameAlias);
-    }
-
-    public static NameTagNode getNameTagNode(String name) {
-	return nameTagMap.get(name);
     }
 
     public void done() {
@@ -137,8 +130,6 @@ public class NameTagNode extends Node {
         }
 
         done = true;
-
-        nameTagMap.remove(name);
 
         detachChild(q);
     }
@@ -177,36 +168,6 @@ public class NameTagNode extends Node {
      */
     public boolean isVisible() {
         return visible;
-    }
-
-    public static void setMyNameTag(EventType eventType, String username,
-            String usernameAlias) {
-
-        NameTagNode nameTag = nameTagMap.get(username);
-
-        if (nameTag == null) {
-            logger.warning("can't find name tag for " + username);
-            return;
-        }
-
-        nameTag.setNameTag(eventType, username, usernameAlias);
-    }
-
-    public static void setOtherNameTags(EventType eventType, String username, String usernameAlias) {
-        String[] keys = nameTagMap.keySet().toArray(new String[0]);
-
-        for (int i = 0; i < keys.length; i++) {
-            if (keys[i].equals(username)) {
-                continue;
-            }
-
-            NameTagNode nameTag = nameTagMap.get(keys[i]);
-
-            logger.fine("set other name tags: " + eventType + ", username: " 
-		+ username + ", usernameAlias: " + usernameAlias);
-
-            nameTag.setNameTag(eventType, username, usernameAlias);
-        }
     }
 
     public void setNameTag(EventType eventType, String username, String alias) {
