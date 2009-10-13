@@ -281,7 +281,7 @@ public abstract class View2DEntity implements View2D {
         setOrtho(false, false);
         setGeometryNode(null, false);
         update();
-        updateFrame();
+        // Note: don't do an updateFrame here because a deadlock can result!
         children.clear();
 
         if (gui != null) {
