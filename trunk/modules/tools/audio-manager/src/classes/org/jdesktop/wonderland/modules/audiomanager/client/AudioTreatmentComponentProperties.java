@@ -184,17 +184,15 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	/*
 	 * XXX We only allow a single treatment to be specified
 	 */
-	if (treatmentType.equals(TreatmentType.FILE)) {
-            for (int i = 0; i < treatmentList.length; i++) {
-                String treatment = treatmentList[i];
+        for (int i = 0; i < treatmentList.length; i++) {
+            String treatment = treatmentList[i];
 
-                if (treatment.indexOf("file://") < 0) {
-                    originalTreatments += "file://" + treatment;
-                } else {
-                    originalTreatments += treatment;
-                }
-		break;	// XXX we only allow a single treatment
+	    if (treatment.length() == 0) {
+		break;
 	    }
+
+            originalTreatments += treatment;
+	    break;	// XXX we only allow a single treatment for now
         }
 
         originalTreatments = originalTreatments.trim();
@@ -419,7 +417,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         audioGroupIdTextField.setText(originalGroupId);
 	
-	switch (treatmentType) {
+	switch (originalTreatmentType) {
 	case FILE:
 	    fileRadioButton.setSelected(true);
 	    break;
