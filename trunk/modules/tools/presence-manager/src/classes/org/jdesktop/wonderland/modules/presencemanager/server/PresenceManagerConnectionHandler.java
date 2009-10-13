@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.server;
 
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.ObjectNotFoundException;
@@ -71,6 +72,12 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import com.sun.sgs.app.ManagedObject;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 
 /**
  * Presence Manager
@@ -198,6 +205,19 @@ public class PresenceManagerConnectionHandler implements
 	    sender.send(message);
 	    return;
 	}
+
+        if (message instanceof CellLocationRequestMessage) {
+            CellID cellID = ((CellLocationRequestMessage) message).getRequestCellID();
+            CellMO cell = CellManagerMO.getCell(cellID);
+            if (cell == null || !cell.isLive()) {
+                sender.send(clientID, new ErrorMessage(message.getMessageID(),
+                        "Cell " + cellID + " not found"));
+            } else {
+                sender.send(clientID, new CellLocationResponseMessage(message.getMessageID(),
+                        cell.getWorldTransform(null).getTranslation(null)));
+            }
+            return;
+        }
 
         throw new UnsupportedOperationException("Unknown message: " + message);
     }

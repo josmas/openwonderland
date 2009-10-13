@@ -23,11 +23,13 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import com.jme.math.Vector3f;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +39,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -45,6 +48,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -53,10 +57,13 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel.Mode;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -936,7 +943,31 @@ private void gotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     if (selectedValues.length == 1) {
         String username =
                 NameTagNode.getUsername((String) selectedValues[0]);
-        // TODO: goto user
+        
+        // map the user to a presence info
+        PresenceInfo info = pm.getAliasPresenceInfo(username);
+        if (info == null) {
+            LOGGER.warning("no PresenceInfo for " + username);
+            return;
+        }
+
+        // get the position of the other user based on their cellID
+        Vector3f position = pm.getCellPosition(info.cellID);
+        if (position == null) {
+            LOGGER.warning("unable to find location of " + info.cellID);
+        }
+        
+        // get the current look direction of the avatar
+        ViewCell viewCell = ViewManager.getViewManager().getPrimaryViewCell();
+        CellTransform viewTransform = viewCell.getWorldTransform();
+        
+        // go to the new location
+        try {
+            ClientContextJME.getClientMain().gotoLocation(null, position, 
+                                                          viewTransform.getRotation(null));
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, "Error going to location", ioe);
+        }
     }
 }//GEN-LAST:event_gotoUserButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
