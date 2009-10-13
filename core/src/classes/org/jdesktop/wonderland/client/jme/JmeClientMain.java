@@ -431,7 +431,7 @@ public class JmeClientMain {
      * logs out
      */
     protected void logout() {
-        LOGGER.warning("[JMEClientMain] log out");
+        LOGGER.info("[JMEClientMain] log out");
 
         // disconnect from the current session
         if (curSession != null) {
@@ -509,6 +509,14 @@ public class JmeClientMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        // Check for the -b benchmark/test harness arg and process.
+        // This need to happen very early because it sets the user dir
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-b ")) {
+                TestHarnessSupport.processCommandLineArgs(args[i]);
+            }
+        }
+
         if (Webstart.isWebstart()) {
             Webstart.webstartSetup();
         }
@@ -526,9 +534,7 @@ public class JmeClientMain {
                 desiredFrameRate = Integer.parseInt(args[i + 1]);
                 System.out.println("DesiredFrameRate: " + desiredFrameRate);
                 i++;
-            }
-
-            if (args[i].equals("-p")) {
+            } else if (args[i].equals("-p")) {
                 System.setProperty(PROPS_URL_PROP, "file:" + args[i + 1]);
                 i++;
             }
