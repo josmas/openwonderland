@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 
 public class PresenceManagerImpl implements PresenceManager {
 
@@ -279,6 +280,13 @@ public class PresenceManagerImpl implements PresenceManager {
 
             return info;
         }
+    }
+
+    /**
+     * Get the location of a cell
+     */
+    public Vector3f getCellPosition(CellID cellID) {
+        return PresenceManagerClient.getInstance().getCellPosition(cellID);
     }
 
     /**

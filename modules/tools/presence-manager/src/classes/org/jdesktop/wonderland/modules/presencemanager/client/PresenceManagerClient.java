@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.client;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -46,7 +47,12 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTa
 
 import java.util.ArrayList;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
 
 /**
  *
@@ -134,6 +140,25 @@ public class PresenceManagerClient extends BaseConnection implements
 
             logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
         }
+    }
+
+    public Vector3f getCellPosition(CellID cellID) {
+        Message request = new CellLocationRequestMessage(cellID);
+
+        try {
+            ResponseMessage rm = sendAndWait(request);
+            if (rm instanceof CellLocationResponseMessage) {
+                return ((CellLocationResponseMessage) rm).getLocation();
+            } else if (rm instanceof ErrorMessage) {
+                logger.log(Level.WARNING, "Error getting location of " +
+                        cellID + ": " + ((ErrorMessage) rm).getErrorMessage());
+            }
+        } catch (InterruptedException ie) {
+            // ignore
+        }
+
+        // if we get here, there was an error getting the value
+        return null;
     }
 
     @Override

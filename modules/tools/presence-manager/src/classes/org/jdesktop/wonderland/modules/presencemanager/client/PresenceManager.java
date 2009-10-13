@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 
 /**
 * Presence API.  This interfaces defines methods for mapping between
@@ -105,6 +106,14 @@ public interface PresenceManager {
      * @return PresenceInfo presence information for user.  
      */
     public PresenceInfo getAliasPresenceInfo(String usernameAlias);
+
+    /**
+     * Get the location of a cell by id
+     * @param cellId the id of the cell to get the location of
+     * @return the cell location, or null if the location of this cell can't
+     * be found
+     */
+    public Vector3f getCellPosition(CellID cellID);
 
     /**
      * Change usernameAlias in PresenceInfo.
