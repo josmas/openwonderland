@@ -20,15 +20,22 @@ package org.jdesktop.wonderland.testharness.master;
 import com.jme.math.Vector3f;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.testharness.common.Client3DRequest;
-import org.jdesktop.wonderland.testharness.common.LoginRequest;
-import org.jdesktop.wonderland.testharness.common.LogoutRequest;
+import org.jdesktop.wonderland.testharness.common.ClientLoginRequest;
+import org.jdesktop.wonderland.testharness.common.ClientLogoutRequest;
+import org.jdesktop.wonderland.testharness.common.TestReply;
+import org.jdesktop.wonderland.testharness.common.ClientReply;
+import org.jdesktop.wonderland.testharness.common.UserSimRequest;
 import org.jdesktop.wonderland.testharness.manager.common.CommsHandler;
 import org.jdesktop.wonderland.testharness.manager.common.ManagerMessage;
 import org.jdesktop.wonderland.testharness.manager.common.SimpleTestDirectorMessage;
+import org.jdesktop.wonderland.testharness.manager.common.SimpleTestDirectorMessage.UserActionType;
 import org.jdesktop.wonderland.testharness.master.SlaveConnection.SlaveConnectionListener;
 
 /**
@@ -38,7 +45,7 @@ import org.jdesktop.wonderland.testharness.master.SlaveConnection.SlaveConnectio
 public class SimpleTestDirector implements TestDirector {
 
     private ArrayList<SlaveInfo> slaves = new ArrayList();
-    private ArrayList<User> users = new ArrayList();
+    private final HashMap<String, User> users = new LinkedHashMap();
     private ArrayList<UserGroup> userGroups = new ArrayList();
     
     private Logger logger = Logger.getLogger(SimpleTestDirector.class.getName());
@@ -68,9 +75,18 @@ public class SimpleTestDirector implements TestDirector {
                 switch(message.getMessageType()) {
                     case REQUEST_STATUS :
                         sendUIUpdate();
+                        String[] usernames = new String[users.size()];
+                        UserActionType[] currentActions = new UserActionType[users.size()];
+                        int i=0;
+                        for(User u : users.values()) {
+                            usernames[i] = u.getUsername();
+                            currentActions[i] = u.getCurrentAction();
+                            i++;
+                        }
+                        sendUIMessage(SimpleTestDirectorMessage.newUserListMessage(usernames, currentActions));
                         break;
                     case USER_COUNT :
-                        targetUsers = message.getUserCount();
+                        targetUsers = message.getDesiredUserCount();
                         adjustUsers();
                         sendUIUpdate();
                         break;
@@ -78,6 +94,17 @@ public class SimpleTestDirector implements TestDirector {
                         changeAllocator(message.getAllocatorName(),
                                         message.getProperties());
                         break;
+                    case USER_ACTION_CHANGE_REQUEST :
+                        User user = users.get(message.getUsername());
+                        if (user!=null) {
+                            switch(message.getUserAction()) {
+                                case WALK :
+                                    user.doWalk(user.getUserGroup().getWalkPattern());
+                                    break;
+                                case IDLE:
+                                    user.doWalk(null);
+                            }
+                        }
                     default :
                         System.err.println("Unexepected message type "+message.getMessageType());
                 }
@@ -88,7 +115,15 @@ public class SimpleTestDirector implements TestDirector {
 
     private void sendUIUpdate() {
         try {
-            commsHandler.send(SimpleTestDirectorMessage.newUIUpdate(users.size()));
+            commsHandler.send(SimpleTestDirectorMessage.newUIUpdate(users.size(), targetUsers));
+        } catch (IOException ex) {
+            Logger.getLogger(SimpleTestDirector.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void sendUIMessage(SimpleTestDirectorMessage msg) {
+        try {
+            commsHandler.send(msg);
         } catch (IOException ex) {
             Logger.getLogger(SimpleTestDirector.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -114,47 +149,55 @@ public class SimpleTestDirector implements TestDirector {
     }
 
     private void adjustUsers() {
-        // remove users if necessary
+        System.err.println("adjustUsers "+targetUsers+"  "+users.size());
+        // add users if necessary
         while (targetUsers > users.size() && addUser()) {
-            // do nothing -- removeUser() did the actual work
+            // do nothing -- addUser() did the actual work
             try { Thread.sleep(500); } catch (InterruptedException ie) {}
         }
 
-        // add users if necessary
+        // remove users if necessary
         while (targetUsers < users.size() && removeUser()) {
-            // do nothing -- addUser() did the actual work
+            // do nothing -- removeUser() did the actual work
             try { Thread.sleep(500); } catch (InterruptedException ie) {}
         }
     }
 
     private boolean addUser() {
-        UserGroup group = findGroup();
-        SlaveInfo slave = allocator.findSlave();
-        if (slave == null) {
-            return false;
-        }
+        synchronized(users) {
+            UserGroup group = findGroup();
+            SlaveInfo slave = allocator.findSlave();
+            System.err.println("ADDING USER TO SLAVE "+slave);
+            if (slave == null) {
+                return false;
+            }
 
-        group.add(createUser(slave));
+            User user = createUser(slave);
+            group.add(user);
+            sendUIMessage(SimpleTestDirectorMessage.newUserAddedMessage(user.getUsername(), true));
+        }
         return true;
     }
 
     private boolean removeUser() {
-        int removeIdx = users.size() - 1;
-        User user = users.remove(removeIdx);
-        if (user != null) {
-            user.disconnect();
+        synchronized(users) {
+            User firstUser = users.values().iterator().next();
+            User user = users.remove(firstUser.getUsername());
+            if (user != null) {
+                user.disconnect();
 
-            UserGroup group = findGroup(user);
-            if (group != null) {
-                group.remove(user);
-            }
+                UserGroup group = findGroup(user);
+                if (group != null) {
+                    group.remove(user);
+                }
 
-            SlaveInfo slave = findSlave(user);
-            if (slave != null) {
-                slave.remove(user);
+                SlaveInfo slave = findSlave(user);
+                if (slave != null) {
+                    slave.remove(user);
+                }
+                sendUIMessage(SimpleTestDirectorMessage.newUserAddedMessage(user.getUsername(), false));
             }
         }
-
         return true;
     }
 
@@ -223,15 +266,17 @@ public class SimpleTestDirector implements TestDirector {
     
     private User createUser(SlaveInfo slaveInfo) {
         User user = new User(UsernameManager.getUniqueUsername(), slaveInfo);
-        users.add(user);
+        users.put(user.getUsername(), user);
         String serverURL = MasterMain.getMaster().getSgsServerName();
         
         Properties props = new Properties();
         props.setProperty("serverURL", serverURL);
-//        LoginRequest lr = new LoginRequest("client3D.Client3DSim", props,
+//        ClientLoginRequest lr = new ClientLoginRequest("client3D.Client3DSim", props,
 //                                           user.getUsername());
-        LoginRequest lr = new LoginRequest("webstart.WebstartClientSim", props,
+        props.setProperty("testharness.actorPort", Integer.toString(user.getActorPort()));
+        ClientLoginRequest lr = new ClientLoginRequest("webstart.WebstartClientWrapper", props,
                                            user.getUsername());
+        System.err.println("Send login request "+user.getUsername());
         slaveInfo.getConnection().send(lr);
 
         return user;
@@ -253,6 +298,7 @@ public class SimpleTestDirector implements TestDirector {
         @Override
         public boolean add(User user) {
             if (super.add(user)) {
+                user.setUserGroup(this);
                 user.doWalk(walkPattern);
                 return true;
             }
@@ -267,38 +313,94 @@ public class SimpleTestDirector implements TestDirector {
         public Vector3f getCenter() {
             return center;
         }
+
+        public Vector3f[] getWalkPattern() {
+            return walkPattern;
+        }
     }
     
     class User {
         private String username;
         private SlaveInfo slaveInfo;
+        private UserGroup userGroup = null;
+        private int actorPort;
+        private UserActionType currentAction = UserActionType.WALK;
         
         public User(String username, SlaveInfo slaveInfo) {
             this.username = username;
             this.slaveInfo = slaveInfo;
+            actorPort = slaveInfo.getNextActorPort();
             slaveInfo.add(this);
         }
 
         public String getUsername() {
             return username;
         }
-        
+
+        /**
+         * If locations==null, stop walking
+         * @param locations
+         */
         public void doWalk(Vector3f[] locations) {
-            slaveInfo.getConnection().send(Client3DRequest.newWalkLoopRequest(username, locations, 0.25f, -1));            
+            slaveInfo.getConnection().send(UserSimRequest.newWalkLoopRequest(username, locations, 0.25f, -1));
+            if (locations==null) {
+                currentAction = UserActionType.IDLE;
+            } else {
+                currentAction = UserActionType.WALK;
+            }
         }
 
         public void disconnect() {
-            slaveInfo.getConnection().send(new LogoutRequest(username));
+            slaveInfo.getConnection().send(new ClientLogoutRequest(username));
+            slaveInfo.freeActorPort(actorPort);
+        }
+
+        public void setUserGroup(UserGroup userGroup) {
+            this.userGroup = userGroup;
+        }
+
+        public UserGroup getUserGroup() {
+            return userGroup;
+        }
+
+        public int getActorPort() {
+            return actorPort;
+        }
+
+        public void processReply(TestReply reply) {
+            System.err.println("User got reply "+reply);
+            if (reply instanceof ClientReply) {
+                ClientReply wtr = (ClientReply) reply;
+                switch(wtr.getReplyType()) {
+                    case QUIT :
+                        sendUIMessage(SimpleTestDirectorMessage.newClientQuitMessage(username));
+                        currentAction = UserActionType.H_QUIT;
+                        break;
+                    case ERROR :
+                        currentAction = UserActionType.H_ERROR;
+                        break;
+                }
+            } else {
+                logger.warning("Unknown reply message "+reply.getClass().getName());
+            }
+        }
+
+        public UserActionType getCurrentAction() {
+            return currentAction;
         }
     }
 
-    class SlaveInfo extends ArrayList<User> implements SlaveConnectionListener {
+    class SlaveInfo extends ArrayList<User> implements SlaveConnectionListener, SlaveConnection.TestReplyListener {
         private SlaveConnection slaveConnection;
+
+        private LinkedList<Integer> freeActorPorts = new LinkedList();
+        private int nextActorPort = 15432;
         
         public SlaveInfo(SlaveConnection slaveConnection) {
             this.slaveConnection = slaveConnection;
 
-            slaveConnection.addListener(this);
+            slaveConnection.addConnectionListener(this);
+            slaveConnection.addReplyListener(this);
         }
         
         public SlaveConnection getConnection() {
@@ -314,14 +416,52 @@ public class SimpleTestDirector implements TestDirector {
             slaveCount--;
 
             for (User user : this) {
-                users.remove(user);
+                users.remove(user.getUsername());
                 UserGroup g = findGroup(user);
                 if (g != null) {
                     g.remove(user);
                 }
+                System.err.println("Removing "+user.getUsername());
+                sendUIMessage(SimpleTestDirectorMessage.newUserAddedMessage(user.getUsername(), false));
+
+                synchronized(freeActorPorts) {
+                    freeActorPorts.add(user.getActorPort());
+                }
             }
 
             sendUIUpdate();
+        }
+
+        public int getNextActorPort() {
+            synchronized(freeActorPorts) {
+                Integer port = freeActorPorts.peekFirst();
+                if (port!=null) {
+                    freeActorPorts.removeFirst();
+                    return port.intValue();
+                }
+
+                return nextActorPort++;
+            }
+        }
+
+        /**
+         * Return the specified port to the free list, so it can be reused
+         * @param port
+         */
+        public void freeActorPort(int port) {
+            synchronized(freeActorPorts) {
+                freeActorPorts.add(port);
+            }
+        }
+
+        public void received(TestReply reply) {
+            System.err.println("SlaveInfo received "+reply);
+            User u = users.get(reply.getUsername());
+            if (u==null) {
+                logger.warning("Reply for unknown user "+reply.getUsername());
+            } else {
+                u.processReply(reply);
+            }
         }
     }
 
