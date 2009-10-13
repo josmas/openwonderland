@@ -63,6 +63,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.TreatmentType;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentDoneMessage;
@@ -116,6 +117,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
 
     private String groupId = "";
+    private TreatmentType treatmentType;
     private String[] treatments = new String[0];
     private double volume = 1;
     private PlayWhen playWhen = PlayWhen.ALWAYS;
@@ -177,6 +179,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    groupId = CallID.getCallID(cellID);
 	}
 
+	treatmentType = state.getTreatmentType();
+
         treatments = state.getTreatments();
 
 	volume = state.getVolume();
@@ -214,6 +218,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    }
 
             state.setGroupId(groupId);
+	    state.setTreatmentType(treatmentType);
             state.setTreatments(treatments);
 	    state.setVolume(volume);
 	    state.setPlayWhen(playWhen);
@@ -241,6 +246,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    state = new AudioTreatmentComponentClientState();
 
 	    state.groupId = groupId;
+	    state.treatmentType = treatmentType;
 	    state.treatments = treatments;
 	    state.volume = volume;
 	    state.playWhen = playWhen;
