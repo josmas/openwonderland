@@ -147,7 +147,7 @@ public abstract class WindowConventional extends Window2D {
      * @param pixels An array which contains the pixels. It must be of length w x h.
      */
     public void displayPixels(final int x, final int y, final int w, final int h, int[] pixels) {
-        if (pixels == null) {
+        if (pixels == null || surface == null) {
             return;
         }
 
