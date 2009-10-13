@@ -30,6 +30,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -41,8 +42,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.testharness.common.LoginRequest;
-import org.jdesktop.wonderland.testharness.common.LogoutRequest;
+import org.jdesktop.wonderland.testharness.common.ClientLoginRequest;
+import org.jdesktop.wonderland.testharness.common.ClientLogoutRequest;
+import org.jdesktop.wonderland.testharness.common.TestReply;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 
 /**
@@ -59,6 +61,7 @@ public class SlaveMain {
     private HashMap<String, RequestProcessor> processors =
             new HashMap<String, RequestProcessor>();
     private boolean done = false;
+    private ReplySender replyHandler;
 
 //    static {
 //        new LogControl(SlaveMain.class, "/org/jdesktop/wonderland/testharness/slave/resources/logging.properties");
@@ -77,12 +80,34 @@ public class SlaveMain {
         masterPort = Integer.parseInt(args[1]);
 
         try {
-            initJars();
+//            initJars();
 
-            Socket s = new Socket(masterHostname, masterPort);
+            Socket s = null;
+            
+            while(s==null) {
+                try {
+                    s = new Socket(masterHostname, masterPort);
+                } catch(ConnectException ce) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(SlaveMain.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
             System.out.println("Opening streams");
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
+
+            replyHandler = new ReplySender() {
+                public void sendReply(TestReply reply) {
+                    try {
+                        out.writeObject(reply);
+                    } catch (IOException ex) {
+                        Logger.getLogger(SlaveMain.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
 
             // Register the output stream with the log handler
             SlaveLogHandler.setOutputStream(out);
@@ -106,8 +131,8 @@ public class SlaveMain {
             logger.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
-        } catch (ProcessingException ex) {
-            logger.log(Level.SEVERE, null, ex);
+//        } catch (ProcessingException ex) {
+//            logger.log(Level.SEVERE, null, ex);
         } finally {
             // close down connections when the master disconnects
             for (RequestProcessor rp : processors.values()) {
@@ -146,15 +171,14 @@ public class SlaveMain {
     }
 
     private void processRequest(TestRequest request) throws ProcessingException {
-        if (request instanceof LoginRequest) {
-            LoginRequest lr = (LoginRequest) request;
+        if (request instanceof ClientLoginRequest) {
+            ClientLoginRequest lr = (ClientLoginRequest) request;
             RequestProcessor rp = createProcessor(lr.getProcessorName());
-            rp.initialize(lr.getUsername(), lr.getProps());
+            rp.initialize(lr.getUsername(), lr.getProps(), replyHandler);
 
-            // Hardcoded Client3D, TODO make configurable
             processors.put(request.getUsername(), rp);
 
-        } else if (request instanceof LogoutRequest) {
+        } else if (request instanceof ClientLogoutRequest) {
             RequestProcessor rp = processors.remove(request.getUsername());
             if (rp != null) {
                 rp.destroy();
@@ -215,5 +239,9 @@ public class SlaveMain {
 
     public static void main(String[] args) {
         new SlaveMain(args);
+    }
+
+    public interface ReplySender {
+        public void sendReply(TestReply request);
     }
 }

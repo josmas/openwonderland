@@ -17,31 +17,12 @@
  */
 package org.jdesktop.wonderland.testharness.common;
 
-import java.util.Properties;
-
 /**
  *
- * @author paulby
+ * @author jkaplan
  */
-public class LoginRequest extends TestRequest {
-    private String processorName;
-    private Properties props;
-    
-    public LoginRequest(String processorName,
-                        Properties props,
-                        String username)
-    {
-        super(username);
-
-        this.processorName = processorName;
-        this.props = props;
-    }
-
-    public String getProcessorName() {
-        return processorName;
-    }
-
-    public Properties getProps() {
-        return props;
+public class ClientLogoutRequest  extends TestRequest {
+    public ClientLogoutRequest(String username) {
+        super (username);
     }
 }

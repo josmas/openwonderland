@@ -30,6 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.testharness.common.TestReply;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 
 /**
@@ -48,8 +49,11 @@ public class SlaveConnection extends Thread {
     private static final Logger logger = Logger.getLogger(SlaveConnection.class.getName());
 
     List<SlaveConnectionListener> listeners = new CopyOnWriteArrayList();
+    private List<TestReplyListener> replyListeners = new CopyOnWriteArrayList();
+
 
     SlaveConnection(Socket socket, int slaveID) {
+        super("SlaveConnection");
         this.slaveID = slaveID;
         
         System.out.println("New Slave Controller "+slaveID);
@@ -82,6 +86,10 @@ public class SlaveConnection extends Thread {
                         LogRecord logR = (LogRecord)msg;
                         logR.setLoggerName("slave"+slaveID+":"+logR.getLoggerName());
                         logger.log(logR);
+                    } else if (msg instanceof TestReply) {
+                        System.err.println("GOT REPLY "+msg);
+                        for(TestReplyListener l : replyListeners)
+                            l.received((TestReply)msg);
                     }
                 } catch(OptionalDataException e) {
                     Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, "Exception length "+((OptionalDataException)e).length, e);
@@ -110,15 +118,23 @@ public class SlaveConnection extends Thread {
         }
     }
 
-    public void addListener(SlaveConnectionListener listener) {
+    public void addReplyListener(TestReplyListener listener) {
+        replyListeners.add(listener);
+    }
+
+    public void addConnectionListener(SlaveConnectionListener listener) {
         listeners.add(listener);
     }
 
-    public void removeListener(SlaveConnectionListener listener) {
+    public void removeConnectionListener(SlaveConnectionListener listener) {
         listeners.remove(listener);
     }
 
     public interface SlaveConnectionListener {
         public void disconnected(SlaveConnection connection);
+    }
+
+    public interface TestReplyListener {
+        public void received(TestReply reply);
     }
 }

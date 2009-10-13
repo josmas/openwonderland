@@ -23,7 +23,7 @@ import com.jme.math.Vector3f;
  *
  * @author Paul
  */
-public class WebstartTestRequest extends TestRequest {
+public class UserSimRequest extends TestRequest {
 
     private Vector3f[] desiredLocations;
     private float speed;
@@ -32,7 +32,7 @@ public class WebstartTestRequest extends TestRequest {
     public enum ActionType { WALK };
     private ActionType action;
 
-    private WebstartTestRequest(String username, ActionType action) {
+    private UserSimRequest(String username, ActionType action) {
         super(username);
         this.action = action;
     }
@@ -59,8 +59,8 @@ public class WebstartTestRequest extends TestRequest {
      * @param speed
      * @return
      */
-    public static WebstartTestRequest newWalkToRequest(String username, Vector3f[] desiredLocations, float speed) {
-        WebstartTestRequest req = new WebstartTestRequest(username, ActionType.WALK);
+    public static UserSimRequest newWalkToRequest(String username, Vector3f[] desiredLocations, float speed) {
+        UserSimRequest req = new UserSimRequest(username, ActionType.WALK);
         req.desiredLocations = desiredLocations;
         req.speed = speed;
         req.desiredLoopCount = 0;
@@ -77,8 +77,8 @@ public class WebstartTestRequest extends TestRequest {
      * @param loopCount number of iterations through the desired locations, -1 to loop forever
      * @return
      */
-    public static WebstartTestRequest newWalkLoopRequest(String username, Vector3f[] desiredLocations, float speed, int loopCount) {
-        WebstartTestRequest req = new WebstartTestRequest(username, ActionType.WALK);
+    public static UserSimRequest newWalkLoopRequest(String username, Vector3f[] desiredLocations, float speed, int loopCount) {
+        UserSimRequest req = new UserSimRequest(username, ActionType.WALK);
         req.desiredLocations = desiredLocations;
         req.speed = speed;
         req.desiredLoopCount = loopCount;

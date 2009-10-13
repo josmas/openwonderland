@@ -17,12 +17,25 @@
  */
 package org.jdesktop.wonderland.testharness.common;
 
+import java.io.Serializable;
+
 /**
  *
- * @author jkaplan
+ * @author paulby
  */
-public class LogoutRequest  extends TestRequest {
-    public LogoutRequest(String username) {
-        super (username);
+public class TestReply implements Serializable {
+
+    private String username;
+    
+    /**
+     * Test Request for a specific user
+     * @param username
+     */
+    public TestReply(String username) {
+        this.username = username;
+    }
+    
+    public String getUsername() {
+        return username;
     }
 }

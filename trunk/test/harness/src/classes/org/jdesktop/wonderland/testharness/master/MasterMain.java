@@ -103,7 +103,7 @@ public class MasterMain {
             while(true) {
                 Socket s = serverSocket.accept();
                 SlaveConnection slaveController = new SlaveConnection(s, slaveID++); 
-                slaveController.addListener(new SlaveConnectionListener() {
+                slaveController.addConnectionListener(new SlaveConnectionListener() {
                     public void disconnected(SlaveConnection connection) {
                         slaveLeft(connection);
                     }
