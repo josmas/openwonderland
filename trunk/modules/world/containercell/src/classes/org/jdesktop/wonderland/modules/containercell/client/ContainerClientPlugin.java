@@ -40,7 +40,8 @@ public class ContainerClientPlugin extends BaseClientPlugin {
 
     @Override
     protected void deactivate() {
-        CellCreationParentRegistry.register(getRegistry());
+        // issue 920 - be sure to unregister
+        CellCreationParentRegistry.unregister(getRegistry());
     }
 
     public static ContainerClientRegistry getRegistry() {
