@@ -660,7 +660,7 @@ public class UserListHUDPanel
         if (namePropertiesHUDComponent == null) {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             NamePropertiesHUDPanel namePropertiesHUDPanel =
-                    new NamePropertiesHUDPanel(presenceInfo);
+                    new NamePropertiesHUDPanel(pm, session, presenceInfo);
             namePropertiesHUDComponent =
                     mainHUD.createComponent(namePropertiesHUDPanel);
             namePropertiesHUDComponent.setPreferredLocation(Layout.NORTH);

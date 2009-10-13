@@ -18,6 +18,9 @@
 package org.jdesktop.wonderland.modules.presencemanager.client;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -39,9 +42,8 @@ import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInR
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellManager;
 
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
@@ -182,7 +184,13 @@ public class PresenceManagerClient extends BaseConnection implements
 
 		String username = presenceInfo.userID.getUsername();
 
-		NameTagNode nameTag = NameTagNode.getNameTagNode(username);
+		CellCache cellCache = ClientContext.getCellCache(session);
+
+		Cell cell = cellCache.getCell(presenceInfo.cellID);
+
+		NameTagComponent comp = cell.getComponent(NameTagComponent.class);
+
+		NameTagNode nameTag = comp.getNameTagNode();
 
 		if (presenceInfo.usernameAlias.equals(username) == false) {
  		    pm.changeUsernameAlias(presenceInfo);
@@ -267,12 +275,6 @@ public class PresenceManagerClient extends BaseConnection implements
 		for (int i = 0; i < names.length; i++) {
 		    String name = names[i];
 
-		    NameTagNode nameTag = NameTagNode.getNameTagNode(name);
-
-		    if (nameTag == null) {
-			continue;
-		    }
-
 		    nameTagList.remove(name);
 
 		    PresenceInfo info = pm.getUserPresenceInfo(name);
@@ -282,6 +284,19 @@ public class PresenceManagerClient extends BaseConnection implements
 			continue;
 		    }
 		
+		    CellCache cellCache = ClientContext.getCellCache(session);
+
+		    Cell cell = cellCache.getCell(info.cellID);
+
+		    if (cell == null) {
+		  	logger.warning("No cell for " + name);
+			continue;
+		    }
+
+		    NameTagComponent comp = new NameTagComponent(cell, name, (float) .17);
+
+		    NameTagNode nameTag = comp.getNameTagNode();
+
 		    nameTag.updateLabel(info.usernameAlias, info.inConeOfSilence,
 			info.isSpeaking, info.isMuted);
 		}
