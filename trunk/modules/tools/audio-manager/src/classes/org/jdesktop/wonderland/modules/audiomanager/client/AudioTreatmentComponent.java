@@ -192,25 +192,34 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 	    otherCallID, VolumeUtil.getServerVolume(volume), true));
     }
 
-    private AudioTreatmentStatusListener treatmentStatusListener;
+    private ArrayList<AudioTreatmentStatusListener> treatmentStatusListeners = new ArrayList();
 
-    public void addTreatmentStatusListener(AudioTreatmentStatusListener treatmentStatusListener) {
-	this.treatmentStatusListener = treatmentStatusListener;
+    public void addTreatmentStatusListener(AudioTreatmentStatusListener listener) {
+	synchronized (treatmentStatusListeners) {
+	    treatmentStatusListeners.remove(listener);
+	    treatmentStatusListeners.add(listener);
+	}
     }
 	
-    public void removeTreatmentStatusListener(AudioTreatmentStatusListener treatmentStatusListener) {
-	treatmentStatusListener = null;
+    public void removeTreatmentStatusListener(AudioTreatmentStatusListener listener) {
+	synchronized (treatmentStatusListeners) {
+	    treatmentStatusListeners.remove(listener);
+	}
     }
 
     private void notifyTreatmentEstablished() {
-	if (treatmentStatusListener != null) {
-	    treatmentStatusListener.treatmentEstablished();
+	synchronized (treatmentStatusListeners) {
+	    for (AudioTreatmentStatusListener listener : treatmentStatusListeners) {
+	        listener.treatmentEstablished();
+	    }
 	}
     }
 
     private void notifyTreatmentEnded(String reason) {
-	if (treatmentStatusListener != null) {
-	    treatmentStatusListener.treatmentEnded(reason);
+	synchronized (treatmentStatusListeners) {
+	    for (AudioTreatmentStatusListener listener : treatmentStatusListeners) {
+	        listener.treatmentEnded(reason);
+	    }
 	}
     }
 

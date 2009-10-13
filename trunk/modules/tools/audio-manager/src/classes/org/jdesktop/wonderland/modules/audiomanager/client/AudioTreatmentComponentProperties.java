@@ -227,6 +227,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
 	originalShowBounds = compState.getShowBounds();
 	restore();
+
+	if (currentCell == null) {
+	    currentCell = editor.getCell();
+
+            AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
+
+	    component.addTreatmentStatusListener(this);
+	}
     }
 
     /**
@@ -237,6 +245,13 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             boundsViewerEntity.dispose();
             boundsViewerEntity = null;
         }
+
+	if (currentCell != null) {
+	    AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
+
+	    component.removeTreatmentStatusListener(this);
+	    currentCell = null;
+	}
     }
 
     /**
@@ -273,9 +288,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         editor.addToUpdateList(compState);
 
 	if (currentCell != null && currentCell.getCellID().equals(editor.getCell().getCellID()) == false) {
-	    AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
-
-	    component.removeTreatmentStatusListener(this);
 	    statusLabel.setText("");
 	}
 
@@ -294,12 +306,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	        lastURLTreatment = treatmentTextField.getText();
 	        break;
 	    }
-
-	    currentCell = editor.getCell();
-
-	    AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
-
-	    component.addTreatmentStatusListener(this);
 	}
     }
 
@@ -360,25 +366,55 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	}
     }
 
-    private void error(String msg) {
-	System.out.println(msg);
-	String title = "Content Upload Error";
-	javax.swing.JOptionPane.showMessageDialog(
-            this, msg, title, javax.swing.JOptionPane.ERROR_MESSAGE);
+    private void error(final String msg) {
+	final javax.swing.JPanel panel = this;
+
+	java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+		System.out.println(msg);
+		String title = "Content Upload Error";
+		javax.swing.JOptionPane.showMessageDialog(
+            	    panel, msg, title, javax.swing.JOptionPane.ERROR_MESSAGE);
+	    }
+	});
     }
 
     public void treatmentEstablished() {
-	statusLabel.setText("Treatment started successfully");
+	java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+		statusLabel.setText("Treatment started successfully");
+		close();
+		open();
+	    }
+	});
     }
 
-    public void treatmentEnded(String reason) {
-	statusLabel.setText(reason);
+    public void treatmentEnded(final String reason) {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+		statusLabel.setText(reason);
+		close();
+		open();
+	    }
+	});
     }
 
     /**
      * @{inheritDoc}
      */
     public void restore() {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+		restoreLater();
+	    }
+	});
+    }
+
+    private void restoreLater() {
         // Reset the GUI values to the original values
 
         audioGroupIdTextField.setText(originalGroupId);
@@ -881,8 +917,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                                     .add(showBoundsCheckBox)
                                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                         .add(org.jdesktop.layout.GroupLayout.LEADING, statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)))))
-                        .add(6, 6, 6))
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))))))
                     .add(layout.createSequentialGroup()
                         .add(160, 160, 160)
                         .add(playOnceCheckBox))
@@ -893,7 +928,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                         .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel13)))
-                .add(46, 46, 46))
+                .add(52, 52, 52))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
