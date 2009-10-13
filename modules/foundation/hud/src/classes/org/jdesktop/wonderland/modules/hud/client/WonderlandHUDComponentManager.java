@@ -66,7 +66,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
  * @author nsimpson
  */
 public class WonderlandHUDComponentManager implements HUDComponentManager,
-        ActionListener, MouseMotionListener {
+        ActionListener, MouseMotionListener, HUDViewListener {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUDComponentManager.class.getName());
     protected HUD hud;
@@ -289,6 +289,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             view = hudDisplayer.createView(state.getWindow());
             view.addActionListener(this);
             view.addMouseMotionListener(this);
+            view.addHUDViewListener(this);
             hudViewMap.put(view, component);
             state.setView(view);
 
@@ -623,6 +624,24 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             if (view != null) {
                 view.setControlled(component.hasControl());
             }
+        }
+    }
+
+    public void changedType(HUDView2D view, View2D.Type type) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("view: " + view + " changed to type: " + type);
+        }
+        if ((type != View2D.Type.UNKNOWN) && (type != View2D.Type.PRIMARY)) {
+            // Views of apps displayed on the the HUD can change type when they
+            // are displayed. The view placement stategy depends on the type
+            // of the view. So, when a view changes type, we may need to
+            // re-position the view. In one scenario, a view changes from
+            // type UNKNOWN to type POPUP. The HUD component manager explicitly
+            // positions views of type UNKNOWN, but must not position views
+            // of type POPUP. Fortunately, View2DEntity can be made to
+            // re-evaluate its view placement by resetting it's ortho position
+            // like this:
+            view.setLocationOrtho(new Vector2f());
         }
     }
 

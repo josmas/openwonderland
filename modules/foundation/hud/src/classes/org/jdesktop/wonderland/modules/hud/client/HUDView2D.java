@@ -54,6 +54,7 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
     private Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
     private List<ActionListener> actionListeners;
     private List<MouseMotionListener> mouseMotionListeners;
+    private List<HUDViewListener> viewListeners;
 
     /**
      * Create an instance of HUDView2D with default geometry node.
@@ -148,10 +149,18 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
     @Override
     public void setType(Type type, boolean update) {
         if (logger.isLoggable(Level.FINEST)) {
-            logger.finest(getType() + " > " + type + " for " + this);
+            logger.finest("view type changed from: " + getType() + " > " + type + " for " + this);
         }
-
         super.setType(type, update);
+
+        if (viewListeners != null) {
+            ListIterator<HUDViewListener> iter = viewListeners.listIterator();
+            while (iter.hasNext()) {
+                HUDViewListener listener = iter.next();
+                listener.changedType(this, type);
+            }
+            iter = null;
+        }
     }
 
     /**
@@ -348,6 +357,19 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
                 }
             }
             iter = null;
+        }
+    }
+
+    public void addHUDViewListener(HUDViewListener listener) {
+        if (viewListeners == null) {
+            viewListeners = Collections.synchronizedList(new LinkedList());
+        }
+        viewListeners.add(listener);
+    }
+
+    public void removeHUDViewListener(HUDViewListener listener) {
+        if (viewListeners != null) {
+            viewListeners.remove(listener);
         }
     }
 
