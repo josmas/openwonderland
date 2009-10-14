@@ -229,6 +229,9 @@ public abstract class View2DEntity implements View2D {
     /** A list of frame changes to be performed outside the window lock. */
     private LinkedList<FrameChange> frameChanges = new LinkedList<FrameChange>();
 
+    /** A flag which indicates that the cleanup method is being executed. */
+    private boolean inCleanup = false;
+
     /**
      * Create an instance of View2DEntity with default geometry node.
      * @param The entity in which the view is displayed.
@@ -272,6 +275,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void cleanup () {
+        inCleanup = true;
 
         changeMask = 0;
         disableGUI();
@@ -316,6 +320,8 @@ public abstract class View2DEntity implements View2D {
         controlArb = null;
         window = null;
         app = null;
+
+        inCleanup = false;
     }
 
     /** {@inheritDoc} */
@@ -399,7 +405,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_TYPE;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -445,7 +453,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PARENT;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
 
         // Inherit ortho state of parent (must do this after self update)
@@ -474,7 +484,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -497,7 +509,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -507,10 +521,12 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Recalculates the visibility of this view. */
-    private synchronized void updateVisibility () {
+    private synchronized void updateVisibility (boolean inCleanupParent) {
         changeMask |= CHANGED_VISIBLE;
         update();
-        updateFrame();
+        if (!inCleanup && !inCleanupParent) {
+            updateFrame();
+        }
     }
 
     /** {@inheritDoc} */
@@ -536,7 +552,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_DECORATED;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -556,7 +574,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_TITLE;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -579,7 +599,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_USER_RESIZABLE;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -595,7 +617,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_STACK;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -646,7 +670,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_GEOMETRY;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
     
@@ -676,7 +702,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_SIZE_APP;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -751,7 +779,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -787,7 +817,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -846,7 +878,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_LOCATION_ORTHO;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -871,7 +905,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -902,7 +938,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -922,7 +960,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -1101,7 +1141,9 @@ public abstract class View2DEntity implements View2D {
 
         if (update) {
             update();
-            updateFrame();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -1383,7 +1425,7 @@ public abstract class View2DEntity implements View2D {
                 // Update visibility of children
                 logger.fine("Update children visibility for view " + this);
                 for (View2DEntity child : children) {
-                    child.updateVisibility();
+                    child.updateVisibility(inCleanup);
                 }
             }            
         } // End Topology Changes
