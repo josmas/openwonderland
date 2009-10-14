@@ -58,9 +58,9 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.PluginFilter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.testharness.common.Client3DRequest;
@@ -423,8 +423,8 @@ public class Client3DSim
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public void requestLogin(WebURLLoginControl control) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public void requestLogin(EitherLoginControl control) {
+            requestLogin(control.getNoAuthLogin());
         }
     }
 
@@ -629,6 +629,10 @@ public class Client3DSim
         }
 
         public void removeFromCameraChoices(JRadioButtonMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromHelpMenu(JMenuItem menuItem) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

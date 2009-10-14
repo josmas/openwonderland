@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.testharness.master;
 
-import com.sun.corba.se.impl.protocol.giopmsgheaders.MessageHandler;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
