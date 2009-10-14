@@ -54,6 +54,8 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import java.util.logging.Logger;
 
 /**
  * The generic 2D application superclass. Displays the windows of a single 2D
@@ -115,6 +117,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         synchronized (appCells) {
             appCells.add(this);
         }
+
+        // TODO: Instrumentation for debugging 670: Part 1 of 3: Register a transform change listener
+        // Part 2 is at the end of this file.
+        // Part 3 is in the client logging.properties.
+        addTransformChangeListener(new MyTransformChangeListener());
     }
 
     /**
@@ -516,6 +523,22 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
             default:
                 throw new RuntimeException(
                         "Unsupported cell renderer type: " + rendererType);
+        }
+    }
+
+    // TODO: Instrumentation for debugging 670: Part 2 of 3: Print out all app cell transform sets.
+    // Part 1 is in the constructor.
+    // Part 3 is in the client logging.properties.
+    private static class MyTransformChangeListener implements TransformChangeListener {
+
+        private static final Logger logger = 
+            Logger.getLogger("org.jdesktop.wonderland.modules.appbase.client.cell.App2D.CellTransform");
+        
+        public void transformChanged(Cell cell, ChangeSource source) {
+            logger.info("cell = " + cell.getName() + "(" + cell.getCellID() + ")");
+            logger.info("source = " + source);
+            CellTransform localTransform = cell.getLocalTransform();
+            logger.info("localTransform = " + localTransform);
         }
     }
 }
