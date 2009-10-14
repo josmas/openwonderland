@@ -67,6 +67,7 @@ import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 import org.jdesktop.wonderland.testharness.slave.ProcessingException;
 import org.jdesktop.wonderland.testharness.slave.RequestProcessor;
+import org.jdesktop.wonderland.testharness.slave.SlaveMain.ReplySender;
 
 /**
  * A test client that simulates a 3D client
@@ -94,7 +95,7 @@ public class Client3DSim
         return "Client3DSim";
     }
 
-    public void initialize(String username, Properties props)
+    public void initialize(String username, Properties props, ReplySender replyHandler)
             throws ProcessingException {
         this.username = username;
 
