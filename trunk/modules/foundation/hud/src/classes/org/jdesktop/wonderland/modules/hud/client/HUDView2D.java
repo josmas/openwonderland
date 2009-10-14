@@ -97,6 +97,12 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
         frameImpl.setPreferredSize(frameSize);
         frame = new HUDFrameHeader2D(frameImpl);
 
+        if (window.getApp() instanceof HUDApp2D) {
+            // HACK! We only want to show the "remove from HUD" button for
+            // views that are not managed by the HUD.
+            frame.showHUDButton(false);
+        }
+        
         try {
             // create a window
             WindowSwing frameWindow = app.createWindow(frameSize.width, frameSize.height, Window2D.Type.PRIMARY, false, hudPixelScale, name);
