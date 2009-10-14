@@ -350,7 +350,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         if (view != null) {
             GeometryNode node = view.getGeometryNode();
 
-            if (!(node.getChild(0) instanceof TexturedQuad)) {
+            if ((node == null) || !(node.getChild(0) instanceof TexturedQuad)) {
                 logger.warning("can't find quad for view, unable to set transparency");
                 return;
             }
