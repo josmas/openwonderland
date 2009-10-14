@@ -103,6 +103,31 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
     }
 
     public void requestLogin(final EitherLoginControl control) {
+        // see if we have properties for automatic login
+        String username = System.getProperty("auth.username");
+        String fullname = System.getProperty("auth.fullname");
+        String password = System.getProperty("auth.password");
+        
+        if (username != null && fullname != null) {
+            try {
+                control.getNoAuthLogin().authenticate(username, fullname);
+                return;
+            } catch (LoginFailureException lfe) {
+                // error trying to login in.  Fall back to
+                // showing a dialog
+            }
+        }
+        
+        if (username != null && password != null) {
+            try {
+                control.getUserPasswordLogin().authenticate(username, password);
+                return;
+            } catch (LoginFailureException lfe) {
+                // error trying to login in.  Fall back to
+                // showing a dialog
+            }
+        }
+
         // start the login panel in the AWT event thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
