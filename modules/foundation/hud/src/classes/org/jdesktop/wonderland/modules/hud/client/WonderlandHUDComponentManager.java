@@ -231,6 +231,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         } else if (e.getActionCommand().equals("minimize")) {
             logger.info("minimize action performed: " + e);
             minimizeComponent(hudViewMap.get((HUDView2D) e.getSource()));
+        } else if (e.getActionCommand().equals("hud")) {
+            logger.info("remove from HUD action performed: " + e);
+            close(hudViewMap.get((HUDView2D) e.getSource()));
         }
     }
 

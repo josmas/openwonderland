@@ -101,6 +101,12 @@ public class HUDFrameHeader2D extends HUDComponent2D implements ActionListener, 
         return title;
     }
 
+    public void showHUDButton(boolean show) {
+        if (component instanceof HUDFrameHeader2DImpl) {
+            ((HUDFrameHeader2DImpl) component).showHUDButton(show);
+        }
+    }
+
     public void addActionListener(ActionListener listener) {
         if (actionListeners == null) {
             actionListeners = Collections.synchronizedList(new LinkedList());
