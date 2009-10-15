@@ -524,9 +524,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         HUDView3D view = state.getWorldView();
         if (view != null) {
-            Vector3f worldOffset = component.getWorldLocation();
-            // position HUD in x, y
-            view.setOffset(new Vector2f(worldOffset.x, worldOffset.y));
+            Vector3f worldLocation = component.getWorldLocation();
+            view.setOffset(new Vector2f(worldLocation.x, worldLocation.y));
+            view.applyDeltaTranslationUser(worldLocation);
         }
     }
 
@@ -563,7 +563,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             view.setOrtho(true);
         } else {
             // moving to world
-            view.applyDeltaTranslationUser(component.getWorldLocation());
+            // position HUD in x, y
+            Vector3f worldLocation = component.getWorldLocation();
+            view.setOffset(new Vector2f(worldLocation.x, worldLocation.y));
+            view.applyDeltaTranslationUser(worldLocation);
             view.setOrtho(false);
         }
     }
