@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImag
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.awt.event.MouseEvent;
+import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -245,6 +246,7 @@ public class WindowSwing extends Window2D {
     public void cleanup () {
         cleanupViews();
         super.cleanup();
+        embeddedPeer.dispose();
     }
 
     /** Initialize all existing views. */

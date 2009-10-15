@@ -45,6 +45,7 @@ class FrameHeaderSwingWindow extends WindowSwingHeader
     /** {@inheritDoc} */
     @Override
     public void cleanup () {
+        super.cleanup();
         if (eventHook != null) {
             eventHook = null;
         }
