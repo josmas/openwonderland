@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-import javax.swing.SwingWorker;
+import org.jdesktop.swingworker.SwingWorker;
 
 /**
  * The 2D frame header Swing implementation.
