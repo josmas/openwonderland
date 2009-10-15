@@ -532,7 +532,9 @@ public abstract class Window2D implements HUDDisplayable {
             if (type == Type.PRIMARY) {
                 // Tell the app about the new primary. This also parent existing
                 // secondaries to this new primary.
-                app.setPrimaryWindow(this);
+                if (app != null) {
+                    app.setPrimaryWindow(this);
+                }
             }
         }
 
