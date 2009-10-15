@@ -1490,11 +1490,13 @@ public abstract class Window2D implements HUDDisplayable {
      * Add an event listener to all of this window's views.
      * @param listener The listener to add.
      */
-    public synchronized void addEventListener(EventListener listener) {
-        if (eventListeners.contains(listener)) {
-            return;
+    public void addEventListener(EventListener listener) {
+        synchronized (eventListeners) {
+            if (eventListeners.contains(listener)) {
+                return;
+            }
+            eventListeners.add(listener);
         }
-        eventListeners.add(listener);
         for (View2D view : views) {
             view.addEventListener(listener);
         }
@@ -1509,7 +1511,7 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
         synchronized (app.getAppCleanupLock()) {
-            synchronized (this) {
+            synchronized (eventListeners) {
                 if (eventListeners.contains(listener)) {
                     eventListeners.remove(listener);
                     for (View2D view : views) {
@@ -1533,9 +1535,11 @@ public abstract class Window2D implements HUDDisplayable {
      * component.
      */
     private EntityComponentEntry entityComponentEntryForClass(Class clazz) {
-        for (EntityComponentEntry entry : entityComponents) {
-            if (entry.clazz.equals(clazz)) {
-                return entry;
+        synchronized (entityComponents) {
+            for (EntityComponentEntry entry : entityComponents) {
+                if (entry.clazz.equals(clazz)) {
+                    return entry;
+                }
             }
         }
         return null;
@@ -1545,12 +1549,13 @@ public abstract class Window2D implements HUDDisplayable {
      * Add an entity component to all of this window's views. If the window's
      * views already have an entity component with this class, nothing happens.
      */
-    public synchronized void addEntityComponent(
-            Class clazz, EntityComponent comp) {
-        if (entityComponentEntryForClass(clazz) != null) {
-            return;
+    public synchronized void addEntityComponent(Class clazz, EntityComponent comp) {
+        synchronized (entityComponents) {
+            if (entityComponentEntryForClass(clazz) != null) {
+                return;
+            }
+            entityComponents.add(new EntityComponentEntry(clazz, comp));
         }
-        entityComponents.add(new EntityComponentEntry(clazz, comp));
         for (View2D view : views) {
             view.addEntityComponent(clazz, comp);
         }
@@ -1564,7 +1569,7 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
         synchronized (app.getAppCleanupLock()) {
-            synchronized (this) {
+            synchronized (entityComponents) {
                 EntityComponentEntry entry =
                         entityComponentEntryForClass(clazz);
                 if (entry != null) {
@@ -1620,10 +1625,16 @@ public abstract class Window2D implements HUDDisplayable {
             changeMask = CHANGED_ALL;
             updateViews();
 
+        }
+
+        synchronized (eventListeners) {
             // Attach event listeners and entity components to this new view
             for (EventListener listener : eventListeners) {
                 view.addEventListener(listener);
             }
+        }
+
+        synchronized (entityComponents) {
             for (EntityComponentEntry entry : entityComponents) {
                 view.addEntityComponent(entry.clazz, entry.comp);
             }
@@ -1646,16 +1657,21 @@ public abstract class Window2D implements HUDDisplayable {
                         cellViews.remove((View2DCell) view);
                     }
                     removeViewForDisplayer(view);
-
-                    // Detach event listeners and entity components to this new
-                    // view
-                    for (EventListener listener : eventListeners) {
-                        view.removeEventListener(listener);
-                    }
-                    for (EntityComponentEntry entry : entityComponents) {
-                        view.removeEntityComponent(entry.clazz);
-                    }
                 }
+            }
+        }
+
+        // Detach event listeners and entity components from this view
+
+        synchronized (eventListeners) {
+            for (EventListener listener : eventListeners) {
+                view.removeEventListener(listener);
+            }
+        }
+
+        synchronized (entityComponents) {
+            for (EntityComponentEntry entry : entityComponents) {
+                view.removeEntityComponent(entry.clazz);
             }
         }
     }
@@ -1754,8 +1770,7 @@ public abstract class Window2D implements HUDDisplayable {
      * @param changingView The view the user manipulated to change the
      * transform.
      */
-    public void changedUserTransformCell(
-            CellTransform transform, View2D changingView) {
+    public void changedUserTransformCell(CellTransform transform, View2D changingView) {
         (new UserTransformCellNotifier(transform, changingView)).execute();
     }
 
@@ -2177,7 +2192,9 @@ public abstract class Window2D implements HUDDisplayable {
                                     BUNDLE.getString("Remove_from_HUD"),
                                     new ContextMenuActionListener() {
                                         public void actionPerformed(ContextMenuItemEvent event) {
-                                            app.setShowInHUD(false);
+                                            // Show this window's app on the HUD. This method
+                                            // is called on the EDT, so we need to do this on a non-EDT thread.
+                                            (new HUDShower(false)).execute();
                                         }
                                     });
         } else {
@@ -2185,11 +2202,28 @@ public abstract class Window2D implements HUDDisplayable {
                                     BUNDLE.getString("Show_in_HUD"),
                                     new ContextMenuActionListener() {
                                         public void actionPerformed(ContextMenuItemEvent event) {
-                                            app.setShowInHUD(true);
+                                            // Show this window's app on the HUD. This method
+                                            // is called on the EDT, so we need to do this on a non-EDT thread.
+                                            (new HUDShower(true)).execute();
                                         }
                                     });
         }
     }
+
+    private class HUDShower extends SwingWorker<String, Object> {
+        
+        private boolean showInHUD;
+
+        private HUDShower (boolean showInHUD) {
+            this.showInHUD = showInHUD;
+        }
+
+        @Override
+        public String doInBackground() {
+            app.setShowInHUD(showInHUD);
+            return null;
+        }
+    } 
 
     /**
      * Return the window menu items for this window based on its current state.
