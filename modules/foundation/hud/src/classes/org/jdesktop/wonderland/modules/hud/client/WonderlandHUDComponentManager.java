@@ -193,11 +193,14 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             Window2D window = state.getWindow();
             HUDView2D view2D = state.getView();
 
-            if ((window != null) && (view2D != null)) {
-                hudViewMap.remove(view2D);
-                window.removeView(view2D);
-                view2D.cleanup();
-                view2D = null;
+            if (window != null) {
+                if (view2D != null) {
+                    hudViewMap.remove(view2D);
+                    window.removeView(view2D);
+                    view2D.cleanup();
+                    view2D = null;
+                }
+                window.cleanup();
             }
 
             // remove in-world view
