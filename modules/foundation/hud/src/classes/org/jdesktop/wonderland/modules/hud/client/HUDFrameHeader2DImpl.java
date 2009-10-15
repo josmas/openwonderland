@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.SwingWorker;
 
 /**
  * The 2D frame header Swing implementation.
@@ -53,25 +54,46 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
     private void addListeners() {
         hudButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 logger.info("hud action performed");
-                notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "hud"));
+                (new SwingWorker<String, Object>() {
+
+                    @Override
+                    public String doInBackground() {
+                        notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "hud"));
+                        return null;
+                    }
+                }).execute();
             }
         });
 
         minimizeButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 logger.info("minimize action performed");
-                notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "minimize"));
+                (new SwingWorker<String, Object>() {
+
+                    @Override
+                    public String doInBackground() {
+                        notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "minimize"));
+                        return null;
+                    }
+                }).execute();
             }
         });
 
         closeButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 logger.info("close action performed");
-                notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "close"));
+                (new SwingWorker<String, Object>() {
+
+                    @Override
+                    public String doInBackground() {
+                        notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "close"));
+                        return null;
+                    }
+                }).execute();
             }
         });
     }
