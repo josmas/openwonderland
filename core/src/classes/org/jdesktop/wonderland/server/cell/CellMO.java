@@ -1265,7 +1265,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                     }
                     if (componentMO == null) {
                         logger.warning("Unable to find CellComponentMO for " +
-                                componentMO.getClass().getName() + " on Cell " +
+                                compState.getServerComponentClassName() + " on Cell " +
                                 cellMO.getName() + " of type " +
                                 cellMO.getClass().getName());
                         continue;
