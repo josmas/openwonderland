@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.jdesktop.swingworker.SwingWorker;
 
 /**
  * A 2D frame for a HUDComponent2D.
@@ -120,15 +121,22 @@ public class HUDFrameHeader2D extends HUDComponent2D implements ActionListener, 
         }
     }
 
-    public void notifyActionListeners(ActionEvent e) {
-        if (actionListeners != null) {
-            ListIterator<ActionListener> iter = actionListeners.listIterator();
-            while (iter.hasNext()) {
-                ActionListener listener = iter.next();
-                listener.actionPerformed(e);
+    public void notifyActionListeners(final ActionEvent e) {
+        (new SwingWorker<String, Object>() {
+
+            @Override
+            public String doInBackground() {
+                if (actionListeners != null) {
+                    ListIterator<ActionListener> iter = actionListeners.listIterator();
+                    while (iter.hasNext()) {
+                        ActionListener listener = iter.next();
+                        listener.actionPerformed(e);
+                    }
+                    iter = null;
+                }
+                return null;
             }
-            iter = null;
-        }
+        }).execute();
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -162,57 +170,76 @@ public class HUDFrameHeader2D extends HUDComponent2D implements ActionListener, 
         }
     }
 
-    public void notifyMouseMotionListeners(MouseEvent e) {
-        if (mouseMotionListeners != null) {
-            e.setSource(this);
-            ListIterator<MouseMotionListener> iter = mouseMotionListeners.listIterator();
-            while (iter.hasNext()) {
-                MouseMotionListener listener = iter.next();
+    public void notifyMouseMotionListeners(final MouseEvent e) {
+        SwingWorker worker = new SwingWorker<String, Object>() {
 
-                switch (e.getID()) {
-                    case MouseEvent.MOUSE_MOVED:
-                        listener.mouseMoved(e);
-                        break;
-                    case MouseEvent.MOUSE_DRAGGED:
-                        listener.mouseDragged(e);
-                        break;
-                    default:
-                        break;
+            @Override
+            public String doInBackground() {
+                if (mouseMotionListeners != null) {
+                    e.setSource(this);
+                    ListIterator<MouseMotionListener> iter = mouseMotionListeners.listIterator();
+                    while (iter.hasNext()) {
+                        MouseMotionListener listener = iter.next();
+
+                        switch (e.getID()) {
+                            case MouseEvent.MOUSE_MOVED:
+                                listener.mouseMoved(e);
+                                break;
+                            case MouseEvent.MOUSE_DRAGGED:
+                                listener.mouseDragged(e);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    iter = null;
                 }
+                return null;
             }
-            iter = null;
+        };
+        worker.execute();
+        try {
+            worker.get();
+        } catch (Exception ie) {
         }
     }
 
-    public void notifyMouseListeners(MouseEvent e) {
-        if (mouseListeners != null) {
-            e.setSource(this);
-            ListIterator<MouseListener> iter = mouseListeners.listIterator();
-            while (iter.hasNext()) {
-                MouseListener listener = iter.next();
+    public void notifyMouseListeners(final MouseEvent e) {
+        (new SwingWorker<String, Object>() {
 
-                switch (e.getID()) {
-                    case MouseEvent.MOUSE_ENTERED:
-                        listener.mouseEntered(e);
-                        break;
-                    case MouseEvent.MOUSE_EXITED:
-                        listener.mouseExited(e);
-                        break;
-                    case MouseEvent.MOUSE_PRESSED:
-                        listener.mousePressed(e);
-                        break;
-                    case MouseEvent.MOUSE_RELEASED:
-                        listener.mouseReleased(e);
-                        break;
-                    case MouseEvent.MOUSE_CLICKED:
-                        listener.mouseReleased(e);
-                        break;
-                    default:
-                        break;
+            @Override
+            public String doInBackground() {
+                if (mouseListeners != null) {
+                    e.setSource(this);
+                    ListIterator<MouseListener> iter = mouseListeners.listIterator();
+                    while (iter.hasNext()) {
+                        MouseListener listener = iter.next();
+
+                        switch (e.getID()) {
+                            case MouseEvent.MOUSE_ENTERED:
+                                listener.mouseEntered(e);
+                                break;
+                            case MouseEvent.MOUSE_EXITED:
+                                listener.mouseExited(e);
+                                break;
+                            case MouseEvent.MOUSE_PRESSED:
+                                listener.mousePressed(e);
+                                break;
+                            case MouseEvent.MOUSE_RELEASED:
+                                listener.mouseReleased(e);
+                                break;
+                            case MouseEvent.MOUSE_CLICKED:
+                                listener.mouseReleased(e);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    iter = null;
                 }
+                return null;
             }
-            iter = null;
-        }
+        }).execute();
     }
 
     public void mouseMoved(MouseEvent e) {
