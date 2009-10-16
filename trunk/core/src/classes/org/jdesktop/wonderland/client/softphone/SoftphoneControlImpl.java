@@ -292,6 +292,12 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    cmdLength ++;
 	}
 
+        // check for an audio file to play
+        String audioFile = System.getProperty("softphone.audio.file");
+        if (audioFile != null) {
+            cmdLength += 2;
+        }
+
         String[] command = new String[cmdLength];
         
         command[0] = javaHome + fileSeparator + "bin"
@@ -346,6 +352,11 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	if (isMuted == true) {
 	    command[i++] = "-mute";
 	}
+
+        if (audioFile != null) {
+            command[i++] = "-playTreatment";
+            command[i++] = audioFile;
+        }
 
         return command;
     }

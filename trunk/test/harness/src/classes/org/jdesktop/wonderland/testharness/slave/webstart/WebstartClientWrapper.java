@@ -84,11 +84,16 @@ public class WebstartClientWrapper implements RequestProcessor {
             String userDir = System.getProperty("user.dir")+File.separatorChar+"testharness_"+username;
 //            new File(userDir).mkdir();
 
-            ProcessBuilder builder = new ProcessBuilder("javaws", "-Xnosplash", "-open", "-b"+
-                    " -username "+username+
-                    " -userdir "+userDir+
-                    " -actorPort "+actorPort, serverURL + "wonderland-web-front/app/Wonderland.jnlp");
-            System.err.println("Process "+builder.toString());
+            String options = "-b" +
+                    " -username " + username +
+                    " -userdir " + userDir +
+                    " -actorPort " + actorPort;
+            if (props.containsKey("slave.audio.file")) {
+                options += " -audiofile " + props.getProperty("slave.audio.file");
+            }
+
+            ProcessBuilder builder = new ProcessBuilder("javaws", "-Xnosplash", "-open", options, serverURL + "wonderland-web-front/app/Wonderland.jnlp");
+            System.err.println("Process "+builder.toString() + " options " + options);
             if (useXvfb) {
                 builder.environment().put("DISPLAY", ":1.0");
                 ProcessBuilder xvfb = new ProcessBuilder("Xvfb -ac :1");
