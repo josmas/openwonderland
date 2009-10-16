@@ -17,22 +17,22 @@
  */
 package org.jdesktop.wonderland.modules.microphone.client.cell;
 
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
-import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.logging.Logger;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 
 /**
  * The cell factory for the sample cell.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Joe Provino <joe.provino@sun.com>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
@@ -40,8 +40,8 @@ public class MicrophoneCellFactory implements CellFactorySPI {
 
     private final static Logger LOGGER =
             Logger.getLogger(MicrophoneCellFactory.class.getName());
-    //private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-    //        "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[]{};
@@ -57,8 +57,7 @@ public class MicrophoneCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        //return BUNDLE.getString("Microphone");
-        return "Microphone";
+        return BUNDLE.getString("Microphone");
     }
 
     public Image getPreviewImage() {
