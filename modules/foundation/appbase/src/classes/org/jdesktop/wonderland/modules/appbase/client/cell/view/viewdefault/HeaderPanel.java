@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 import java.awt.Color;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
 /**
@@ -32,8 +33,12 @@ public class HeaderPanel extends javax.swing.JPanel {
         // TODO: add call backs to FrameHeaderSwing
 
         public void close();
+
+        public void toggleHUD();
     }
     private Container container;
+    private static ImageIcon onHUDImage;
+    private static ImageIcon offHUDImage;
 
     public void setContainer(Container container) {
         this.container = container;
@@ -42,11 +47,18 @@ public class HeaderPanel extends javax.swing.JPanel {
     /** Creates new form HeaderPanel */
     public HeaderPanel() {
         initComponents();
-
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+ 
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                closeButtonActionPerformed(evt);
+            }
+        });
+
+        hudButton.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hudButtonActionPerformed(evt);
             }
         });
     }
@@ -61,9 +73,10 @@ public class HeaderPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jToolBar1 = new javax.swing.JToolBar();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        appLabel = new javax.swing.JLabel();
+        controllerLabel = new javax.swing.JLabel();
+        closeButton = new javax.swing.JButton();
+        hudButton = new javax.swing.JButton();
 
         jToolBar1.setRollover(true);
 
@@ -71,48 +84,60 @@ public class HeaderPanel extends javax.swing.JPanel {
         setMinimumSize(new java.awt.Dimension(50, 24));
         setPreferredSize(new java.awt.Dimension(422, 24));
 
-        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD, jLabel1.getFont().getSize()+2));
+        appLabel.setFont(appLabel.getFont().deriveFont(appLabel.getFont().getStyle() | java.awt.Font.BOLD, appLabel.getFont().getSize()+2));
+        appLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/appbase/client/Bundle"); // NOI18N
-        jLabel1.setText(bundle.getString("HeaderPanel.jLabel1.text")); // NOI18N
+        appLabel.setText(bundle.getString("HeaderPanel.appLabel.text")); // NOI18N
 
-        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | java.awt.Font.BOLD, jLabel2.getFont().getSize()+2));
-        jLabel2.setText(bundle.getString("HeaderPanel.jLabel2.text")); // NOI18N
+        controllerLabel.setFont(controllerLabel.getFont().deriveFont(controllerLabel.getFont().getStyle() | java.awt.Font.BOLD, controllerLabel.getFont().getSize()+2));
+        controllerLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        controllerLabel.setText(bundle.getString("HeaderPanel.controllerLabel.text")); // NOI18N
 
-        jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10)); // NOI18N
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
-        jButton1.setMaximumSize(new java.awt.Dimension(24, 24));
-        jButton1.setMinimumSize(new java.awt.Dimension(24, 24));
-        jButton1.setPreferredSize(new java.awt.Dimension(24, 24));
-        jButton1.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
+        closeButton.setFont(new java.awt.Font("DejaVu Sans", 0, 10)); // NOI18N
+        closeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
+        closeButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        closeButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        closeButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        closeButton.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
+
+        hudButton.setFont(new java.awt.Font("DejaVu Sans", 0, 10)); // NOI18N
+        hudButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/dock24x24.png"))); // NOI18N
+        hudButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        hudButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        hudButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        hudButton.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/dock24x24.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(24, 24, 24)
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 202, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(48, 48, 48)
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                .addContainerGap()
+                .add(appLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 226, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0))
+                .add(controllerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(hudButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(3, 3, 3)
+                .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(appLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(controllerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(hudButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel appLabel;
+    private javax.swing.JButton closeButton;
+    private javax.swing.JLabel controllerLabel;
+    private javax.swing.JButton hudButton;
     private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 
@@ -122,14 +147,17 @@ public class HeaderPanel extends javax.swing.JPanel {
 
             public void run() {
                 HeaderPanel.super.setBackground(color);
-                if (jLabel1 != null) {
-                    jLabel1.setBackground(color);
+                if (appLabel != null) {
+                    appLabel.setBackground(color);
                 }
-                if (jLabel2 != null) {
-                    jLabel2.setBackground(color);
+                if (controllerLabel != null) {
+                    controllerLabel.setBackground(color);
                 }
-                if (jButton1 != null) {
-                    jButton1.setBackground(color);
+                if (closeButton != null) {
+                    closeButton.setBackground(color);
+                }
+                if (hudButton != null) {
+                    hudButton.setBackground(color);
                 }
             }
         });
@@ -141,17 +169,24 @@ public class HeaderPanel extends javax.swing.JPanel {
 
             public void run() {
                 HeaderPanel.super.setForeground(color);
-                if (jLabel1 != null) {
-                    jLabel1.setForeground(color);
+                if (appLabel != null) {
+                    appLabel.setForeground(color);
                 }
-                if (jLabel2 != null) {
-                    jLabel2.setForeground(color);
+                if (controllerLabel != null) {
+                    controllerLabel.setForeground(color);
                 }
-                if (jButton1 != null) {
-                    jButton1.setForeground(color);
+                if (closeButton != null) {
+                    closeButton.setForeground(color);
+                }
+                if (hudButton != null) {
+                    hudButton.setForeground(color);
                 }
             }
         });
+    }
+
+    public void showHUDButton(boolean showButton) {
+        hudButton.setVisible(showButton);
     }
 
     @Override
@@ -160,14 +195,17 @@ public class HeaderPanel extends javax.swing.JPanel {
 
             public void run() {
                 HeaderPanel.super.addMouseListener(listener);
-                if (jLabel1 != null) {
-                    jLabel1.addMouseListener(listener);
+                if (appLabel != null) {
+                    appLabel.addMouseListener(listener);
                 }
-                if (jLabel2 != null) {
-                    jLabel2.addMouseListener(listener);
+                if (controllerLabel != null) {
+                    controllerLabel.addMouseListener(listener);
                 }
-                if (jButton1 != null) {
-                    jButton1.addMouseListener(listener);
+                if (closeButton != null) {
+                    closeButton.addMouseListener(listener);
+                }
+                if (hudButton != null) {
+                    hudButton.addMouseListener(listener);
                 }
             }
         });
@@ -179,14 +217,17 @@ public class HeaderPanel extends javax.swing.JPanel {
 
             public void run() {
                 HeaderPanel.super.removeMouseListener(listener);
-                if (jLabel1 != null) {
-                    jLabel1.removeMouseListener(listener);
+                if (appLabel != null) {
+                    appLabel.removeMouseListener(listener);
                 }
-                if (jLabel2 != null) {
-                    jLabel2.removeMouseListener(listener);
+                if (controllerLabel != null) {
+                    controllerLabel.removeMouseListener(listener);
                 }
-                if (jButton1 != null) {
-                    jButton1.removeMouseListener(listener);
+                if (closeButton != null) {
+                    closeButton.removeMouseListener(listener);
+                }
+                if (hudButton != null) {
+                    hudButton.removeMouseListener(listener);
                 }
             }
         });
@@ -199,14 +240,17 @@ public class HeaderPanel extends javax.swing.JPanel {
 
             public void run() {
                 HeaderPanel.super.addMouseMotionListener(listener);
-                if (jLabel1 != null) {
-                    jLabel1.addMouseMotionListener(listener);
+                if (appLabel != null) {
+                    appLabel.addMouseMotionListener(listener);
                 }
-                if (jLabel2 != null) {
-                    jLabel2.addMouseMotionListener(listener);
+                if (controllerLabel != null) {
+                    controllerLabel.addMouseMotionListener(listener);
                 }
-                if (jButton1 != null) {
-                    jButton1.addMouseMotionListener(listener);
+                if (closeButton != null) {
+                    closeButton.addMouseMotionListener(listener);
+                }
+                if (hudButton != null) {
+                    hudButton.addMouseMotionListener(listener);
                 }
             }
         });
@@ -218,14 +262,17 @@ public class HeaderPanel extends javax.swing.JPanel {
 
             public void run() {
                 HeaderPanel.super.removeMouseMotionListener(listener);
-                if (jLabel1 != null) {
-                    jLabel1.removeMouseMotionListener(listener);
+                if (appLabel != null) {
+                    appLabel.removeMouseMotionListener(listener);
                 }
-                if (jLabel2 != null) {
-                    jLabel2.removeMouseMotionListener(listener);
+                if (controllerLabel != null) {
+                    controllerLabel.removeMouseMotionListener(listener);
                 }
-                if (jButton1 != null) {
-                    jButton1.removeMouseMotionListener(listener);
+                if (closeButton != null) {
+                    closeButton.removeMouseMotionListener(listener);
+                }
+                if (hudButton != null) {
+                    hudButton.removeMouseMotionListener(listener);
                 }
             }
         });
@@ -236,11 +283,11 @@ public class HeaderPanel extends javax.swing.JPanel {
             title = " ";
         }
         final String theTitle = title;
-        if (jLabel1 != null) {
+        if (appLabel != null) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    jLabel1.setText(theTitle);
+                    appLabel.setText(theTitle);
                 }
             });
         }
@@ -251,19 +298,25 @@ public class HeaderPanel extends javax.swing.JPanel {
             controller = " ";
         }
         final String theController = controller;
-        if (jLabel1 != null) {
+        if (appLabel != null) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    jLabel2.setText(theController);
+                    controllerLabel.setText(theController);
                 }
             });
         }
     }
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         if (container != null) {
             container.close();
+        }
+    }
+
+    private void hudButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        if (container != null) {
+            container.toggleHUD();
         }
     }
 }

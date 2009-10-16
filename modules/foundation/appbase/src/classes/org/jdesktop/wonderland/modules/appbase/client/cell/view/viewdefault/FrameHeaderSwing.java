@@ -104,7 +104,7 @@ public class FrameHeaderSwing
         super("FrameHeaderSwing for " + view, view, null);
 
         this.view = view;
-        Window2D viewWindow = view.getWindow();
+        final Window2D viewWindow = view.getWindow();
         app = viewWindow.getApp();
         headerWindow = new FrameHeaderSwingWindow(app, viewWindow, 1, 1, view.getPixelScale(), 
                                                   "Header Window for " + view.getName(), view);
@@ -112,8 +112,13 @@ public class FrameHeaderSwing
 
         try {
             SwingUtilities.invokeAndWait(new Runnable () {
-                public void run () {
+                public void run() {
                     headerPanel = new HeaderPanel();
+                    boolean isPrimary = viewWindow.getType() == Window2D.Type.PRIMARY ||
+                            viewWindow.getType() == Window2D.Type.UNKNOWN;
+                    if (!isPrimary) {
+                        headerPanel.showHUDButton(false);
+                    }
                 }
             });
         } catch (Exception ex) {
@@ -446,6 +451,10 @@ public class FrameHeaderSwing
                 viewWindow.closeUser();
             }
         }
+    }
+
+    public void toggleHUD() {
+        app.setShowInHUD(!app.isShownInHUD());
     }
 
     /** {@inheritDoc} */
