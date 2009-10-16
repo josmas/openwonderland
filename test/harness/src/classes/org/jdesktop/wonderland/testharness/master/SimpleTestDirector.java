@@ -47,7 +47,9 @@ public class SimpleTestDirector implements TestDirector {
     private ArrayList<SlaveInfo> slaves = new ArrayList();
     private final HashMap<String, User> users = new LinkedHashMap();
     private ArrayList<UserGroup> userGroups = new ArrayList();
-    
+
+    private String audioFile = null;
+
     private Logger logger = Logger.getLogger(SimpleTestDirector.class.getName());
     
     private static int USERS_PER_GROUP = 3;
@@ -60,10 +62,12 @@ public class SimpleTestDirector implements TestDirector {
 
     private CommsHandler commsHandler;
     
-    public SimpleTestDirector(CommsHandler commsHandler) {
+    public SimpleTestDirector(CommsHandler commsHandler, Properties props) {
         this.commsHandler = commsHandler;
         userGroups.add(new UserGroup(new Vector3f(0,0,0)));
-        
+
+        audioFile = props.getProperty("slave.audio.file");
+
         commsHandler.addMessageListener(SimpleTestDirectorMessage.class, new CommsHandler.MessageListener() {
 
             public void messageReceived(ManagerMessage msg) {
@@ -274,6 +278,11 @@ public class SimpleTestDirector implements TestDirector {
 //        ClientLoginRequest lr = new ClientLoginRequest("client3D.Client3DSim", props,
 //                                           user.getUsername());
         props.setProperty("testharness.actorPort", Integer.toString(user.getActorPort()));
+
+        if (audioFile != null) {
+            props.setProperty("slave.audio.file", audioFile);
+        }
+
         ClientLoginRequest lr = new ClientLoginRequest("webstart.WebstartClientWrapper", props,
                                            user.getUsername());
         System.err.println("Send login request "+user.getUsername());

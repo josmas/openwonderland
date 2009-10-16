@@ -35,7 +35,7 @@ public class TestHarnessSupport {
     static void processCommandLineArgs(String args) {
         // Strip off -b
         String arg = args.substring(3);
-        
+
         // Test Harness.
         // Have to parse the argument as javaws passes all the args
         // as a single string
@@ -51,6 +51,8 @@ public class TestHarnessSupport {
                 System.setProperty("testharness.port", portStr);
             } else if (tok.equalsIgnoreCase("-userdir")) {
                 System.setProperty("wonderland.user.dir", st.nextToken());
+            } else if (tok.equalsIgnoreCase("-audiofile")) {
+                System.setProperty("softphone.audio.file", st.nextToken());
             } else {
                 System.err.println("Unknown option in TestHarnessSupport "+tok);
             }

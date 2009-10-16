@@ -94,7 +94,7 @@ public class MasterMain {
         manager = new ManagerController();
         manager.start();
         
-        TestDirector director = new SimpleTestDirector(manager);
+        TestDirector director = new SimpleTestDirector(manager, props);
         manager.addTestDirector(director);
         try {
             ServerSocket serverSocket = new ServerSocket(masterPort);
