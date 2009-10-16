@@ -369,7 +369,13 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
         public void run() {
             // the cell is new -- add it and send a message
             CellMO cell = CellManagerMO.getCell(desc.getCellID());
-                          
+
+            // issue #950 -- make sure the cell is live before adding any
+            // clients
+            if (!cell.isLive()) {
+                return;
+            }
+
             //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
             CellSessionProperties prop = cell.addClient(clientID, capabilities);
             
