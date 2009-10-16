@@ -297,6 +297,7 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
      * {@inheritDoc}
      */
     public void HUDObjectChanged(final HUDEvent event) {
+        // DJ NOTE: never comment this back in! The appbase cannot be called on the EDT.
         // Note: commented out code as a temporary workaround for various Apps-in-HUD bugs
         //SwingUtilities.invokeLater(new Runnable() {
         //    public void run() {
