@@ -302,6 +302,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                         cmm.removeContextMenuListener(menuListener);
                         menuListener = null;
                     }
+                    destroy();
                 }
                 break;
         }
