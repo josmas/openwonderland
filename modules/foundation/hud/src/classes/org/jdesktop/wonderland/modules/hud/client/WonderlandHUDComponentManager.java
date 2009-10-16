@@ -200,7 +200,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                     view2D.cleanup();
                     view2D = null;
                 }
-                window.cleanup();
+                // fix for issue #954
+                //window.cleanup();
             }
 
             // remove in-world view
