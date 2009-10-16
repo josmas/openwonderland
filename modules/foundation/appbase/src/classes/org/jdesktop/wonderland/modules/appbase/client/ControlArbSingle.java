@@ -34,6 +34,7 @@ public class ControlArbSingle extends ControlArbAppFocus {
     /** {@inheritDoc} */
     @Override
     public void cleanup () {
+        super.cleanup();
         controller = null;
     }
 
