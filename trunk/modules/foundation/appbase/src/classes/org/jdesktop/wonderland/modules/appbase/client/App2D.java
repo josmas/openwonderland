@@ -187,7 +187,10 @@ public abstract class App2D {
             toRemoveList.clear();
             pixelScale = null;
         }
-    }
+        synchronized(apps) {
+            apps.remove(this);
+        }
+     }
 
     /** INTERNAL ONLY. */
     @InternalAPI
@@ -366,19 +369,19 @@ public abstract class App2D {
 
     /** Executed by the JVM shutdown process. */
     private static void shutdown () {
-        logger.warning("Shutting down app base...");
+        logger.info("Shutting down app base...");
         isAppBaseRunning = false;
 
         // Note: I tried to run this in a synchronized block, but it hung.
         LinkedList<App2D> appsCopy = (LinkedList<App2D>) apps.clone();
         for (App2D app : appsCopy) {
-            logger.warning("Shutting down app " + app);
+            logger.info("Shutting down app " + app);
             app.cleanup();
         }
-        logger.warning("Done shutting down apps.");
+        logger.info("Done shutting down apps.");
 
         apps.clear();
-        logger.warning("Done shutting down app base.");
+        logger.info("Done shutting down app base.");
     }
 
     /**
