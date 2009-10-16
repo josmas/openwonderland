@@ -247,7 +247,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	if (currentCell != null) {
 	    AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
 
-	    component.removeTreatmentStatusListener(this);
+	    if (component != null) {
+	        component.removeTreatmentStatusListener(this);
+	    }
+
 	    currentCell = null;
 	}
     }
