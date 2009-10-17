@@ -102,7 +102,7 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
             // views that are not managed by the HUD.
             frame.showHUDButton(false);
         }
-        
+
         try {
             // create a window
             WindowSwing frameWindow = app.createWindow(frameSize.width, frameSize.height, Window2D.Type.PRIMARY, false, hudPixelScale, name);
@@ -283,6 +283,18 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
     protected void frameUpdate() {
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("updating frame");
+        }
+        if (frameView != null) {
+            Window2D frameWindow = frameView.getWindow();
+            Window2D appWindow = getWindow();
+            if (appWindow != null) {
+                int appWidth = appWindow.getWidth();
+                int frameWidth = frameWindow.getWidth();
+                if (frameWidth != appWidth) {
+                    // adjust frame to fit width of app window
+                    frameView.getWindow().setSize(appWidth, frameWindow.getHeight());
+                }
+            }
         }
     }
 
