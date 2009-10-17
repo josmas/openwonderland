@@ -93,14 +93,14 @@ public class HeaderPanel extends javax.swing.JPanel {
         controllerLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         controllerLabel.setText(bundle.getString("HeaderPanel.controllerLabel.text")); // NOI18N
 
-        closeButton.setFont(new java.awt.Font("DejaVu Sans", 0, 10)); // NOI18N
+        closeButton.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
         closeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
         closeButton.setMaximumSize(new java.awt.Dimension(24, 24));
         closeButton.setMinimumSize(new java.awt.Dimension(24, 24));
         closeButton.setPreferredSize(new java.awt.Dimension(24, 24));
         closeButton.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
 
-        hudButton.setFont(new java.awt.Font("DejaVu Sans", 0, 10)); // NOI18N
+        hudButton.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
         hudButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/dock24x24.png"))); // NOI18N
         hudButton.setMaximumSize(new java.awt.Dimension(24, 24));
         hudButton.setMinimumSize(new java.awt.Dimension(24, 24));
@@ -113,9 +113,9 @@ public class HeaderPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(appLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 226, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(appLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(controllerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, Short.MAX_VALUE)
+                .add(controllerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(hudButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(3, 3, 3)
