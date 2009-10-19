@@ -179,6 +179,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
 	originalTreatmentType = compState.getTreatmentType();
 
+	treatmentType = originalTreatmentType;
+
         originalTreatments = "";
 
 	/*
@@ -292,11 +294,36 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	    statusLabel.setText("");
 	}
 
-	if (treatments != null) {
+	if (treatments != null && treatments.length() > 0) {
 	    switch (treatmentType) {
 	    case FILE:
 		lastFileTreatment = treatments;
-		uploadFileTreatments();
+		try {
+		    statusLabel.setText("Uploading " + treatments);
+		    uploadFileTreatments();
+		} catch (Exception e) {
+		    statusLabel.setText("Failed to upload " + treatments);
+		    break;	
+		}
+
+	        ServerSessionManager serverSessionManager = LoginManager.getPrimary();
+
+		contentRepositoryRadioButton.doClick();
+
+		compState.setTreatmentType(TreatmentType.CONTENT_REPOSITORY);
+
+		int ix = treatments.lastIndexOf("/");
+
+		if (ix >= 0) {
+		    treatments = treatments.substring(ix + 1);
+		}
+
+		String contentRepositoryTreatment = 
+		    "wlcontent://users/" + serverSessionManager.getUsername() + "/audio/" + treatments;
+
+	        compState.setTreatments(new String[] { contentRepositoryTreatment });
+		treatmentTextField.setText(contentRepositoryTreatment);
+	        lastContentRepositoryTreatment = treatmentTextField.getText();
 	        break;
 
 	    case CONTENT_REPOSITORY:
@@ -310,7 +337,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	}
     }
 
-    private void uploadFileTreatments() {
+    private void uploadFileTreatments() throws Exception {
         // make sure specified file exists, create an
         // entry in the content repository and upload the file.
 	String pattern = "file://";
@@ -367,7 +394,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	}
     }
 
-    private void error(final String msg) {
+    private void error(final String msg) throws Exception {
 	final javax.swing.JPanel panel = this;
 
 	java.awt.EventQueue.invokeLater(new Runnable() {
@@ -379,6 +406,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             	    panel, msg, title, javax.swing.JOptionPane.ERROR_MESSAGE);
 	    }
 	});
+
+	throw new Exception(msg);
     }
 
     public void treatmentEstablished() {
@@ -435,6 +464,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	}
 
         treatmentTextField.setText(originalTreatments);
+
         volumeSlider.setValue(originalVolume);
 
         switch (originalPlayWhen) {
@@ -1162,11 +1192,15 @@ private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent 
 }//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
 
 private void fileRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileRadioButtonActionPerformed
+    if (fileRadioButton.isSelected() == false) {
+	return;
+    }
+
     if (treatmentType.equals(TreatmentType.FILE) == false) {
-        treatmentTextField.setText("");
-    } else {
 	if (lastFileTreatment != null) {
 	    treatmentTextField.setText(lastFileTreatment);
+	} else {
+	    treatmentTextField.setText("");
 	}
     }
 
@@ -1175,24 +1209,33 @@ private void fileRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 }//GEN-LAST:event_fileRadioButtonActionPerformed
 
 private void contentRepositoryRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contentRepositoryRadioButtonActionPerformed
+    if (contentRepositoryRadioButton.isSelected() == false) {
+	return;
+    }
+
     if (treatmentType.equals(TreatmentType.CONTENT_REPOSITORY) == false) {
-        treatmentTextField.setText("");
-    } else {
 	if (lastContentRepositoryTreatment != null) {
 	    treatmentTextField.setText(lastContentRepositoryTreatment);
+	} else {
+            treatmentTextField.setText("");
 	}
     }
 
     treatmentType = TreatmentType.CONTENT_REPOSITORY;
+
     browseButton.setEnabled(true);
 }//GEN-LAST:event_contentRepositoryRadioButtonActionPerformed
 
 private void URLRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_URLRadioButtonActionPerformed
+    if (URLRadioButton.isSelected() == false) {
+	return;
+    }
+
     if (treatmentType.equals(TreatmentType.URL) == false) {
-        treatmentTextField.setText("");
-    } else {
 	if (lastURLTreatment != null) {
 	    treatmentTextField.setText(lastURLTreatment);
+	} else {
+            treatmentTextField.setText("");
 	}
     }
 
