@@ -66,8 +66,8 @@ public class NameTagComponent extends CellComponent {
                 if (increasing) {
                     synchronized(this) {
                         if (nameTagNode==null) {
-                            nameTagNode = new NameTagNode(".", height);
-                            nameTagNode.updateLabel(".", inConeOfSilence, isSpeaking, isMuted);
+                            nameTagNode = new NameTagNode(" ", height);
+                            nameTagNode.updateLabel(" ", inConeOfSilence, isSpeaking, isMuted);
                         }
                     }
                 }
