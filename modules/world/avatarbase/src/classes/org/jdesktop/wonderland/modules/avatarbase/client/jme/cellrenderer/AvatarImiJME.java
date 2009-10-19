@@ -95,7 +95,6 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
 @ExperimentalAPI
 public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
-    private WlAvatarCharacter pendingAvatar = null;
     private WlAvatarCharacter avatarCharacter = null;
 
     private boolean selectedForInput = false;
@@ -202,7 +201,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     // Fetch the name tag node, there should only be one of
                     // these in the system and set the name.
                     NameTagNode nameTagNode = getNameTagNode();
-                    if (e.getUsername().equals(username) == true) {
+                    if (nameTagNode!=null && e.getUsername().equals(username) == true) {
                         nameTagNode.setNameTag(e.getEventType(), username,
                                            e.getUsernameAlias());
                     }
@@ -244,6 +243,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     @Override
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
+        WlAvatarCharacter pendingAvatar = null;
 
         logger.info("AVATAR RENDERER STATUS " + status + " DIR " + increasing);
         
@@ -252,7 +252,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (status == CellStatus.ACTIVE && increasing == true) {
 
             if (cellMoveListener != null) {
-                cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
+                // mc should not be null, but sometimes it seems to be
+                MovableComponent mc = cell.getComponent(MovableComponent.class);
+                if (mc==null) {
+                    logger.severe("NULL MovableComponent in avatar "+((AvatarCell)cell).getName());
+                } else {
+                    mc.removeServerCellMoveListener(cellMoveListener);
+                }
                 cellMoveListener = null;
             }
 
@@ -364,12 +370,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // away its position. Remove the name tag, turn off input and destroy
         // the avatar character.
         PMatrix currentLocation = null;
-        boolean wasSelectedForInput = false;
         if (avatarCharacter != null) {
             currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
             rootEntity.removeEntity(avatarCharacter);
             avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTagNode);
-            wasSelectedForInput = selectedForInput;
             selectForInput(false);
             avatarCharacter.destroy();
         }
@@ -395,10 +399,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // Attach the name tag to the new avatar and add the avatar entity to
         // the cell renderer root entity and turn on input.
         Node externalRoot = avatarCharacter.getJScene().getExternalKidsRoot();
-        externalRoot.attachChild(nameTagNode);
-        externalRoot.setModelBound(new BoundingSphere());
-        externalRoot.updateModelBound();
-        externalRoot.updateGeometricState(0, true);
+        if (nameTagNode!=null) {
+            externalRoot.attachChild(nameTagNode);
+            externalRoot.setModelBound(new BoundingSphere());
+            externalRoot.updateModelBound();
+            externalRoot.updateGeometricState(0, true);
+        }
         rootEntity.addEntity(avatarCharacter);
 
         // Turn on input handle for the renderer, if we wish. Check for AvatarCell
@@ -605,8 +611,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private NameTagNode getNameTagNode() {
         NameTagComponent nameTagComp = cell.getComponent(NameTagComponent.class);
         if (nameTagComp == null) {
-            nameTagComp = new NameTagComponent(cell, username, 2);
-            cell.addComponent(nameTagComp);
+            return null;
         }
         return nameTagComp.getNameTagNode();
     }
@@ -820,7 +825,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         transform.setRotation(look);
         transform.setTranslation(position);
         cell.getComponent(MovableComponent.class).localMoveRequest(transform);
-        avatarCharacter.getModelInst().setTransform(new PTransform(look, position, new Vector3f(1, 1, 1)));
+        if (avatarCharacter!=null)
+            avatarCharacter.getModelInst().setTransform(new PTransform(look, position, new Vector3f(1, 1, 1)));
     }
 
     /**
