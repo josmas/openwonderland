@@ -153,7 +153,7 @@ public class NameTagNode extends Node {
     }
 
     public void setNameTag(EventType eventType, String username, String alias) {
-        logger.severe("set name tag: " + eventType + ", username: " + username
+        logger.info("set name tag: " + eventType + ", username: " + username
 	    + ", alias: " + alias); 
 
         switch (eventType) {
@@ -244,7 +244,7 @@ public class NameTagNode extends Node {
             return;
         }
 
-	if (name.equals(usernameAlias) == false) {
+	if (usernameAlias!=null && name.equals(usernameAlias) == false) {
             font = ALIAS_NAME_FONT;
 	} else {
             font = REAL_NAME_FONT;
