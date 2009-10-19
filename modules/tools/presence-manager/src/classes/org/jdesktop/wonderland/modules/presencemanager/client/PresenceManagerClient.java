@@ -43,16 +43,13 @@ import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceI
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
-
 import java.util.ArrayList;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
 
@@ -188,25 +185,23 @@ public class PresenceManagerClient extends BaseConnection implements
 
 		Cell cell = cellCache.getCell(presenceInfo.cellID);
 
-		NameTagComponent comp = cell.getComponent(NameTagComponent.class);
-
-		NameTagNode nameTag = comp.getNameTagNode();
+		NameTagComponent nameTag = cell.getComponent(NameTagComponent.class);
 
 		if (presenceInfo.usernameAlias.equals(username) == false) {
  		    pm.changeUsernameAlias(presenceInfo);
  		}
 
 		if (nameTag == null) {
-		    nameTagList.add(username);
+		    return;
 		} else {
 		    nameTag.updateLabel(presenceInfo.usernameAlias, presenceInfo.inConeOfSilence,
 		        presenceInfo.isSpeaking, presenceInfo.isMuted);
 	        }
 	    }
 
-	    if (nameTagList.size() > 0) {
-		new NameTagUpdater(nameTagList);
-	    } 
+//	    if (nameTagList.size() > 0) {
+//		new NameTagUpdater(nameTagList);
+//	    }
 
 	    return;
 	}
@@ -258,60 +253,58 @@ public class PresenceManagerClient extends BaseConnection implements
      * When we connect, if we can't update the names with mute and alias info
      * because a name tag doesn't yet exist, we shedule the update for later.
      */
-    class NameTagUpdater extends Thread {
-	
-	private ArrayList<String> nameTagList;
-
-	public NameTagUpdater(ArrayList<String> nameTagList) {
-	    this.nameTagList = nameTagList;
-
-	    start();
-	}
-
-	public void run() {
-	    while (true) {
-		String[] names = nameTagList.toArray(new String[0]);
-
-		for (int i = 0; i < names.length; i++) {
-		    String name = names[i];
-
-		    nameTagList.remove(name);
-
-		    PresenceInfo info = pm.getUserPresenceInfo(name);
-
-		    if (info == null) {
-			logger.info("No presence info for " + name);
-			continue;
-		    }
-		
-		    CellCache cellCache = ClientContext.getCellCache(session);
-
-		    Cell cell = cellCache.getCell(info.cellID);
-
-		    if (cell == null) {
-		  	logger.warning("No cell for " + name);
-			continue;
-		    }
-
-		    NameTagComponent comp = new NameTagComponent(cell, name, (float) .17);
-
-		    NameTagNode nameTag = comp.getNameTagNode();
-
-		    nameTag.updateLabel(info.usernameAlias, info.inConeOfSilence,
-			info.isSpeaking, info.isMuted);
-		}
-
-		if (nameTagList.size() == 0) {
-		    break;
-		}
-
-	        try {
-		    Thread.sleep(200);
-		} catch (InterruptedException e) {
-		}
-	    }
- 	}
-    }
+//    class NameTagUpdater extends Thread {
+//
+//	private ArrayList<String> nameTagList;
+//
+//	public NameTagUpdater(ArrayList<String> nameTagList) {
+//	    this.nameTagList = nameTagList;
+//
+//	    start();
+//	}
+//
+//	public void run() {
+//	    while (true) {
+//		String[] names = nameTagList.toArray(new String[0]);
+//
+//		for (int i = 0; i < names.length; i++) {
+//		    String name = names[i];
+//
+//		    nameTagList.remove(name);
+//
+//		    PresenceInfo info = pm.getUserPresenceInfo(name);
+//
+//		    if (info == null) {
+//			logger.info("No presence info for " + name);
+//			continue;
+//		    }
+//
+//		    CellCache cellCache = ClientContext.getCellCache(session);
+//
+//		    Cell cell = cellCache.getCell(info.cellID);
+//
+//		    if (cell == null) {
+//		  	logger.warning("No cell for " + name);
+//			continue;
+//		    }
+//
+////		    NameTagComponent nameTag = new NameTagComponent(cell, name, (float) .17);
+//
+//		    nameTag.updateLabel(info.usernameAlias, info.inConeOfSilence,
+//			info.isSpeaking, info.isMuted);
+//		}
+//
+//		if (nameTagList.size() == 0) {
+//		    break;
+//		}
+//
+//	        try {
+//		    Thread.sleep(200);
+//		} catch (InterruptedException e) {
+//		}
+//	    }
+// 	}
+//    }
 
     public ConnectionType getConnectionType() {
         return PresenceManagerConnectionType.CONNECTION_TYPE;

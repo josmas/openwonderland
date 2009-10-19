@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
@@ -55,19 +54,11 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
-
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
-
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -75,18 +66,10 @@ import javax.swing.SwingUtilities;
 
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
-
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.SceneWorker;
-
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
-
 import com.jme.math.Vector3f;
-
-import java.awt.Color;
-import java.awt.Font;
-
 import com.jme.scene.Node;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
 /**
  *
@@ -113,7 +96,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     private String username;
     private String usernameAlias;
 
-    private NameTagNode nameTag;
+    private Node nameTag;
+    private NameTagComponent nameTagComp;
 
     private PresenceManager pm;
 
@@ -195,11 +179,12 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    presenceInfoAdded = true;
 	} 
 
-        NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
-	    orbCell.addComponent(comp);
-	nameTag = comp.getNameTagNode();
+        nameTagComp = new NameTagComponent(orbCell);
+        // SIZE should be 0.17
+        orbCell.addComponent(nameTagComp);
+        nameTag = nameTagComp.getRenderer(Cell.RendererType.RENDERER_JME);
 
-        nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+        nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 
 	setBystanders(bystanders);
 
@@ -274,8 +259,6 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
         channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 
-	nameTag.done();
-
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
 	if (presenceInfoAdded) {
@@ -311,9 +294,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private void setBystanders(String[] bystanders) {
 	if ((bystanders == null) || (bystanders.length == 0)) {
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+	    nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	} else {
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + " 
+	    nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + "
 		+ bystanders.length);
 	}
 
@@ -357,9 +340,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    }
 
 	    if (msg.isSpeaking()) {
-	        nameTag.setNameTag(EventType.STARTED_SPEAKING, username, alias);
+	        nameTagComp.setNameTag(EventType.STARTED_SPEAKING, username, alias);
 	    } else {
-	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, username, alias);
+	        nameTagComp.setNameTag(EventType.STOPPED_SPEAKING, username, alias);
 	    }
 
 	    return;
@@ -373,9 +356,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    }
 
 	    if (msg.isMuted()) {
-                nameTag.setNameTag(EventType.MUTE, username, alias);
+                nameTagComp.setNameTag(EventType.MUTE, username, alias);
 	    } else {
-                nameTag.setNameTag(EventType.UNMUTE, username, alias);
+                nameTagComp.setNameTag(EventType.UNMUTE, username, alias);
 	    }
 
 	    return;
@@ -397,7 +380,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	        pm.changeUsernameAlias(presenceInfo);
 	    }
 
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+	    nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	    return;
 	}
 
@@ -603,7 +586,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	this.presenceInfo.usernameAlias = usernameAlias;
 
-	nameTag.setNameTag(EventType.CHANGE_NAME, presenceInfo.userID.getUsername(), usernameAlias);
+	nameTagComp.setNameTag(EventType.CHANGE_NAME, presenceInfo.userID.getUsername(), usernameAlias);
     }
 
 }

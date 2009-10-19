@@ -33,8 +33,6 @@ import javax.swing.SpinnerListModel;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
 
 import org.jdesktop.wonderland.client.ClientContext;
@@ -43,8 +41,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
 /**
  * A panel for selecting display properties for avatar name tags.
@@ -192,7 +189,7 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
         NameTagComponent comp = (NameTagComponent) cell.getComponent(NameTagComponent.class);
 
-	comp.getNameTagNode().setNameTag(eventType, presenceInfo.userID.getUsername(), 
+	comp.setNameTag(eventType, presenceInfo.userID.getUsername(), 
 	    presenceInfo.usernameAlias);
     }
 
@@ -226,7 +223,7 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
             LOGGER.fine("set other name tags: " + eventType + users[i]);
 
-            comp.getNameTagNode().setNameTag(eventType, username, users[i].usernameAlias);
+            comp.setNameTag(eventType, username, users[i].usernameAlias);
         }
     }
 
