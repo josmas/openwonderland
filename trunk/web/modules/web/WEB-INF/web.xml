@@ -32,6 +32,42 @@
             <http-method>TRACE</http-method>
             <http-method>DELETE</http-method>
         </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>Access to modules</web-resource-name>
+            <description>Access to other module resources requires admin</description>
+            <url-pattern>/modules/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>index.jsp</web-resource-name>
+            <description>Access to index file requires admin</description>
+            <url-pattern>/index.jsp</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>removeAll.jsp</web-resource-name>
+            <description>Access to remove modules requires admin access</description>
+            <url-pattern>/removeAll.jsp</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
         <auth-constraint>
             <description>Require a admin</description>
             <role-name>admin</role-name>
