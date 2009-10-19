@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 import com.jme.scene.Node;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
@@ -66,8 +67,8 @@ public class NameTagComponent extends CellComponent {
                 if (increasing) {
                     synchronized(this) {
                         if (nameTagNode==null) {
-                            nameTagNode = new NameTagNode(" ", height);
-                            nameTagNode.updateLabel(" ", inConeOfSilence, isSpeaking, isMuted);
+                            nameTagNode = new NameTagNode(((ViewCell)cell).getIdentity().getUsername(), height);
+                            nameTagNode.updateLabel(usernameAlias, inConeOfSilence, isSpeaking, isMuted);
                         }
                     }
                 }
