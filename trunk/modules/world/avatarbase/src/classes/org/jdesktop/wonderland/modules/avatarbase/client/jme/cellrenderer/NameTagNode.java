@@ -97,10 +97,14 @@ public class NameTagNode extends Node {
         return Font.decode(fontName + " " + fontType + " " + fontSize);
     }
 
-    public NameTagNode(String name, float heightAbove) {
+    public NameTagNode(String name, float heightAbove, boolean inConeOfSilence, boolean isSpeaking,
+	    boolean isMuted) {
         this.name = name;
         this.usernameAlias = name;
         this.heightAbove = heightAbove;
+        this.inConeOfSilence = inConeOfSilence;
+        this.isSpeaking = isSpeaking;
+        this.isMuted = isMuted;
         visible = true;
 
 	setNameTag(EventType.REGULAR_FONT, name, usernameAlias);
