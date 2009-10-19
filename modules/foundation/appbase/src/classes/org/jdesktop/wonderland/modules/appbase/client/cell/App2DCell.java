@@ -143,13 +143,25 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /**
-     * Destroy the app cell.
+     * Destroy the visual representation of this application.  This will
+     * cause the client to unload all local data associated with this
+     * app.
      */
-    public void destroy() {
+    protected void destroyClientVisual() {
         if (app != null) {
             app.cleanup();
         }
         cleanup();
+    }
+
+    /**
+     * Destroy the app cell.  This will remove all visuals associated with
+     * the cell (by calling <code>destroyClientVisual()</code>, and also remove
+     * the cell from the server.
+     */
+    public void destroy() {
+        // remove the client visuals for the cell
+        destroyClientVisual();
 
         // Tell the server to remove the cell from the world
         CellUtils.deleteCell(this);
@@ -302,7 +314,10 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                         cmm.removeContextMenuListener(menuListener);
                         menuListener = null;
                     }
-                    destroy();
+
+                    // issue #968: clean up the local visuals for this app cell,
+                    // but don't remove it from the server
+                    destroyClientVisual();
                 }
                 break;
         }
