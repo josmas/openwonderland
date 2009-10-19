@@ -18,14 +18,12 @@ import com.jme.image.Texture.MagnificationFilter;
 import com.jme.image.Texture.MinificationFilter;
 import com.jme.math.FastMath;
 import com.jme.math.Vector2f;
-import com.jme.renderer.Renderer;
 import com.jme.scene.BillboardNode;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial.LightCombineMode;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.TextureState;
-import com.jme.scene.state.BlendState.TestFunction;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.system.DisplaySystem;
 import com.jme.util.TextureManager;
@@ -40,7 +38,7 @@ public class TextLabel2D extends Node {
     private ConvolveOp blur;
     private Color foreground = new Color(1f, 1f, 1f);
     private Color background = new Color(0f, 0f, 0f);
-    private float fontResolution = 40f;
+    private float fontResolution = 20f;
     private int shadowOffsetX = 2;
     private int shadowOffsetY = 2;
     private Font font;
@@ -48,6 +46,9 @@ public class TextLabel2D extends Node {
     private float height = 1f;
     private FontRenderContext fontRenderContext = null;
     private Quad quad;
+    private float imgWidth = 0f;
+    private float imgHeight = 0f;
+
 
     public TextLabel2D(String text) {
         this(text, new Color(1f, 1f, 1f), new Color(0f, 0f, 0f), 0.3f, false, null);
@@ -62,13 +63,16 @@ public class TextLabel2D extends Node {
         this.height = height;
         updateKernel();
         if (font == null) {
-            font = Font.decode("Sans PLAIN 40");
+            font = Font.decode("Sans PLAIN");
         }
         setFont(font);
         attachChild(getBillboard());
     }
 
     public void setFont(Font font) {
+        if (this.font==font)
+            return;
+        
         this.font = font;
         BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
@@ -81,12 +85,18 @@ public class TextLabel2D extends Node {
         this.text = text;
         this.foreground = foreground;
         this.background = background;
-        Node tmpParent = quad.getParent();
-        quad.removeFromParent();
-        TextureState texState = (TextureState) quad.getRenderState(StateType.Texture);
-        Texture tex = texState.getTexture();
-        TextureManager.releaseTexture(tex);
-        tmpParent.attachChild(getQuad());
+
+        Quad oldQuad = quad;
+        Quad updatedQuad = getQuad();
+
+        if (updatedQuad!=oldQuad) {
+            Node tmpParent = oldQuad.getParent();
+            oldQuad.removeFromParent();
+            TextureState texState = (TextureState) oldQuad.getRenderState(StateType.Texture);
+            Texture tex = texState.getTexture();
+            TextureManager.releaseTexture(tex);
+            tmpParent.attachChild(updatedQuad);
+        }
     }
 
     public void setShadowOffsetX(int offsetPixelX) {
@@ -201,40 +211,47 @@ public class TextLabel2D extends Node {
         float w = img.getWidth();
         float h = img.getHeight();
         float factor = height / h;
+        Quad ret;
 
-        Quad ret = new Quad("textLabel2d", w * factor, h * factor);
-        TextureState ts = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
-        Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
+//        System.err.println("Texture Sze "+w+", "+h);
+        
+        if (imgWidth==w && imgHeight==h) {
+            // Reuse quad and texture
+            ret = quad;
+            TextureState texState = (TextureState) quad.getRenderState(StateType.Texture);
+            Texture oldtex = texState.getTexture();
+            // Not sure why this does not work, instead release the current texture and create a new one.
+//            oldtex.setImage(TextureManager.loadImage(img, true));
+//            texState.setTexture(oldtex);
+            TextureManager.releaseTexture(oldtex);
 
-//        TexCoords texCo = ret.getTextureCoords(0);
-//        texCo.coords = BufferUtils.createFloatBuffer(16);
-//        texCo.coords.rewind();
-//        for(int i=0; i < texCo.coords.limit(); i+=2){
-//            float u = texCo.coords.get();
-//            float v = texCo.coords.get();
-//            texCo.coords.put(u*scales.x);
-//            texCo.coords.put(v*scales.y);
-//        }
-//        ret.setTextureCoords(texCo);
-//        ret.updateGeometricState(0, true);
+            Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
 
-//        tex.setScale(new Vector3f(scales.x, scales.y, 1));
-        ts.setTexture(tex);
-        ts.setEnabled(true);
-        ret.setRenderState(ts);
+            texState.setTexture(tex);
+            //end workaround
+        } else {
+            ret = new Quad("textLabel2d", w * factor, h * factor);
+            TextureState ts = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
+            Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
 
-        ret.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+            ts.setTexture(tex);
+            ts.setEnabled(true);
+            ret.setRenderState(ts);
 
-        BlendState as = DisplaySystem.getDisplaySystem().getRenderer().createBlendState();
-        as.setBlendEnabled(true);
-        as.setTestEnabled(true);
-        as.setTestFunction(TestFunction.GreaterThan);
-        as.setEnabled(true);
-        ret.setRenderState(as);
+            BlendState as = DisplaySystem.getDisplaySystem().getRenderer().createBlendState();
+            as.setBlendEnabled(false);
+            as.setReference(0.5f);
+            as.setTestFunction(BlendState.TestFunction.GreaterThan);
+            as.setTestEnabled(true);
+            ret.setRenderState(as);
 
-        ret.setLightCombineMode(LightCombineMode.Off);
-        ret.updateRenderState();
-        this.quad = ret;
+            ret.setLightCombineMode(LightCombineMode.Off);
+            ret.updateRenderState();
+            this.quad = ret;
+            imgWidth = w;
+            imgHeight = h;
+        }
+
         return ret;
     }
 
