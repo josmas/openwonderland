@@ -173,6 +173,9 @@ public class SnapshotManagerServlet extends HttpServlet
                                       "/edit.jsp");
         }
 
+        logger.info("User " + getUsername(request) + " updated snapshot " +
+                    snapshot.getRootPath());
+
         String name = request.getParameter("name");
         if (name == null) {
             name = "";
@@ -211,6 +214,9 @@ public class SnapshotManagerServlet extends HttpServlet
                                       null);
         }
 
+        logger.info("User " + getUsername(request) + " removed snapshot " +
+                    snapshot.getRootPath());
+
         WFSManager.getWFSManager().removeWFSSnapshot(snapshot.getName());
         return null;
     }
@@ -226,6 +232,9 @@ public class SnapshotManagerServlet extends HttpServlet
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SS");
             name = df.format(new Date());
         }
+
+        logger.info("User " + getUsername(request) + " created snapshot " +
+                    name);
 
         DarkstarRunner runner = getRunner();
 
@@ -250,6 +259,9 @@ public class SnapshotManagerServlet extends HttpServlet
                              WFSRoot root)
         throws ServletException, IOException
     {
+        logger.info("User " + getUsername(request) + " set current snapshot " +
+                    "to " + root.getRootPath());
+
         DarkstarRunner runner = getRunner();
 
         // make sure the runner is stopped
@@ -272,6 +284,9 @@ public class SnapshotManagerServlet extends HttpServlet
                              WFSRoot root)
         throws ServletException, IOException
     {
+        logger.info("User " + getUsername(request) + " restored snapshot " +
+                    root.getRootPath());
+
         DarkstarRunner runner = getRunner();
 
         // make sure the runner is stopped
@@ -484,6 +499,18 @@ public class SnapshotManagerServlet extends HttpServlet
         } else {
             return null;
         }
+    }
+
+    /**
+     * Get the name of the current user, or "unknown" for an unauthenticated user
+     * @return the username, or "unknown"
+     */
+    public String getUsername(HttpServletRequest req) {
+        if (req.getUserPrincipal() == null) {
+            return "unknown";
+        }
+
+        return req.getUserPrincipal().getName();
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
