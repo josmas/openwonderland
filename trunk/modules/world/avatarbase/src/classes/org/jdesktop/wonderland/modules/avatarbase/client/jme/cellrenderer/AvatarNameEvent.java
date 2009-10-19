@@ -19,17 +19,27 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import org.jdesktop.wonderland.client.input.Event;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
-
-import java.awt.Color;
-import java.awt.Font;
-
 /**
  * Set name tag
  *
  * @author jprovino
  */
 public class AvatarNameEvent extends Event {
+
+    public enum EventType {
+
+        STARTED_SPEAKING,
+        STOPPED_SPEAKING,
+        MUTE,
+        UNMUTE,
+        CHANGE_NAME,
+        ENTERED_CONE_OF_SILENCE,
+        EXITED_CONE_OF_SILENCE,
+        HIDE,
+        SMALL_FONT,
+        REGULAR_FONT,
+        LARGE_FONT
+    }
 
     private EventType eventType;
     private String username;

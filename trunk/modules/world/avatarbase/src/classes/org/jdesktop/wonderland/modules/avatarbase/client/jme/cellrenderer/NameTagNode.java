@@ -32,33 +32,16 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import java.awt.Color;
 import java.awt.Font;
 
-import java.util.HashMap;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
 /**
- * TODO make this a component
- *
  * @author jprovino
  * @author nsimpson
  */
 public class NameTagNode extends Node {
 
     private static final Logger logger = Logger.getLogger(NameTagNode.class.getName());
-
-    public enum EventType {
-
-        STARTED_SPEAKING,
-        STOPPED_SPEAKING,
-        MUTE,
-        UNMUTE,
-        CHANGE_NAME,
-        ENTERED_CONE_OF_SILENCE,
-        EXITED_CONE_OF_SILENCE,
-        HIDE,
-        SMALL_FONT,
-        REGULAR_FONT,
-        LARGE_FONT
-    }
 
     // colors
     public static final Color SPEAKING_COLOR = Color.RED;
@@ -73,7 +56,7 @@ public class NameTagNode extends Node {
     public static final String DEFAULT_FONT_NAME_TYPE = "PLAIN";
     public static final String DEFAULT_FONT_ALIAS_TYPE = "ITALIC";
 
-    public static final int DEFAULT_FONT_SIZE = 32;
+    public static final int DEFAULT_FONT_SIZE = 20;
 
     public static final Font REAL_NAME_FONT =
             fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, DEFAULT_FONT_SIZE);
@@ -116,10 +99,9 @@ public class NameTagNode extends Node {
 
     public NameTagNode(String name, float heightAbove) {
         this.name = name;
+        this.usernameAlias = name;
         this.heightAbove = heightAbove;
         visible = true;
-
-	usernameAlias = name;
 
 	setNameTag(EventType.REGULAR_FONT, name, usernameAlias);
     }
@@ -171,7 +153,7 @@ public class NameTagNode extends Node {
     }
 
     public void setNameTag(EventType eventType, String username, String alias) {
-        logger.fine("set name tag: " + eventType + ", username: " + username 
+        logger.severe("set name tag: " + eventType + ", username: " + username
 	    + ", alias: " + alias); 
 
         switch (eventType) {
@@ -213,7 +195,7 @@ public class NameTagNode extends Node {
             case MUTE:
                 isMuted = true;
 		isSpeaking = false;
-                removeLabel();
+//                removeLabel();
                 break;
 
             case UNMUTE:
@@ -221,7 +203,7 @@ public class NameTagNode extends Node {
                 break;
 
             case CHANGE_NAME:
-                removeLabel();
+//                removeLabel();
                 usernameAlias = alias;
                 break;
 
@@ -254,9 +236,11 @@ public class NameTagNode extends Node {
     }
 
     private void updateLabel() {
-	removeLabel();
+        if (name==null)
+            return;
 
         if (labelHidden) {
+            removeLabel();
             return;
         }
 
@@ -293,6 +277,7 @@ public class NameTagNode extends Node {
 
                         attachChild(label);
                     } else {
+                        label.setFont(font);
                         label.setText(displayName, foregroundColor, backgroundColor);
                     }
                     ClientContextJME.getWorldManager().addToUpdateList(NameTagNode.this);

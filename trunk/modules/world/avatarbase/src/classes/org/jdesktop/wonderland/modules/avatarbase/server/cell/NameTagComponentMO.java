@@ -17,17 +17,26 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.server.cell;
 
-import org.jdesktop.wonderland.server.ServerPlugin;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
+ * Server side component for name tags. The only purpose of class at the moment
+ * is to allow the avatarbase to register it's client NameTagComponent. This server
+ * side class does not track or allow changes to be made to the status of the name tag.
+ * It may be enhanced in the future....
  *
  * @author paulby
  */
-public class AvatarPluginSrv implements ServerPlugin {
+public class NameTagComponentMO extends CellComponentMO {
 
-    public void initialize() {
-        CellManagerMO.getCellManager().registerAvatarCellComponent(AvatarConfigComponentMO.class);
-        CellManagerMO.getCellManager().registerAvatarCellComponent(NameTagComponentMO.class);
+    public NameTagComponentMO(CellMO cell) {
+        super(cell);
     }
+
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent";
+    }
+
 }

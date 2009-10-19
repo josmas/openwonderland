@@ -17,20 +17,92 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.scene.Node;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
+/**
+ * A NameTag for an avatar cell. Currently only supports 3D name tags, but
+ * will be extended to support other forms of tag
+ *
+ * @author paulby
+ */
 public class NameTagComponent extends CellComponent {
 
-    private NameTagNode nameTagNode;
+    private NameTagNode nameTagNode=null;
 
-    public NameTagComponent(Cell cell, String name, float height) {
+    private String username = null;
+    private String usernameAlias = null;
+    private boolean inConeOfSilence = false;
+    private boolean isSpeaking = false;
+    private float height;
+    private boolean isMuted;
+
+    public NameTagComponent(Cell cell) {
         super(cell);
-        nameTagNode = new NameTagNode(name, height);
+        height = 2f;
     }
 
-    public NameTagNode getNameTagNode() {
+    /**
+     * Return the renderer for the name tag node. This should return a CellRenderer.
+     * Fix in next release
+     * @return
+     */
+    public Node getRenderer(Cell.RendererType rendererType) {
+        assert(rendererType==Cell.RendererType.RENDERER_JME);
         return nameTagNode;
     }
 
+    NameTagNode getNameTagNode() {
+        return nameTagNode;
+    }
+
+    @Override
+    protected void setStatus(CellStatus status, boolean increasing) {
+        switch(status) {
+            case INACTIVE :
+                if (increasing) {
+                    synchronized(this) {
+                        if (nameTagNode==null) {
+                            nameTagNode = new NameTagNode(".", height);
+                            nameTagNode.updateLabel(".", inConeOfSilence, isSpeaking, isMuted);
+                        }
+                    }
+                }
+                break;
+            case DISK :
+                if (!increasing) {
+                    synchronized(this) {
+                        if (nameTagNode!=null)
+                             nameTagNode.done();
+                        nameTagNode = null;
+                    }
+                }
+                break;
+        }
+    }
+
+    public void updateLabel(String usernameAlias, boolean inConeOfSilence, boolean isSpeaking,
+	    boolean isMuted) {
+        this.usernameAlias = usernameAlias;
+        this.inConeOfSilence = inConeOfSilence;
+        this.isSpeaking = isSpeaking;
+        this.isMuted = isMuted;
+        synchronized(this) {
+            if (nameTagNode!=null)
+                nameTagNode.updateLabel(usernameAlias, inConeOfSilence, isSpeaking, isMuted);
+        }
+    }
+
+    public void setNameTag(EventType eventType, String username, String alias) {
+        synchronized(this) {
+            this.username = username;
+            this.usernameAlias = alias;
+            if (nameTagNode!=null) {
+                nameTagNode.setNameTag(eventType, username, alias);
+            }
+        }
+    }
 }
