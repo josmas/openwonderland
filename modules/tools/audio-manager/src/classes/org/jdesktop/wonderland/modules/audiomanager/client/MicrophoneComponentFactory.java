@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentSe
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@CellComponentFactory
+//@CellComponentFactory
 public class MicrophoneComponentFactory implements CellComponentFactorySPI {
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
