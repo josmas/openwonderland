@@ -69,7 +69,7 @@ public class Cell {
     private CellStatus currentStatus = CellStatus.DISK;
     private final Object statusLock = new Object();
     private CellCache cellCache;
-    private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
+    private final Map<Class, CellComponent> components = new HashMap<Class, CellComponent>();
 
     private CellClientStateMessageReceiver clientStateReceiver = null;
     private CellComponentMessageReceiver componentReceiver = null;
@@ -203,7 +203,9 @@ public class Cell {
      * @return the cells component of the requested class (or null)
      */
     public <T extends CellComponent> T getComponent(Class<T> cellComponentClass) {
-        return (T) components.get(cellComponentClass);
+        synchronized (components) {
+            return (T) components.get(cellComponentClass);
+        }
     }
 
     /**
@@ -234,9 +236,11 @@ public class Cell {
      * @param component the componnet to be added
      */
     public void addComponent(CellComponent component, Class componentClass) {
-        CellComponent previous = components.put(componentClass, component);
-        if (previous != null) {
-            throw new IllegalArgumentException("Adding duplicate component of class " + component.getClass().getName());
+        synchronized (components) {
+            CellComponent previous = components.put(componentClass, component);
+            if (previous != null) {
+                throw new IllegalArgumentException("Adding duplicate component of class " + component.getClass().getName());
+            }
         }
 
         synchronized (statusLock) {
@@ -266,7 +270,10 @@ public class Cell {
      * @param componentClass
      */
     public void removeComponent(Class<? extends CellComponent> componentClass) {
-        CellComponent component = components.remove(componentClass);
+        CellComponent component;
+        synchronized (components) {
+            component = components.remove(componentClass);
+        }
         if (component != null) {
             component.setComponentStatus(CellStatus.DISK, false);
             notifyComponentChangeListeners(ChangeType.REMOVED, component);
@@ -281,7 +288,21 @@ public class Cell {
      * @return
      */
     public Collection<CellComponent> getComponents() {
-        return new ArrayList<CellComponent>(components.values());
+        synchronized (components) {
+            return new ArrayList<CellComponent>(components.values());
+        }
+    }
+
+    /**
+     * Get an array of all components in this cell. If this method is not
+     * used, you must hold the component lock before iterating through
+     * the set of components.
+     * @return an array containing all components
+     */
+    private CellComponent[] getComponentsArray() {
+        synchronized (components) {
+            return components.values().toArray(new CellComponent[components.size()]);
+        }
     }
 
     /**
@@ -374,7 +395,7 @@ public class Cell {
         }
 
         // Notify Renderers that the cell has moved
-        for (CellRenderer rend : cellRenderers.values()) {
+        for (CellRenderer rend : getCellRenderers()) {
             rend.cellTransformUpdate(localTransform);
         }
 
@@ -600,7 +621,7 @@ public class Cell {
         synchronized(statusLock) {
             if (status == CellStatus.INACTIVE && increasing) {
                 resolveAutoComponentAnnotationsForCell();
-                CellComponent[] compList = components.values().toArray(new CellComponent[components.size()]);
+                CellComponent[] compList = getComponentsArray();
                 for (CellComponent c : compList) {
                     resolveAutoComponentAnnotationsForComponents(c);
                 }
@@ -608,11 +629,12 @@ public class Cell {
 
             currentStatus = status;
 
-            for (CellComponent component : components.values()) {
+            // issue 964: make sure to grab the correct lock
+            for (CellComponent component : getComponentsArray()) {
                 component.setComponentStatus(status, increasing);
             }
 
-            for (CellRenderer renderer : cellRenderers.values()) {
+            for (CellRenderer renderer : getCellRenderers()) {
                 setRendererStatus(renderer, status);
             }
 
@@ -636,7 +658,7 @@ public class Cell {
                         componentReceiver = null;
 
                         // Now clear all components
-                        if (components != null) {
+                        synchronized (components) {
                             components.clear();
                         }
                     }
@@ -870,14 +892,25 @@ public class Cell {
     }
 
     private void createCellRendererImpl(RendererType rendererType) {
+        CellRenderer created = null;
+
         synchronized(cellRenderers) {
             CellRenderer ret = cellRenderers.get(rendererType);
             if (ret == null) {
                 ret = createCellRenderer(rendererType);
                 if (ret != null) {
                     cellRenderers.put(rendererType, ret);
-                    setRendererStatus(ret, currentStatus);
+                    created = ret;
                 }
+            }
+        }
+
+        // issue 964: we don't want to call setRenderStatus() while holding
+        // the cellRenderers lock.  Instead, if we created a renderer above,
+        // set its status here
+        if (created != null) {
+            synchronized (statusLock) {
+                setRendererStatus(created, getStatus());
             }
         }
     }
@@ -892,6 +925,18 @@ public class Cell {
         synchronized(cellRenderers) {
             CellRenderer ret = cellRenderers.get(rendererType);
             return ret;
+        }
+    }
+
+    /**
+     * Get the set of renderers as an array, for iteration.  If this method
+     * is not used, then the cellRenderers lock must be held before iterating
+     * over the array.
+     * @return the array of all renderers
+     */
+    private CellRenderer[] getCellRenderers() {
+        synchronized (cellRenderers) {
+            return cellRenderers.values().toArray(new CellRenderer[cellRenderers.size()]);
         }
     }
 
