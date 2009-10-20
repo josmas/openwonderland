@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import java.io.EOFException;
 
 // TODO: 0.4 protocol: temporarily insert
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -259,44 +260,51 @@ public abstract class ClientXrw implements Runnable {
 
         while (serverConnected && !stop && serverProxy != null) {
 
-            // Read message type from the server.
-            ServerMessageType msgType = serverProxy.getMessageType();
-            //if (msgType != Proto.ServerMessageType.DISPLAY_PIXELS){
-            AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType);
-            //}
+            try {
 
-            /* TODO
-            if (ENABLE_XREMWIN_STATS) {
-            synchronized (this) {
-            numRequests++;
-            }
-            }
-             */
-
-            // Get the full message
-            MessageArgs msgArgs = readMessageArgs(msgType);
-            if (msgArgs != null) {
+                // Read message type from the server.
+                ServerMessageType msgType = serverProxy.getMessageType();
                 //if (msgType != Proto.ServerMessageType.DISPLAY_PIXELS){
-                AppXrw.logger.info("msgArgs: " + msgArgs);
+                AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType);
                 //}
 
-                /* For debug: an example of how to ignore the firefox heartbeat which occurs on igoogle
-                if (msgType == ServerMessageType.DISPLAY_PIXELS) {
-                    if (displayPixelsMsgArgs.x == 1261 &&
-                        displayPixelsMsgArgs.y == 3 &&
-                        displayPixelsMsgArgs.w == 17 &&
-                        displayPixelsMsgArgs.h == 17) {
-                    } else {
-                        AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
-                    }
-                } else {
-                    AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
-                }
+                /* TODO
+                   if (ENABLE_XREMWIN_STATS) {
+                   synchronized (this) {
+                   numRequests++;
+                   }
+                   }
                 */
-            }
 
-            // Process the message
-            processMessage(msgType);
+                // Get the full message
+                MessageArgs msgArgs = readMessageArgs(msgType);
+                if (msgArgs != null) {
+                    //if (msgType != Proto.ServerMessageType.DISPLAY_PIXELS){
+                    AppXrw.logger.info("msgArgs: " + msgArgs);
+                    //}
+
+                    /* For debug: an example of how to ignore the firefox heartbeat which occurs on igoogle
+                       if (msgType == ServerMessageType.DISPLAY_PIXELS) {
+                       if (displayPixelsMsgArgs.x == 1261 &&
+                       displayPixelsMsgArgs.y == 3 &&
+                       displayPixelsMsgArgs.w == 17 &&
+                       displayPixelsMsgArgs.h == 17) {
+                       } else {
+                       AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
+                       }
+                       } else {
+                       AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
+                       }
+                    */
+                }
+
+                // Process the message
+                processMessage(msgType);
+
+            } catch (Exception ex) {
+                stop = true;
+                cleanup();
+            }
         }
     }
 
@@ -305,8 +313,11 @@ public abstract class ClientXrw implements Runnable {
      *
      * @param msgType The message type.
      */
-    protected MessageArgs readMessageArgs(ServerMessageType msgType) {
+    protected MessageArgs readMessageArgs(ServerMessageType msgType) throws EOFException {
         switch (msgType) {
+
+            case SERVER_DISCONNECT:
+                return null;
 
             case CREATE_WINDOW:
                 serverProxy.getData(createWinMsgArgs);
@@ -389,7 +400,7 @@ public abstract class ClientXrw implements Runnable {
      *
      * @param msgType The message type.
      */
-    protected void processMessage(ServerMessageType msgType) {
+    protected void processMessage(ServerMessageType msgType) throws EOFException {
         WindowXrw win;
 
         switch (msgType) {
@@ -703,7 +714,9 @@ public abstract class ClientXrw implements Runnable {
      * @param win The window in which to display pixels.
      * @param displayPixelsMsgArgs The message arguments which have been read for the message.
      */
-    private void processDisplayPixels(WindowXrw win, DisplayPixelsMsgArgs displayPixelsMsgArgs) {
+    private void processDisplayPixels(WindowXrw win, DisplayPixelsMsgArgs displayPixelsMsgArgs) 
+        throws EOFException
+    {
         switch (displayPixelsMsgArgs.encoding) {
 
             case UNCODED:
@@ -789,7 +802,7 @@ public abstract class ClientXrw implements Runnable {
      * @param win The window in which to display pixels.
      * @param dpMsgArgs The message arguments which have been read for the message.
      */
-    private void displayRectRle24(WindowXrw win, DisplayPixelsMsgArgs dpMsgArgs) {
+    private void displayRectRle24(WindowXrw win, DisplayPixelsMsgArgs dpMsgArgs) throws EOFException {
 
         synchronized (this) {
             displayPixelsNumBytes += dpMsgArgs.w * dpMsgArgs.h * 4;

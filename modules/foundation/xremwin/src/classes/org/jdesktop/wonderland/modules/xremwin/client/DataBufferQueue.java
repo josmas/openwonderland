@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import java.io.EOFException;
 
 /*
  ** This class allows us to read the incoming byte arrays from the
@@ -33,6 +34,7 @@ class DataBufferQueue {
 
     private CurrentBuffer curBuf = new CurrentBuffer();
     private LinkedList<ClientData> bufQueue = new LinkedList<ClientData>();
+    private boolean closed = false;
 
     class ClientData {
 
@@ -119,6 +121,14 @@ class DataBufferQueue {
         }
     }
 
+    // Called when the master or server connection is disconnected.
+    public void close () {
+        closed = true;
+        synchronized (this) {
+            notifyAll();
+        }
+    }
+
     public void printCurBufNumeric() {
         curBuf.printNumeric();
     }
@@ -128,28 +138,31 @@ class DataBufferQueue {
 
     // Called by the message receiver to add an incoming buffer to the queue
     synchronized void enqueue(byte[] buf) {
-        /* Debug
+        /* Debug 
         numEnqueues++;
         System.err.println("Enqueue buf " + numEnqueues + ", buflen = " +
         buf.length);
-         */
+        */
 
         ClientData cd = new ClientData();
         cd.buf = buf;
         bufQueue.addLast(cd);
         try {
-            notify();
+            notifyAll();
         } catch (Exception e) {
         }
     }
 
-    private synchronized ClientData dequeue() {
-        while (bufQueue.size() == 0) {
-            //System.err.println("DBQ.dequeue: waiting for data ...");
+    private synchronized ClientData dequeue() throws EOFException {
+        while (bufQueue.size() == 0 && !closed) {
             try {
                 wait();
             } catch (Exception e) {
             }
+        }
+
+        if (closed) {
+            throw new EOFException();
         }
 
         ClientData cd = bufQueue.getFirst();
@@ -161,7 +174,7 @@ class DataBufferQueue {
 
     // Return the next current buffer for next*() to pull from.
     // This blocks if no buffer is available.
-    private void getNextCurBufIfNoData() {
+    private void getNextCurBufIfNoData() throws EOFException {
         //System.err.println("Enter getNextCurBufIfNoData");
         if (curBuf.hasData()) {
             return;
@@ -172,7 +185,8 @@ class DataBufferQueue {
     }
 
     // Read a single byte from the RemoteWindowServer. Block if a byte isn't available.
-    byte nextByte() {
+    // Throw EOFException if this buffer queue is closed.
+    byte nextByte() throws EOFException {
         //System.err.println("Enter DBQ.nextByte");
         getNextCurBufIfNoData();
         return curBuf.nextByte();
@@ -180,13 +194,13 @@ class DataBufferQueue {
 
     // Fills a byte array of a given length with data from the RemoteWindowServer. 
     // Block if all bytes aren't available.
-    void nextBytes(byte[] buf) {
+    void nextBytes(byte[] buf) throws EOFException {
         nextBytes(buf, buf.length);
     }
 
     // Fills a byte array with the specified number of data bytes from the
     // RemoteWindowServer. Block if all bytes aren't available.
-    void nextBytes(byte[] buf, int len) {
+    void nextBytes(byte[] buf, int len) throws EOFException {
         getNextCurBufIfNoData();
         int numAvail = curBuf.numBytesAvail();
         if (numAvail < len) {
@@ -215,14 +229,14 @@ class DataBufferQueue {
     // Skip n bytes without returning any
     // Note: this method isn't used for anything performance critical
     // so we'll skip the slower way
-    void skipBytes(int n) {
+    void skipBytes(int n) throws EOFException {
         for (int i = 0; i < n; i++) {
             nextByte();
         }
     }
 
     // Read a short from the RemoteWindowServer. Block if a full short isn't available.
-    short nextShort() {
+    short nextShort() throws EOFException {
         getNextCurBufIfNoData();
         if (curBuf.numBytesAvail() < 2) {
             // There must be at least one, so read it directly
@@ -236,7 +250,7 @@ class DataBufferQueue {
     }
 
     // Read an int from the RemoteWindowServer. Block if a full int isn't available.
-    int nextInt() {
+    int nextInt() throws EOFException {
         getNextCurBufIfNoData();
         if (curBuf.numBytesAvail() < 4) {
             // There must be at least one, so read it directly
@@ -252,7 +266,7 @@ class DataBufferQueue {
     }
 
     // Read a float from the RemoteWindowServer. Block if a full float isn't available.
-    float nextFloat() {
+    float nextFloat() throws EOFException {
         getNextCurBufIfNoData();
         if (curBuf.numBytesAvail() < 4) {
             // There must be at least one, so read it directly
@@ -270,7 +284,7 @@ class DataBufferQueue {
 
     // Return the next complete buffer. Throw an exception if there 
     // is partial data in the current buffer.
-    byte[] nextBuffer() {
+    byte[] nextBuffer() throws EOFException {
         if (curBuf.numBytesAvail() != 0) {
             throw new RuntimeException("Remote window protocol error");
         }

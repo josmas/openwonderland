@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetPopupParentMsgArg
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
+import java.io.EOFException;
 
 /**
  * The slave version of the Xremwin protocol client. This communicates with an
@@ -79,7 +80,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      * @{inheritDoc}
      */
     @Override
-    protected MessageArgs readMessageArgs(ServerMessageType msgType) {
+    protected MessageArgs readMessageArgs(ServerMessageType msgType)  throws EOFException {
         switch (msgType) {
 
             case SET_WINDOW_TITLE:
@@ -107,7 +108,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      * @{inheritDoc}
      */
     @Override
-    protected void processMessage(ServerMessageType msgType) {
+    protected void processMessage(ServerMessageType msgType) throws EOFException {
         WindowXrw win;
 
         switch (msgType) {

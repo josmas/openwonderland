@@ -67,7 +67,8 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
-            if (messageInfo.cellID.equals(cellID) && messageInfo.providerRef.getId() == providerRef.getId()) {
+            if (messageInfo.cellID.equals(cellID) && 
+                messageInfo.providerRef.getId().equals(providerRef.getId())) {
                 removeList.add(msgID);
             }
         }        
@@ -85,7 +86,7 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
-            if (messageInfo.providerRef.getId() == providerRef.getId()) {
+            if (messageInfo.providerRef.getId().equals(providerRef.getId())) {
                 removeList.add(msgID);
             }
         }        
@@ -101,7 +102,7 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
     MessageID getLaunchMessageIDForCellAndProvider (ManagedReference providerRef, CellID cellID) {
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
-            if (messageInfo.providerRef.getId() == providerRef.getId() && 
+            if (messageInfo.providerRef.getId().equals(providerRef.getId()) && 
                 messageInfo.cellID.equals(cellID)) {
                 return msgID;
             }

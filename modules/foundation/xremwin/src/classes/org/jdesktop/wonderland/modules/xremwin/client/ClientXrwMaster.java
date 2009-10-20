@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ServerMessageType;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArgs;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import java.io.EOFException;
 
 /**
  * The master version of the Xremwin protocol client. This is the only client to 
@@ -129,11 +130,8 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * @{inheritDoc}
      */
     @Override
-    protected MessageArgs readMessageArgs(ServerMessageType msgType) {
+    protected MessageArgs readMessageArgs(ServerMessageType msgType) throws EOFException {
         switch (msgType) {
-
-            case SERVER_DISCONNECT:
-                return null;
 
             case SLAVE_HELLO:
                 return null;
@@ -155,12 +153,8 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * @{inheritDoc}
      */
     @Override
-    protected void processMessage(ServerMessageType msgType) {
+    protected void processMessage(ServerMessageType msgType) throws EOFException {
         switch (msgType) {
-
-            case SERVER_DISCONNECT:
-                serverConnected = false;
-                break;
 
             // A slave is trying to connect. Welcome messages to slaves need to be
             // properly serialized with the server messages which we will send to them.
