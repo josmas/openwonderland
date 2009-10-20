@@ -70,7 +70,7 @@ public class RunningAppInfo implements ManagedObject, Serializable {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
-            if (appInfo.providerRef.getId() == providerRef.getId()) {
+            if (appInfo.providerRef.getId().equals(providerRef.getId())) {
                 removeList.add(msgID);
             }
         }        
@@ -88,7 +88,7 @@ public class RunningAppInfo implements ManagedObject, Serializable {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
-            if (appInfo.providerRef.getId() == providerRef.getId() && 
+            if (appInfo.providerRef.getId().equals(providerRef.getId()) && 
                 appInfo.cellID.equals(cellID)) {
                 removeList.add(msgID);
             }
@@ -105,7 +105,8 @@ public class RunningAppInfo implements ManagedObject, Serializable {
     MessageID getLaunchMessageIDForCellAndProvider (ManagedReference providerRef, CellID cellID) {
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
-            if ((appInfo.providerRef.getId() == providerRef.getId()) && (appInfo.cellID.equals(cellID))) {
+            if (appInfo.providerRef.getId().equals(providerRef.getId()) && 
+                appInfo.cellID.equals(cellID)) {
                 return msgID;
             }
         }        

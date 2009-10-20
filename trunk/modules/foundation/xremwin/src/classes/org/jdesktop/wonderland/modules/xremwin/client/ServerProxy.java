@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.MoveCursorMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArgs;
+import java.io.EOFException;
 
 /**
  * Classes that communicate Xremwin protocol to an Xremwin server (or master)
@@ -56,60 +57,60 @@ public interface ServerProxy {
 
     public void cleanup();
 
-    public Proto.ServerMessageType getMessageType();
+    public Proto.ServerMessageType getMessageType() throws EOFException;
 
-    public void getData(CreateWindowMsgArgs msgArgs);
+    public void getData(CreateWindowMsgArgs msgArgs) throws EOFException;
 
-    public void getData(DestroyWindowMsgArgs msgArgs);
+    public void getData(DestroyWindowMsgArgs msgArgs) throws EOFException;
 
-    public void getData(ShowWindowMsgArgs msgArgs);
+    public void getData(ShowWindowMsgArgs msgArgs) throws EOFException;
 
-    public void getData(ConfigureWindowMsgArgs msgArgs);
+    public void getData(ConfigureWindowMsgArgs msgArgs) throws EOFException;
 
-    public void getData(PositionWindowMsgArgs msgArgs);
+    public void getData(PositionWindowMsgArgs msgArgs) throws EOFException;
 
-    public void getData(RestackWindowMsgArgs msgArgs);
+    public void getData(RestackWindowMsgArgs msgArgs) throws EOFException;
 
-    public void getData(WindowSetDecoratedMsgArgs msgArgs);
+    public void getData(WindowSetDecoratedMsgArgs msgArgs) throws EOFException;
 
-    public void getData(WindowSetBorderWidthMsgArgs msgArgs);
+    public void getData(WindowSetBorderWidthMsgArgs msgArgs) throws EOFException;
 
-    public void getData(WindowSetUserDisplMsgArgs msgArgs);
+    public void getData(WindowSetUserDisplMsgArgs msgArgs) throws EOFException;
 
-    public void getData(WindowSetRotateYMsgArgs msgArgs);
+    public void getData(WindowSetRotateYMsgArgs msgArgs) throws EOFException;
 
-    public void getData(DisplayPixelsMsgArgs msgArgs);
+    public void getData(DisplayPixelsMsgArgs msgArgs) throws EOFException;
 
-    public void getData(CopyAreaMsgArgs msgArgs);
+    public void getData(CopyAreaMsgArgs msgArgs) throws EOFException;
 
-    public void getData(ControllerStatusMsgArgs msgArgs);
+    public void getData(ControllerStatusMsgArgs msgArgs) throws EOFException;
 
-    public void getData(SetWindowTitleMsgArgs msgArgs);
+    public void getData(SetWindowTitleMsgArgs msgArgs) throws EOFException;
 
     // TODO: 0.4 protocol: temporarily insert
-    public void getData(DisplayCursorMsgArgs msgArgs);
+    public void getData(DisplayCursorMsgArgs msgArgs) throws EOFException;
 
-    public void getData(MoveCursorMsgArgs msgArgs);
+    public void getData(MoveCursorMsgArgs msgArgs) throws EOFException;
 
-    public void getData(ShowCursorMsgArgs msgArgs);
+    public void getData(ShowCursorMsgArgs msgArgs) throws EOFException;
 
     // Returns no data; currently used only for Beep
-    public void getData();
+    public void getData() throws EOFException;
 
     // Set scanline width (in pixels) 
     void setScanLineWidth(int width);
 
-    byte[] readScanLine();
+    byte[] readScanLine() throws EOFException;
 
     // The next three are for RLE24 only
     // Note: these don't broadcast to pull slaves
-    int readRleInt();
+    int readRleInt() throws EOFException;
 
     // Read a chunk of data which is the length of the given buffer
-    void readRleChunk(byte[] buf);
+    void readRleChunk(byte[] buf) throws EOFException;
 
     // Read a chunk of data len bytes long
-    void readRleChunk(byte[] buf, int len);
+    void readRleChunk(byte[] buf, int len) throws EOFException;
 
     public void writeEvent(int wid, MouseEvent event) throws IOException;
 

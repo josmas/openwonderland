@@ -68,7 +68,8 @@ public class Proto {
         WELCOME,
         SET_POPUP_PARENT,
         CONTROLLING_USER_NAME,
-        // A pseudo-message seen only by Xremwin masters ; actually comes from ServerProxy code.
+        // A pseudo-message which indicates that the connection to the Xremwin master or server
+        // has been disconnected.
         SERVER_DISCONNECT,
         // These pseudo messages are seen only by Xremwin masters; they actually come from slaves.
         SLAVE_HELLO
