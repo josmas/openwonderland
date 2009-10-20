@@ -38,7 +38,7 @@ import com.jme.math.Vector3f;
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@CellFactory
+//@CellFactory
 public class ConeOfSilenceCellFactory implements CellFactorySPI {
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
