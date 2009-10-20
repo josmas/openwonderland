@@ -312,7 +312,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
 		compState.setTreatmentType(TreatmentType.CONTENT_REPOSITORY);
 
-		int ix = treatments.lastIndexOf("/");
+		int ix = treatments.lastIndexOf(File.separator);
 
 		if (ix >= 0) {
 		    treatments = treatments.substring(ix + 1);
