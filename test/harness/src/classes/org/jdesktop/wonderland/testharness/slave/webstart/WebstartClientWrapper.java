@@ -17,9 +17,12 @@
  */
 package org.jdesktop.wonderland.testharness.slave.webstart;
 
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -61,7 +64,9 @@ public class WebstartClientWrapper implements RequestProcessor {
 
         String osName = System.getProperty("os.name");
         System.err.println("OS "+osName);
-        if (osName.equalsIgnoreCase("linux") || osName.equalsIgnoreCase("Solaris")) {
+        if (osName.equalsIgnoreCase("linux") || osName.equalsIgnoreCase("Solaris") ||
+                osName.equalsIgnoreCase("SunOS"))
+        {
             useXvfb = true;
         }
 
@@ -95,12 +100,21 @@ public class WebstartClientWrapper implements RequestProcessor {
             ProcessBuilder builder = new ProcessBuilder("javaws", "-Xnosplash", "-open", options, serverURL + "wonderland-web-front/app/Wonderland.jnlp");
             System.err.println("Process "+builder.toString() + " options " + options);
             if (useXvfb) {
-                builder.environment().put("DISPLAY", ":1.0");
-                ProcessBuilder xvfb = new ProcessBuilder("Xvfb -ac :1");
+                int usernum = Integer.parseInt(username.substring("test".length()));
+
+                builder.environment().put("DISPLAY", ":" + usernum + ".0");
+                ProcessBuilder xvfb = new ProcessBuilder("Xvfb","-ac", ":" + usernum);
+                xvfb.redirectErrorStream(true);
+
+                System.out.println("Launching " + xvfb.command());
                 xvfbProcess = xvfb.start();
+                new Thread(new ProcessOutputReader(xvfbProcess)).start();
             }
 
+            builder.redirectErrorStream(true);
+            System.out.println("Launching " + builder.command());
             process = builder.start();
+            new Thread(new ProcessOutputReader(process)).start();
         } catch (IOException ex) {
             Logger.getLogger(WebstartClientWrapper.class.getName()).log(Level.SEVERE,null, ex);
         }
@@ -201,5 +215,27 @@ public class WebstartClientWrapper implements RequestProcessor {
         }
     }
 
+    class ProcessOutputReader implements Runnable {
+        private Process p;
 
+        public ProcessOutputReader(Process p) {
+            this.p = p;
+        }
+
+        public void run() {
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+
+            try {
+                while ((line = br.readLine()) != null) {
+                    System.out.println("[" + p + "] " + line);
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+
+            // print the process exit value
+            System.out.println("Process " + p + " exitted with value " + p.exitValue());
+        }
+    }
 }
