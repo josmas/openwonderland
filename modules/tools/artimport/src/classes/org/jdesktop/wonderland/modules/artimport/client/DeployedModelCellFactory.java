@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -33,7 +34,9 @@ import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 
 /**
  * A Cell Factory that loads deployed model (.dep) files. This does not appear
@@ -100,14 +103,21 @@ public class DeployedModelCellFactory implements CellFactorySPI {
         
         // Get the loader from the deployed model. Use that to create a
         // server state
-        ModelLoader loader = dm.getModelLoader();
-        return (T) loader.getCellServerState(
-                url.toExternalForm(),            // Model URL
-                Vector3f.ZERO,                   // Translation
-                new Quaternion(),                // Rotation
-                new Vector3f(1.0f, 1.0f, 1.0f),  // Scale
-                null                             // Properties
-                );
+        ModelCellServerState cellSetup = new ModelCellServerState();
+        ModelCellComponentServerState setup = new ModelCellComponentServerState();
+        setup.setDeployedModelURL(url.toExternalForm());
+
+        cellSetup.addComponentServerState(setup);
+        cellSetup.setName("todo...");        // TODO correct name
+//        cellSetup.setBoundingVolumeHint(new BoundingVolumeHint(false, importedModel.getModelBG().getWorldBound()));
+
+//        Vector3f offset = new Vector3f();
+//        PositionComponentServerState position = new PositionComponentServerState();
+//        Vector3f boundsCenter = new Vector3f();
+//
+//        offset.subtractLocal(boundsCenter);
+
+        return (T)cellSetup;
     }
 
     /**
