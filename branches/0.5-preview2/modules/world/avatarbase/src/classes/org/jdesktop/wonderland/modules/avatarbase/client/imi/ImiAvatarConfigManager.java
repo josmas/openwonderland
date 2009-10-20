@@ -254,9 +254,15 @@ public class ImiAvatarConfigManager {
      * @param session The session to remove.
      */
     public void removeServer(ServerSessionManager session) {
-        // XXX Perhaps we should stop all jobs in process? XXX
+        // Remove the server session. If we find a thread, then stop it and
+        // remove it from the map.
+        logger.info("Removing server " + session.getServerURL());
         synchronized (avatarConfigServers) {
-            avatarConfigServers.remove(session);
+            ServerSyncThread t = avatarConfigServers.remove(session);
+            logger.info("Stopping thread " + t);
+            if (t != null) {
+                t.setConnected(false);
+            }
         }
     }
 
@@ -471,19 +477,6 @@ public class ImiAvatarConfigManager {
             // Fetch the base directory in which all IMI avatar configuration info
             // is found on the server.
             serverCollection = getBaseServerCollection(manager);
-
-            // Listen for when the primary session becomes inactive. Remove from
-            // the list of servers and set the thread state connected to false
-            manager.getPrimarySession().addSessionStatusListener(new SessionStatusListener() {
-                public void sessionStatusChanged(WonderlandSession session, Status status) {
-                    if (status == Status.DISCONNECTED) {
-                        synchronized (avatarConfigServers) {
-                            avatarConfigServers.remove(manager);
-                            setConnected(false);
-                        }
-                    }
-                }
-            });
 
             // Finally, start the thread off
             this.start();
