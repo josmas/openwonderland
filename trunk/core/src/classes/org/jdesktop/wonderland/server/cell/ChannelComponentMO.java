@@ -182,7 +182,11 @@ public class ChannelComponentMO extends CellComponentMO {
         if (cellChannelRef == null)
             return;
 
-        cellChannelRef.getForUpdate().join(clientID.getSession());
+        // issue 963: the session may be null if the user is logging out
+        ClientSession session = clientID.getSession();
+        if (session != null) {
+            cellChannelRef.getForUpdate().join(session);
+        }
     }
 
     /**
@@ -193,7 +197,11 @@ public class ChannelComponentMO extends CellComponentMO {
         if (cellChannelRef == null)
             return;
 
-        cellChannelRef.getForUpdate().leave(clientID.getSession());
+        // issue 963: the session may be null if the user is logging out
+        ClientSession session = clientID.getSession();
+        if (session != null) {
+            cellChannelRef.getForUpdate().leave(session);
+        }
     }
 
     /**

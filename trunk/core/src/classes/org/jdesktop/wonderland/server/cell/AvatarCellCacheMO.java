@@ -127,8 +127,11 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
 
         UniverseManagerFactory.getUniverseManager().viewLogin(view);
 
+        // issue 963: session could be null if client is in the process of
+        // logging out
+        String name = (clientID.getSession() == null)?"null":clientID.getSession().getName();
         logger.info("AvatarCellCacheMO.login() CELL CACHE LOGIN FOR USER "
-                    + clientID.getSession().getName() + " AS " + identity.getUsername());
+                    + name + " AS " + identity.getUsername());
 
         // set up the revalidate scheduler
         scheduler = new SharedListRevalidateScheduler(sender, 5);

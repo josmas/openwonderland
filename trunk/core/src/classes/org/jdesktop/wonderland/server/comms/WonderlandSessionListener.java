@@ -820,7 +820,11 @@ public class WonderlandSessionListener
         }
 
         public void send(WonderlandClientID wlID, Message message) {
-            wlID.getSession().send(serializeMessage(message, clientID));
+            // issue 963: session may be null
+            ClientSession session = wlID.getSession();
+            if (session != null) {
+                session.send(serializeMessage(message, clientID));
+            }
         }
 
         public void send(Set<WonderlandClientID> wlIDs, Message message)
