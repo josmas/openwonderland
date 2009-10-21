@@ -113,8 +113,7 @@ public class ModelDndContentImporter extends AbstractContentImporter {
         // from the cell
         Node cellRoot = new Node();
         cellRoot.attachChild(importedModel.getModelBG());
-        cellRoot.updateWorldData(0f);
-        cellRoot.updateWorldBound();
+        cellRoot.updateGeometricState(0, true);
         Entity entity = new Entity("Fake");
         RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(cellRoot);
         entity.addComponent(RenderComponent.class, rc);
