@@ -99,11 +99,19 @@ public class JmeClientMain {
     // keep tack of whether we are currently logging out
     private boolean loggingOut;
 
+    private enum OS {
+
+        Linux, Windows, OSX, Other
+    }
+    private OS os;
+
     /**
      * creates a new JmeClientMain
      * @param args the command line arguments
      */
     public JmeClientMain(String[] args) {
+        detectOS();
+
         checkVmVersion();
 
         // process command line arguments
@@ -284,9 +292,9 @@ public class JmeClientMain {
 
         // see if we need to change servers
         // issue #859 - compare URLs as URLs
-        if (curSession != null &&
-                urlEquals(serverURL, curSession.getSessionManager().getServerURL()))
-        {   // no need to change - make a local move request
+        if (curSession != null && urlEquals(serverURL,
+                curSession.getSessionManager().getServerURL())) {
+            // no need to change - make a local move request
             ViewCell vc = curSession.getLocalAvatar().getViewCell();
             if (vc instanceof AvatarCell) {
                 ((AvatarCell) vc).triggerGoto(translation, look);
@@ -463,17 +471,16 @@ public class JmeClientMain {
             URL u1 = new URL(url1);
             URL u2 = new URL(url2);
 
-            System.out.println("Compare " + url1 + " to " + url2 + ": "  +
-                               u1.equals(u2));
+            System.out.println("Compare " + url1 + " to " + url2 + ": " +
+                    u1.equals(u2));
 
             return u1.equals(u2);
         } catch (MalformedURLException mue) {
             LOGGER.log(Level.WARNING, "Comparing non URL: " + url1 + ", " +
-                       url2, mue);
+                    url2, mue);
             return url1.equalsIgnoreCase(url2);
         }
     }
-
 
     /**
      * returns the properties URL
@@ -647,22 +654,39 @@ public class JmeClientMain {
         }
     }
 
+    private void detectOS() {
+        String osName = System.getProperty("os.name");
+        if (osName.startsWith("Mac OS X")) {
+            os = OS.OSX;
+        } else if (osName.startsWith("Windows")) {
+            os = OS.Windows;
+        } else if (osName.startsWith("Linux")) {
+            os = OS.Linux;
+        } else {
+            os = OS.Other;
+        }
+    }
+
     /**
      * Check we are running in a supported VM.
      */
     private void checkVmVersion() {
-        try {
-            Class clazz = Class.forName("javax.lang.model.SourceVersion");
-        } catch (ClassNotFoundException ex) {
-            Logger.getAnonymousLogger().severe("Java Version is older than 6");
-            JOptionPane.showMessageDialog(null, 
-                    BUNDLE.getString("JAVA_VERSION_1") + "\n\n" +
-                    BUNDLE.getString("JAVA_VERSION_2") + "\n" +
-                    BUNDLE.getString("JAVA_VERSION_3") + "\n\n" +
-                    BUNDLE.getString("JAVA_VERSION_4") + "\n" +
-                    BUNDLE.getString("JAVA_VERSION_5"),
-                    BUNDLE.getString("JAVA_VERSION"), JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
+        String version = System.getProperty("java.version");
+        String[] tokens = version.split("\\.");
+        if (tokens.length > 2) {
+            if (Integer.parseInt(tokens[1]) < 6) {
+                LOGGER.severe("Java Version is older than 6");
+                String errorMessage = BUNDLE.getString("JAVA_VERSION_ERROR") +
+                        "\n\n" + BUNDLE.getString(os == OS.OSX
+                        ? "JAVA_VERSION_ERROR_OSX"
+                        : "JAVA_VERSION_ERROR_OTHER");
+                JOptionPane.showMessageDialog(null, errorMessage,
+                        BUNDLE.getString("JAVA_VERSION_ERROR_TITLE"),
+                        JOptionPane.ERROR_MESSAGE);
+                System.exit(1);
+            }
+        } else {
+            LOGGER.warning("could not parse java version \"" + version + '\"');
         }
     }
 
@@ -680,28 +704,29 @@ public class JmeClientMain {
         } catch (AssetDBException excp) {
             LOGGER.log(Level.SEVERE,
                     "Unable to connect DB, another JVM running", excp);
-            
-            String msg = BUNDLE.getString("DB_ERROR_1") + "\n" +
-                    BUNDLE.getString("DB_ERROR_2") + "\n" +
-                    BUNDLE.getString("DB_ERROR_3") + "\n" +
-                    BUNDLE.getString("DB_ERROR_4");
-            String title = BUNDLE.getString("DB_ERROR_TITLE");
-            JOptionPane.showMessageDialog(null, msg, title, JOptionPane.ERROR_MESSAGE);
+            String errorMessage = BUNDLE.getString("DB_ERROR");
+            if (os == OS.Windows) {
+                errorMessage += "\n" + BUNDLE.getString("DB_ERROR_WINDOWS");
+            }
+            JOptionPane.showMessageDialog(null,
+                    errorMessage,
+                    BUNDLE.getString("DB_ERROR_TITLE"),
+                    JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
         assetDB.disconnect();
     }
-    
+
     /** runnable for loading the server and remembering the exception */
     class ServerLoader implements Runnable {
+
         private String serverURL;
         private Vector3f translation;
         private Quaternion look;
         private IOException ioe;
 
         public ServerLoader(String serverURL, Vector3f translation,
-                            Quaternion look)
-        {
+                Quaternion look) {
             this.serverURL = serverURL;
             this.translation = translation;
             this.look = look;
