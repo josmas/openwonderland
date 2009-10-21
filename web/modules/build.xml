@@ -41,7 +41,7 @@
                  ant task -->
             <zipfileset src="${core.dir}/build/lib/wonderland-client.jar">
                 <include name="org/jdesktop/wonderland/client/login/**"/>
-                <include name="org/jdesktop/wonderland/client/comms/SessionStatusListener*.class"/>
+                <include name="org/jdesktop/wonderland/client/comms/**"/>
             </zipfileset>
         </jar>
 
