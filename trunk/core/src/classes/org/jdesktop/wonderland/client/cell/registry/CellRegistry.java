@@ -132,7 +132,7 @@ public class CellRegistry implements PrimaryServerListener {
      * 
      * @return A set of registered cell factories
      */
-    public Set<CellFactorySPI> getAllCellFactories() {
+    public synchronized Set<CellFactorySPI> getAllCellFactories() {
         return new HashSet(cellFactorySet);
     }
     
@@ -143,7 +143,7 @@ public class CellRegistry implements PrimaryServerListener {
      * @param extension File type extension (e.g. 'jpg', 'dae')
      * @return A set of CellFactory objects registered on the extension
      */
-    public Set<CellFactorySPI> getCellFactoriesByExtension(String extension) {
+    public synchronized Set<CellFactorySPI> getCellFactoriesByExtension(String extension) {
         // Convert the extension to lower case so that, for example JPG is the
         // same as jpg. If the given extension is null, return null.
 	if (extension != null) {
