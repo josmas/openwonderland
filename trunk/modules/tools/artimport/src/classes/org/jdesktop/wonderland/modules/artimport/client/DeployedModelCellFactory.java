@@ -145,17 +145,30 @@ public class DeployedModelCellFactory implements CellFactorySPI {
      * model is too large, it places it on top of the avatar.
      */
     private BoundingVolumeHint getBoundingVolumeHint(BoundingVolume bounds) {
+        // If the model is too large, then set the bounds to extent/radius of
+        // 1, so that it essentially appears on top of the avatar. This prevents
+        // it from being placed too far away. We keep the y value -- so that
+        // the model is placed on the ground, and not in it.
         BoundingVolume hint = bounds;
         if (bounds instanceof BoundingBox) {
+            // Handle if the bounding volume is a box. We only care about the
+            // x and z extents, since we'll always want to place the model on
+            // the floor, no matter how high it is.
             BoundingBox box = (BoundingBox) bounds;
-            if (box.xExtent > 20 || box.yExtent > 20 || box.zExtent > 20) {
-                hint = new BoundingBox(Vector3f.ZERO, 1, 1, 1);
+            if (box.xExtent > 20 || box.zExtent > 20) {
+                hint = new BoundingBox(Vector3f.ZERO, 1, box.yExtent, 1);
             }
         }
         else if (bounds instanceof BoundingSphere) {
+            // Handle if the bounding volume is a sphere. This is a bit tricky.
+            // If the radius is too large, we want to place the model close to
+            // the avatar, but we also want the model to sit on the floor, not
+            // in it. So in this case, we need to create a bounding box for the
+            // hint instead of a sphere, so we can set the x and z extents to
+            // be 1 and the y extent to be the radius of the sphere.
             BoundingSphere sphere = (BoundingSphere) bounds;
             if (sphere.radius > 20) {
-                hint = new BoundingSphere(1f, Vector3f.ZERO);
+                hint = new BoundingBox(Vector3f.ZERO, 1, sphere.radius, 1);
             }
         }
         return new BoundingVolumeHint(true, hint);
