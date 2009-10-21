@@ -172,17 +172,35 @@ public class AvatarClientPlugin extends BaseClientPlugin
         chaseCameraMI = new JRadioButtonMenuItem(bundle.getString("Chase_Camera"));
         chaseCameraMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                Vector3f offsetVec = new Vector3f(0.0f, 4.0f, -10.0f);
-                // change camera hook
+                // Fetch the initial position of the camera. This is based upon
+                // the current avatar position. We can assume that the primary
+                // View Cell exists at this point, since the menu item is not
+                // added until a primary View Cell exists.
+                ViewManager viewManager = ViewManager.getViewManager();
+                ViewCell viewCell = viewManager.getPrimaryViewCell();
+                CellTransform transform = viewCell.getWorldTransform();
+                Vector3f translation = transform.getTranslation(null);
+
+                // This is the offset from the avatar view Cell to place the
+                // camera
+                Vector3f offset = new Vector3f(0.0f, 4.0f, -10.0f);
+
+                // Create the camera state if it does not yet exist. Initialize
+                // the initial position to that of the view Cell.
                 if (camState == null) {
                     camModel = (ChaseCamModel) CameraModels.getCameraModel(ChaseCamModel.class);
-                    camState = new ChaseCamState(offsetVec, new Vector3f(0.0f, 1.8f, 0.0f));
+                    camState = new ChaseCamState(offset, new Vector3f(0.0f, 1.8f, 0.0f));
                     camState.setDamping(1.7f);
                     camState.setLookAtDamping(1.7f);
                 }
-                camState.setCameraPosition(avatarCellRenderer.getCell().getLocalTransform().getTranslation(null).add(offsetVec));
+                camState.setCameraPosition(translation.add(offset));
                 camState.setTargetCharacter(avatarCellRenderer.getAvatarCharacter());
-                ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
+
+                // Create the Chase Camera with the model and state and add to
+                // the View Manager
+                FlexibleCameraAdapter chaseCamera =
+                        new FlexibleCameraAdapter(camModel, camState);
+                viewManager.setCameraController(chaseCamera);
             }
         });
 
