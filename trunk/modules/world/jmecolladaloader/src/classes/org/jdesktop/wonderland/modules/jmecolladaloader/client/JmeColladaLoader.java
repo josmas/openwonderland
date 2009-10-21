@@ -155,7 +155,11 @@ public class JmeColladaLoader implements ModelLoader {
 //        TreeScan.findNode(modelNode, new ProcessNodeInterface() {
 //
 //            public boolean processNode(Spatial node) {
-//                System.err.println(node);
+//                System.err.print(node);
+//                if (node instanceof Geometry) {
+//                    System.err.println("  "+((Geometry)node).getModelBound());
+//                } else
+//                    System.err.println();
 //                return true;
 //            }
 //
@@ -216,7 +220,9 @@ public class JmeColladaLoader implements ModelLoader {
                         ResourceLocatorTool.TYPE_TEXTURE,
                         resourceLocator);
             }
- 
+
+            modelBG.updateGeometricState(0, true);
+
             return modelBG;
         } catch (IOException ex) {
             Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
