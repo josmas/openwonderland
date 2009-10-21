@@ -185,6 +185,7 @@ public class FrameHeaderSwing
         updateLayout();
         headerWindow.setPixelOffset(x, y);
         headerWindow.setSize(width, height);
+        headerWindow.setDesiredZOrder(headerWindow.getZOrder());
     }
 
     public void update(float newWidth3D, float newHeight3D, Dimension newSize) throws InstantiationException {
