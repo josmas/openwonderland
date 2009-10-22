@@ -139,8 +139,14 @@ public class CellUtils {
         }
         else if (hint != null && hint.isDoSystemPlacement() == false) {
             // Case (3): The Cell will take care of its own placement, use
-            // the origin of the avatar as the initial placement
-            transform = new CellTransform();
+            // the origin of the avatar as the initial placement.
+            
+            // Issue 998: make sure this is actually the current location of
+            // the avatar, and not the origin.  This guarantees that the
+            // cell will be in the viewcache of the creator at least, so
+            // that the cell object can be (for example) positioned manually
+            // by the client.
+            transform = viewTransform;
         }
         
         // We also need to convert the initial origin of the Cell (in world
