@@ -163,8 +163,6 @@ public class ViewManager implements ViewPropertiesListener {
         // Fix bug 884
         canvas.setFocusTraversalKeysEnabled(false);
 
-        panel.add(canvas, BorderLayout.CENTER);
-
         panel.addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent e) {
@@ -216,6 +214,13 @@ public class ViewManager implements ViewPropertiesListener {
                 waitForReady.release();
             }
         });
+
+        // issue 999: don't add the canvas until after the BufferUpdater is
+        // registered, to make sure we don't miss the initialization call.  Also
+        // force a repaint to be sure the initialization call happens eventually,
+        // even on headless clients
+        panel.add(canvas, BorderLayout.CENTER);
+        canvas.repaint();
 
         try {
             waitForReady.acquire();
