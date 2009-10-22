@@ -229,8 +229,6 @@ public class TextLabel2D extends Node {
         float factor = height / h;
         Quad ret;
 
-        System.err.println("Texture Sze "+w+", "+h+"  "+factor);
-        
         if (imgWidth==w && imgHeight==h && imgFactor==factor) {
             // Reuse quad and texture
             ret = quad;
