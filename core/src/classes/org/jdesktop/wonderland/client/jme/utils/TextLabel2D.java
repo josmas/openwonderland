@@ -33,14 +33,14 @@ import java.awt.font.TextLayout;
 public class TextLabel2D extends Node {
 
     private String text;
-    private float blurIntensity = 0.1f;
+    private float blurIntensity = 0.5f;
     private int kernelSize = 5;
     private ConvolveOp blur;
     private Color foreground = new Color(1f, 1f, 1f);
     private Color background = new Color(0f, 0f, 0f);
     private float fontResolution = 20f;
-    private int shadowOffsetX = 2;
-    private int shadowOffsetY = 2;
+    private float shadowOffsetX = 1.5f;
+    private float shadowOffsetY = 1.5f;
     private Font font;
     private Font drawFont;
     private float height = 1f;
@@ -48,7 +48,7 @@ public class TextLabel2D extends Node {
     private Quad quad;
     private float imgWidth = 0f;
     private float imgHeight = 0f;
-
+    private float imgFactor = 0f;
 
     public TextLabel2D(String text) {
         this(text, new Color(1f, 1f, 1f), new Color(0f, 0f, 0f), 0.3f, false, null);
@@ -118,7 +118,23 @@ public class TextLabel2D extends Node {
     }
 
     public void setFontResolution(float fontResolution) {
+        if (this.fontResolution==fontResolution)
+            return;
+
         this.fontResolution = fontResolution;
+        BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
+        drawFont = font.deriveFont(fontResolution);
+
+        fontRenderContext = g2d.getFontRenderContext();
+    }
+
+    /**
+     * Set the height of the quad onto which the label image is applied.
+     * @param height
+     */
+    public void setHeight(float height) {
+        this.height = height;
     }
 
     private void updateKernel() {
@@ -185,8 +201,8 @@ public class TextLabel2D extends Node {
 
         // draw the shadow of the text
         g2d.setFont(drawFont);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setColor(background);
         g2d.drawString(text, textX + shadowOffsetX, textY + shadowOffsetY);
 
@@ -213,9 +229,9 @@ public class TextLabel2D extends Node {
         float factor = height / h;
         Quad ret;
 
-//        System.err.println("Texture Sze "+w+", "+h);
+        System.err.println("Texture Sze "+w+", "+h+"  "+factor);
         
-        if (imgWidth==w && imgHeight==h) {
+        if (imgWidth==w && imgHeight==h && imgFactor==factor) {
             // Reuse quad and texture
             ret = quad;
             TextureState texState = (TextureState) quad.getRenderState(StateType.Texture);
@@ -250,6 +266,7 @@ public class TextLabel2D extends Node {
             this.quad = ret;
             imgWidth = w;
             imgHeight = h;
+            imgFactor = factor;
         }
 
         return ret;
