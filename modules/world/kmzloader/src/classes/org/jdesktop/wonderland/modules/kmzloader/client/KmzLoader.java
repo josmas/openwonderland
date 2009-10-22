@@ -33,7 +33,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -163,8 +162,9 @@ class KmzLoader extends JmeColladaLoader {
         }
 
         importedModel.setModelLoader(this);
+        settings.setLightingEnabled(false);     // No lighting is the default for SketchUp
         importedModel.setImportSettings(settings);
-        
+
         return importedModel;
     }
     
