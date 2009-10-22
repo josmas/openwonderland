@@ -282,6 +282,7 @@ public class NameTagNode extends Node {
                         attachChild(label);
                     } else {
                         label.setFont(font);
+                        label.setHeight(height);
                         label.setText(displayName, foregroundColor, backgroundColor);
                     }
                     ClientContextJME.getWorldManager().addToUpdateList(NameTagNode.this);
