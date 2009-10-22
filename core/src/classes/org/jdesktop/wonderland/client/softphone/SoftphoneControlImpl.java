@@ -147,7 +147,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    s += " " + command[i];
         }
 
-        System.out.println("Launching communicator: " + s);
+        logger.info("Launching communicator: " + s);
 
         softphoneProcess = Runtime.getRuntime().exec(command);
             
@@ -496,7 +496,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 
     public void sendCommandToSoftphone(String cmd) {
         if (softphoneOutputStream == null) {
-	    System.out.println("Unable to send command to softphone, output stream is null "
+	    logger.warning("Unable to send command to softphone, output stream is null "
 		+ cmd);
             return;
         }
@@ -517,7 +517,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
                     e.printStackTrace();
                     //softphoneOutputStream = null;
 
-		    System.err.println("SoftphoneControl exception:  " + e.getMessage());
+		    logger.warning("SoftphoneControl exception:  " + e.getMessage());
 		}
 
 		//close(
@@ -601,7 +601,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 
     private void lineReceived(ProcOutputListener source, String line) {
         if (source == stdErrListener) {
-            System.err.println(line);
+            logger.warning(line);
         } else if (source == stdOutListener) {
 	    if (quiet == false) {	
                 logger.info(line);
