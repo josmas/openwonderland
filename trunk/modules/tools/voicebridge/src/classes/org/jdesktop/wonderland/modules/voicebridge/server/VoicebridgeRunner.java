@@ -24,7 +24,6 @@ import org.jdesktop.wonderland.runner.BaseRunner;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;
 import org.jdesktop.wonderland.runner.RunManager;
 
-import org.jdesktop.wonderland.common.NetworkAddress;
 
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
 import org.jdesktop.wonderland.utils.Constants;
@@ -81,8 +80,8 @@ public class VoicebridgeRunner extends BaseRunner {
     @Override
     public Properties getDefaultProperties() {
         Properties props = getDefaultProps();
-        props.setProperty("voicebridge.local.hostAddress",
-                          System.getProperty(Constants.WEBSERVER_HOST_PROP));
+        props.setProperty("voicebridge.local.hostAddress", System.getProperty(Constants.WEBSERVER_HOST_PROP));
+        props.setProperty("voicebridge.webserver.url", System.getProperty(Constants.WEBSERVER_URL_PROP));
         return props;
     }
 
