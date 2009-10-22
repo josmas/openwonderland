@@ -99,16 +99,12 @@ public class AvatarControls extends ViewControls {
         });
     }
 
-    long frameNum = 0;
     @Override
     public void compute(ProcessorArmingCollection arg0) {
         // This method passes the Key and Mouse events to the avatar input.
         // The method tracks key presses and releases and ensures that the release
         // for a key is sent at least one frame after the press. This gives the
         // avatar system a chance to react to brief key taps.
-
-        LinkedList<Event> delayedEvents = new LinkedList();
-        HashSet<Integer> pressedKeys = new HashSet();   // Keys pressed this frame
 
         synchronized(events) {
             for (Event evt : events) {
@@ -117,19 +113,11 @@ public class AvatarControls extends ViewControls {
                     // KEY_TYPED events are ignored
                     KeyEvent ke = (KeyEvent) ((KeyEvent3D)evt).getAwtEvent();
                     if (ke.getID()==ke.KEY_PRESSED) {
-                        pressedKeys.add(ke.getKeyCode());
-//                        System.err.println(frameNum+"  "+evt);
                         currentPressedKeys.add(ke.getKeyCode());
                         inputGroup.processKeyEvent(ke); // give the group the event
                     } else if (ke.getID()==ke.KEY_RELEASED) {
-                        if (pressedKeys.contains(ke.getKeyCode())) {
-                            // Delay release until next frame
-                            delayedEvents.add(evt);
-                        } else {
-//                            System.err.println(frameNum+"  "+evt);
-                            currentPressedKeys.remove(ke.getKeyCode());
-                            inputGroup.processKeyEvent(ke); // give the group the event
-                        }
+                        currentPressedKeys.remove(ke.getKeyCode());
+                        inputGroup.processKeyEvent(ke); // give the group the event
                     }
                 } else if (evt instanceof MouseEvent3D && evt.isFocussed()) {
                     MouseEvent me = (MouseEvent) ((MouseEvent3D)evt).getAwtEvent();
@@ -137,9 +125,7 @@ public class AvatarControls extends ViewControls {
                 } 
             }
             events.clear();
-            events.addAll(delayedEvents);
         }
-        frameNum++;
     }
 
     @Override
