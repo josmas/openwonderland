@@ -729,9 +729,6 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	logger.fine("member change:  " + presenceInfo + " added " + added + " mode " + addHUDPanel.getMode()
 	    + " isTransient " + isTransientMember);
 
-	System.out.println("member change:  " + presenceInfo + " added " + added + " mode " + addHUDPanel.getMode()
-	    + " isTransient " + isTransientMember);
-
 	if (added) {
 	    synchronized (members) {
 	        if (members.contains(presenceInfo) == false) {
