@@ -34,9 +34,11 @@ import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -44,12 +46,13 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.modules.orb.common.OrbCellClientState;
 
 import com.jme.scene.Node;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 
 /**
  *
  * @author jprovino
  */
-public class OrbCell extends Cell {
+public class OrbCell extends ViewCell {
 
     private static final Logger logger =
             Logger.getLogger(OrbCell.class.getName());
@@ -65,6 +68,7 @@ public class OrbCell extends Cell {
     private String callID;
     private String playerWithVpCallID;
     private String[] bystanders;
+    private WonderlandIdentity id;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -97,6 +101,16 @@ public class OrbCell extends Cell {
         return orbMessageHandler.getNameTagNode();
     }
 
+    @Override
+    public WonderlandIdentity getIdentity() {
+        return id;
+    }
+
+    @Override
+    public void localMoveRequest(CellTransform transform) {
+        throw new UnsupportedOperationException("Cannot move orb locally");
+    }
+
     /**
      * Called when the cell is initially created and any time there is a 
      * major configuration change. The cell will already be attached to it's parent
@@ -111,7 +125,8 @@ public class OrbCell extends Cell {
 	logger.fine("ORB is configured");
 	OrbCellClientState orbCellClientState = (OrbCellClientState) cellClientState;
 
-	username = orbCellClientState.getUsername();
+        id = orbCellClientState.getIdentity();
+	username = id.getUsername();
 	callID = orbCellClientState.getCallID();
 	playerWithVpCallID = orbCellClientState.getPlayerWithVpCallID();
 

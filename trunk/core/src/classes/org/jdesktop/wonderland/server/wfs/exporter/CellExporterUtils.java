@@ -21,19 +21,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.util.logging.Level;
 import javax.xml.bind.JAXBException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
 import org.jdesktop.wonderland.common.wfs.CellPath;
 import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.annotation.NoSnapshot;
 
 
 /**
@@ -94,12 +98,42 @@ public class CellExporterUtils {
         // Create the cell on the server, fetch the setup information from the
         // cell. If the cell does not return a valid setup object, then simply
         // ignore the cell (and its children).
+        // Test to see if this cell can be snapshotted
+        
+        if (hasNoSnapshotAnnotation(cellMO.getClass()) && !recordCellIDs) {
+            // if there is a NoSnapshot annotation and we are not in the
+            // event recorder, we must be snapshotting
+            // Ignore this cell
+            logger.info("Ignore cell of type " + cellMO.getClass() +
+                        " due to @NoSnapshot annotation");
+            return null; 
+        }
+
         String cellID = cellMO.getCellID().toString();
         String cellName = cellMO.getName();
         CellServerState setup = cellMO.getServerState(null);
         if (setup == null) {
             return null;
         }
+
+        // Now take out any component state that shouldn't be snapshotted
+        if (!recordCellIDs) {
+            // get the list of all server states
+            CellComponentServerState[] ccsss =
+                    setup.getComponentServerStates().values().toArray(new CellComponentServerState[0]);
+
+            // check for snapshot annotations on the corresponding class
+            for (CellComponentServerState ccss : ccsss) {
+                if (ccss != null && hasNoSnapshotAnnotation(ccss)) {
+                    logger.info("Remove component of type " +
+                                ccss.getServerComponentClassName() +
+                                " due to @NoSnapshot annotation");
+
+                    setup.removeComponentServerState(ccss.getClass());
+                }
+            }
+        }
+
         // If required, put the cellID of the cell in its metadata
         // Required by event recorder
         if (recordCellIDs) {
@@ -169,5 +203,41 @@ public class CellExporterUtils {
      */
     public static URL getWebServerURL() throws MalformedURLException {
         return new URL(System.getProperty("wonderland.web.server.url"));
+    }
+
+    /**
+     * Return if the class associated with the given
+     * CellComponentServerState object contains the NoSnapshotAnnotation
+     * @param the CellComponentServerState to check
+     * @return true if the associated ComponentServerState class has the
+     * NoSnapshot annotation, or false if it does not have the annotation
+     */
+    private static boolean hasNoSnapshotAnnotation(CellComponentServerState state)
+        throws IOException
+    {
+        try {
+            // first, find the component classname
+            String className = state.getServerComponentClassName();
+            if (className == null) {
+                return false;
+            }
+
+            // now turn that into a class to check
+            Class clazz = Class.forName(className);
+            return hasNoSnapshotAnnotation(clazz);
+        } catch (ClassNotFoundException cnfe) {
+            throw new IOException(cnfe);
+        }
+    }
+
+    /**
+     * Return true if the given class has the NoSnapshot annotation associated
+     * with it.
+     * @param clazz the class to check
+     * @return true if the class has the NoSnapshot annotation, or false
+     * if not
+     */
+    private static boolean hasNoSnapshotAnnotation(Class clazz) {
+        return clazz.isAnnotationPresent(NoSnapshot.class);
     }
 }

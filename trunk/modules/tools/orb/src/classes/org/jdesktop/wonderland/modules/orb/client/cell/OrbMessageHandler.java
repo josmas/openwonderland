@@ -179,7 +179,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    presenceInfoAdded = true;
 	} 
 
-        nameTagComp = new NameTagComponent(orbCell);
+        nameTagComp = new NameTagComponent(orbCell, 0.15f);
         // SIZE should be 0.17
         orbCell.addComponent(nameTagComp);
         nameTag = nameTagComp.getRenderer(Cell.RendererType.RENDERER_JME);
