@@ -38,12 +38,17 @@ public class NameTagComponent extends CellComponent {
     private String usernameAlias = null;
     private boolean inConeOfSilence = false;
     private boolean isSpeaking = false;
-    private float height;
+    private float heightAbove;
     private boolean isMuted;
 
     public NameTagComponent(Cell cell) {
-        super(cell);
-        height = 2f;
+        this (cell, 2f);
+    }
+
+    public NameTagComponent(Cell cell, float heightAbove) {
+        super (cell);
+
+        this.heightAbove = heightAbove;
     }
 
     /**
@@ -68,7 +73,7 @@ public class NameTagComponent extends CellComponent {
                     synchronized(this) {
                         if (nameTagNode==null) {
                             nameTagNode = new NameTagNode(((ViewCell)cell).getIdentity().getUsername(), 
-                                                            height,
+                                                            heightAbove,
                                                             inConeOfSilence,
                                                             isSpeaking,
                                                             isMuted);
