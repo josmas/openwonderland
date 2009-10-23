@@ -31,6 +31,7 @@ import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.Geometry;
+import com.jme.scene.Spatial.CullHint;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
@@ -774,6 +775,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     cameraChainedProcessor.setRunInRenderer(true);
                 }
 
+                // Disable culling for local avatar, fix for issue 799
+                avatarCharacter.getJScene().setCullHint(CullHint.Never);
             } else {
                 avatarCharacter.getContext().getController().removeCharacterMotionListener(characterMotionListener);
                 avatarCharacter.getContext().removeGameContextListener(gameContextListener);
@@ -785,6 +788,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     cameraChainedProcessor.removeFromChain(ViewManager.getViewManager().getCameraProcessor());
                     cameraChainedProcessor = null;
                 }
+                //Reenable culling for local avatar, fix for issue 799
+                avatarCharacter.getJScene().setCullHint(CullHint.Dynamic);
             }
         } else {
             logger.severe("The avatar was null during enableInputListeners().");
