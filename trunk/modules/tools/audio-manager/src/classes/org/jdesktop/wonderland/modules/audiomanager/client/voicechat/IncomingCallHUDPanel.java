@@ -260,13 +260,32 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 
 	answered = true;
 
+        incomingCallHUDComponent.setVisible(false);
+
+        WlAvatarCharacter avatar = client.getWlAvatarCharacter();
+
+        if (avatar == null) {
+            return;
+        }
+
+	String answerCell = null;
+
+        for (String action : avatar.getAnimationNames()) {
+            if (action.indexOf("_AnswerCell") > 0) {
+                answerCell = action;
+                break;
+            }
+        }
+
+        if (answerCell == null) {
+            return;
+        }
+
         if (chatType.equals(ChatType.PRIVATE)) {
-            client.getWlAvatarCharacter().playAnimation("Male_AnswerCell");
+            client.getWlAvatarCharacter().playAnimation(answerCell);
         } else {
             client.getWlAvatarCharacter().stop();
         }
-
-        incomingCallHUDComponent.setVisible(false);
     }//GEN-LAST:event_AnswerButtonActionPerformed
     
     
