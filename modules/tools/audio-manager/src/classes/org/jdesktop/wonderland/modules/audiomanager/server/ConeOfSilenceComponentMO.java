@@ -54,7 +54,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
     private static final String DEFAULT_NAME = "Cone_of_Silence";
 
-    private String name = null;
+    private String name = DEFAULT_NAME;
 
     private COSBoundsType boundsType = COSBoundsType.CELL_BOUNDS;
 
@@ -122,6 +122,10 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         if (state == null) {
             state = new ConeOfSilenceComponentServerState();
         }
+
+	if (name == null) {
+	    name = DEFAULT_NAME;
+	}
 
 	if (name.equals(DEFAULT_NAME)) {
 	    name += "-" + cellRef.get().getCellID();
