@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
  *
  * @author paulby
  */
-public class SpatialCellImpl implements SpatialCell {
+public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
 
     private BoundingVolume worldBounds = new BoundingSphere();
     private BoundingVolume localBounds = null;
@@ -200,9 +200,6 @@ public class SpatialCellImpl implements SpatialCell {
                 viewUpdateListeners = new CopyOnWriteArraySet();
             viewUpdateListeners.add(viewUpdateListener);
         }
-
-        if (viewCacheSet!=null)
-            viewCacheSet.addViewUpdateListener(viewUpdateListener);
     }
 
     /**
@@ -215,9 +212,6 @@ public class SpatialCellImpl implements SpatialCell {
         synchronized(viewUpdateListenersSync) {
             viewUpdateListeners.remove(viewUpdateListener);
         }
-
-        if (viewCacheSet!=null)
-            viewCacheSet.removeViewUpdateListener(viewUpdateListener);
     }
 
     Iterator<ViewUpdateListener> getViewUpdateListeners() {
@@ -468,15 +462,14 @@ public class SpatialCellImpl implements SpatialCell {
     }
 
     void viewCachesAddedOrRemoved(Collection<ViewCache> caches, boolean added, SpatialCellImpl cell) {
-        if (viewUpdateListeners!=null) {
-            for(ViewUpdateListener viewUpdateListener : viewUpdateListeners) {
-                for(ViewCache c : caches) {
-                    if (added) {
-                        c.addViewUpdateListener(cellID, viewUpdateListener);
-                    } else {
-                        c.removeViewUpdateListener(cellID, viewUpdateListener);
-                    }
-                }
+        // Issue #860: add a single listener to each cache to notify this
+        // cell of any view updates. This cell will then forward that
+        // updates to all the registered listeners.
+        for (ViewCache c : caches) {
+            if (added) {
+                c.addViewUpdateListener(cellID, this);
+            } else {
+                c.removeViewUpdateListener(cellID, this);
             }
         }
 
@@ -550,6 +543,33 @@ public class SpatialCellImpl implements SpatialCell {
         }
     }
 
+    public void viewLoggedIn(CellID cell, CellID viewCellID) {
+        // issue #860: forward on any view updates to our listeners
+        if (viewUpdateListeners != null) {
+            for(ViewUpdateListener viewUpdateListener : viewUpdateListeners) {
+                viewUpdateListener.viewLoggedIn(cell, viewCellID);
+            }
+        }
+    }
+
+    public void viewTransformChanged(CellID cell, CellID viewCellID, CellTransform viewWorldTransform) {
+        // issue #860: forward on any view updates to our listeners
+        if (viewUpdateListeners != null) {
+            for(ViewUpdateListener viewUpdateListener : viewUpdateListeners) {
+                viewUpdateListener.viewTransformChanged(cell, viewCellID, viewWorldTransform);
+            }
+        }
+    }
+
+    public void viewLoggedOut(CellID cell, CellID viewCellID) {
+        // issue #860: forward on any view updates to our listeners
+        if (viewUpdateListeners != null) {
+            for(ViewUpdateListener viewUpdateListener : viewUpdateListeners) {
+                viewUpdateListener.viewLoggedOut(cell, viewCellID);
+            }
+        }
+    }
+
     public interface WorldBoundsChangeListener {
         public void worldBoundsChanged(SpatialCell cell);
     }
@@ -597,29 +617,6 @@ public class SpatialCellImpl implements SpatialCell {
         private final HashMap<ViewCache, HashSet<Space>> viewCache = new HashMap();
 
         public ViewCacheSet() {
-        }
-
-        /**
-         * Listener for changes to any view to which this cell is close
-         * @param viewUpdateListener
-         */
-        void addViewUpdateListener(ViewUpdateListener viewUpdateListener) {
-            synchronized(viewCache) {
-                for(ViewCache cache : viewCache.keySet()) {
-                    cache.addViewUpdateListener(cellID, viewUpdateListener);
-                }
-            }
-        }
-
-        /**
-         * @param listener
-         */
-        void removeViewUpdateListener(ViewUpdateListener viewUpdateListener) {
-            synchronized(viewCache) {
-                for(ViewCache cache : viewCache.keySet()) {
-                    cache.removeViewUpdateListener(cellID, viewUpdateListener);
-                }
-            }
         }
 
         /**
