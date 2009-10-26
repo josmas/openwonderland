@@ -167,6 +167,13 @@ public class PresenceManagerClient extends BaseConnection implements
 	if (message instanceof ClientConnectResponseMessage) {
 	    ClientConnectResponseMessage msg = (ClientConnectResponseMessage) message;
 
+	    CellCache cellCache = ClientContext.getCellCache(session);
+
+	    if (cellCache == null) {
+		logger.warning("Can't find cellCache for session " + session);
+		return;
+	    }
+
 	    ArrayList<String> nameTagList = new ArrayList();
 
 	    PresenceInfo[] presenceInfoList = msg.getPresenceInfoList();
@@ -181,7 +188,10 @@ public class PresenceManagerClient extends BaseConnection implements
 
 		String username = presenceInfo.userID.getUsername();
 
-		CellCache cellCache = ClientContext.getCellCache(session);
+		if (presenceInfo.cellID == null) {
+		    logger.warning("CellID is null for " + presenceInfo);
+		    continue;
+		}
 
 		Cell cell = cellCache.getCell(presenceInfo.cellID);
 
@@ -192,11 +202,11 @@ public class PresenceManagerClient extends BaseConnection implements
  		}
 
 		if (nameTag == null) {
-		    return;
-		} else {
-		    nameTag.updateLabel(presenceInfo.usernameAlias, presenceInfo.inConeOfSilence,
-		        presenceInfo.isSpeaking, presenceInfo.isMuted);
-	        }
+		    continue;
+		}
+
+		nameTag.updateLabel(presenceInfo.usernameAlias, presenceInfo.inConeOfSilence,
+		    presenceInfo.isSpeaking, presenceInfo.isMuted);
 	    }
 
 //	    if (nameTagList.size() > 0) {
