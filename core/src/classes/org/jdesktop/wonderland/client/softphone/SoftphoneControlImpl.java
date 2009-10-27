@@ -298,6 +298,12 @@ public class SoftphoneControlImpl implements SoftphoneControl {
             cmdLength += 2;
         }
 
+        // see if the softphone should run in silent (no mic/speaker) mode
+        boolean silent = Boolean.parseBoolean(System.getProperty("softphone.silent"));
+        if (silent) {
+            cmdLength ++;
+        }
+
         String[] command = new String[cmdLength];
         
         command[0] = javaHome + fileSeparator + "bin"
@@ -356,6 +362,10 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         if (audioFile != null) {
             command[i++] = "-playTreatment";
             command[i++] = audioFile;
+        }
+
+        if (silent) {
+            command[i++] = "-silent";
         }
 
         return command;
