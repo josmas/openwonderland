@@ -106,14 +106,14 @@ public class WebstartClientWrapper implements RequestProcessor {
                 ProcessBuilder xvfb = new ProcessBuilder("Xvfb","-ac", ":" + usernum);
                 xvfb.redirectErrorStream(true);
 
-                System.out.println("Launching " + xvfb.command());
                 xvfbProcess = xvfb.start();
+                System.out.println("Launching " + xvfbProcess + " " + xvfb.command());
                 new Thread(new ProcessOutputReader(xvfbProcess)).start();
             }
 
             builder.redirectErrorStream(true);
-            System.out.println("Launching " + builder.command());
             process = builder.start();
+            System.out.println("Launching " + process + " " + builder.command());
             new Thread(new ProcessOutputReader(process)).start();
         } catch (IOException ex) {
             Logger.getLogger(WebstartClientWrapper.class.getName()).log(Level.SEVERE,null, ex);
