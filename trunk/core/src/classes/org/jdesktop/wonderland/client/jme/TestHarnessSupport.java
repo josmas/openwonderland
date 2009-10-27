@@ -59,6 +59,7 @@ public class TestHarnessSupport {
         }
 
         System.setProperty("testharness.enabled", "true");
+        System.setProperty("softphone.silent", "true");
     }
     
 }
