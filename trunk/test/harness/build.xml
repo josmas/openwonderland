@@ -16,7 +16,7 @@
     -->
     <property file="${current.dir}/build.properties"/>
 
-    <target name="build" depends="compile-master, jar-slave">
+    <target name="build" depends="jar-master, jar-slave">
     </target>
     
     <target name="compile-common" depends="-test-init">
