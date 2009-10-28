@@ -153,17 +153,12 @@ public abstract class AppConventionalCell extends App2DCell {
      * @param message the exited message
      */
     void handleAppExitted(final AppConventionalCellAppExittedMessage message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-
-                try {
-                    JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(),
-                                        "App " + message.getAppName() +
-                                        " exitted with exit value = " +
-                                        message.getExitValue());
-                } catch (Exception ex) {}
-            }
-        });
+        try {
+            JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(),
+                                          "App " + message.getAppName() +
+                                          " exitted with exit value = " +
+                                          message.getExitValue());
+        } catch (Exception ex) {}
     }
 
     /**

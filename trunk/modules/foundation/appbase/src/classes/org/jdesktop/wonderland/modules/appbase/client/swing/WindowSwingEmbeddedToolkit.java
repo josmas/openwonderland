@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * The main interface to Embedded Swing. This singleton provides access to the three basic capabilities
@@ -192,12 +193,20 @@ class WindowSwingEmbeddedToolkit
 
             @Override
             public void show() {
-                popup.setVisibleApp(true);
+                App2D.invokeLater(new Runnable() {
+                    public void run () {
+                        popup.setVisibleApp(true);
+                    }
+                });
             }
 
             @Override
             public void hide() {
-                popup.setVisibleApp(false);
+                App2D.invokeLater(new Runnable() {
+                    public void run () {
+                        popup.setVisibleApp(false);
+                    }
+                });
             }
         };
     }
@@ -258,6 +267,7 @@ class WindowSwingEmbeddedToolkit
             return toolkit;
         }
 
+        // Note: called on EDT
         @Override
         protected void sizeChanged(Dimension oldSize, Dimension newSize) {
             synchronized (this) {
@@ -272,6 +282,7 @@ class WindowSwingEmbeddedToolkit
             windowSwing.setWindowSize(newSize.width, newSize.height);
         }
 
+        // Note: called on EDT
         private void paintOnWindow(final WindowSwing window,
                 final int x, final int y, final int width, final int height) {
 

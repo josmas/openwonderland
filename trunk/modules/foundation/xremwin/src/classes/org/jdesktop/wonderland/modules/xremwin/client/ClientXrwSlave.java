@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetPopupParentMsgArg
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
+import javax.swing.SwingUtilities;
 import java.io.EOFException;
 
 /**
@@ -138,7 +139,11 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
                 break;
 
             case CONTROLLING_USER_NAME:
-                ((ControlArbXrw)controlArb).setController(userNameMsgArgs.userName);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run () {
+                        ((ControlArbXrw)controlArb).setController(userNameMsgArgs.userName);
+                        }
+                    });
                 break;
 
             case SLAVE_CLOSE_WINDOW:

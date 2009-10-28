@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import javax.swing.SwingUtilities;
 
 /**
  * A control arb which maintains app input focus. When an control is taken for
@@ -67,21 +68,19 @@ public abstract class ControlArbAppFocus extends ControlArb {
         inputManager = InputManager3D.getInputManager();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void cleanup() {
-        super.cleanup();
-    }
-
     /**
      * {@inheritDoc}
      */
     @Override
-    public void takeControl() {
+    public void takeControlPerform () {
         if (hasControl()) {
             return;
         }
-        super.takeControl();
+
+        logger.info("Took control");
+        appControl = true;
+        updateControl();
+
         if (!hasControl()) {
             return;
         }
@@ -98,7 +97,11 @@ public abstract class ControlArbAppFocus extends ControlArb {
                     inputManager.getGlobalFocusEntity());
 
             // Display a button to allow the user to release control
-            releaseControlAllButtonSetVisible(true);
+            App2D.invokeLater(new Runnable() {
+                public void run () {
+                    releaseControlAllButtonSetVisible(true);
+                }
+            });
         }
     }
 
@@ -106,11 +109,15 @@ public abstract class ControlArbAppFocus extends ControlArb {
      * {@inheritDoc}
      */
     @Override
-    public void releaseControl() {
+    public void releaseControlPerform() {
         if (!hasControl()) {
             return;
         }
-        super.releaseControl();
+
+        appControl = false;
+        logger.info("Released control");
+        updateControl();
+
         if (hasControl()) {
             return;
         }
@@ -119,10 +126,15 @@ public abstract class ControlArbAppFocus extends ControlArb {
         inputManager.removeKeyMouseFocus(new Entity[]{app.getFocusEntity()});
 
         numControlledApps--;
+
         if (numControlledApps <= 0) {
 
             // Undisplay a button to allow the user to release control
-            releaseControlAllButtonSetVisible(false);
+            App2D.invokeLater(new Runnable() {
+                public void run () {
+                    releaseControlAllButtonSetVisible(false);
+                }
+            });
 
             // No more apps have control. Reenable global (world) listeners.
             inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
@@ -130,11 +142,14 @@ public abstract class ControlArbAppFocus extends ControlArb {
             // Also need to make sure that the main canvas has keyboard focus
             Canvas canvas = JmeClientMain.getFrame().getCanvas();
             if (!canvas.requestFocusInWindow()) {
-                logger.warning("Focus request for main canvas rejected.");
+                logger.info("Focus request for main canvas rejected.");
             }
         }
     }
 
+    /**
+     * THREAD USAGE NOTE: This is called on the App Invoker Thread.
+     */
     public static void releaseControlAllButtonSetVisible(boolean visible) {
         if (releaseControlAllButtonVisible == visible) {
             return;
@@ -150,8 +165,14 @@ public abstract class ControlArbAppFocus extends ControlArb {
                 releaseControlAllButton.setPreferredLocation(Layout.NORTHEAST);
                 releaseControlAllButton.addActionListener(new ActionListener() {
 
+                    // This is called on the EDT
                     public void actionPerformed(ActionEvent event) {
-                        ControlArb.releaseControlAll();
+                        // Need to get off EDT because this uses app base locks
+                        App2D.invokeLater(new Runnable() {
+                            public void run () {
+                                ControlArb.releaseControlAll();
+                            }
+                        });
                     }
                 });
                 hud.addComponent(releaseControlAllButton);

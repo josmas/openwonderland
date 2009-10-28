@@ -22,7 +22,6 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -32,6 +31,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * The GUI code for the frame resize corner.
@@ -111,7 +111,7 @@ class Gui2DResizeCorner extends Gui2DSide {
                 super.commitEvent(event);
                 
                 // Note: cannot check the control arb directly for whether it has control
-                // because the above commitEvent does an invokeLater (this is asynchronous).
+                // because the above commitEvent uses App2D.invokeLater (this is asynchronous).
                 if (!prevHasControl) {
                     resizeCorner.setMouseInside(mouseIsInside);
                 }
@@ -159,7 +159,7 @@ class Gui2DResizeCorner extends Gui2DSide {
     @Override
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
         if (action.type == ActionType.TO_FRONT) {
-            SwingUtilities.invokeLater(new Runnable () {
+            App2D.invokeLater(new Runnable() {
                 public void run () {
                     view.getWindow().restackToTop();
                 }
@@ -243,7 +243,7 @@ class Gui2DResizeCorner extends Gui2DSide {
         switch (action.type) {
 
         case DRAG_START:
-            SwingUtilities.invokeLater(new Runnable () {
+            App2D.invokeLater(new Runnable() {
                 public void run () {
                     ((View2DEntity)view).userResizeStart();
                 }
@@ -251,7 +251,7 @@ class Gui2DResizeCorner extends Gui2DSide {
             break;
 
         case DRAG_UPDATE:
-            SwingUtilities.invokeLater(new Runnable () {
+            App2D.invokeLater(new Runnable() {
                 public void run () {
                     ((View2DEntity)view).userResizeUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
                 }
@@ -259,7 +259,7 @@ class Gui2DResizeCorner extends Gui2DSide {
             break;
 
         case DRAG_FINISH:
-            SwingUtilities.invokeLater(new Runnable () {
+            App2D.invokeLater(new Runnable() {
                 public void run () {
                     ((View2DEntity)view).userResizeFinish();
                 }

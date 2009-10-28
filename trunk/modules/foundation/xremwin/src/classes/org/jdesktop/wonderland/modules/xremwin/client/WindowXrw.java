@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.common.InternalAPI;
+import javax.swing.SwingUtilities;
 
 /**
  * The Xremwin window class. 
@@ -297,8 +298,12 @@ public class WindowXrw extends WindowConventional {
      *
      * @param userName The controlling user.
      */
-    public void setControllingUser(String userName) {
-        ((ControlArbXrw) app.getControlArb()).setController(userName);
+    public void setControllingUser(final String userName) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run () {
+                ((ControlArbXrw) app.getControlArb()).setController(userName);
+            } 
+        });
     }
 
     /**

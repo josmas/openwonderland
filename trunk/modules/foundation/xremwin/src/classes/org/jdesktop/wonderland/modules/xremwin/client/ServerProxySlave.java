@@ -632,6 +632,7 @@ class ServerProxySlave implements ServerProxy {
         bufQueue.nextBytes(buf, len);
     }
 
+    /* NOTE: on the slave, this must be called on the EDT. */
     public void writeEvent(int wid, MouseEvent event) throws IOException {
         int mask = 0;
         int n = 0;
@@ -675,6 +676,7 @@ class ServerProxySlave implements ServerProxy {
         slaveSocket.send(sign(pointerEventBuf));
     }
 
+    /* NOTE: on the slave, this must be called on the EDT. */
     public void writeWheelEvent(int wid, MouseWheelEvent event) throws IOException {
         int wheelRotation = event.getWheelRotation();
         int mask = (wheelRotation == -1) ? BUTTON4_MASK : BUTTON5_MASK;
@@ -724,6 +726,7 @@ class ServerProxySlave implements ServerProxy {
         slaveSocket.send(sign(pointerEventBuf));
     }
 
+    /* NOTE: on the slave, this must be called on the EDT. */
     public void writeEvent(KeyEvent event) throws IOException {
         char keyChar;
         int keyCode;

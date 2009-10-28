@@ -233,13 +233,13 @@ public class Gui2DInterior extends Gui2D {
             }
             */
 
-            // Note: currently no special GUI processing is needed for key events
-            // so they are all just sent to the app group if it has control
             if (view != null) {
                 final ControlArb controlArb = view.getWindow().getApp().getControlArb();
                 if (controlArb.hasControl()) {
                     SwingUtilities.invokeLater(new Runnable () {
                         public void run () {
+                            // Note: currently no special GUI processing is needed for key events
+                            // so they are all just sent to the app group if it has control
                             controlArb.deliverEvent(view.getWindow(), ke);
                         }
                     });

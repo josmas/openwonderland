@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import javax.swing.SwingUtilities;
 import java.io.EOFException;
 
 // TODO: 0.4 protocol: temporarily insert
@@ -210,12 +211,6 @@ public abstract class ClientXrw implements Runnable {
             reporter = null;
         }
 
-        if (controlArb != null) {
-            controlArb.releaseControl();
-            controlArb.cleanup();
-            controlArb = null;
-        }
-
         app = null;
 
         if (serverProxy != null) {
@@ -302,6 +297,7 @@ public abstract class ClientXrw implements Runnable {
                 processMessage(msgType);
 
             } catch (Exception ex) {
+                ex.printStackTrace();
                 stop = true;
                 cleanup();
             }
@@ -593,23 +589,39 @@ public abstract class ClientXrw implements Runnable {
             case REFUSED:
                 // We only care about our attempts that are refused
                 if (msgArgs.clientId == clientId) {
-                    ((ControlArbXrw)controlArb).controlRefused();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).controlRefused();
+                        }
+                    });
                 }
                 break;
 
             case GAINED:
                 // We only care about our attempts that succeed
                 if (msgArgs.clientId == clientId) {
-                    ((ControlArbXrw)controlArb).controlGained();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).controlGained();
+                        }
+                    });
                 }
                 break;
 
             case LOST:
                 if (msgArgs.clientId == clientId) {
-                    ((ControlArbXrw)controlArb).controlLost();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).controlLost();
+                        }
+                    });
                 } else {
                     // Update control highlighting for other clients besides control loser
-                    ((ControlArbXrw)controlArb).setController(null);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).setController(null);
+                        }
+                    });
                 }
                 break;
         }

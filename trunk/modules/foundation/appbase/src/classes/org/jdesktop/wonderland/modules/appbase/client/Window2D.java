@@ -238,6 +238,9 @@ public abstract class Window2D implements HUDDisplayable {
     private ContextMenuItem releaseControlMenuItem;
     private ContextMenuItem takeControlMenuItem;
 
+    /** True if cleanup has been called. */
+    private boolean isZombie = false;
+
     /**
      * Create an instance of Window2D with a default name. The first such window
      * created for an app becomes the primary window. Subsequent windows are
@@ -410,6 +413,7 @@ public abstract class Window2D implements HUDDisplayable {
      * {@inheritDoc}
      */
     public void cleanup() {
+        isZombie = true;
         if (app == null) {
             return;
         }
@@ -429,6 +433,13 @@ public abstract class Window2D implements HUDDisplayable {
                 visibleApp = false;
             }
         }
+    }
+
+    /**
+     * Returns whether cleanup has been called on this window.
+     */
+    boolean isZombie () {
+        return isZombie;
     }
 
     /**
@@ -1147,7 +1158,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Deliver the given key event to this window.
-     *
+     * NOTE: on the slave, this must be called on the EDT.
      * @param event The key event.
      */
     public void deliverEvent(KeyEvent event) {
@@ -1173,7 +1184,7 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Deliver the given mouse event to this window.
      * Note: mostly used only for share-aware apps.
-     *
+     * NOTE: on the slave, this must be called on the EDT.
      * @param event The mouse event.
      */
     public void deliverEvent(MouseEvent event) {
@@ -1248,6 +1259,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for key events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The key listener to add.
      */
@@ -1260,6 +1272,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for mouse events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The mouse listener to add.
      */
@@ -1272,6 +1285,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for mouse motion events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The mouse motion listener to add.
      */
@@ -1285,6 +1299,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for mouse wheel events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The mouse wheel listener to add.
      */

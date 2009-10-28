@@ -83,6 +83,7 @@ public class AppClientPlugin extends BaseClientPlugin {
             logger.severe("Error instantiating app base 2D cell view factory " + 
                           VIEW2DCELL_FACTORY_CLASS_DEFAULT + ", Exception = " + e);
         }
+        view2DCellFactory.initialize();
 
         if (view2DCellFactory == null) {
             logger.severe("Error instantiating app base 2D view cell factory " + 

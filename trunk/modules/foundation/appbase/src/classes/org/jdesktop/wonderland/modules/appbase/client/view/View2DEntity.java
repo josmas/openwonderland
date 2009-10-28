@@ -2116,6 +2116,9 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public void deliverEvent(Window2D window, MouseEvent3D me3d) {
+
+        // NOTE: This is called on the EDT.
+
         /*
         System.err.println("********** me3d = " + me3d);
         System.err.println("********** awt event = " + me3d.getAwtEvent());
