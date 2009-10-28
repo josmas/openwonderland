@@ -661,6 +661,10 @@ public class Cell {
                         synchronized (components) {
                             components.clear();
                         }
+
+                        synchronized(cellRenderers) {
+                            cellRenderers.clear();
+                        }
                     }
                     break;
 
