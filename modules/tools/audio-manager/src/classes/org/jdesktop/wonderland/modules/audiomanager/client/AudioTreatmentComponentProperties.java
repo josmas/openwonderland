@@ -226,6 +226,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	} 
 
 	originalShowBounds = compState.getShowBounds();
+
 	restore();
 
 	if (currentCell == null) {
@@ -435,6 +436,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     /**
      * @{inheritDoc}
      */
+    private boolean inRestore;
+
     public void restore() {
 	java.awt.EventQueue.invokeLater(new Runnable() {
 
@@ -446,6 +449,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
     private void restoreLater() {
         // Reset the GUI values to the original values
+
+	inRestore = true;
 
         audioGroupIdTextField.setText(originalGroupId);
 	
@@ -510,6 +515,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	showBoundsCheckBox.setSelected(originalShowBounds);
 
 	showBounds();
+
+	inRestore = false;
     }
 
     private void showBounds() {
@@ -533,6 +540,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     }
 
     private boolean isDirty() {
+	if (inRestore) {
+	    return false;
+	}
+
 	String audioGroupId = audioGroupIdTextField.getText().trim();
 
 	if (audioGroupId.equals(originalGroupId) == false) {
@@ -893,18 +904,18 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                             .add(layout.createSequentialGroup()
                                 .add(23, 23, 23)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jLabel1)
                                     .add(jLabel2)
-                                    .add(jLabel10))
+                                    .add(jLabel10)
+                                    .add(jLabel1))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(alwaysRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(layout.createSequentialGroup()
                                         .add(fileRadioButton)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(contentRepositoryRadioButton)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                         .add(URLRadioButton))
+                                    .add(alwaysRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(layout.createSequentialGroup()
                                         .add(treatmentTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 241, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -959,17 +970,17 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                         .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel13)))
-                .add(52, 52, 52))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(33, 33, 33)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(fileRadioButton)
                     .add(jLabel1)
-                    .add(URLRadioButton)
-                    .add(contentRepositoryRadioButton))
+                    .add(fileRadioButton)
+                    .add(contentRepositoryRadioButton)
+                    .add(URLRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(treatmentTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -995,7 +1006,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                     .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(useCellBoundsRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(showBoundsCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
+                .add(showBoundsCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cellBoundsLabel)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1032,10 +1043,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                     .add(jLabel7)
                     .add(audioGroupIdTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE)
                     .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE))
-                .add(54, 54, 54))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1206,6 +1217,10 @@ private void fileRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     treatmentType = TreatmentType.FILE;
     browseButton.setEnabled(true);
+
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
+    }
 }//GEN-LAST:event_fileRadioButtonActionPerformed
 
 private void contentRepositoryRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contentRepositoryRadioButtonActionPerformed
@@ -1224,6 +1239,10 @@ private void contentRepositoryRadioButtonActionPerformed(java.awt.event.ActionEv
     treatmentType = TreatmentType.CONTENT_REPOSITORY;
 
     browseButton.setEnabled(true);
+
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
+    }
 }//GEN-LAST:event_contentRepositoryRadioButtonActionPerformed
 
 private void URLRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_URLRadioButtonActionPerformed
@@ -1241,6 +1260,10 @@ private void URLRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     treatmentType = TreatmentType.URL;
     browseButton.setEnabled(false);
+
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, isDirty());
+    }
 }//GEN-LAST:event_URLRadioButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
