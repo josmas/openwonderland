@@ -94,6 +94,17 @@ public class FrameHeaderSwing
     /** The amount that the cursor has been dragged in local coordinates. */
     protected Vector3f dragVectorLocal;
 
+    private static HeaderPanelAllocator headerPanelAllocator;
+
+    /** 
+     * This forces the FrameHeaderSwing class to be loaded and initialized well before
+     * the first instance of FrameHeaderSwing is instantiated. This is essential for 
+     * avoiding deadlocks with the EDT.
+     */
+    static void staticInitialize () {
+        headerPanelAllocator = new HeaderPanelAllocator();
+    }
+
     /**
      * Create a new instance of FrameHeaderSwing.
      *
@@ -104,33 +115,11 @@ public class FrameHeaderSwing
         super("FrameHeaderSwing for " + view, view, null);
 
         this.view = view;
-        final Window2D viewWindow = view.getWindow();
+        Window2D viewWindow = view.getWindow();
         app = viewWindow.getApp();
         headerWindow = new FrameHeaderSwingWindow(app, viewWindow, 1, 1, view.getPixelScale(), 
                                                   "Header Window for " + view.getName(), view);
         headerWindow.setCoplanar(true);
-
-        try {
-            SwingUtilities.invokeAndWait(new Runnable () {
-                public void run() {
-                    headerPanel = new HeaderPanel();
-                    boolean isPrimary = viewWindow.getType() == Window2D.Type.PRIMARY ||
-                            viewWindow.getType() == Window2D.Type.UNKNOWN;
-                    if (!isPrimary) {
-                        headerPanel.showHUDButton(false);
-                    }
-                }
-            });
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-
-        JmeClientMain.getFrame().getCanvas3DPanel().add(headerPanel);
-        headerPanel.setContainer(this);
-        headerWindow.setComponent(headerPanel);
-
-        headerPanel.addMouseListener(this);
-        headerPanel.addMouseMotionListener(this);
 
         // Unless we do this the interior of the frame will deliver events 
         // to the control arb of the application and they will look like they
@@ -138,6 +127,19 @@ public class FrameHeaderSwing
         View2DDisplayer displayer = view.getDisplayer();
         frameView = (View2DEntity) headerWindow.getView(displayer);
         frameView.disableGUI();
+
+        headerPanel = headerPanelAllocator.allocate();
+
+        JmeClientMain.getFrame().getCanvas3DPanel().add(headerPanel);
+        headerPanel.setContainer(this);
+        headerWindow.setComponent(headerPanel);
+
+        // Turn preferred size into forced size. This will (hopefully) allow us
+        // to access the headerPanel height in updateLayout off the EDT.
+        headerPanel.setSize(headerPanel.getPreferredSize()); 
+
+        headerPanel.addMouseListener(this);
+        headerPanel.addMouseMotionListener(this);
     }
 
     /**
@@ -146,6 +148,12 @@ public class FrameHeaderSwing
     @Override
     public void cleanup() {
 
+        headerPanel.removeMouseListener(this);
+        headerPanel.removeMouseMotionListener(this);
+
+        JmeClientMain.getFrame().getCanvas3DPanel().remove(headerPanel);
+        headerPanelAllocator.deallocate(headerPanel);
+
         setVisible(false);
 
         if (headerWindow != null) {
@@ -153,8 +161,6 @@ public class FrameHeaderSwing
             headerWindow = null;
         }
 
-        headerPanel.removeMouseListener(this);
-        headerPanel.removeMouseMotionListener(this);
 
         frameView = null;
 
@@ -171,6 +177,16 @@ public class FrameHeaderSwing
     public void setVisible (boolean visible) {
         if (this.visible == visible) return;
         this.visible = visible;
+
+        Window2D viewWindow = view.getWindow();
+        if (viewWindow != null) {
+            boolean isPrimary = viewWindow.getType() == Window2D.Type.PRIMARY ||
+                                viewWindow.getType() == Window2D.Type.UNKNOWN;
+            if (!isPrimary) {
+                headerPanel.showHUDButton(false);
+            }
+        }
+
         headerWindow.setVisibleApp(visible);
         headerWindow.setVisibleUser(view.getDisplayer(), visible);
     }
@@ -203,27 +219,11 @@ public class FrameHeaderSwing
      * Note: sometimes this gets called on the EDT and sometimes it gets called off the EDT.
      */
     protected void updateLayout(final float newWidth3D, final float newHeight3D) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            updateTheLayout(newWidth3D, newHeight3D);
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable () {
-                    public void run () {
-                        updateTheLayout(newWidth3D, newHeight3D);
-                    }
-                });
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+        updateTheLayout(newWidth3D, newHeight3D);
     }
 
     private void updateTheLayout (float newWidth3D, float newHeight3D) {
         Vector2f pixelScale = view.getPixelScale();
-
-        // Get the preferred height
-        Component embeddedComp = headerWindow.getComponent();
-        int preferredHeight = embeddedComp.getPreferredSize().height;
 
         // Calculate size. This is essentially the same as for FrameSide TOP, but 
         // converted to pixels.
@@ -231,7 +231,7 @@ public class FrameHeaderSwing
         float innerHeight = newHeight3D;
         float sideThickness = Frame2DCell.SIDE_THICKNESS;
         width = (int) ((innerWidth + 2f * sideThickness) / pixelScale.x);
-        height = preferredHeight;
+        height = headerPanel.getHeight();
 
         // Calculate the pixel offset of the upper-left of the header relative to the 
         // upper-left of the view. Note that we need to calculate x so that the header
@@ -304,7 +304,11 @@ public class FrameHeaderSwing
         if (e.getID() == MouseEvent.MOUSE_CLICKED &&
             e.getButton() == MouseEvent.BUTTON1 &&
             e.getModifiersEx() == 0) {
-            view.getWindow().restackToTop();
+            App2D.invokeLater(new Runnable() {
+                public void run () {
+                    view.getWindow().restackToTop();
+                }
+            });
         }
     }
 
@@ -355,7 +359,11 @@ public class FrameHeaderSwing
             dragStartWorld = hookInfo.pointWorld;
             dragStartLocal = parentView.getNode().worldToLocal(dragStartWorld, new Vector3f());
 
-            view.userMovePlanarStart();
+            App2D.invokeLater(new Runnable() {
+                public void run () {
+                    view.userMovePlanarStart();
+                }
+            });
         }
     }
 
@@ -396,7 +404,11 @@ public class FrameHeaderSwing
             dragVectorLocal = curLocal.subtract(dragStartLocal);
 
             //System.err.println("dragVectorLocal = " + dragVectorLocal);
-            view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+            App2D.invokeLater(new Runnable() {
+                public void run () {
+                    view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+                }
+            });
         }
     }
 
@@ -410,7 +422,11 @@ public class FrameHeaderSwing
         if (e.getButton() == MouseEvent.BUTTON1) {
             if (dragging) {
                 dragging = false;
-                view.userMovePlanarFinish();
+                App2D.invokeLater(new Runnable() {
+                    public void run () {
+                        view.userMovePlanarFinish();
+                    }
+                });
             }
         }
     }
@@ -421,10 +437,11 @@ public class FrameHeaderSwing
     // For ortho subwindow debug: set to true to debug ortho subwindows with close button
     private static final boolean orthoSubwindowDebug = false;
 
+    // This is called on the EDT.
     public void close () {
         Window2D viewWindow = view.getWindow();
         if (orthoSubwindowDebug) {
-            viewWindow.toggleOrtho();
+            toggleOrthoSafe(viewWindow);
         } else {
             boolean isPrimary = viewWindow.getType() == Window2D.Type.PRIMARY ||
                                 viewWindow.getType() == Window2D.Type.UNKNOWN;
@@ -443,17 +460,44 @@ public class FrameHeaderSwing
                     return;
                 }
 
-                App2DCell cell = view.getCell();
-                viewWindow.closeUser();
-                cell.destroy();
+                closeWindowAndCellSafe(viewWindow, view.getCell());
 
             } else {
                 // Otherwise just close the window. 
-                viewWindow.closeUser();
+                closeWindowSafe(viewWindow);
             }
         }
     }
 
+    private void toggleOrthoSafe (final Window2D window) {
+        App2D.invokeLater(new Runnable() {
+            public void run () {
+                window.toggleOrtho();
+            }
+        });
+    }
+
+    private void closeWindowSafe (final Window2D window) {
+        App2D.invokeLater(new Runnable() {
+            public void run () {
+                window.closeUser();
+            }
+        });
+    }
+
+    private void closeWindowAndCellSafe (final Window2D window, final App2DCell cell) {
+        App2D.invokeLater(new Runnable() {
+            public void run () {
+                window.closeUser();
+                cell.destroy();
+            }
+        });
+    }
+
+    /** 
+     * {@inheritDoc} 
+     * THREAD USAGE NOTE: Called on the EDT.
+     */
     public void toggleHUD() {
         app.setShowInHUD(!app.isShownInHUD());
     }

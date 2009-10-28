@@ -146,7 +146,9 @@ public class View2DSet {
      */
     private void displayerCreateViewsForAllWindows (View2DDisplayer displayer) {
         for (Window2D window : windows) {
-            View2D view = displayer.createView(window);
+            if (!window.isZombie()) {
+                View2D view = displayer.createView(window);
+            }
         }
     }
 

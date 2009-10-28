@@ -192,7 +192,6 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     public synchronized void setForegroundColor(final ColorRGBA color) {
-
     }
 
     /**

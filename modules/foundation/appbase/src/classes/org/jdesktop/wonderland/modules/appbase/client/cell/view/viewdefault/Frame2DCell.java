@@ -279,9 +279,9 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
 
     /**
      * {@inheritDoc}
+     * THREAD USAGE NOTE: Called on the EDT.
      */
-    public synchronized void updateControl(ControlArb controlArb) {
-        
+    public void updateControl(ControlArb controlArb) {
         // Sometimes some of these are null during debugging
         if (header != null) {
             header.updateControl(controlArb);

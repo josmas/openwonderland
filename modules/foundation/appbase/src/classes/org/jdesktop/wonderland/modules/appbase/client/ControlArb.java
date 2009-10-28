@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -77,19 +78,24 @@ public abstract class ControlArb {
 
     /**
      * Clean up resources held.
+     *
+     * THREAD USAGE NOTE: Called only by App2D.cleanup. This is sometimes called on the EDT 
+     * (e.g.HeaderPanel close button)and sometimes called off the EDT (e.g. App2DCell.setStatus, 
+     * SasXreminProviderMain.stop). Do not call this while holding any app base locks.
      */
     public void cleanup() {
         if (app == null) return;
+
         synchronized (app.getAppCleanupLock()) {
-            if (hasControl()) {
-                releaseControl();
-            }
             synchronized (controlArbs) {
                 controlArbs.remove(this);
             }
             listeners.clear();
-            app = null;
-            appControl = false;
+        }
+
+        // Must be done outside the app cleanup lock.
+        if (hasControl()) {
+            releaseControl();
         }
     }
 
@@ -142,9 +148,34 @@ public abstract class ControlArb {
      *
      * Note: depending on the implementation, this may cause other users with control 
      * to lose it.
+     *
+     * THREAD USAGE NOTE: Can be called either on the EDT or off it.
      */
-    public void takeControl() {
+    public void takeControl () {
+        if (app == null) return;
+        if (!app.isInSas()) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                takeControlPerform();
+            } else {
+                try {
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run () {
+                            takeControlPerform();
+                        }
+                    });
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+    }
+
+    /**
+     * THREAD USAGE NOTE: Same as takeControl, but must always be called on the EDT.
+     */
+    public void takeControlPerform() {
         if (!hasControl()) {
+            logger.info("Took control");
             appControl = true;
             updateControl();
         } 
@@ -152,16 +183,42 @@ public abstract class ControlArb {
 
     /**
      * Tell the arbiter that you are releasing control of the app.
+     *
+     * THREAD USAGE NOTE: Can be called either on the EDT or off it.
      */
-    public void releaseControl() {
+    public void releaseControl () {
+        if (app == null) return;
+        if (!app.isInSas()) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                releaseControlPerform();
+            } else {
+                try {
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run () {
+                            releaseControlPerform();
+                        }
+                    });
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+    }
+
+    /**
+     * THREAD USAGE NOTE: Same as takeControl, but must always be called on the EDT.
+     */
+    public void releaseControlPerform() {
         if (hasControl()) {
             appControl = false;
+            logger.info("Released control");
             updateControl();
         }
     }
 
     /**
      * Release control of all applications in the Wonderland client session.
+     * THREAD USAGE NOTE: This is called on the App invoker thread.
      */
     public static void releaseControlAll() {
 
@@ -177,6 +234,7 @@ public abstract class ControlArb {
         }
         for (ControlArb controlArb : controlArbsCopy) {
             if (controlArb.getReleaseWithAll() && controlArb.hasControl()) {
+                // Note: this will go back on the EDT to perform its task.
                 controlArb.releaseControl();
             }
         }
@@ -192,7 +250,7 @@ public abstract class ControlArb {
     }
 
     /**
-     * Add a control change listener.
+     * Add a control change listener. The listener will be called on the EDT.
      * 
      * @param listener The control change listener.
      */
@@ -217,12 +275,13 @@ public abstract class ControlArb {
     /**
      * Returns an iterator over all control change listeners.
      */
-    public synchronized Iterator<ControlChangeListener> getListeners() {
+    public Iterator<ControlChangeListener> getListeners() {
         return listeners.iterator();
     }
 
     /**
      * Send a key event to an app window, if the user has control.
+     * NOTE: on the slave, this must be called on the EDT.
      *
      * @param window The window to which to send the event.
      * @param event The event to send.
@@ -235,6 +294,7 @@ public abstract class ControlArb {
 
     /**
      * Send a mouse event to an app window, if the user has control.
+     * NOTE: on the slave, this must be called on the EDT.
      *
      * @param window The window to which to send the event.
      * @param event The event to send.
@@ -247,15 +307,21 @@ public abstract class ControlArb {
 
     /**
      * Informs the control change listeners that the control arb state has been updated.
+     * THREAD USAGE NOTE: Must be called on the EDT.
      */
-    protected synchronized void updateControl() {
-        for (ControlChangeListener listener : listeners) {
+    protected void updateControl() {
+        LinkedList<ControlChangeListener> listenersCopy;
+        synchronized (listeners) {
+            listenersCopy = (LinkedList<ControlChangeListener>) listeners.clone();
+        }
+        for (ControlChangeListener listener : listenersCopy) {
             listener.updateControl(this);
         }
     }
 
     /**
      * Informs the control change listeners of all control arbs that the state has been updated.
+     * THREAD USAGE NOTE: Must be called on the EDT.
      */
     protected static void updateControlAll() {
         synchronized (controlArbs) {

@@ -24,6 +24,10 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactor
 
 public class View2DCellFactoryDefault implements View2DCellFactory {
 
+    public void initialize () {
+        FrameHeaderSwing.staticInitialize();
+    }
+
     public App2DCellRenderer createCellRenderer (App2DCell cell) {
         return new App2DCellRendererJME(cell);
     }

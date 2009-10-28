@@ -26,6 +26,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.LinkedList;
 
 /**
  * The generic 2D application superclass. All 2D apps in Wonderland have this
@@ -108,12 +110,32 @@ public abstract class App2D {
      */
     private final Integer appCleanupLock = new Integer(0);
 
+    /**
+     * A singleton thread which the app base uses to offload things from the Render Thread that
+     * shouldn't be done on the EDT. This thread provides serialization of execution
+     * like the EDT, so it can run MT unsafe code. But, unlike the EDT, it is okay to 
+     * acquire appbase object locks on this thread. 
+     */
+    private static Thread invoker;
+
+    /** A queue used by the invoker thread. */
+    //private static LinkedBlockingQueue<Runnable> invokeLaterQueue = new LinkedBlockingQueue<Runnable>();
+    private static LinkedList<Runnable> invokeLaterQueue = new LinkedList<Runnable>();
+
+    /** A flag which stops the invoker thread. */
+    private static boolean stopInvoker = false;
+
     // Register the appbase shutdown hook
     static {
+
         Runtime.getRuntime().addShutdownHook(new Thread("App Base Shutdown Hook") {
             @Override
             public void run() { App2D.shutdown(); }
         });
+
+        // Start the invoker thread
+        invoker = new Thread(new Invoker(), "Invoker Thread for App Base");
+        invoker.start();
     }
 
     /**
@@ -169,15 +191,22 @@ public abstract class App2D {
 
     /**
      * Deallocate resources.
+     *
+     * THREAD USAGE NOTE: This is sometimes called on the EDT (e.g.HeaderPanel close button)
+     * and sometimes called off the EDT (e.g. App2DCell.setStatus, SasXreminProviderMain.stop).
+     * Do not call this while holding any app base locks.
      */
     public void cleanup() {
+
+        // Must be done outside the app cleanup lock.
+        if (controlArb != null) {
+            controlArb.cleanup();
+            controlArb = null;
+        }
+
         synchronized (appCleanupLock) {
             setShowInHUD(false);
             viewSet.cleanup();
-            if (controlArb != null) {
-                controlArb.cleanup();
-                controlArb = null;
-            }
             stack.cleanup();
             LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
             for (Window2D window : toRemoveList) {
@@ -190,7 +219,18 @@ public abstract class App2D {
         synchronized(apps) {
             apps.remove(this);
         }
-     }
+    }
+
+    // Signal the invoker to stop and wake it up so it actually stops.
+    private static void stopInvokerThread () {
+        stopInvoker = true;
+        invokeLater(new Runnable () {
+            public void run () {
+                // Do nothing
+            }
+        });
+        invoker = null;
+    }
 
     /** INTERNAL ONLY. */
     @InternalAPI
@@ -367,7 +407,11 @@ public abstract class App2D {
         return getName();
     }
 
-    /** Executed by the JVM shutdown process. */
+    /** 
+     * Executed by the JVM shutdown process. 
+     *
+     * THREAD USAGE NOTE: No appbase locks are held during this call. 
+     */
     private static void shutdown () {
         logger.info("Shutting down app base...");
         isAppBaseRunning = false;
@@ -381,6 +425,8 @@ public abstract class App2D {
         logger.info("Done shutting down apps.");
 
         apps.clear();
+        stopInvokerThread();
+
         logger.info("Done shutting down app base.");
     }
 
@@ -434,6 +480,9 @@ public abstract class App2D {
     /**
      * Invoked in the sas xremwin provider to guaranteed that the app is completely
      * stopped, including the app processes.
+     *
+     * THREAD USAGE NOTE: Called from a darkstar comm thread in the SAS. No appbase locks are held 
+     * during this call. 
      */
     public void stop () {
 
@@ -443,5 +492,47 @@ public abstract class App2D {
         }
 
         cleanup();
+    }
+
+    /**
+     * Invoke the given runnable later (at some point in time). The app base uses
+     * this to offload things from the Render Thread that shouldn't be done on the EDT. 
+     * This provides serialization of execution like the EDT, so it can run MT unsafe code.
+     * But, unlike the SwingUtilities.invokeLater, it is okay to acquire appbase object 
+     * locks on this thread.
+     */
+    public static void invokeLater (Runnable runnable) {
+        synchronized (invokeLaterQueue) {
+            invokeLaterQueue.addLast(runnable);
+            invokeLaterQueue.notifyAll();
+        }
+    }
+
+    static long start;
+    static long stop;
+
+    private static class Invoker implements Runnable {
+        public void run () {
+            while (!stopInvoker) {
+                try {
+                    //Runnable runnable = invokeLaterQueue.take();
+                    Runnable runnable = null;
+                    synchronized (invokeLaterQueue) {
+                        while (invokeLaterQueue.size() <= 0 && !stopInvoker) {
+                            invokeLaterQueue.wait();
+                        }
+                        if (!stopInvoker) {
+                            runnable = invokeLaterQueue.getFirst();
+                            invokeLaterQueue.remove(0);
+                        }
+                    }
+                    if (runnable != null) {
+                        runnable.run();
+                    }
+                } catch (Exception ex) {
+                    stopInvoker = true;
+                }
+            }
+        }
     }
 }

@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 
 @InternalAPI
 public interface View2DCellFactory {
+    public void initialize ();
     public App2DCellRenderer createCellRenderer (App2DCell cell);
     public View2DCell createView (App2DCell cell, Window2D window);
 }

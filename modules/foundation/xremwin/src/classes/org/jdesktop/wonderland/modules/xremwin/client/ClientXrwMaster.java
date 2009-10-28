@@ -262,9 +262,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
     // Called by window system exit listener 
     public void windowSystemExitted() {
         AppXrw.logger.severe("Window system exitted");
-        if (controlArb != null) {
-            controlArb.releaseControl();
-        }
+        // Note: no need to release control because SAS master never takes control
         cleanup();
     }
 

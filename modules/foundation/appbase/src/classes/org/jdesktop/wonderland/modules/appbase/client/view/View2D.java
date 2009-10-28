@@ -291,6 +291,7 @@ public interface View2D {
 
     /** 
      * Converts the given 3D mouse event into a 2D event and forwards it along to the view's controlArb.
+     * NOTE: on the slave, this must be called on the EDT.
      *
      * @param window The window this view displays.
      * @param me3d The 3D mouse event to deliver.

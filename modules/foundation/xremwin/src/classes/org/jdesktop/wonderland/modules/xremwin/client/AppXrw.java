@@ -179,6 +179,7 @@ public abstract class AppXrw extends AppConventional {
     }
 
     // TODO: temporary: until winTransientFor: used to determine parents of popups
+    // NOTE: this is called on the EDT
     public void setCurrentPointerWindow(WindowXrw window) {
         currentPointerWindow = window;
         logger.info("Current pointer window = " + window);

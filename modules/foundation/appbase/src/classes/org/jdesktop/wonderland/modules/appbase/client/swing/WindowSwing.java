@@ -47,6 +47,7 @@ import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import javax.swing.SwingUtilities;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -247,6 +248,7 @@ public class WindowSwing extends Window2D {
         cleanupViews();
         super.cleanup();
         embeddedPeer.dispose();
+        embeddedPeer = null;
     }
 
     /** Initialize all existing views. */

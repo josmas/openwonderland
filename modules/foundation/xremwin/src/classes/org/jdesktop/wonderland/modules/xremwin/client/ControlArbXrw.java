@@ -58,7 +58,7 @@ public class ControlArbXrw extends ControlArbSingle {
      * {@inheritDoc}
      */
     @Override
-    public synchronized void cleanup() {
+    public void cleanup() {
         super.cleanup();
 
         eventsEnabled = false;
@@ -71,29 +71,31 @@ public class ControlArbXrw extends ControlArbSingle {
      * Attach a server proxy to this control arb. The control arb forwards events to the server proxy.
      * @param serverProxy The server proxy to which to attach this ControlArbXrw.
      */
-    public synchronized void setServerProxy(ServerProxy serverProxy) {
+    public void setServerProxy(ServerProxy serverProxy) {
         this.serverProxy = serverProxy;
     }
 
     /**
      * {@inheritDoc}
+     * THREAD USAGE NOTE: Must be called on EDT.
      */
     @Override
-    public synchronized void takeControl() {
+    public void takeControlPerform() {
         if (!hasControl()) {
-            super.takeControl();
+            super.takeControlPerform();
             take(TAKE_CONTROL_IMPOLITE);
         }
     }
 
     /**
      * {@inheritDoc}
+     * THREAD USAGE NOTE: Must be called on EDT.
      */
     @Override
-    public synchronized void releaseControl() {
+    public void releaseControlPerform() {
         if (hasControl()) {
             release();
-            super.releaseControl();
+            super.releaseControlPerform();
         }
     }
 
@@ -102,8 +104,12 @@ public class ControlArbXrw extends ControlArbSingle {
      * wants to take control of the app. If this succeeds we will receive a message 
      * from the server indicating success. At that time the setController method of this 
      * controlArb will be called with the user name of this client. 
+     *
+     * THREAD USAGE NOTE: Must be called on EDT.
      */
-    private synchronized void take(boolean impolite) {
+    private void take(boolean impolite) {
+        if (serverProxy == null) return;
+
         AppXrw.logger.info("Enter take");
 
         // Enable our client to send events to the server ("event ahead").
@@ -123,8 +129,12 @@ public class ControlArbXrw extends ControlArbSingle {
 
     /**
      * Tell the server to release control.
+     *
+     * THREAD USAGE NOTE: Must be called on EDT.
      */
-    private synchronized void release() {
+    private void release() {
+        if (serverProxy == null) return;
+
         AppXrw.logger.info("Enter release");
 
         eventsEnabled = false;
@@ -143,8 +153,12 @@ public class ControlArbXrw extends ControlArbSingle {
     /** 
      * The server has refused our request for control. If our first
      * attempt was polite get confirmation from the user to continue.
+     *
+     * THREAD USAGE NOTE: Must be called on EDT.
      */
-    synchronized void controlRefused() {
+    void controlRefused() {
+        if (serverProxy == null) return;
+
         AppXrw.logger.info("Control refused");
 
         String currentController = serverProxy.getControllingUser();
@@ -175,8 +189,10 @@ public class ControlArbXrw extends ControlArbSingle {
 
     /** 
      * The server has told us that our request for control has succeeded. 
+     *
+     * THREAD USAGE NOTE: Must be called on EDT.
      */
-    synchronized void controlGained() {
+    void controlGained() {
         AppXrw.logger.info("Control gained");
 
         String currentController = serverProxy.getControllingUser();
@@ -196,10 +212,12 @@ public class ControlArbXrw extends ControlArbSingle {
 
     /**
      * The server has taken control away from us.
+     *
+     * THREAD USAGE NOTE: Must be called on EDT.
      */
-    synchronized void controlLost() {
+    void controlLost() {
         AppXrw.logger.info("Control lost");
-        super.releaseControl();
+        super.releaseControlPerform();
         takeControlPending = false;
         eventsEnabled = false;
         appControl = false;
@@ -230,7 +248,7 @@ public class ControlArbXrw extends ControlArbSingle {
      */
     @Override
     public void deliverEvent(Window2D window, KeyEvent event) {
-        if (!eventsEnabled) {
+        if (!eventsEnabled || serverProxy == null) {
             return;
         }
 
@@ -255,7 +273,7 @@ public class ControlArbXrw extends ControlArbSingle {
      */
     @Override
     public void deliverEvent(Window2D window, MouseEvent event) {
-        if (!eventsEnabled) {
+        if (!eventsEnabled || serverProxy == null) {
             return;
         }
 

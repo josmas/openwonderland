@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import javax.swing.SwingUtilities;
 
 /**
@@ -216,7 +217,9 @@ public class Gui2D {
             if (view != null) {
                 SwingUtilities.invokeLater(new Runnable () {
                     public void run () {
-                        view.deliverEvent(view.getWindow(), (MouseEvent3D) event);
+                        if (view != null) {
+                            view.deliverEvent(view.getWindow(), (MouseEvent3D) event);
+                        }
                     }
                 });
             }
@@ -280,21 +283,14 @@ public class Gui2D {
         switch (action.type) {
 
             case TOGGLE_CONTROL:
-                // This must be done later because the JOGL AWT lock may be released at this point,
-                // and, hence, the OGL context. We now need an OGL context for this operation
-                // because it now involves displaying a HUD button.
-                SwingUtilities.invokeLater(new Runnable () {
-                    public void run () {
-                        ControlArb controlArb = view.getWindow().getApp().getControlArb();
-                        if (controlArb.hasControl()) {
-                            logger.info("Release control");
-                            controlArb.releaseControl();
-                        } else {
-                            logger.info("Take control");
-                            controlArb.takeControl();
-                        }
-                    }
-                });
+                ControlArb controlArb = view.getWindow().getApp().getControlArb();
+                if (controlArb.hasControl()) {
+                    logger.info("Release control");
+                    controlArb.releaseControl();
+                } else {
+                    logger.info("Take control");
+                    controlArb.takeControl();
+                }
                 break;
         }
     }
@@ -405,60 +401,36 @@ public class Gui2D {
         case DRAG_START:
             switch (configDragType) {
             case MOVING_PLANAR:
-                SwingUtilities.invokeLater(new Runnable () {
+                App2D.invokeLater(new Runnable() {
                     public void run () {
                         view.userMovePlanarStart();
                     }
                 });
                 break;
-            /*
-            case MOVING_Z:
-                view.userMoveZStart(dragVectorLocal.y);
-                break;
-            case ROTATING_Y:
-                view.userRotateYStart(dragVectorLocal.y);
-                break;
-            */
             }
             break;
 
         case DRAG_UPDATE:
             switch (configDragType) {
             case MOVING_PLANAR:
-                SwingUtilities.invokeLater(new Runnable () {
+                App2D.invokeLater(new Runnable() {
                     public void run () {
                         view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
                     }
                 });
                 break;
-            /*
-            case MOVING_Z:
-                view.userMoveZUpdate(dragVectorLocal.y);
-                break;
-            case ROTATING_Y:
-                view.userRotateYUpdate(dragVectorLocal.y);
-                break;
-            */
             }
             break;
 
         case DRAG_FINISH:
             switch (configDragType) {
             case MOVING_PLANAR:
-                SwingUtilities.invokeLater(new Runnable () {
+                App2D.invokeLater(new Runnable() {
                     public void run () {
                         view.userMovePlanarFinish();
                     }
                 });
                 break;
-            /*
-            case MOVING_Z:
-                view.userMoveZFinish();
-                break;
-            case ROTATING_Y:
-                view.userRotateYFinish();
-                break;
-            */
             }
             break;
 

@@ -40,8 +40,9 @@ public class ControlArbSingle extends ControlArbAppFocus {
 
     /**
      * Specifies the current controlling user. Typically called by a subclass.
+     * THREAD USAGE NOTE: Called on the EDT.
      */
-    public synchronized void setController(String controller) {
+    public void setController(String controller) {
         String oldController = this.controller;
         this.controller = controller;
         if (controller == null) {
