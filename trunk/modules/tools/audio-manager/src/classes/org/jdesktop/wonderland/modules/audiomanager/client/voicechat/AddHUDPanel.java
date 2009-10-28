@@ -545,7 +545,7 @@ public class AddHUDPanel
             addModeAddHUDComponent.setVisible(false);
         }
 
-        client.getWlAvatarCharacter().stop();
+	CallAnimator.stopCallAnswerAnimation(client);
     }
 
     private void hangup(ActionEvent e) {
@@ -571,6 +571,12 @@ public class AddHUDPanel
         showAddUserPanel(true, true);
         showInProgressButtons(true);
         holdOtherCalls();
+
+	if (addUserPanel.getPrivacy().equals(ChatType.PRIVATE)) {
+	   CallAnimator.animateCallAnswer(client);
+	} else {
+	   CallAnimator.stopCallAnswerAnimation(client);
+	}
     }
 
     private void setHoldMode() {
@@ -585,6 +591,8 @@ public class AddHUDPanel
         } catch (IllegalStateException e) {
             leave();
         }
+
+	CallAnimator.stopCallAnswerAnimation(client);
     }
 
     private void setHoldVolume(int volume) {
