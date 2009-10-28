@@ -133,6 +133,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         originalName = state.getName();
 	originalBoundsType = state.getBoundsType();
+	boundsType = originalBoundsType;
 	originalBounds = state.getBounds();
 	originalShowBounds = state.getShowBounds();
 
@@ -199,8 +200,12 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     /**
      * @{inheritDoc}
      */
+    private boolean inRestore;
+
     public void restore() {
         // Reset the original values to the GUI
+
+	inRestore = true;
         nameTextField.setText(originalName);
 
 	fullVolumeRadiusSpinner.setEnabled(false);
@@ -249,6 +254,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	}
 
 	showBounds();
+	inRestore = false;
     }
 
     private void showBounds() {
@@ -277,6 +283,10 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     }
 
     private boolean isDirty() {
+	if (inRestore) {
+	    return false;
+	}
+
 	if (nameTextField.getText().equals(originalName) == false) {
 	    return true;
 	}
@@ -520,19 +530,20 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
                                 .add(boundsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(specifyRadiusRadioButton)
-                                    .add(specifyBoxRadioButton)
-                                    .add(showBoundsCheckBox))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
-                                        .add(xExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(yExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(40, 40, 40))
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(specifyRadiusRadioButton)
+                                            .add(specifyBoxRadioButton))
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)
+                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, xExtentSpinner))
+                                        .add(9, 9, 9)
+                                        .add(yExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 49, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(showBoundsCheckBox))
+                                .add(35, 35, 35))
                             .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(jLabel3)
