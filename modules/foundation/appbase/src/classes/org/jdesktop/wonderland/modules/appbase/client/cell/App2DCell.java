@@ -146,6 +146,10 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Destroy the visual representation of this application.  This will
      * cause the client to unload all local data associated with this
      * app.
+     *
+     * THREAD USAGE NOTE: This is sometimes called on the EDT (e.g.HeaderPanel close button)
+     * and sometimes called off the EDT (e.g. App2DCell.setStatus). Do not call this while
+     * holding any app base locks.
      */
     protected void destroyClientVisual() {
         if (app != null) {
