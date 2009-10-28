@@ -120,8 +120,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private AvatarCollisionListener collisionListener = null;
     
     /** Collection of listeners **/
-    private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners
-            = new FastList();
+    private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners = new FastList();
+
+    private AvatarUIEventListener avatarUIEventListener;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -182,44 +183,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         };
 
-        ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
 
-            private Class[] consumeClasses = new Class[]{
-                AvatarRendererChangeRequestEvent.class,
-                AvatarNameEvent.class
-            };
-
-            @Override
-            public Class[] eventClassesToConsume() {
-                return consumeClasses;
-            }
-
-            @Override
-            public void commitEvent(Event event) {
-                if (event instanceof AvatarNameEvent) {
-                    AvatarNameEvent e = (AvatarNameEvent) event;
-
-                    // Fetch the name tag node, there should only be one of
-                    // these in the system and set the name.
-                    NameTagNode nameTagNode = getNameTagNode();
-                    if (nameTagNode!=null && e.getUsername().equals(username) == true) {
-                        nameTagNode.setNameTag(e.getEventType(), username,
-                                           e.getUsernameAlias());
-                    }
-                } else if (event instanceof AvatarRendererChangeRequestEvent) {
-                    handleAvatarRendererChangeRequest((AvatarRendererChangeRequestEvent)event);
-                }
-            }
-
-            @Override
-            public void computeEvent(Event evtIn) {
-            }
-        });
-
-        collisionChangeRequestListener = new CollisionChangeRequestListener();
-        ClientContext.getInputManager().addGlobalEventListener(collisionChangeRequestListener);
 
     }
+
+
+
 
     /**
      * Returns the avatar renderer for the primary view cell, or null if none
@@ -302,6 +271,19 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 };
             }
             cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
+
+            avatarUIEventListener = new AvatarUIEventListener();
+            ClientContext.getInputManager().addGlobalEventListener(avatarUIEventListener);
+
+            collisionChangeRequestListener = new CollisionChangeRequestListener();
+            ClientContext.getInputManager().addGlobalEventListener(collisionChangeRequestListener);
+        } else if (status==CellStatus.DISK && !increasing) {
+            ClientContext.getInputManager().removeGlobalEventListener(avatarUIEventListener);
+            ClientContext.getInputManager().removeGlobalEventListener(collisionChangeRequestListener);
+            cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
+            avatarUIEventListener=null;
+            cellMoveListener=null;
+            collisionChangeRequestListener=null;
         }
 
     }
@@ -950,5 +932,38 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             ClientContextJME.getInputManager().postEvent(new AvatarCollisionEvent(collisionInfo), cd.getEntity());
         }
 
+    }
+    
+    class AvatarUIEventListener extends EventClassListener {
+            private Class[] consumeClasses = new Class[]{
+                AvatarRendererChangeRequestEvent.class,
+                AvatarNameEvent.class
+            };
+
+            @Override
+            public Class[] eventClassesToConsume() {
+                return consumeClasses;
+            }
+
+            @Override
+            public void commitEvent(Event event) {
+                if (event instanceof AvatarNameEvent) {
+                    AvatarNameEvent e = (AvatarNameEvent) event;
+
+                    // Fetch the name tag node, there should only be one of
+                    // these in the system and set the name.
+                    NameTagNode nameTagNode = getNameTagNode();
+                    if (nameTagNode!=null && e.getUsername().equals(username) == true) {
+                        nameTagNode.setNameTag(e.getEventType(), username,
+                                           e.getUsernameAlias());
+                    }
+                } else if (event instanceof AvatarRendererChangeRequestEvent) {
+                    handleAvatarRendererChangeRequest((AvatarRendererChangeRequestEvent)event);
+                }
+            }
+
+            @Override
+            public void computeEvent(Event evtIn) {
+            }
     }
 }
