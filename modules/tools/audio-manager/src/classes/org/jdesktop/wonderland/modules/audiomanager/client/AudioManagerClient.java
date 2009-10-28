@@ -1020,14 +1020,14 @@ public class AudioManagerClient extends BaseConnection implements
         PresenceInfo info = pm.getPresenceInfo(playerID);
 
         if (info == null) {
-            logger.warning("No PresenceInfo for " + playerID);
+            logger.info("No PresenceInfo for " + playerID);
             return;
         }
 
         PresenceInfo userInRangeInfo = pm.getPresenceInfo(playerInRangeID);
 
         if (userInRangeInfo == null) {
-            logger.warning("No PresenceInfo for " + playerInRangeID);
+            logger.info("No PresenceInfo for user in range " + playerInRangeID);
             return;
         }
 

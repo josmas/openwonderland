@@ -382,31 +382,12 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void animateCallAnswer() {
-	WlAvatarCharacter avatar = client.getWlAvatarCharacter();
-
-	if (avatar == null) {
-	    return;
-	}
-
-	String answerCell = null;
-
-	for (String action : avatar.getAnimationNames()) {
-	    if (action.indexOf("_AnswerCell") > 0) {
-		answerCell = action;
-		break;
-	    }
-	}
-
-	if (answerCell == null) {
-	    return;
-	}
-
 	if (chatType.equals(ChatType.PRIVATE)) {
-	    avatar.playAnimation(answerCell);
-	    logger.warning("Playing animation...");
+	    CallAnimator.animateCallAnswer(client);
+	    logger.fine("Playing animation...");
 	} else {
-	    avatar.stop();
-	    logger.warning("Stopping animation...");
+	    CallAnimator.stopCallAnswerAnimation(client);
+	    logger.fine("Stopping animation...");
 	}
     }
 
@@ -683,6 +664,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	dest.isMuted = source.isMuted;
 	dest.inConeOfSilence = source.inConeOfSilence;
 	dest.inSecretChat = source.inSecretChat;
+	System.out.println("UPDATE:  " + source + " DEST " + dest);
     }
 
     private void removeFromInRangeMaps(PresenceInfo presenceInfo) {
@@ -787,6 +769,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
     private void leave() {
         session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+
+	CallAnimator.stopCallAnswerAnimation(client);
     }
 
     public void hangup() {
