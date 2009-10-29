@@ -78,48 +78,50 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
         super.setStatus(status, increasing);
 
         switch (status) {
-            case DISK:
-                if (msgReceiver != null) {
-                    channelComp.removeMessageReceiver(AudioTreatmentDoneMessage.class);
-                    channelComp.removeMessageReceiver(AudioTreatmentEndedMessage.class);
-                    channelComp.removeMessageReceiver(AudioTreatmentEstablishedMessage.class);
-                    channelComp.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
-                    channelComp.removeMessageReceiver(AudioTreatmentRequestMessage.class);
-                    channelComp.removeMessageReceiver(AudioVolumeMessage.class);
-                    msgReceiver = null;
-                }
-                break;
+	case DISK:
+	case INACTIVE:
+            if (msgReceiver == null) {
+		return;
+	    }
+		    
+            channelComp.removeMessageReceiver(AudioTreatmentDoneMessage.class);
+            channelComp.removeMessageReceiver(AudioTreatmentEndedMessage.class);
+            channelComp.removeMessageReceiver(AudioTreatmentEstablishedMessage.class);
+            channelComp.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
+            channelComp.removeMessageReceiver(AudioTreatmentRequestMessage.class);
+            channelComp.removeMessageReceiver(AudioVolumeMessage.class);
+            break;
 
-            case ACTIVE:
-                if (increasing) {
-                    if (msgReceiver == null) {
-                        msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+        case ACTIVE:
+            if (increasing) {
+                if (msgReceiver == null) {
+                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
-                            public void messageReceived(CellMessage message) {
-				receive(message);
-                            }
-                        };
-
-                        channelComp = cell.getComponent(ChannelComponent.class);
-                        channelComp.addMessageReceiver(AudioTreatmentDoneMessage.class, msgReceiver);
-                        channelComp.addMessageReceiver(AudioTreatmentEndedMessage.class, msgReceiver);
-                        channelComp.addMessageReceiver(AudioTreatmentEstablishedMessage.class, msgReceiver);
-                        channelComp.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, msgReceiver);
-                        channelComp.addMessageReceiver(AudioTreatmentRequestMessage.class, msgReceiver);
-                        channelComp.addMessageReceiver(AudioVolumeMessage.class, msgReceiver);
-                    }
-
-                    if (menuItemAdded == false) {
-                        menuItemAdded = true;
-
-                        if (playWhen.equals(PlayWhen.ALWAYS)) {
-                            addMenuItems(new String[] {"Stop", "Pause", "Volume"});;
-                        } else {
-                            addMenuItems(new String[] {"Play", "Volume"});
+                        public void messageReceived(CellMessage message) {
+			    receive(message);
                         }
+                    };
+
+                    channelComp = cell.getComponent(ChannelComponent.class);
+                    channelComp.addMessageReceiver(AudioTreatmentDoneMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(AudioTreatmentEndedMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(AudioTreatmentEstablishedMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(AudioTreatmentRequestMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(AudioVolumeMessage.class, msgReceiver);
+                }
+
+                if (menuItemAdded == false) {
+                    menuItemAdded = true;
+
+                    if (playWhen.equals(PlayWhen.ALWAYS)) {
+                        addMenuItems(new String[] {"Stop", "Pause", "Volume"});;
+                    } else {
+                        addMenuItems(new String[] {"Play", "Volume"});
                     }
                 }
-                break;
+            }
+            break;
         }
     }
 
