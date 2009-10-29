@@ -17,48 +17,64 @@
  */
 package org.jdesktop.wonderland.modules.darkstar.server;
 
-import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
+import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 
 /**
- * Deploy server and common jars to the Darkstar server
+ * Deploy server and common jars to the Darkstar server. This deployer works
+ * in conjunction with the Runner deployer. This deployer checks whether the
+ * modules with a server/ part can be (un)deployed. It relies upon the Runner
+ * deployer (in web/running) to generate checksums for the jars.
+ * 
  * @author jkaplan
  */
-public class DarkstarModuleDeployer extends AssetDeployer {
+public class DarkstarModuleDeployer implements ModuleDeployerSPI {
     /** the types of modules we deploy */
     private static final String[] TYPES = { "server", "common" };
-   
-    @Override
+
+    /**
+     * {@inheritDoc}
+     */
     public String getName() {
         return "Darkstar Server";
     }
     
     /**
-     * The types of module we are interested in
-     * @return common and server modules
+     * {@inheritDoc}
      */
-    @Override
     public String[] getTypes() {
         return TYPES; 
     }
-    
-     /**
-     * Modules can only be deployed when the server is not running.
-     * @param type The module part type
-     * @param module The module associated with the module part
-     * @param part The part of the module to be deployed
-     * @return true if the module part can be deployed by the deployer
+
+    /**
+     * {@inheritDoc}
      */
-    @Override
+    public void deploy(String type, Module module, ModulePart part) {
+        // Do nothing
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void undeploy(String type, Module module, ModulePart part) {
+        // Do nothing
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDeployable(String type, Module module, ModulePart part) {
         // get all darkstar servers, and make sure they are in the 
         // NOT_RUNNING state
         boolean running = false;
         
         for (Runner r : RunManager.getInstance().getAll(DarkstarRunnerImpl.class)) {
+            Logger.getLogger(DarkstarModuleDeployer.class.getName()).warning(
+                    "RUNNER " + r.getName() + " STATUS " + r.getStatus());
             if (r.getStatus() != Runner.Status.NOT_RUNNING) {
                 running = true;
                 break;
@@ -69,19 +85,18 @@ public class DarkstarModuleDeployer extends AssetDeployer {
     }
 
     /**
-     * Modules can only be undeployed when the server is not running
-     * @param type The module part type
-     * @param module The module associated with the module part
-     * @param part The part of the module to be deployed
-     * @return true if the module part can be undeployed by the deployer
+     * {@inheritDoc}
      */
-    @Override
     public boolean isUndeployable(String type, Module module, ModulePart part) {
          // get all darkstar servers, and make sure they are in the 
         // NOT_RUNNING state
         boolean running = false;
-        
+
+        Logger.getLogger(DarkstarModuleDeployer.class.getName()).warning(
+                "Is undeployable for type " + type);
         for (Runner r : RunManager.getInstance().getAll(DarkstarRunnerImpl.class)) {
+            Logger.getLogger(DarkstarModuleDeployer.class.getName()).warning(
+                    "RUNNER " + r.getName() + " STATUS " + r.getStatus());
             if (r.getStatus() != Runner.Status.NOT_RUNNING) {
                 running = true;
                 break;

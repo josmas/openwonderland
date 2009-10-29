@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
-import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.common.modules.ModuleRequires;
 import org.jdesktop.wonderland.utils.RunUtil;
 
@@ -266,6 +265,7 @@ public class ModuleManager {
         while (it.hasNext() == true) {
             String moduleName = it.next();
             Module module = installed.get(moduleName);
+            logger.warning("ADD TO UNINSTALL " + moduleName + " " + module);
             if (module != null) {
                 this.uninstallManager.add(moduleName, module.getInfo());
                 removed.add(moduleName);
@@ -394,6 +394,8 @@ public class ModuleManager {
             Map.Entry<String, ModuleInfo> entry = it.next();
             String moduleName = entry.getKey();
             Module module = installed.get(moduleName);
+            logger.warning("CAN UNINSTALL? " + moduleName + " " +
+                    deployManager.canUndeploy(module));
             if (this.deployManager.canUndeploy(module) == false) {
                 it.remove();
             }
@@ -475,14 +477,6 @@ public class ModuleManager {
             }
         }
         return keyed;
-    }
-    
-    /**
-     * Returns the module installation directory: the wonderland.module.dir
-     * property.
-     */
-    private static String getModuleDirectory() {
-        return SystemPropertyUtil.getProperty("wonderland.webserver.modules.root");
     }
     
     /**

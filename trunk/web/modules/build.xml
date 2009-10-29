@@ -16,6 +16,7 @@
             <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
             <path path="${core.dir}/build/lib/wonderland-client.jar"/>
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
+            <path path="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         </pathconvert>
     </target>
 
