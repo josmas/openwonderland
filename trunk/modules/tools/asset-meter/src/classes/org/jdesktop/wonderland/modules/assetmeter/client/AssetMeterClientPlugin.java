@@ -51,7 +51,7 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
     public AssetMeterClientPlugin() {
         Runnable createCB = new Runnable() {
             public void run() {
-                item = new JCheckBoxMenuItem("Asset Meter");
+                item = new JCheckBoxMenuItem(BUNDLE.getString("Asset_Meter"));
                 item.setSelected(true);
             }
         };
