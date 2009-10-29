@@ -146,8 +146,9 @@ public class View2DCell extends View2DEntity {
     // Uses: type, parent
     @Override
     protected Entity getParentEntity () {
-        Entity cellEntity = 
-            ((App2DCellRendererJME)cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
+        App2DCellRendererJME renderer = (App2DCellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        if (renderer == null) return null;
+        Entity cellEntity = renderer.getEntity();
 
         switch (type) {
 
