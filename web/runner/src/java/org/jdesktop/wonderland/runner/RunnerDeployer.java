@@ -20,7 +20,12 @@ package org.jdesktop.wonderland.runner;
 import org.jdesktop.wonderland.web.checksums.deployer.ChecksumDeployer;
 
 /**
- * Deploys runner .zips
+ * Deploys runner .zips and server/ module parts. Note that this deployer is
+ * responsible for generarting checksums for the server/ module parts. It works
+ * in concert with the DarkstarModuleDeployer (in the darkstar module) that
+ * checks whether the module can be (un)deployed based upon whether or not the
+ * Darkstar server is running.
+ * 
  * @author jkaplan
  */
 public class RunnerDeployer extends ChecksumDeployer {

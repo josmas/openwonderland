@@ -10,8 +10,9 @@
 
 <html>
 <head>
-        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
-        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
+    <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
+    <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
 </head>
 <body>
     <%@ page import="java.util.Collections" %>
@@ -23,7 +24,25 @@
     <%@ page import="org.jdesktop.wonderland.common.modules.ModuleInfo" %>
     <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
     <h2>Manage Modules</h2>
-    <form action="removeAll.jsp">
+    <table class="installed">
+        <caption>
+            <span class="heading">Install a New Module</span>
+        </caption>
+        <tr class="installed">
+            <td class="installed">
+                <form id="installForm" method="post" enctype="multipart/form-data" action="ModuleUploadServlet">
+                    Select a new module JAR to install and click Install:
+                    <input type="file" name="moduleJAR">
+                    <br>
+                    <a href="javascript:void(0)" onclick="$('installForm').submit()">Install</a>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <form id="removeForm" action="/wonderland-web-modules/editor">
+        <input type="hidden" name="action" value="remove"/>
+        <input type="hidden" name="confirm" value="true"/>
         <table class="installed">
           <caption>
               <span class="heading">Installed Modules</span>
@@ -52,7 +71,7 @@
             <% }%>
         </table>
         <div id="actionLinks">
-            <input type="submit" value="Remove Selected Modules">
+            <a href="javascript:void(0)" onclick="$('removeForm').submit()">Removed selected modules</a>
         </div>
     </form>
     <br>
@@ -107,20 +126,5 @@
         <% }%>
     </table>
     <br>
-
-    <table class="installed">
-        <caption>
-            <span class="heading">Install a New Module</span>
-        </caption>
-        <tr class="installed">
-            <td class="installed">
-                Select a new module JAR to install and click INSTALL.<br>
-                <form method="post" enctype="multipart/form-data" action="ModuleUploadServlet">
-                    Module JAR file: <input type="file" name="moduleJAR">
-                    <input type="submit" value="INSTALL">
-                </form>
-            </td>
-        </tr>
-    </table>
 </body>
 </html>

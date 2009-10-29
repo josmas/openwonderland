@@ -155,10 +155,10 @@ public class AdminServlet extends HttpServlet implements ServletContextListener 
         runner.setPosition(1);
         registry.add(runner);
 
-        AdminRegistration modules = new AdminRegistration("modules",
-                "Manage Modules", "/wonderland-web-modules");
-        modules.setFilter(AdminRegistration.ADMIN_FILTER);
-        registry.add(modules);
+//        AdminRegistration modules = new AdminRegistration("modules",
+//                "Manage Modules", "/wonderland-web-modules");
+//        modules.setFilter(AdminRegistration.ADMIN_FILTER);
+//        registry.add(modules);
        
         // add the registry to the context
         ServletContext sc = sce.getServletContext();
