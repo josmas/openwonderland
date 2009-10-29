@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import org.jdesktop.mtgame.Entity;
 import com.jme.math.Quaternion;
+import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -58,6 +59,9 @@ public class View2DCell extends View2DEntity {
     /** Did we create our own movable component? */
     private boolean selfCreatedMovableComponent;
 
+    /** The resize rectangle for this view. */
+    private ResizeRectangle resizeRect;
+
     /**
      * Create an instance of View2DCell with default geometry node.
      * @param cell The cell in which the view is displayed.
@@ -87,6 +91,11 @@ public class View2DCell extends View2DEntity {
     @Override
     public synchronized void cleanup () {
         super.cleanup();
+
+        if (resizeRect != null) {
+            resizeRect.cleanup();
+            resizeRect = null;
+        }
 
         if (frame != null) {
             frame.cleanup();
@@ -323,6 +332,53 @@ public class View2DCell extends View2DEntity {
             frame.update(newWidth3D, newHeight3D, newSize);
         } catch (InstantiationException ex) {
             logger.warning("Instantiation exception during user resize of frame");
+        }
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable (boolean userResizable, boolean update) {
+        super.setUserResizable(userResizable, update);
+
+        if (userResizable) {
+            resizeRect = new ResizeRectangle(this);
+        } else {
+            if (resizeRect != null) {
+                resizeRect.cleanup();
+                resizeRect = null;
+            }
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void userResizeStart () {
+        if (resizeRect != null) {
+            resizeRect.updateSizeFromView();
+            resizeRect.setVisible(true);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void userResizeUpdate (Vector2f dragVector) {
+        if (resizeRect != null) {
+            resizeRect.sizeAdd(dragVector);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void userResizeFinish () {
+        if (resizeRect != null) {
+            Dimension userResizeNewSize = resizeRect.getViewSize();
+            resizeRect.setVisible(false);
+            window.userSetSize(userResizeNewSize.width, userResizeNewSize.height);
         }
     }
 }

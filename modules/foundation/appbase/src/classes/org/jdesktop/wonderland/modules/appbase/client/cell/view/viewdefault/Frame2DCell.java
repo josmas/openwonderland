@@ -304,5 +304,77 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     public String toString () {
         return name;
     }
+
+    // Returns the width of the header in local coordinates
+    float getHeaderWidth () {
+        if (header != null) {
+            return header.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the header in local coordinates
+    float getHeaderHeight () {
+        if (header != null) {
+            return header.getHeight();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the width of the frame left side in local coordinates
+    float getLeftSideWidth () {
+        if (leftSide != null) {
+            return leftSide.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the frame left side in local coordinates
+    float getLeftSideHeight () {
+        if (leftSide != null) {
+            return leftSide.getHeight();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the width of the frame right side in local coordinates
+    float getRightSideWidth () {
+        if (rightSide != null) {
+            return rightSide.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the frame right side in local coordinates
+    float getRightSideHeight () {
+        if (rightSide != null) {
+            return rightSide.getHeight();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the width of the frame bottom side in local coordinates
+    float getBottomSideWidth () {
+        if (bottomSide != null) {
+            return bottomSide.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the frame bottom side in local coordinates
+    float getBottomSideHeight () {
+        if (bottomSide != null) {
+            return bottomSide.getHeight();
+        } else {
+            return 0f;
+        }
+    }
 }
 

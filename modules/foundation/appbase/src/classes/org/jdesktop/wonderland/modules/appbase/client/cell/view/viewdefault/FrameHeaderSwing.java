@@ -515,5 +515,21 @@ public class FrameHeaderSwing
             // or actually a list of users controlling.
         }
     }
+
+    /**
+     * Returns the width of this component in local coordinates. 
+     */
+    float getWidth () {
+        Vector2f pixelScale = view.getPixelScale();
+        return width * pixelScale.x;
+    }
+
+    /**
+     * Returns the height of this component in local coordinates. 
+     */
+    float getHeight () {
+        Vector2f pixelScale = view.getPixelScale();
+        return height * pixelScale.y;
+    }
 }
 

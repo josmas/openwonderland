@@ -137,7 +137,7 @@ public abstract class View2DEntity implements View2D {
     private boolean decorated;
 
     /** Whether this view's frame resize corner is enabled. */
-    private boolean userResizable = false;
+    protected boolean userResizable = false;
 
     /** The frame title. */
     private String title;
@@ -165,9 +165,6 @@ public abstract class View2DEntity implements View2D {
 
     /** The previous drag vector during an interactive planar move. */
     private Vector2f userMovePlanarDragVectorPrev;
-    
-    /** The current value of the window size during an interactive resize. */
-    private Dimension userResizeNewSize;
     
     /** The next delta translation to apply. */
     private Vector3f deltaTranslationToApply;
@@ -833,7 +830,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Returns the pixel scale vector for the current mode. */
-    private Vector2f getPixelScaleCurrent () {
+    public Vector2f getPixelScaleCurrent () {
         Vector2f pixelScale;
         if (ortho) {
             pixelScale = getPixelScaleOrtho();
@@ -1017,50 +1014,17 @@ public abstract class View2DEntity implements View2D {
     /**
      * Called by the UI to indicate the start of an interactive resize.
      */
-    public synchronized void userResizeStart () {
-        //System.err.println("********* Resize start");
+    public void userResizeStart () {
     }
 
     /**
      * Called by the UI to indicate a drag vector update during interactive resize.
      * This is called on the EDT.
      */
-    public synchronized void userResizeUpdate (Vector2f dragVector) {
-        //System.err.println("********* Resize update, dragVector = " + dragVector);
-        
-        // TODO: eventually support optional app-selected continuous window resize. For this 
-        // we call perform resize on each update. May look better for Swing windows.
-
-        userResizeNewSize = userResizeCalcWindowNewSize(dragVector);
-        if (userResizeNewSize == null) return;
-        //System.err.println("userResizeNewSize = " + userResizeNewSize);
-
-        Vector2f pixelScale = getPixelScale();
-        final float width = pixelScale.x * userResizeNewSize.width;
-        final float height = pixelScale.y * userResizeNewSize.height;
-
-        Image image = getWindow().getTexture().getImage();
-        final float widthRatio = (float)userResizeNewSize.width / image.getWidth();
-        final float heightRatio = (float)userResizeNewSize.height / image.getHeight();
-
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                geometryNode.setSize(width, height);
-                geometryNode.setTexCoords(widthRatio, heightRatio);
-                ClientContextJME.getWorldManager().addToUpdateList(viewNode);
-            }
-        }, null, false);
-
-        // Must do this *outside* the render updater (otherwise a deadlock results between
-        // the Renderer thread and the EDT.
-        userResizeFrameUpdate(width, height, userResizeNewSize);
+    public void userResizeUpdate (Vector2f dragVector) {
     }
 
-    public synchronized void userResizeFinish () {
-        //System.err.println("********* Resize Finish, final size = " + userResizeNewSize);
-        // TODO: for now, only support non-continuous resize. That is, only perform
-        // the actual window resize at the end of the drag operation.
-        window.userSetSize(userResizeNewSize.width, userResizeNewSize.height);
+    public void userResizeFinish () {
     }
 
     protected void userResizeFrameUpdate (float width3D, float height3D, Dimension newSize) {
