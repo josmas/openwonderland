@@ -169,7 +169,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 (AudioTreatmentComponentServerState) state.getComponentServerState(
                 AudioTreatmentComponentServerState.class);
 
-        if (state == null) {
+        if (state == null || compState == null) {
             return;
         }
 
@@ -234,7 +234,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
             AudioTreatmentComponent component = currentCell.getComponent(AudioTreatmentComponent.class);
 
-	    component.addTreatmentStatusListener(this);
+	    if (component != null) {
+	        component.addTreatmentStatusListener(this);
+	    }
 	}
     }
 
