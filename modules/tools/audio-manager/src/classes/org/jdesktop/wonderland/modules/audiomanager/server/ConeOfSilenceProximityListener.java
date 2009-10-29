@@ -179,13 +179,29 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
 	//System.out.println("CONE PROX Player:  " + player);
 
-        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
+	boolean isSpeaking = (inPrivateChat(audioGroup, player) == false);
+
+        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(isSpeaking,
        	    AudioGroupPlayerInfo.ChatType.PRIVATE));
 
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	sender.send(new ConeOfSilenceEnterExitMessage(callId, true));
+	sender.send(new ConeOfSilenceEnterExitMessage(name, callId, true));
+    }
+
+    private boolean inPrivateChat(AudioGroup audioGroup, Player player) {
+	AudioGroup[] audioGroups = player.getAudioGroups();
+
+	for (int i = 0; i < audioGroups.length; i++) {
+	    AudioGroupPlayerInfo info = audioGroups[i].getPlayerInfo(player);
+
+	    if (info == null || info.chatType.equals(AudioGroupPlayerInfo.ChatType.PUBLIC) == false) {
+		return true;
+	    }
+	}
+	
+	return false;
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
@@ -235,7 +251,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	sender.send(new ConeOfSilenceEnterExitMessage(callId, false));
+	sender.send(new ConeOfSilenceEnterExitMessage(name, callId, false));
     }
 
     public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
@@ -247,7 +263,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	    WonderlandClientSender sender =
                 WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	    sender.send(new ConeOfSilenceEnterExitMessage(callID, false));
+	    sender.send(new ConeOfSilenceEnterExitMessage(name, callID, false));
 	}
     }
 

@@ -31,14 +31,20 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class ConeOfSilenceEnterExitMessage extends Message {
     
+    private String COSName;
     private String callID;
     private boolean entered;
 
-    public ConeOfSilenceEnterExitMessage(String callID, boolean entered) {
+    public ConeOfSilenceEnterExitMessage(String COSName, String callID, boolean entered) {
+	this.COSName = COSName;
 	this.callID = callID;
 	this.entered = entered;
     }
     
+    public String getCOSName() {
+	return COSName;
+    }
+
     public String getCallID() {
 	return callID;
     }

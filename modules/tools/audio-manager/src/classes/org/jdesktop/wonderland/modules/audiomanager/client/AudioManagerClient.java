@@ -655,7 +655,8 @@ public class AudioManagerClient extends BaseConnection implements
         if (message instanceof VoiceChatCallEndedMessage) {
             VoiceChatCallEndedMessage msg = (VoiceChatCallEndedMessage) message;
             voiceChatCallEnded(msg);
-            sendmessage(new VoiceChatLeaveMessage(msg.getGroup(), msg.getCallee()));
+            sendmessage(new VoiceChatLeaveMessage(msg.getGroup(), msg.getCallee(),
+		COSName));
             return;
         }
 
@@ -865,6 +866,12 @@ public class AudioManagerClient extends BaseConnection implements
         notifyMemberChangeListeners(msg.getGroup(), callee, false);
     }
 
+    private String COSName;
+
+    public String getCOSName() {
+	return COSName;
+    }
+
     private void coneOfSilenceEnterExit(ConeOfSilenceEnterExitMessage msg) {
         pm.setEnteredConeOfSilence(presenceInfo, msg.entered());
 
@@ -878,10 +885,14 @@ public class AudioManagerClient extends BaseConnection implements
         AvatarNameEvent avatarNameEvent;
 
         if (msg.entered()) {
+	    COSName = msg.getCOSName();
+
             avatarNameEvent = new AvatarNameEvent(
                     EventType.ENTERED_CONE_OF_SILENCE,
                     info.userID.getUsername(), info.usernameAlias);
         } else {
+	    COSName = null;
+
             avatarNameEvent = new AvatarNameEvent(
                     EventType.EXITED_CONE_OF_SILENCE,
                     info.userID.getUsername(), info.usernameAlias);

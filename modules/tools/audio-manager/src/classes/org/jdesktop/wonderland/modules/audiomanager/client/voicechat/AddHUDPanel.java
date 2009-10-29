@@ -537,7 +537,8 @@ public class AddHUDPanel
     }
 
     private void leave() {
-        session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+        session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo,
+	    client.getCOSName()));
         addHUDComponent.setVisible(false);
         addHUDPanelList.remove(this);
 
@@ -574,6 +575,13 @@ public class AddHUDPanel
 
 	if (addUserPanel.getPrivacy().equals(ChatType.PRIVATE)) {
 	   CallAnimator.animateCallAnswer(client);
+	   
+	   String COSName = client.getCOSName();
+
+	   if (COSName != null) {
+                session.send(client,
+                    new VoiceChatHoldMessage(group, myPresenceInfo, false, 1, COSName));
+	   }
 	} else {
 	   CallAnimator.stopCallAnswerAnimation(client);
 	}
@@ -587,7 +595,7 @@ public class AddHUDPanel
 
         try {
             session.send(client, new VoiceChatHoldMessage(group, myPresenceInfo,
-                    true, VolumeUtil.getServerVolume(volume)));
+                    true, VolumeUtil.getServerVolume(volume), client.getCOSName()));
         } catch (IllegalStateException e) {
             leave();
         }
@@ -598,7 +606,7 @@ public class AddHUDPanel
     private void setHoldVolume(int volume) {
         try {
             session.send(client, new VoiceChatHoldMessage(group, myPresenceInfo,
-                    true, VolumeUtil.getServerVolume(volume)));
+                    true, VolumeUtil.getServerVolume(volume), client.getCOSName()));
         } catch (IllegalStateException e) {
             leave();
         }
@@ -619,7 +627,7 @@ public class AddHUDPanel
     private void takeOffHold() {
         try {
             session.send(client,
-                    new VoiceChatHoldMessage(group, myPresenceInfo, false, 1));
+                    new VoiceChatHoldMessage(group, myPresenceInfo, false, 1, client.getCOSName()));
             setMode(Mode.IN_PROGRESS);
         } catch (IllegalStateException e) {
             leave();
