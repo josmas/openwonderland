@@ -321,7 +321,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
                     // issue #968: clean up the local visuals for this app cell,
                     // but don't remove it from the server
-                    destroyClientVisual();
+                    App2D.invokeLater(new Runnable() {
+                        public void run () {
+                            destroyClientVisual();
+                        }
+                    });
                 }
                 break;
         }
