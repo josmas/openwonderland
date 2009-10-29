@@ -30,18 +30,20 @@ public class VoiceChatHoldMessage extends VoiceChatMessage {
     private PresenceInfo callee;
     private boolean onHold;
     private double volume;
+    private String COSName;
 
     /*
      * Put call on hold
      */
     public VoiceChatHoldMessage(String group, PresenceInfo callee, boolean onHold, 
-	    double volume) {
+	    double volume, String COSName) {
 
 	super(group);
 
 	this.callee = callee;
 	this.onHold = onHold;
 	this.volume = volume;
+	this.COSName = COSName;
     }
 	 
     public PresenceInfo getCallee() {
@@ -54,6 +56,10 @@ public class VoiceChatHoldMessage extends VoiceChatMessage {
 
     public double getVolume() {
 	return volume;
+    }
+
+    public String getCOSName() {
+	return COSName;
     }
 
 }

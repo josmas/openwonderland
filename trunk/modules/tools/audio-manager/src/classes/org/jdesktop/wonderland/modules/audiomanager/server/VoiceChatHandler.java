@@ -247,6 +247,8 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		return;
 	    }
 	    
+	    setCOSSpeaking(player, msg.getCOSName(), true);
+
 	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
 
 	    if (info == null) {
@@ -332,6 +334,8 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		logger.warning("No player for " + msg.getCallee().callID);
 		return;
 	    }
+
+	    setCOSSpeaking(player, msg.getCOSName(), msg.isOnHold());
 
 	    AudioGroupPlayerInfo playerInfo = audioGroup.getPlayerInfo(player);
 
@@ -465,6 +469,24 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    requestPlayerJoinAudioGroup(sender, id, group, caller,
 		calleeList, msg.getChatType());
 	}
+    }
+
+    private void setCOSSpeaking(Player player, String COSName, boolean isSpeaking) {
+	logger.fine("SET COSSPEAKING " + player.getId() + " COSName " + COSName
+	    + " isSpeaking " + isSpeaking);
+
+	if (COSName == null) {
+	    return;
+	}
+
+	AudioGroup COSAudioGroup = AppContext.getManager(VoiceManager.class).getAudioGroup(COSName);
+
+	if (COSAudioGroup == null) {
+	    logger.warning("No COS audio group for " + COSName);
+	    return;
+	}
+
+	COSAudioGroup.setSpeaking(player, isSpeaking);
     }
 
     private boolean isInRangeOfPublicChat(AudioGroup audioGroup, Player player) {
@@ -830,7 +852,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	handleBystanders(audioGroup, player, AudioGroupPlayerInfo.ChatType.PRIVATE);
 
-	sender.send(new VoiceChatLeaveMessage(audioGroup.getId(), presenceInfo));
+	sender.send(new VoiceChatLeaveMessage(audioGroup.getId(), presenceInfo, null));
     }
 
     private void removeProximityListener(PresenceInfo info) {

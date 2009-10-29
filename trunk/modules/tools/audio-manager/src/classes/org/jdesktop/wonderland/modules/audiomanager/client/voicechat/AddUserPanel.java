@@ -768,7 +768,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void leave() {
-        session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+        session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo,
+	    client.getCOSName()));
 
 	CallAnimator.stopCallAnswerAnimation(client);
     }
