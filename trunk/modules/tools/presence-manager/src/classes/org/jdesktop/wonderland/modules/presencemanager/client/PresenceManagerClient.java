@@ -195,6 +195,11 @@ public class PresenceManagerClient extends BaseConnection implements
 
 		Cell cell = cellCache.getCell(presenceInfo.cellID);
 
+		if (cell == null) {
+		    logger.warning("Unable to find cell for " + presenceInfo.cellID);
+		    continue;
+		}
+
 		NameTagComponent nameTag = cell.getComponent(NameTagComponent.class);
 
 		if (presenceInfo.usernameAlias.equals(username) == false) {
