@@ -214,14 +214,7 @@ class Gui2DResizeCorner extends Gui2DSide {
 
         case MouseEvent.MOUSE_RELEASED:
             if (me.getButton() == MouseEvent.BUTTON1) {
-                if (configState == ConfigState.DRAGGING) {
-                    // Note: the misc action ToggleControl may produce an mouse
-                    // press/release without a drag in between so only perform
-                    // a dragfinish if an actual drag occurred between the
-                    // mouse press and release
-                    action = new Action(ActionType.DRAG_FINISH);
-                }
-
+                action = new Action(ActionType.DRAG_FINISH);
                 configState = ConfigState.IDLE;
                 // Note: the coordinates for WL mouse release events are invalid.
                 // So we just use the coordinates from the last drag or press.
