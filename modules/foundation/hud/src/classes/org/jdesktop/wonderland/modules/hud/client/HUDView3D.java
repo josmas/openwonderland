@@ -62,6 +62,10 @@ public class HUDView3D extends View2DEntity implements HUDView {
         name = "HUDView3D for " + window.getName();
         update();
         updateFrame();
+
+        // TODO: HACK: Part 4 of 4: temporary workaround for 951
+        // The other parts are in View2DEntity in the app base.
+        setHackZEpsilon(0.001f);
     }
 
     /**

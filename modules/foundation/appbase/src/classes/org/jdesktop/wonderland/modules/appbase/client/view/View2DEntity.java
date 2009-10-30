@@ -229,6 +229,10 @@ public abstract class View2DEntity implements View2D {
     /** A flag which indicates that the cleanup method is being executed. */
     private boolean inCleanup = false;
 
+    // TODO: HACK: Part 1 of 4: temporary workaround for 951
+    // Parts 2 and 3 are later in this file. Part 4 is in HUDView3D.
+    private float hackZEpsilon = 0f;
+
     /**
      * Create an instance of View2DEntity with default geometry node.
      * @param The entity in which the view is displayed.
@@ -319,6 +323,15 @@ public abstract class View2DEntity implements View2D {
         app = null;
 
         inCleanup = false;
+    }
+
+    /** 
+     * TODO: HACK: Part 2 of 4: temporary workaround for 951
+     * @deprecated
+     */
+    @InternalAPI
+    public void setHackZEpsilon (float epsilon) {
+        hackZEpsilon = epsilon;
     }
 
     /** {@inheritDoc} */
@@ -1632,6 +1645,10 @@ public abstract class View2DEntity implements View2D {
         Vector3f stackTranslation = calcStackTranslation();
 
         offsetTranslation.addLocal(stackTranslation);
+
+        // TODO: HACK: Part 3 of 4 temporary workaround for 951
+        offsetTranslation.addLocal(new Vector3f(0f, 0f, hackZEpsilon));
+
         transform.setTranslation(offsetTranslation);
 
         return transform;
