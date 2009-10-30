@@ -160,10 +160,22 @@ public class AvatarClientPlugin extends BaseClientPlugin
                     else {
                         camState.setTargetCharacter(null);
                     }
-                    
+
+                    // Fetch the initial position of the camera. This is based
+                    // upon the current avatar position. We can assume that the
+                    // primary View Cell exists at this point, since the menu
+                    // item is not added until a primary View Cell exists.
+                    ViewManager viewManager = ViewManager.getViewManager();
+                    ViewCell viewCell = viewManager.getPrimaryViewCell();
+                    CellTransform transform = viewCell.getWorldTransform();
+                    Vector3f translation = transform.getTranslation(null);
+
+                    // This is the offset from the avatar view Cell to place the
+                    // camera
+                    Vector3f offset = new Vector3f(0.0f, 4.0f, -10.0f);
+
                     // force an update
-                    CellTransform transform = avatarCellRenderer.getCell().getLocalTransform();
-                    camState.setCameraPosition(transform.getTranslation(null));
+                    camState.setCameraPosition(translation.add(offset));
                 }
             }
         };

@@ -59,9 +59,10 @@ public class ContentBrowserJDialog
 
     private static final Logger logger =
             Logger.getLogger(ContentBrowserJDialog.class.getName());
+
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/Bundle");
-    private ServerSessionManager session = null;
+
     private AsynchronousJTree jtree = null;
     private AsynchronousJTable jtable = null;
     private ContentNode treeSelectedNode = null;
@@ -72,7 +73,6 @@ public class ContentBrowserJDialog
 
     /** Creates new form BrowserFrame */
     public ContentBrowserJDialog(ServerSessionManager session) {
-        this.session = session;
         factoryMap = new HashMap();
         listenerSet = Collections.synchronizedSet(new HashSet());
         initComponents();
@@ -132,7 +132,6 @@ public class ContentBrowserJDialog
         // Listen for selections on the tree and update the right-hand table
         // with the children for the currently selected node.
         jtree.addAsyncTreeSelectionListener(new AsyncTreeSelectionListener() {
-
             public void treeSelectionChanged(ContentNode node) {
                 treeSelectedNode = node;
                 if (node == null) {
@@ -169,7 +168,6 @@ public class ContentBrowserJDialog
 
         // When the Cancel button is pressed, fire off events to the listeners
         cancelButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 dispose();
@@ -182,7 +180,6 @@ public class ContentBrowserJDialog
         // When the Ok button is pressed, fire off events to the listeners,
         // passing them the URI of the selected item
         okButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 dispose();
@@ -212,7 +209,6 @@ public class ContentBrowserJDialog
         // When the window becomes visible, then display the Home directory
         // by default
         addWindowListener(new WindowAdapter() {
-
             @Override
             public void windowOpened(WindowEvent e) {
                 homeButton.doClick();
