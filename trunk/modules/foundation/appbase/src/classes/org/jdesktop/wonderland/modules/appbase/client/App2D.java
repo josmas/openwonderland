@@ -530,9 +530,11 @@ public abstract class App2D {
                         runnable.run();
                     }
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     stopInvoker = true;
                 }
             }
+            logger.info("App Base Invoker Thread stopped");
         }
     }
 }

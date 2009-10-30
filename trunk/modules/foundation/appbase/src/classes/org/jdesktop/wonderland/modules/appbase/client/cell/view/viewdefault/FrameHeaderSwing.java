@@ -306,7 +306,9 @@ public class FrameHeaderSwing
             e.getModifiersEx() == 0) {
             App2D.invokeLater(new Runnable() {
                 public void run () {
-                    view.getWindow().restackToTop();
+                    if (view != null) {
+                        view.getWindow().restackToTop();
+                    }
                 }
             });
         }
@@ -361,7 +363,9 @@ public class FrameHeaderSwing
 
             App2D.invokeLater(new Runnable() {
                 public void run () {
-                    view.userMovePlanarStart();
+                    if (view != null) {
+                        view.userMovePlanarStart();
+                    }
                 }
             });
         }
@@ -406,7 +410,9 @@ public class FrameHeaderSwing
             //System.err.println("dragVectorLocal = " + dragVectorLocal);
             App2D.invokeLater(new Runnable() {
                 public void run () {
-                    view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+                    if (view != null) {
+                        view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+                    }
                 }
             });
         }
@@ -424,7 +430,9 @@ public class FrameHeaderSwing
                 dragging = false;
                 App2D.invokeLater(new Runnable() {
                     public void run () {
-                        view.userMovePlanarFinish();
+                        if (view != null) {
+                            view.userMovePlanarFinish();
+                        }
                     }
                 });
             }
