@@ -1005,8 +1005,8 @@ public abstract class Window2D implements HUDDisplayable {
             app.getWindowStack().restackToTop(this);
             changeMask |= CHANGED_STACK;
             updateViews();
-            app.changedStackAllWindowsExcept(this);
         }
+        app.changedStackAllWindowsExcept(this);
 
         updateFrames();
     }
@@ -1701,17 +1701,17 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
         synchronized (app.getAppCleanupLock()) {
+            LinkedList<View2D> viewsToRemove;
             synchronized (this) {
-                LinkedList<View2D> viewsToRemove =
-                        (LinkedList<View2D>) views.clone();
-                for (View2D view : viewsToRemove) {
-                    View2DDisplayer displayer = view.getDisplayer();
-                    if (displayer != null) {
-                        displayer.destroyView(view);
-                    }
-                }
+                viewsToRemove =  (LinkedList<View2D>) views.clone();
                 views.clear();
                 cellViews.clear();
+            }                
+            for (View2D view : viewsToRemove) {
+                View2DDisplayer displayer = view.getDisplayer();
+                if (displayer != null) {
+                    displayer.destroyView(view);
+                }
             }
         }
     }
@@ -1769,9 +1769,11 @@ public abstract class Window2D implements HUDDisplayable {
         // syncUserTransformCell makes sure that the transform is the same in
         // all cell views.
         View2DCell cellView = null;
-        try {
-            cellView = cellViews.getFirst();
-        } catch (NoSuchElementException ex) {
+        synchronized (this) {
+            try {
+                cellView = cellViews.getFirst();
+            } catch (NoSuchElementException ex) {
+            }
         }
         if (cellView == null) {
             // Return identity. (This happens in the SAS).
@@ -1859,7 +1861,12 @@ public abstract class Window2D implements HUDDisplayable {
                 "Processing window changes for window " + getName());
         logger.info(" changeMask = " + Integer.toHexString(changeMask));
 
-        for (View2D view : views) {
+        LinkedList<View2D> viewsCopy;
+        synchronized (this) {
+            viewsCopy =  (LinkedList<View2D>) views.clone();
+        }                
+
+        for (View2D view : viewsCopy) {
             if ((changeMask & CHANGED_TYPE) != 0) {
                 View2D.Type viewType;
                 switch (type) {
@@ -1939,7 +1946,13 @@ public abstract class Window2D implements HUDDisplayable {
         }
 
         logger.info("=================== " + "Processing window frame changes for window " + getName());
-        for (View2D view : views) {
+
+        LinkedList<View2D> viewsCopy;
+        synchronized (this) {
+            viewsCopy =  (LinkedList<View2D>) views.clone();
+        }                
+
+        for (View2D view : viewsCopy) {
             view.updateFrame();
         }
 

@@ -208,14 +208,20 @@ public abstract class App2D {
             setShowInHUD(false);
             viewSet.cleanup();
             stack.cleanup();
-            LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
-            for (Window2D window : toRemoveList) {
+
+            LinkedList<Window2D> windowsCopy;
+            synchronized (this) {
+                windowsCopy = (LinkedList<Window2D>) windows.clone();
+                windows.clear();
+            }
+
+            for (Window2D window : windowsCopy) {
                 window.cleanup();
             }
-            windows.clear();
-            toRemoveList.clear();
+
             pixelScale = null;
         }
+
         synchronized(apps) {
             apps.remove(this);
         }
@@ -278,8 +284,10 @@ public abstract class App2D {
      * Add a window to this app. 
      * @param window The window to add.
      */
-    public synchronized void addWindow(Window2D window) {
-        windows.add(window);
+    public void addWindow(Window2D window) {
+        synchronized (this) {
+            windows.add(window);
+        }
         viewSet.add(window);
     }
 
@@ -290,7 +298,9 @@ public abstract class App2D {
     public void removeWindow(Window2D window) {
         synchronized (appCleanupLock) {
             viewSet.remove(window);
-            windows.remove(window);
+            synchronized (this) {
+                windows.remove(window);
+            }
             if (window == primaryWindow) {
                 setPrimaryWindow(null);
             }
@@ -320,7 +330,12 @@ public abstract class App2D {
         this.primaryWindow = primaryWindow;
         logger.info("set primary window to " + primaryWindow);
 
-        for (Window2D window : windows) {
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
             if (window.getType() == Window2D.Type.SECONDARY) {
                 window.setParent(primaryWindow);
             }
@@ -347,7 +362,12 @@ public abstract class App2D {
      * Tell all windows that their stack order may have changed.
      */
     private void changedStackAllWindows () {
-        for (Window2D window : windows) {
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
             window.changedStack();
         }
     }
@@ -356,7 +376,12 @@ public abstract class App2D {
      * Tell all non-coplanar windows (except the argument window) that their stack order may have changed.
      */
     public void changedStackAllWindowsExcept (Window2D windowExcept) {
-        for (Window2D window : windows) {
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
             if (window != windowExcept) {
                 if (!window.isCoplanar()) {
                     window.changedStack();
@@ -486,8 +511,12 @@ public abstract class App2D {
      */
     public void stop () {
 
-        for (Window2D window : (LinkedList<Window2D>) windows.clone()) {
-            logger.severe("%%%%%%%%%% close user on window: " + window);
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
             window.closeUser(true);
         }
 
