@@ -453,7 +453,8 @@ public class WindowSwing extends Window2D {
         }
 
         public EventAction consumesEvent (MouseEvent3D me3d) {
-            
+            if (app == null) return EventAction.DISCARD;
+
             MouseEvent awtEvent = (MouseEvent) me3d.getAwtEvent();
             logger.fine("WS.consumesEvent: " + awtEvent);
             if (Gui2D.isChangeControlEvent(awtEvent)) {
