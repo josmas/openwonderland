@@ -80,6 +80,8 @@ public class AudioParticipantComponent extends CellComponent implements Componen
 
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
+	super.setStatus(status, increasing);
+
 	switch(status) {
         case DISK:
             break;
