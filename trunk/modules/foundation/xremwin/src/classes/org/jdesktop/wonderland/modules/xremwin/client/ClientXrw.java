@@ -296,10 +296,15 @@ public abstract class ClientXrw implements Runnable {
                 // Process the message
                 processMessage(msgType);
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
                 stop = true;
                 cleanup();
+
+                if (app.isInSas()) {
+                    System.err.println("SAS provider aborted.");
+                    System.exit(1);
+                }
             }
         }
     }
