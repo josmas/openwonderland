@@ -454,12 +454,16 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     private Spatializer getSpatializer(boolean inConeOfSilence) {
 	float cellRadius = getCellRadius();
 
+	double extent = this.extent;
+	    
+	if (extent == 0) {
+	    extent = cellRadius;
+	}
+
 	CellMO cellMO = cellRef.get();
 
 	BoundingVolume bounds = cellMO.getWorldBounds();
 
-	double extent = this.extent;
-	    
 	if (useCellBounds) {
 	    if (bounds instanceof BoundingBox) {
 	        System.out.println("BoundingBox:  " + bounds);
@@ -481,11 +485,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	        }     
 	    }
 
-	    System.out.println("Extent is " + extent);
 	    return new FullVolumeSpatializer(extent);
 	}
 	
-	double fullVolumeRadius = fullVolumeAreaPercent / 100. * cellRadius;
+	double fullVolumeRadius = fullVolumeAreaPercent / 100. * extent;
 
 	double falloff = .92 + ((50 - this.falloff) * ((1 - .92) / 50));
 
@@ -498,31 +501,12 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    + " fvr " + fullVolumeRadius + " falloff " 
 	    + falloff + " volume " + volume);
 
-	/*
-	 * TODO if useCellBounds is specified and the bounds type is not
-	 * a SPHERE, we will need to add walls to spatialize properly.
-	 */
-	if (useCellBounds == true) {
-	    BoundingVolume boundingVolume = cellRef.get().getLocalBounds();
-
-	    if (boundingVolume instanceof BoundingSphere) {
-		extent = ((BoundingSphere) boundingVolume).getRadius();
-	    } else {
-		logger.warning("Only BoundingSphere is supported: " + boundingVolume
-		    + " using sphere with radius " + extent);
-	    }
-	}
-
         if (distanceAttenuated == true) {
             DefaultSpatializer spatializer = new DefaultSpatializer();
 
             spatializer.setFullVolumeRadius(fullVolumeRadius);
 
-	    if (extent == 0) {
-                spatializer.setZeroVolumeRadius(cellRadius);
-	    } else {
-                spatializer.setZeroVolumeRadius(extent);
-	    }
+            spatializer.setZeroVolumeRadius(extent);
 
 	    FalloffFunction falloffFunction = spatializer.getFalloffFunction();
 
