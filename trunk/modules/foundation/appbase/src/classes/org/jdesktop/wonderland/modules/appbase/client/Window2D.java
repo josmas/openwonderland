@@ -438,7 +438,7 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Returns whether cleanup has been called on this window.
      */
-    boolean isZombie () {
+    public boolean isZombie () {
         return isZombie;
     }
 
