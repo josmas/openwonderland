@@ -19,15 +19,24 @@ package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Geometry;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.TextureState;
 import java.net.URL;
 import java.util.Map;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ModelCellComponent;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 
 /**
  *
@@ -97,6 +106,31 @@ public class ModelRenderer extends BasicRenderer {
         deployedModel.setModelScale(modelScale);
 
         return loader.loadDeployedModel(deployedModel, entity);
+    }
+
+    @Override
+    protected void cleanupSceneGraph(Entity entity) {
+        RenderComponent rc = entity.getComponent(RenderComponent.class);
+        if (rc!=null) {
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                public void update(Object arg0) {
+                    TreeScan.findNode((Spatial) arg0, new ProcessNodeInterface() {
+                        public boolean processNode(Spatial node) {
+                            if (node instanceof Geometry) {
+                                ((Geometry)node).clearBuffers();
+                                TextureState ts = (TextureState) node.getRenderState(RenderState.RS_TEXTURE);
+                                if (ts!=null)
+                                    ts.deleteAll(true);
+                            }
+                            return true;
+                        }
+                    });
+                }
+            }, rc.getSceneRoot());
+        }
+
+        deployedModel = null;
     }
 
 }

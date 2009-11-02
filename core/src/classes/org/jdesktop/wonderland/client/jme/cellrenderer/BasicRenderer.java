@@ -144,11 +144,13 @@ public abstract class BasicRenderer implements CellRendererJME {
             case INACTIVE :
                 if (!increasing) {
                     try {
-                        Entity parent = getEntity().getParent();
+                        Entity child = getEntity();
+                        Entity parent = child.getParent();
                         if (parent!=null)
-                            parent.removeEntity(getEntity());
+                            parent.removeEntity(child);
                         else
-                            ClientContextJME.getWorldManager().removeEntity(getEntity());
+                            ClientContextJME.getWorldManager().removeEntity(child);
+                        cleanupSceneGraph(child);
                     } catch(Exception e) {
                         System.err.println("NPE in "+this);
                         e.printStackTrace();
@@ -338,6 +340,16 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @return
      */
     protected abstract Node createSceneGraph(Entity entity);
+
+    /**
+     * Cleanup the scene graph, allowing resources to be gc'ed
+     * TODO - should be abstract, but don't want to break compatability in 0.5 API
+     *
+     * @param entity
+     */
+    protected void cleanupSceneGraph(Entity entity) {
+
+    }
 
     /**
      * Apply the transform to the jme node
