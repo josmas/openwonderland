@@ -297,13 +297,15 @@ public abstract class ClientXrw implements Runnable {
                 processMessage(msgType);
 
             } catch (Throwable throwable) {
-                throwable.printStackTrace();
-                stop = true;
-                cleanup();
+                if (serverProxy != null) {
+                    throwable.printStackTrace();
+                    stop = true;
+                    cleanup();
 
-                if (app.isInSas()) {
-                    System.err.println("SAS provider aborted.");
-                    System.exit(1);
+                    if (app.isInSas()) {
+                        System.err.println("SAS provider aborted.");
+                        System.exit(1);
+                    }
                 }
             }
         }
@@ -315,6 +317,8 @@ public abstract class ClientXrw implements Runnable {
      * @param msgType The message type.
      */
     protected MessageArgs readMessageArgs(ServerMessageType msgType) throws EOFException {
+        if (serverProxy == null) return null;
+
         switch (msgType) {
 
             case SERVER_DISCONNECT:
@@ -638,7 +642,11 @@ public abstract class ClientXrw implements Runnable {
      * @param wid The X11 window ID.
      */
     protected WindowXrw lookupWindow(int wid) {
-        return ((AppXrw)app).getWindowForWid(wid);
+        if (app == null) return null;
+        WindowXrw win = ((AppXrw)app).getWindowForWid(wid);
+        if (win == null) return null;
+        if (win.isZombie()) return null;
+        return win;
     }
 
     /**

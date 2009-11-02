@@ -462,18 +462,20 @@ public class WindowSwing extends Window2D {
 
                 // Perform the control toggle immediately
                 ControlArb controlArb = app.getControlArb();
-                if (controlArb.hasControl()) {
-                    controlArb.releaseControl();
-                } else {
-                    controlArb.takeControl();
+                if (controlArb != null) {
+                    if (controlArb.hasControl()) {
+                        controlArb.releaseControl();
+                    } else {
+                        controlArb.takeControl();
+                    }
                 }
-
                 return EventAction.DISCARD;
             }
             logger.fine("Isn't change control event " + awtEvent);
 
             // If app doesn't have control, ignore the event
-            if (!app.getControlArb().hasControl()) {
+
+            if (app.getControlArb() == null || !app.getControlArb().hasControl()) {
                 logger.fine("Doesn't have control");
                 return EventAction.DISCARD;
             }
