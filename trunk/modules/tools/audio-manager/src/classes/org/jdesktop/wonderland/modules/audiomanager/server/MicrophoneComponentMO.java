@@ -86,7 +86,9 @@ public class MicrophoneComponentMO extends CellComponentMO {
             name = state.getName();
 	}
 
-	if (name.equals(DEFAULT_NAME)) {
+	String appendName = "-" + cellRef.get().getCellID();
+
+	if (name.indexOf(appendName) < 0) {
 	    name += "-" + cellRef.get().getCellID();
 	}
 	
@@ -121,7 +123,9 @@ public class MicrophoneComponentMO extends CellComponentMO {
             state = new MicrophoneComponentServerState();
         }
 
-	if (name.equals(DEFAULT_NAME)) {
+	String appendName = "-" + cellRef.get().getCellID();
+
+	if (name.indexOf(appendName) < 0) {
 	    name += "-" + cellRef.get().getCellID();
 	}
 
