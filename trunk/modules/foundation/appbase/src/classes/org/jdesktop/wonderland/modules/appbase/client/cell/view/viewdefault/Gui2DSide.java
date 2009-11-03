@@ -77,6 +77,10 @@ class Gui2DSide extends Gui2D {
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 
             // We only recognize some events on the border when user has control
+            if (view == null || view.getWindow() == null ||
+                view.getWindow().getApp() == null || view.getWindow().getApp().getControlArb() == null) {
+                return;
+            }                
             if (view.getWindow().getApp().getControlArb().hasControl()) {
 
                 // Is this a Window menu event?
