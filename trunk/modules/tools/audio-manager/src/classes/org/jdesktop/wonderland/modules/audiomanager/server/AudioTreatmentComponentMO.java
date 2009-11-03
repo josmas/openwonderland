@@ -206,6 +206,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	}
     }
 
+    public double getVolume() {
+	return volume;
+    }
+
     @Override
     public CellComponentServerState getServerState(CellComponentServerState serverState) {
         AudioTreatmentComponentServerState state = (AudioTreatmentComponentServerState) serverState;
@@ -285,7 +289,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             return;
         }
 
-        ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
+        ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef.get());
 
         channelComponent.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, receiver);
         channelComponent.addMessageReceiver(AudioTreatmentRequestMessage.class, receiver);
@@ -485,7 +489,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	        }     
 	    }
 
-	    return new FullVolumeSpatializer(extent);
+	    Spatializer spatializer = new FullVolumeSpatializer(extent);
+	    spatializer.setAttenuator(volume);
+	    return spatializer;
 	}
 	
 	double fullVolumeRadius = fullVolumeAreaPercent / 100. * extent;
@@ -508,13 +514,20 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
             spatializer.setZeroVolumeRadius(extent);
 
+	    spatializer.setAttenuator(volume);
+
 	    FalloffFunction falloffFunction = spatializer.getFalloffFunction();
 
 	    falloffFunction.setFalloff(falloff);
+
+	    spatializer.setAttenuator(volume);
+
 	    return spatializer;
         } 
 
-        return new FullVolumeSpatializer(extent);
+	Spatializer spatializer = new FullVolumeSpatializer(extent);
+	spatializer.setAttenuator(volume);
+	return spatializer;
     }
 
     private Spatializer getSpatializer(BoundingBox bounds) {
@@ -670,18 +683,12 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     }
 
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
-        private ManagedReference<AudioTreatmentComponentMO> compRef;
-
         private CellID cellID;
 
-        public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
-                AudioTreatmentComponentMO comp) {
+        public ComponentMessageReceiverImpl(CellMO cellMO) {
+            super(cellMO);
 
-            super(cellRef.get());
-
-	    cellID = cellRef.get().getCellID();
-
-            compRef = AppContext.getDataManager().createReference(comp);
+	    cellID = cellMO.getCellID();
         }
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
@@ -714,15 +721,15 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             }
 
 	    if (message instanceof AudioVolumeMessage) {
-		handleAudioVolume(sender, clientID, (AudioVolumeMessage) message);
+		handleAudioVolume(sender, clientID, (AudioVolumeMessage) message, getCell());
 		return;
 	    }
 
             logger.warning("Unknown message:  " + message);
         }
 
-        private void handleAudioVolume(WonderlandClientSender sender, WonderlandClientID clientID,
-		AudioVolumeMessage msg) {
+        private void handleAudioVolume(WonderlandClientSender sender, 
+		WonderlandClientID clientID, AudioVolumeMessage msg, CellMO cellMO) {
 
 	    String softphoneCallID = msg.getSoftphoneCallID();
 
@@ -733,15 +740,13 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             logger.fine("GOT Volume message:  call " + softphoneCallID
 	        + " volume " + volume + " other callID " + otherCallID);
 
-	    logger.fine("GOT Volume message:  call " + softphoneCallID
-                + " volume " + volume + " other callID " + otherCallID);
-
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
             Player softphonePlayer = vm.getPlayer(softphoneCallID);
 
             if (softphonePlayer == null) {
-                logger.warning("Can't find softphone player, callID " + softphoneCallID);
+                logger.warning("Can't find softphone player, callID " 
+		    + softphoneCallID);
                 return;
             }
 
@@ -753,12 +758,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             } 
 
 	    if (msg.isSetVolume() == false) {
-            	Spatializer spatializer = softphonePlayer.getPrivateSpatializer(player);
-	
-	 	if (spatializer != null) {
-                    msg.setVolume(spatializer.getAttenuator());
-		}
+                AudioTreatmentComponentMO audioTreatmentComponentMO = 
+		    cellMO.getComponent(AudioTreatmentComponentMO.class);
 
+		msg.setVolume(audioTreatmentComponentMO.getVolume());
                 sender.send(clientID, msg);
                 logger.fine("Sending vol message " + msg.getVolume());
                 return;

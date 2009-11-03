@@ -205,6 +205,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         playWhen = originalPlayWhen;
 
         originalPlayOnce = compState.getPlayOnce();
+	playOnce = originalPlayOnce;
 
         originalExtentRadius = (float) compState.getExtent();
         extentRadius = originalExtentRadius;
@@ -283,6 +284,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         // Update the component state, add to the list of updated states
 	compState.setTreatmentType(treatmentType);
         compState.setTreatments(treatments.split(";"));
+	compState.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
         compState.setPlayWhen(playWhen);
         compState.setPlayOnce(playOnce);
         compState.setExtent((Float) extentRadiusModel.getValue());
@@ -459,14 +461,17 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	switch (originalTreatmentType) {
 	case FILE:
 	    fileRadioButton.setSelected(true);
+    	    browseButton.setEnabled(true);
 	    break;
 
 	case CONTENT_REPOSITORY:
 	    contentRepositoryRadioButton.setSelected(true);
+    	    browseButton.setEnabled(true);
 	    break;
 
 	case URL:
 	    URLRadioButton.setSelected(true);
+    	    browseButton.setEnabled(false);
 	    break;
 	}
 
@@ -477,14 +482,18 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         switch (originalPlayWhen) {
             case ALWAYS:
                 alwaysRadioButton.setSelected(true);
+		playOnceCheckBox.setSelected(false);
+		playOnceCheckBox.setEnabled(false);
                 break;
 
             case FIRST_IN_RANGE:
                 proximityRadioButton.setSelected(true);
+		playOnceCheckBox.setEnabled(true);
                 break;
 
             case MANUAL:
                 manualRadioButton.setSelected(true);
+		playOnceCheckBox.setEnabled(true);
                 break;
         }
 
@@ -924,7 +933,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                                         .add(browseButton))
                                     .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 255, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(proximityRadioButton)
-                                    .add(manualRadioButton)))
+                                    .add(manualRadioButton)
+                                    .add(playOnceCheckBox)))
                             .add(layout.createSequentialGroup()
                                 .add(151, 151, 151)
                                 .add(jLabel3)
@@ -963,9 +973,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                                         .add(org.jdesktop.layout.GroupLayout.LEADING, statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))))))
                     .add(layout.createSequentialGroup()
-                        .add(160, 160, 160)
-                        .add(playOnceCheckBox))
-                    .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jLabel12)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -999,9 +1006,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 .add(proximityRadioButton)
                 .add(12, 12, 12)
                 .add(manualRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(7, 7, 7)
                 .add(playOnceCheckBox)
-                .add(13, 13, 13)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel11)
                     .add(specifyRadiusRadioButton)

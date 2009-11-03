@@ -60,9 +60,9 @@ public class AddHUDPanel
         extends javax.swing.JPanel implements DisconnectListener {
 
     public enum Mode {
-
         ADD, INITIATE, IN_PROGRESS, HOLD
     };
+
     public Mode mode;
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
@@ -136,7 +136,7 @@ public class AddHUDPanel
             public void HUDObjectChanged(HUDEvent e) {
 		//System.out.println("GOT EVENT " + e);
 
-                if (e.getEventType().equals(HUDEventType.CLOSED)) {
+                if (mode.equals(Mode.IN_PROGRESS) && e.getEventType().equals(HUDEventType.CLOSED)) {
                     leave();
                 }
             }
@@ -383,12 +383,17 @@ public class AddHUDPanel
         }
 
         holdPanel.setVisible(showPanel);
+
         if (showPanel) {
             add(holdPanel, BorderLayout.NORTH);
             if (normalHeight == 0) {
                 normalHeight = addHUDComponent.getHeight();
             }
-            addHUDComponent.setHeight(holdPanel.getPreferredSize().height);
+	    /*
+	     * FIX ME:  setting the height confuses the mouse listener
+	     * and clicking on the Take Off Hold button doesn't work.
+	     */
+            //addHUDComponent.setHeight(holdPanel.getPreferredSize().height);
         }
     }
 

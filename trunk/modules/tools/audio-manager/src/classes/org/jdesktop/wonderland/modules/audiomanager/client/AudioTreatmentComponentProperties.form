@@ -57,6 +57,7 @@
                                   <Component id="volumeSlider" alignment="0" min="-2" pref="255" max="-2" attributes="1"/>
                                   <Component id="proximityRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="manualRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="playOnceCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -108,10 +109,6 @@
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="160" max="-2" attributes="0"/>
-                      <Component id="playOnceCheckBox" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -153,9 +150,9 @@
               <Component id="proximityRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Component id="manualRadioButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Component id="playOnceCheckBox" min="-2" max="-2" attributes="1"/>
-              <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="specifyRadiusRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
