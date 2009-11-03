@@ -664,7 +664,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	dest.isMuted = source.isMuted;
 	dest.inConeOfSilence = source.inConeOfSilence;
 	dest.inSecretChat = source.inSecretChat;
-	System.out.println("UPDATE:  " + source + " DEST " + dest);
+	//System.out.println("UPDATE:  " + source + " DEST " + dest);
     }
 
     private void removeFromInRangeMaps(PresenceInfo presenceInfo) {

@@ -63,12 +63,12 @@ public class PrivacyPanel extends javax.swing.JPanel {
 
     public void addPublicRadioButtonActionListener(
             ActionListener actionListener) {
-        publicRadioButton.addActionListener(actionListener);
+        //publicRadioButton.addActionListener(actionListener);
     }
 
     public void removePublicPrivateRadioButtonActionListener(
             ActionListener actionListener) {
-        publicRadioButton.removeActionListener(actionListener);
+        //publicRadioButton.removeActionListener(actionListener);
     }
 
     /** This method is called from within the constructor to
@@ -83,7 +83,6 @@ public class PrivacyPanel extends javax.swing.JPanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         privateRadioButton = new javax.swing.JRadioButton();
         secretRadioButton = new javax.swing.JRadioButton();
-        publicRadioButton = new javax.swing.JRadioButton();
         privacyDescriptionLabel = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(32767, 57));
@@ -110,15 +109,6 @@ public class PrivacyPanel extends javax.swing.JPanel {
             }
         });
 
-        buttonGroup1.add(publicRadioButton);
-        publicRadioButton.setText(bundle.getString("PrivacyPanel.publicRadioButton.text")); // NOI18N
-        publicRadioButton.setName("publicRadioButton"); // NOI18N
-        publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                publicRadioButtonActionPerformed(evt);
-            }
-        });
-
         privacyDescriptionLabel.setText(bundle.getString("PrivacyPanel.privacyDescriptionLabel.text")); // NOI18N
         privacyDescriptionLabel.setName("privacyDescriptionLabel"); // NOI18N
 
@@ -127,27 +117,22 @@ public class PrivacyPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(29, 29, 29)
-                        .add(privacyDescriptionLabel))
-                    .add(layout.createSequentialGroup()
                         .add(privateRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(secretRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(publicRadioButton)))
-                .addContainerGap())
+                        .add(29, 29, 29)
+                        .add(secretRadioButton))
+                    .add(privacyDescriptionLabel))
+                .add(25, 25, 25))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(privateRadioButton)
                     .add(secretRadioButton)
-                    .add(publicRadioButton))
+                    .add(privateRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(privacyDescriptionLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -162,14 +147,10 @@ public class PrivacyPanel extends javax.swing.JPanel {
         privacyDescriptionLabel.setText(SECRET_DESCRIPTION);
     }//GEN-LAST:event_secretRadioButtonActionPerformed
 
-    private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicRadioButtonActionPerformed
-        privacyDescriptionLabel.setText(PUBLIC_DESCRIPTION);
-    }//GEN-LAST:event_publicRadioButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel privacyDescriptionLabel;
     private javax.swing.JRadioButton privateRadioButton;
-    private javax.swing.JRadioButton publicRadioButton;
     private javax.swing.JRadioButton secretRadioButton;
     // End of variables declaration//GEN-END:variables
 }

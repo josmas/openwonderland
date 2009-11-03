@@ -35,8 +35,8 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
         initComponents();
     }
 
-    public VolumeControlJFrame(CellID cellID, VolumeChangeListener listener, String name, String otherCallID,
-	    int volume) {
+    public VolumeControlJFrame(CellID cellID, VolumeChangeListener listener, 
+	    String name, String otherCallID, int volume) {
 
 	this.cellID = cellID;
 	this.listener = listener;
