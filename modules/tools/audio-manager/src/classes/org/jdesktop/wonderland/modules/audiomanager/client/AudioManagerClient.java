@@ -419,12 +419,18 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void mute(boolean isMuted) {
+        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+	String callID = sc.getCallID();
+
+	if (callID == null) {
+	    return;
+	}
+
         this.isMuted = isMuted;
 
-        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
         sc.mute(isMuted);
 
-        sendmessage(new MuteCallRequestMessage(sc.getCallID(), isMuted));
+        sendmessage(new MuteCallRequestMessage(callID, isMuted));
     }
 
     public void personalPhone() {
