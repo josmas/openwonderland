@@ -112,6 +112,7 @@ public class Gui2DInterior extends Gui2D {
                 return true;
             }
 
+            if (app == null || app.getControlArb() == null) return false;
             if (!app.getControlArb().hasControl()) {
                 return false;
             }
@@ -206,6 +207,7 @@ public class Gui2DInterior extends Gui2D {
             }
             logger.fine("Key event is meant for this listener, event = " + event);
 
+            if (app == null || app.getControlArb() == null) return false;
             if (!app.getControlArb().hasControl()) {
                 return false;
             }
