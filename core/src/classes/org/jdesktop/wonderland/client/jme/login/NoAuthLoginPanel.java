@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Iterator;
@@ -41,11 +40,10 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginCont
 /**
  *
  * @author jkaplan
- * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
-    private static final Logger LOGGER =
+    private static final Logger logger =
             Logger.getLogger(NoAuthLoginPanel.class.getName());
     private NoAuthLoginControl control;
     private List<ValidityListener> listeners;
@@ -62,7 +60,9 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         }
          */
         // populate with defaults
-        setUsername(System.getProperty("user.name"));
+        String userName = System.getProperty("user.name");
+        userName = userName.replaceAll("\\s", "_");
+        setUsername(userName);
 
         // override with any saved credentials
         loadCredentials();
@@ -129,7 +129,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
             storeCredentials(username, fullname);
             return null;
         } catch (LoginFailureException lfe) {
-            LOGGER.log(Level.WARNING, "Login failed", lfe);
+            logger.log(Level.WARNING, "Login failed", lfe);
             return lfe.getMessage();
         }
     }
@@ -146,12 +146,12 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         File configDir = ClientContext.getUserDirectory("config");
 
         try {
-            File outFile = new File(configDir, "login.properties");
-            PrintWriter writer = new PrintWriter(outFile, "UTF8");
-            props.list(writer);
-            writer.close();
+            FileWriter outWriter =
+                    new FileWriter(new File(configDir, "login.properties"));
+            props.list(new PrintWriter(outWriter));
+            outWriter.close();
         } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Error writing login data", ioe);
+            logger.log(Level.WARNING, "Error writing login data", ioe);
         }
     }
 
@@ -163,15 +163,14 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         }
 
         try {
-            FileInputStream inStream = new FileInputStream(propsFile);
-            InputStreamReader inReader = new InputStreamReader(inStream, "UTF8");
+            FileInputStream inReader = new FileInputStream(propsFile);
 
             Properties props = new Properties();
             props.load(inReader);
             setUsername(props.getProperty("username"));
             setFullname(props.getProperty("fullname"));
         } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Error reading login data", ioe);
+            logger.log(Level.WARNING, "Error reading login data", ioe);
         }
     }
 
@@ -193,15 +192,14 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
         setOpaque(false);
 
-        naServerLabel.setFont(naServerLabel.getFont().deriveFont(naServerLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
-        naServerLabel.setText(bundle.getString("NoAuthLoginPanel.naServerLabel.text")); // NOI18N
+        naServerLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        naServerLabel.setText("Server:");
 
-        naFullNameLabel.setFont(naFullNameLabel.getFont().deriveFont(naFullNameLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        naFullNameLabel.setText(bundle.getString("NoAuthLoginPanel.naFullNameLabel.text")); // NOI18N
+        naFullNameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        naFullNameLabel.setText("Full Name:");
 
-        naUsernameLabel.setFont(naUsernameLabel.getFont().deriveFont(naUsernameLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        naUsernameLabel.setText(bundle.getString("NoAuthLoginPanel.naUsernameLabel.text")); // NOI18N
+        naUsernameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        naUsernameLabel.setText("Username:");
 
         naServerField.setEditable(false);
         naServerField.setMinimumSize(new java.awt.Dimension(98, 22));
@@ -228,10 +226,10 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
                     .add(naServerLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(naServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(naFullNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
-                .addContainerGap(14, Short.MAX_VALUE))
+                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(naServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 274, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -255,6 +253,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
     private void naUsernameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_naUsernameFieldKeyReleased
         notifyValidityListeners();
     }//GEN-LAST:event_naUsernameFieldKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField naFullNameField;
     private javax.swing.JLabel naFullNameLabel;

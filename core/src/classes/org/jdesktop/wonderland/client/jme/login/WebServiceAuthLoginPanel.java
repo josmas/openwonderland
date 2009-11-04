@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Iterator;
@@ -63,7 +62,9 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         }
          */
         // populate with defaults
-        setUsername(System.getProperty("user.name"));
+        String userName = System.getProperty("user.name");
+        userName = userName.replaceAll("\\s", "_");
+        setUsername(userName);
 
         // override with any saved credentials
         loadCredentials();
@@ -146,10 +147,10 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         File configDir = ClientContext.getUserDirectory("config");
 
         try {
-            File outFile = new File(configDir, "login.properties");
-            PrintWriter writer = new PrintWriter(outFile, "UTF8");
-            props.list(writer);
-            writer.close();
+            FileWriter outWriter =
+                    new FileWriter(new File(configDir, "login.properties"));
+            props.list(new PrintWriter(outWriter));
+            outWriter.close();
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING, "Error writing login data", ioe);
         }
@@ -163,8 +164,7 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         }
 
         try {
-            FileInputStream inStream = new FileInputStream(propsFile);
-            InputStreamReader inReader = new InputStreamReader(inStream, "UTF8");
+            FileInputStream inReader = new FileInputStream(propsFile);
 
             Properties props = new Properties();
             props.load(inReader);
