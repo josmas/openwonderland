@@ -62,9 +62,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         }
          */
         // populate with defaults
-        String userName = System.getProperty("user.name");
-        userName = userName.replaceAll("\\s", "_");
-        setUsername(userName);
+        setUsername(System.getProperty("user.name"));
 
         // override with any saved credentials
         loadCredentials();
