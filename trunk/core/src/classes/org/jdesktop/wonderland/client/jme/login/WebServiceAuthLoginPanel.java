@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Iterator;
@@ -147,10 +148,10 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         File configDir = ClientContext.getUserDirectory("config");
 
         try {
-            FileWriter outWriter =
-                    new FileWriter(new File(configDir, "login.properties"));
-            props.list(new PrintWriter(outWriter));
-            outWriter.close();
+            File outFile = new File(configDir, "login.properties");
+            PrintWriter writer = new PrintWriter(outFile, "UTF8");
+            props.list(writer);
+            writer.close();
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING, "Error writing login data", ioe);
         }
@@ -164,7 +165,8 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         }
 
         try {
-            FileInputStream inReader = new FileInputStream(propsFile);
+            FileInputStream inStream = new FileInputStream(propsFile);
+            InputStreamReader inReader = new InputStreamReader(inStream, "UTF8");
 
             Properties props = new Properties();
             props.load(inReader);
