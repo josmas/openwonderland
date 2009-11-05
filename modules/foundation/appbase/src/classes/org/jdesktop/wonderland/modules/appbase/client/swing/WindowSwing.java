@@ -247,8 +247,10 @@ public class WindowSwing extends Window2D {
     public void cleanup () {
         cleanupViews();
         super.cleanup();
-        embeddedPeer.dispose();
-        embeddedPeer = null;
+        if (embeddedPeer != null) {
+            embeddedPeer.dispose();
+            embeddedPeer = null;
+        }
     }
 
     /** Initialize all existing views. */
