@@ -35,44 +35,56 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
  * A HUD display for avatar gestures
  *
  * @author nsimpson
+ * @author ronny.standtke@fhnw.ch
  */
 public class GestureHUD {
 
     private static final Logger logger = Logger.getLogger(GestureHUD.class.getName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
     private boolean visible = false;
     private boolean showingGestures = true;
-    private Map<String, String> gestureMap = new HashMap();
-    private Map<String, HUDButton> buttonMap = new HashMap();
+    // maps GUI visible gesture names to non-visible action names
+    private Map<String, String> gestureMap = new HashMap<String, String>();
+    private Map<String, HUDButton> buttonMap = new HashMap<String, HUDButton>();
     private HUDButton showGesturesButton;
     private HUD mainHUD;
     // map gestures to column, row locations on gesture HUD
     private String[][] gestures = {
-        {"Answer Cell", "0", "1"},
-        {"Sit", "0", "2"},
+        {BUNDLE.getString("AnswerCell"), BUNDLE.getString("AnswerCell_X"), "1"},
+        {BUNDLE.getString("Sit"), BUNDLE.getString("Sit_X"), "2"},
         /*{"Take Damage", "0", "3"},*/
-        {"Public Speaking", "1", "0"},
-        {"Bow", "1", "1"},
-        {"Shake Hands", "1", "2"},
-        {"Cheer", "2", "0"},
-        {"Clap", "2", "1"},
-        {"Laugh", "2", "2"},
-        {"Wave", "3", "2"},
-        {"Raise Hand", "3", "1"},
-        {"Follow", "3", "0"},
+        {BUNDLE.getString("PublicSpeaking"), BUNDLE.getString("PublicSpeaking_X"), "0"},
+        {BUNDLE.getString("Bow"), BUNDLE.getString("Bow_X"), "1"},
+        {BUNDLE.getString("ShakeHands"), BUNDLE.getString("ShakeHands_X"), "2"},
+        {BUNDLE.getString("Cheer"), BUNDLE.getString("Cheer_X"), "0"},
+        {BUNDLE.getString("Clap"), BUNDLE.getString("Clap_X"), "1"},
+        {BUNDLE.getString("Laugh"), BUNDLE.getString("Laugh_X"), "2"},
+        {BUNDLE.getString("Wave"), BUNDLE.getString("Wave_X"), "2"},
+        {BUNDLE.getString("RaiseHand"), BUNDLE.getString("RaiseHand_X"), "1"},
+        {BUNDLE.getString("Follow"), BUNDLE.getString("Follow_X"), "0"},
         /*{"Left Wink", "4", "0"},*/
-        {"Wink", "4", "0"},
-        {"No", "4", "1"},
-        {"Yes", "4", "2"}};
+        {BUNDLE.getString("Wink"), BUNDLE.getString("Wink_X"), "0"},
+        {BUNDLE.getString("No"), BUNDLE.getString("No_X"), "1"},
+        {BUNDLE.getString("Yes"), BUNDLE.getString("Yes_X"), "2"}};
     private int leftMargin = 20;
     private int bottomMargin = 10;
     private int rowHeight = 30;
     private int columnWidth = 100;
+    private final static String HIDE_GESTURES = BUNDLE.getString("HideGestures");
+    private final static String SHOW_GESTURES = BUNDLE.getString("ShowGestures");
 
+    /**
+     * creates a new GestureHUD
+     */
     public GestureHUD() {
         setAvatarCharacter(null);
     }
 
+    /**
+     * shows or hides the gesture HUD
+     * @param visible if <tt>true</tt>, the HUD is shown, otherwise hidden
+     */
     public void setVisible(final boolean visible) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -81,14 +93,14 @@ public class GestureHUD {
                     return;
                 }
                 if (showGesturesButton == null) {
-                    showGesturesButton = mainHUD.createButton(bundle.getString("HideGestures"));
+                    showGesturesButton = mainHUD.createButton(HIDE_GESTURES);
                     showGesturesButton.setDecoratable(false);
                     showGesturesButton.setLocation(leftMargin, bottomMargin);
                     showGesturesButton.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent event) {
-                            showingGestures = (showGesturesButton.getLabel().equals(bundle.getString("HideGestures"))) ? false : true;
-                            showGesturesButton.setLabel(showingGestures ? bundle.getString("HideGestures") : bundle.getString("ShowGestures"));
+                            showingGestures = SHOW_GESTURES.equals(showGesturesButton.getLabel());
+                            showGesturesButton.setLabel(showingGestures ? HIDE_GESTURES : SHOW_GESTURES);
                             showGestureButtons(showingGestures);
                         }
                     });
@@ -101,13 +113,21 @@ public class GestureHUD {
         });
     }
 
+    /**
+     * shows or hides the gesture buttons
+     * @param show if <tt>true</tt>, the gesture buttons are shown, otherwise
+     * hidden
+     */
     public void showGestureButtons(boolean show) {
-        for (String gesture : buttonMap.keySet()) {
-            HUDButton button = buttonMap.get(gesture);
+        for (HUDButton button : buttonMap.values()) {
             button.setVisible(show);
         }
     }
 
+    /**
+     * returns <tt>true</tt>, when the HUD is visible, otherwise false
+     * @return <tt>true</tt>, when the HUD is visible, otherwise false
+     */
     public boolean isVisible() {
         return visible;
     }
@@ -118,6 +138,7 @@ public class GestureHUD {
     private void doSitGesture(final WlAvatarCharacter avatar) {
         // Create a thread that sleeps and tells the sit action to stop.
         final Runnable stopSitRunnable = new Runnable() {
+
             public void run() {
                 try {
                     Thread.sleep(100);
@@ -131,6 +152,7 @@ public class GestureHUD {
         // Spawn a thread to start the animation, which then spawns a thread
         // to stop the animation after a small sleep.
         new Thread() {
+
             @Override
             public void run() {
                 avatar.triggerActionStart(TriggerNames.SitOnGround);
@@ -139,18 +161,20 @@ public class GestureHUD {
         }.start();
     }
 
+    /**
+     * sets the avatar and activates supported gestures
+     * @param avatar the avatar to set
+     */
     public void setAvatarCharacter(final WlAvatarCharacter avatar) {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
                 if (mainHUD == null) {
                     mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-
                 }
 
                 // remove existing gesture buttons
-                for (String name : buttonMap.keySet()) {
-                    HUDButton button = buttonMap.get(name);
+                for (HUDButton button : buttonMap.values()) {
                     mainHUD.removeComponent(button);
                 }
                 buttonMap.clear();
@@ -161,8 +185,8 @@ public class GestureHUD {
                     return;
                 }
 
-                // Otherwise, figure out which gestures are supported. We want to
-                // remove the "Male_" or "Female_" for now.
+                // Otherwise, figure out which gestures are supported. We want
+                // to remove the "Male_" or "Female_" for now.
                 for (String action : avatar.getAnimationNames()) {
                     String name = action;
                     if (action.startsWith("Male_") == true) {
@@ -172,14 +196,13 @@ public class GestureHUD {
                     }
                     // add to a map of user-friendly names to avatar animations
                     // e.g., "Shake Hands" -> "Male_ShakeHands"
-                    gestureMap.put(bundle.getString(name), action);
+                    gestureMap.put(BUNDLE.getString(name), action);
                 }
 
                 // Add the left and right wink
-                //gestureMap.put("Left Wink", "LeftWink");
                 if (avatar.getCharacterParams().isAnimatingFace()) {
-                    gestureMap.put("Wink", "RightWink");
-                    gestureMap.put("Sit", "Sit");
+                    gestureMap.put(BUNDLE.getString("Wink"), "RightWink");
+                    gestureMap.put(BUNDLE.getString("Sit"), "Sit");
                 }
 
                 // Create HUD buttons for each of the actions
@@ -195,7 +218,8 @@ public class GestureHUD {
                             HUDButton button = mainHUD.createButton(name);
                             button.setDecoratable(false);
                             button.setPreferredTransparency(0.2f);
-                            button.setLocation(leftMargin + column * columnWidth, bottomMargin + row * rowHeight);
+                            button.setLocation(leftMargin + column * columnWidth,
+                                    bottomMargin + row * rowHeight);
                             mainHUD.addComponent(button);
                             buttonMap.put(name, button);
 
@@ -204,14 +228,11 @@ public class GestureHUD {
                                 public void actionPerformed(ActionEvent event) {
                                     String action = gestureMap.get(event.getActionCommand());
                                     logger.info("playing animation: " + event.getActionCommand());
-                                    if (action.equals("Sit") == true) {
+                                    if (action.equals("Sit")) {
                                         doSitGesture(avatar);
-                                    } else if (action.equals("RightWink") == true) {
+                                    } else if (action.equals("RightWink")) {
                                         CharacterEyes eyes = avatar.getEyes();
                                         eyes.wink(false);
-//                                  } else if (action.equals("RightWink") == true) {
-//                                        CharacterEyes eyes = avatar.getEyes();
-//                                        eyes.wink(true);
                                     } else {
                                         avatar.playAnimation(action);
                                     }
