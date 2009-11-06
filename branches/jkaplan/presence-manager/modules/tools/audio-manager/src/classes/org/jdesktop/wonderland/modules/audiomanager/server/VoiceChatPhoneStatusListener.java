@@ -118,7 +118,7 @@ public class VoiceChatPhoneStatusListener implements ManagedCallStatusListener, 
 
     private void stopRinging(VoiceManager vm) {
         //Stop the ringing
-	Call softphoneCall = vm.getCall(presenceInfo.callID);
+	Call softphoneCall = vm.getCall(presenceInfo.getCallID());
 
 	if (softphoneCall != null) {
 	    try {

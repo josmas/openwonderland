@@ -534,8 +534,8 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     PresenceInfo[] info = pm.getAllUsers();
 
     for (int i = 0; i < info.length; i++) {
-        if (info[i].usernameAlias.equals(name) ||
-		info[i].userID.getUsername().equals(name)) {
+        if (info[i].getUsernameAlias().equals(name) ||
+		info[i].getUserID().getUsername().equals(name)) {
 
             statusMessageLabel.setText("Name is already being used!");
 	    return;

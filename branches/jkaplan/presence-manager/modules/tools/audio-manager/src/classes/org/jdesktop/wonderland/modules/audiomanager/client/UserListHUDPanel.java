@@ -190,7 +190,7 @@ public class UserListHUDPanel
     }
 
     public void changeUsernameAlias(PresenceInfo info) {
-        session.send(client, new ChangeUsernameAliasMessage(info.cellID, info));
+        session.send(client, new ChangeUsernameAliasMessage(info.getCellID(), info));
     }
 
     public void updateMuteButton() {
@@ -234,14 +234,14 @@ public class UserListHUDPanel
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
 
-            if (info.callID == null) {
+            if (info.getCallID() == null) {
                 // It's a virtual player, skip it.
                 continue;
             }
 
-            String username = info.userID.getUsername();
+            String username = info.getUserID().getUsername();
             String displayName = NameTagNode.getDisplayName(
-                    info.usernameAlias, info.isSpeaking, info.isMuted);
+                    info.getUsernameAlias(), info.isSpeaking(), info.isMuted());
 
             boolean inRange = isInRange(info);
             //displayName = (inRange ? "\u25B8 " : "") + displayName;
@@ -334,7 +334,7 @@ public class UserListHUDPanel
             // check if user is in current presence list
             for (int i = 0; i < presenceInfoList.length; i++) {
                 PresenceInfo info = presenceInfoList[i];
-                if (username.equals(info.userID.getUsername())) {
+                if (username.equals(info.getUserID().getUsername())) {
                     found = true;
                     break;
                 }
@@ -769,7 +769,7 @@ private void textChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     LOGGER.warning("Selected user is " + selectedUser);
     String userName = NameTagNode.getUsername(selectedUser);
     PresenceInfo info = pm.getAliasPresenceInfo(userName);
-    WonderlandIdentity id = info.userID;
+    WonderlandIdentity id = info.getUserID();
     if (id == null) {
         LOGGER.warning("No ID found for user " + selectedUser);
         return;
@@ -913,9 +913,9 @@ private void gotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         // get the position of the other user based on their cellID
-        Vector3f position = pm.getCellPosition(info.cellID);
+        Vector3f position = pm.getCellPosition(info.getCellID());
         if (position == null) {
-            LOGGER.warning("unable to find location of " + info.cellID);
+            LOGGER.warning("unable to find location of " + info.getCellID());
         }
         
         // get the current look direction of the avatar
@@ -954,7 +954,7 @@ private void volumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
 
         	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-        	session.send(client, new AudioVolumeMessage(info.cellID, sc.getCallID(), info.callID, volume, true));
+        	session.send(client, new AudioVolumeMessage(info.getCellID(), sc.getCallID(), info.getCallID(), volume, true));
             }
         }
 }//GEN-LAST:event_volumeSpinnerStateChanged

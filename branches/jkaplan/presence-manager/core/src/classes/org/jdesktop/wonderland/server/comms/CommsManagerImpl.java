@@ -17,12 +17,13 @@
  */
 package org.jdesktop.wonderland.server.comms;
 
+import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ScalableHashMap;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,33 +37,16 @@ import org.jdesktop.wonderland.server.comms.annotation.Protocol;
  * Implementation of CommsManager
  * @author jkaplan
  */
-class CommsManagerImpl 
-        implements CommsManager, ManagedObject, Serializable 
+class CommsManagerImpl implements CommsManager, Serializable 
 {
-    /** a map from protocol names to protocol objects */
-    private Map<String, CommunicationsProtocol> protocols;
-    
+    /** the name of the binding for the implementation in the data store */
+    private static final String BINDING_NAME =
+            CommsManagerImpl.class.getName() + ".binding";
+
     /**
      * Create a new instance of CommsManagerImpl.
      */
     public CommsManagerImpl() {
-        // create the protocol map
-        protocols = new HashMap<String, CommunicationsProtocol>();
-
-        // find all annotated protocols and install them
-        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
-        Iterator<CommunicationsProtocol> pi = scl.getAll(Protocol.class,
-                                                         CommunicationsProtocol.class);
-        while (pi.hasNext()) {
-            registerProtocol(pi.next());
-        }
-
-        // find all annotated client handlers and install them
-        Iterator<ClientConnectionHandler> ci = scl.getAll(ClientHandler.class,
-                                                          ClientConnectionHandler.class);
-        while (ci.hasNext()) {
-            registerClientHandler(ci.next());
-        }
     }
     
     /**
@@ -75,22 +59,48 @@ class CommsManagerImpl
         
         // initialize the Wonderland session listener
         WonderlandSessionListener.initialize();
+
+        // create the protocol map and register the binding name
+        Map<String, CommunicationsProtocol> protocols =
+                new ScalableHashMap<String, CommunicationsProtocol>();
+        AppContext.getDataManager().setBinding(BINDING_NAME, protocols);
+
+        // find all annotated protocols and install them
+        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+        Iterator<CommunicationsProtocol> pi = scl.getAll(Protocol.class,
+                                                         CommunicationsProtocol.class);
+        while (pi.hasNext()) {
+            CommunicationsProtocol cp = pi.next();
+            protocols.put(cp.getName(), cp);
+        }
+
+        // find all annotated client handlers and install them
+        Iterator<ClientConnectionHandler> ci = scl.getAll(ClientHandler.class,
+                                                          ClientConnectionHandler.class);
+        while (ci.hasNext()) {
+            WonderlandSessionListener.registerClientHandler(ci.next());
+        }
     }
     
     public void registerProtocol(CommunicationsProtocol protocol) {
-        protocols.put(protocol.getName(), protocol);
+        getProtocolMap().put(protocol.getName(), protocol);
     }
 
     public void unregisterProtocol(CommunicationsProtocol protocol) {
-        protocols.remove(protocol.getName());
+        getProtocolMap().remove(protocol.getName());
     }
 
     public CommunicationsProtocol getProtocol(String name) {
-        return protocols.get(name);
+        return getProtocolMap().get(name);
     }
 
     public Set<CommunicationsProtocol> getProtocols() {
-        return Collections.unmodifiableSet(new HashSet(protocols.values()));
+        return Collections.unmodifiableSet(new HashSet(getProtocolMap().values()));
+    }
+    
+    protected Map<String, CommunicationsProtocol> getProtocolMap() {
+        return (Map<String, CommunicationsProtocol>)
+                AppContext.getDataManager().getBinding(BINDING_NAME);
     }
 
     public CommunicationsProtocol getProtocol(ClientSession session) {
