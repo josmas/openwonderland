@@ -123,6 +123,10 @@ public class MicrophoneComponentMO extends CellComponentMO {
             state = new MicrophoneComponentServerState();
         }
 
+        if (name == null) {
+            name = DEFAULT_NAME;
+        }
+
 	String appendName = "-" + cellRef.get().getCellID();
 
 	if (name.indexOf(appendName) < 0) {

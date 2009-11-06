@@ -47,7 +47,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatme
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMenuChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 /**
  * A component that provides audio audio treatments
@@ -155,6 +154,8 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
         contextMenu.addContextMenuFactory(factory);
     }
 
+    private VolumeControlJFrame volumeControlJFrame;
+
     public void menuItemSelected(ContextMenuItemEvent event) {
         if (event.getContextMenuItem().getLabel().equals("Play") ||
                 event.getContextMenuItem().getLabel().equals("Resume")) {
@@ -172,8 +173,12 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 
         if (event.getContextMenuItem().getLabel().equals("Volume")) {
 	    String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
-            channelComp.send(new AudioVolumeMessage(cell.getCellID(), softphoneCallID,
-		CallID.getCallID(cell.getCellID()), 5, false));
+
+	    if (volumeControlJFrame == null) {
+	        volumeControlJFrame = new VolumeControlJFrame(this, "");
+	    }
+
+	    volumeControlJFrame.setVisible(true);
 	    return;
         }
 
@@ -185,13 +190,15 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
         channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
     }
 
-    public void volumeChanged(CellID cellID, String otherCallID, int volume) {
+    public void volumeChanged(float volume) {
 	logger.fine("Volume changed " + volume);
 
 	String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
 
-   	channelComp.send(new AudioVolumeMessage(cellID, softphoneCallID,
-	    otherCallID, VolumeUtil.getServerVolume(volume), true));
+	String otherCallID = CallID.getCallID(cell.getCellID());
+
+   	channelComp.send(new AudioVolumeMessage(cell.getCellID(), softphoneCallID,
+	    otherCallID, volume, true));
     }
 
     private ArrayList<AudioTreatmentStatusListener> treatmentStatusListeners = new ArrayList();
@@ -228,6 +235,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
     private void receive(CellMessage message) {
 	if (message instanceof AudioTreatmentDoneMessage) {
 	    addMenuItems(new String[] {"Play", "Volume"});
+	    System.out.println("Got treatment done message");
 	    channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
 	    return;
 	}
@@ -251,15 +259,9 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 	}
 	
 	if (message instanceof AudioVolumeMessage) {
-	    double serverVolume = ((AudioVolumeMessage) message).getVolume();
+	    float volume = (float) ((AudioVolumeMessage) message).getVolume();
 	    
-	    int clientVolume = VolumeUtil.getClientVolume(serverVolume);
-
-	    logger.fine("Got volume message " + serverVolume);
-
-	    new VolumeControlJFrame(cell.getCellID(), this, "", 
-		CallID.getCallID(cell.getCellID()), clientVolume);
-		
+	    logger.fine("Got volume message " + volume);
 	    return;
 	}
     }

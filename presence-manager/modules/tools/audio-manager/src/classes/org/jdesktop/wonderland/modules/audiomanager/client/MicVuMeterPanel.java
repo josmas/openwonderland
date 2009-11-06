@@ -18,12 +18,14 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.io.IOException;
+
 import org.jdesktop.wonderland.client.jme.Meter;
 import org.jdesktop.wonderland.client.softphone.MicrophoneInfoListener;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
+
+import javax.swing.SpinnerNumberModel;
 
 /**
  * A microphone level control panel.
@@ -37,6 +39,8 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
     private AudioManagerClient client;
     private Meter meter;
 
+    private SpinnerNumberModel micVolumeModel;
+
     public MicVuMeterPanel() {
         this(null);
     }
@@ -45,6 +49,12 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
         this.client = client;
 
         initComponents();
+
+	micVolumeModel = new SpinnerNumberModel(new Float(1), new Float(0),
+	    new Float(10), new Float(.05));
+
+	micVolumeSpinner.setModel(micVolumeModel);
+
         if (client != null) {
             client.addDisconnectListener(this);
         }
@@ -141,7 +151,7 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
     }
 
     public void microphoneVolume(String data) {
-        micVolumeSlider.setValue(VolumeUtil.getClientVolume(Double.parseDouble(data)));
+        micVolumeSpinner.setValue((Float.parseFloat(data)));
     }
 
     /** This method is called from within the constructor to
@@ -154,23 +164,11 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        micVolumeSlider = new javax.swing.JSlider();
         vuMeterPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
+        micVolumeSpinner = new javax.swing.JSpinner();
 
         jLabel1.setText("Mic Volume:");
-
-        micVolumeSlider.setMajorTickSpacing(1);
-        micVolumeSlider.setMaximum(10);
-        micVolumeSlider.setPaintLabels(true);
-        micVolumeSlider.setPaintTicks(true);
-        micVolumeSlider.setSnapToTicks(true);
-        micVolumeSlider.setValue(5);
-        micVolumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                micVolumeSliderStateChanged(evt);
-            }
-        });
 
         vuMeterPanel.setMinimumSize(new java.awt.Dimension(230, 26));
         vuMeterPanel.setPreferredSize(new java.awt.Dimension(230, 26));
@@ -178,19 +176,30 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
         jLabel2.setFont(jLabel2.getFont());
         jLabel2.setText("Level:");
 
+        micVolumeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                micVolumeSpinnerStateChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jLabel1)
-                    .add(jLabel2))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(53, 53, 53)
+                        .add(jLabel2))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jLabel1)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, micVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
+                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(micVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -198,34 +207,32 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 43, Short.MAX_VALUE)
                     .add(jLabel2))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(11, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .add(35, 35, 35))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(micVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(29, 29, 29))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void micVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_micVolumeSliderStateChanged
+    private void micVolumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_micVolumeSpinnerStateChanged
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
-        double volume = VolumeUtil.getServerVolume(micVolumeSlider.getValue());
+        double volume = (Float) micVolumeSpinner.getValue();
 
         try {
             sc.sendCommandToSoftphone("microphoneVolume=" + volume);
         } catch (IOException e) {
             System.out.println("Unable to send microphone volume command to softphone:  " + e.getMessage());
         }
-}//GEN-LAST:event_micVolumeSliderStateChanged
+    }//GEN-LAST:event_micVolumeSpinnerStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JSlider micVolumeSlider;
+    private javax.swing.JSpinner micVolumeSpinner;
     private javax.swing.JPanel vuMeterPanel;
     // End of variables declaration//GEN-END:variables
 }

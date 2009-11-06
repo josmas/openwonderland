@@ -535,7 +535,9 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    playerInfo = audioGroup.getPlayerInfo(player);
 
-	    if (playerInfo != null && playerInfo.isSpeaking && playerInfo.chatType.equals(AudioGroupPlayerInfo.ChatType.PUBLIC) == false) {
+	    if (playerInfo != null && playerInfo.isSpeaking && 
+		    playerInfo.chatType.equals(AudioGroupPlayerInfo.ChatType.PUBLIC) == false) {
+
 		nonPublicAudioGroup = audioGroup;
 		break;
 	    }
@@ -559,6 +561,31 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        stationaryPlayerAudioGroup.setListenAttenuation(player, AudioGroup.MINIMAL_LISTEN_ATTENUATION);
 	    } else {
                 stationaryPlayerAudioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+	    }
+	}
+
+	/*
+	 * If we're in a nonPublicAudioGroup, we also have to attenuate the other groups we're listening to.
+	 */
+	double attenuation;
+
+	if (nonPublicAudioGroup != null) {
+	    attenuation = AudioGroup.MINIMAL_LISTEN_ATTENUATION;
+	} else {
+	    attenuation = AudioGroup.DEFAULT_LISTEN_ATTENUATION;
+	}
+
+	for (int i = 0; i < audioGroups.length; i++) {
+	    AudioGroup audioGroup = audioGroups[i];
+
+	    if (audioGroup.equals(livePlayerAudioGroup) || audioGroup.equals(stationaryPlayerAudioGroup)) {
+		continue;
+	    }
+
+	    playerInfo = audioGroup.getPlayerInfo(player);
+
+	    if (playerInfo.chatType.equals(ChatType.PUBLIC) && playerInfo.listenAttenuation != 0) {
+		audioGroup.setListenAttenuation(player, attenuation);
 	    }
 	}
 
