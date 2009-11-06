@@ -253,7 +253,7 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
         if (message instanceof TransferCallRequestMessage) {
             TransferCallRequestMessage msg = (TransferCallRequestMessage) message;
 
-            String callID = msg.getPresenceInfo().callID;
+            String callID = msg.getPresenceInfo().getCallID();
 
             Call call = vm.getCall(callID);
 
@@ -293,7 +293,7 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
             }
 
             if (msg.getPhoneNumber().equals(cp.getPhoneNumber())) {
-		sender.send(clientID, new CallMigrateMessage(msg.getPresenceInfo().callID, true));
+		sender.send(clientID, new CallMigrateMessage(msg.getPresenceInfo().getCallID(), true));
                 return;
             }
 
@@ -350,7 +350,7 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
     private void placeCall(WonderlandClientID clientID, PlaceCallRequestMessage msg) {
         PresenceInfo info = msg.getPresenceInfo();
 
-        CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
+        CellMO cellMO = CellManagerMO.getCellManager().getCell(info.getCellID());
 
         AudioParticipantComponentMO audioParticipantComponentMO =
                 cellMO.getComponent(AudioParticipantComponentMO.class);
@@ -366,7 +366,7 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
 
         setup.cp = cp;
 
-        String callID = info.callID;
+        String callID = info.getCallID();
 
         if (callID == null) {
             logger.fine("Can't place call to " + msg.getSipURL() + ".  No cell for " + callID);
@@ -396,7 +396,7 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
 	callIDListenerMap.put(callID, audioCallStatusListenerRef);
 
         cp.setCallId(callID);
-        cp.setName(info.userID.getUsername());
+        cp.setName(info.getUserID().getUsername());
         cp.setPhoneNumber(msg.getSipURL());
 
         setJoinConfirmation(cp);

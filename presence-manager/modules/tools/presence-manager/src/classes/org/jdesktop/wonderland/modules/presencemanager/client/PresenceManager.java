@@ -18,15 +18,8 @@
 package org.jdesktop.wonderland.modules.presencemanager.client;
 
 import java.math.BigInteger;
-
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-
 import org.jdesktop.wonderland.common.cell.CellID;
-
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 
@@ -35,23 +28,6 @@ import com.jme.math.Vector3f;
 * CellID, WonderlandIdentity and SessionID.
 */
 public interface PresenceManager {
-
-    /**
-     * Tell the PresenceManager about new PresenceInfo.
-     * @param CellID the cell ID of the ViewCell.
-     * @param BigInteger the Wonderland session ID
-     * @param WonderlandIdentity the user ID
-     */
-    public void addPresenceInfo(PresenceInfo presenceInfo);
-
-    /**
-     * Tell the PresenceManager that PresenceInfo has been removed.
-     * @param CellID the cell ID of the ViewCell.
-     * @param BigInteger the Wonderland session ID
-     * @param WonderlandIdentity the user ID
-     */
-    public void removePresenceInfo(PresenceInfo presenceInfo);
-
     /**
      * Get PresenceInfo from a cellID.  The cellID must be for a ViewCell.
      * @param CellID the CellID of the ViewCell
@@ -97,7 +73,7 @@ public interface PresenceManager {
      * @param String user name
      * @return PresenceInfo presence information for user.
      */
-    public PresenceInfo getUserPresenceInfo(String username);
+     public PresenceInfo getUserPresenceInfo(String username);
 
     /**
      * Get PresenceInfo for a given username alias.  If there is more 
@@ -116,11 +92,17 @@ public interface PresenceManager {
     public Vector3f getCellPosition(CellID cellID);
 
     /**
+     * Request that the server change this user's alias.
+     * @param alias the alias to change
+     */
+    public void requestChangeUsernameAlias(String alias);
+
+    /**
      * Change usernameAlias in PresenceInfo.
      * @param PresenceInfo
      * @param String user name
      */
-    public void changeUsernameAlias(PresenceInfo info);
+    public void changeUsernameAlias(PresenceInfo info, String alias);
 
     /** 
      * Set speaking flag
@@ -149,6 +131,18 @@ public interface PresenceManager {
      * @param boolean
      */
     public void setInSecretChat(PresenceInfo info, boolean inSecretChat);
+
+    /**
+     * Add a local presence info object
+     * @param info the info to add
+     */
+    public void addLocalPresenceInfo(PresenceInfo info);
+
+    /**
+     * Remove a local presence info object
+     * @param info the info to remove
+     */
+    public void removeLocalPresenceInfo(PresenceInfo info);
 
     /**
      * Listener for changes

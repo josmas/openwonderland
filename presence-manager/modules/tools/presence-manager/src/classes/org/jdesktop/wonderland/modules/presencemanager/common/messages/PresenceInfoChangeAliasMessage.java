@@ -18,17 +18,21 @@
 package org.jdesktop.wonderland.modules.presencemanager.common.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- * Message to remove PresenceInfo.
+ * Message indicating a user's alias has changed
  * @author jprovino
  */
 @ExperimentalAPI
-public class PresenceInfoRemovedMessage extends CellMessage {
+public class PresenceInfoChangeAliasMessage extends Message {
+    private String alias;
 
-    public PresenceInfoRemovedMessage(CellID cellID) {
-        super (cellID);
+    public PresenceInfoChangeAliasMessage(String alias) {
+        this.alias = alias;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 }

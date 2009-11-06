@@ -179,7 +179,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	 * Ask for users in range
 	 */
 	session.send(client, new GetPlayersInRangeRequestMessage(
-	    myPresenceInfo.callID));
+	    myPresenceInfo.getCallID()));
     }
 
     public void addUserListSelectionListener(javax.swing.event.ListSelectionListener listener) {
@@ -218,7 +218,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	for (int i = 0; i < presenceInfoList.length; i++) {
 	    PresenceInfo info = presenceInfoList[i];
 
-	    if (info.callID == null) {
+	    if (info.getCallID() == null) {
                 // It's a virtual player, skip it.
 		continue;
             }
@@ -243,7 +243,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	for (int i = 0; i < presenceInfoList.length; i++) {
 	    PresenceInfo info = presenceInfoList[i];
 
-	    if (info.callID == null) {
+	    if (info.getCallID() == null) {
                 // It's a virtual player, skip it.
                 continue;
             }
@@ -308,7 +308,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
             /*
              * You can only select yourself or outworlders
              */
-            if (info.clientID != null) {
+            if (info.getClientID() != null) {
                 continue;
             }
 
@@ -375,7 +375,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
         PresenceInfo presenceInfo = new PresenceInfo(null, null, 
 	    new WonderlandIdentity(name, name, null), callID);
 
-        pm.addPresenceInfo(presenceInfo);
+        pm.addLocalPresenceInfo(presenceInfo);
 
 	updateUserList();
         session.send(client, new VoiceChatDialOutMessage(group, callID, chatType, presenceInfo, number));
@@ -468,7 +468,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private void addElementLater(PresenceInfo info, String usernameAlias) {
 	//userListModel.removeElement(usernameAlias);
         userListModel.addElement(usernameAlias);
-	usernameMap.put(info.userID.getUsername(), usernameAlias);
+	usernameMap.put(info.getUserID().getUsername(), usernameAlias);
 	//dump("addElement later size " + userListModel.size() + " " 
 	//    + usernameAlias);
     }
@@ -485,7 +485,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
     private void removeElementLater(PresenceInfo info, String usernameAlias) {
 	userListModel.removeElement(usernameAlias);
-	usernameMap.remove(info.userID.getUsername());
+	usernameMap.remove(info.getUserID().getUsername());
     }
 
     private void addToUserList(final PresenceInfo info) {
@@ -499,8 +499,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private void addToUserListLater(PresenceInfo info) {
         removeFromUserListLater(info);
 
-        String displayName = NameTagNode.getDisplayName(info.usernameAlias,
-                info.isSpeaking, info.isMuted);
+        String displayName = NameTagNode.getDisplayName(info.getUsernameAlias(),
+                info.isSpeaking(), info.isMuted());
 
         addElementLater(info, displayName);
     }
@@ -516,19 +516,19 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void removeFromUserListLater(PresenceInfo info) {
-        String name = NameTagNode.getDisplayName(info.usernameAlias, false, false);
+        String name = NameTagNode.getDisplayName(info.getUsernameAlias(), false, false);
         removeElementLater(info, name);
 
 	name = BYSTANDER_SYMBOL + name;
         removeElementLater(info, name);
 
-        name = NameTagNode.getDisplayName(info.usernameAlias, false, true);
+        name = NameTagNode.getDisplayName(info.getUsernameAlias(), false, true);
         removeElementLater(info, name);
 
 	name = BYSTANDER_SYMBOL + name;
         removeElementLater(info, name);
 
-        name = NameTagNode.getDisplayName(info.usernameAlias, true, false);
+        name = NameTagNode.getDisplayName(info.getUsernameAlias(), true, false);
         removeElementLater(info, name);
 
 	name = BYSTANDER_SYMBOL + name;
@@ -537,7 +537,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
     private void setElementAt(PresenceInfo info, String displayName, int ix) {
 	setElementAt(displayName, ix);
-	usernameMap.put(info.userID.getUsername(), displayName);
+	usernameMap.put(info.getUserID().getUsername(), displayName);
     }
 
     private void dump(String s) {
@@ -562,9 +562,9 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void removeElementAt(PresenceInfo info, int ix) {
-	usernameMap.remove(info.userID.getUsername());
+	usernameMap.remove(info.getUserID().getUsername());
 	userListModel.removeElementAt(ix);
-	logger.fine("Removed element at " + ix + " " + info.userID.getUsername());
+	logger.fine("Removed element at " + ix + " " + info.getUserID().getUsername());
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
@@ -603,7 +603,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		removeFromUserList(presenceInfo);
 		if (personalPhone) {
 		    synchronized (members) {
-		        if (presenceInfo.clientID == null && members.size() == 1) {
+		        if (presenceInfo.getClientID() == null && members.size() == 1) {
 			    leave();
 		        }
 		    }
@@ -660,10 +660,10 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void updatePresenceInfo(PresenceInfo source, PresenceInfo dest) {
-	dest.isSpeaking = source.isSpeaking;
-	dest.isMuted = source.isMuted;
-	dest.inConeOfSilence = source.inConeOfSilence;
-	dest.inSecretChat = source.inSecretChat;
+	dest.setSpeaking(source.isSpeaking());
+	dest.setMuted(source.isMuted());
+	dest.setInConeOfSilence(source.isInConeOfSilence());
+	dest.setInSecretChat(source.isInSecretChat());
 	//System.out.println("UPDATE:  " + source + " DEST " + dest);
     }
 
@@ -692,7 +692,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    CopyOnWriteArrayList<PresenceInfo> usersInRange = usersInRangeMap.get(username);
 	    
 	    for (PresenceInfo info : usersInRange) {
-		System.out.println("  " + info.userID.getUsername());
+		System.out.println("  " + info.getUserID().getUsername());
 	    }
 	}
 	
@@ -778,11 +778,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
        ArrayList<PresenceInfo> membersInfo = getSelectedValues();
 
         for (PresenceInfo info : membersInfo) {
-            if (info.clientID != null) {
+            if (info.getClientID() != null) {
                 continue;
             }
 
-            session.send(client, new EndCallMessage(info.callID, "Terminated with malice"));
+            session.send(client, new EndCallMessage(info.getCallID(), "Terminated with malice"));
         }
     }
 
@@ -794,7 +794,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	new ConcurrentHashMap();
 
     private boolean isInRange(PresenceInfo info) {
-	CopyOnWriteArrayList<PresenceInfo> usersInRange = usersInRangeMap.get(myPresenceInfo.userID.getUsername());
+	CopyOnWriteArrayList<PresenceInfo> usersInRange = usersInRangeMap.get(myPresenceInfo.getUserID().getUsername());
 
         return isMe(info) || usersInRange.contains(info);
     }
@@ -815,7 +815,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     public void userInRange(PresenceInfo info, PresenceInfo userInRange, boolean isInRange) {
-	CopyOnWriteArrayList<PresenceInfo> usersInRange = usersInRangeMap.get(info.userID.getUsername());
+	CopyOnWriteArrayList<PresenceInfo> usersInRange = usersInRangeMap.get(info.getUserID().getUsername());
 
 	logger.fine("userInRange:  " + info + " userInRange " + userInRange + " inRange "
 	    + isInRange);
@@ -826,7 +826,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    }
 
 	    usersInRange = new CopyOnWriteArrayList();
-	    usersInRangeMap.put(info.userID.getUsername(), usersInRange);
+	    usersInRangeMap.put(info.getUserID().getUsername(), usersInRange);
 	    logger.fine("ADDING NEW MAP FOR " + info);
 	}
 
@@ -849,7 +849,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void remove(PresenceInfo info) {
-        String username = info.userID.getUsername();
+        String username = info.getUserID().getUsername();
 
 	String mapEntry = usernameMap.get(username);
 

@@ -105,7 +105,7 @@ public class AddHUDPanel
         this.caller = caller;
 
         if (group == null) {
-            group = caller.userID.getUsername() + "-" + groupNumber++;
+            group = caller.getUserID().getUsername() + "-" + groupNumber++;
         }
 
         this.group = group;
@@ -433,8 +433,8 @@ public class AddHUDPanel
             PresenceInfo[] info = pm.getAllUsers();
 
             for (int i = 0; i < info.length; i++) {
-                if (info[i].usernameAlias.equals(name) ||
-                        info[i].userID.getUsername().equals(name)) {
+                if (info[i].getUsernameAlias().equals(name) ||
+                        info[i].getUserID().getUsername().equals(name)) {
 
                     addPhoneUserPanel.setStatusMessage(
                             BUNDLE.getString("Name_Used"));
@@ -661,7 +661,7 @@ public class AddHUDPanel
         }
 
         for (PresenceInfo info : selectedValues) {
-            if (info.clientID != null) {
+            if (info.getClientID() != null) {
                 if (inProgressButtonPanel != null) {
                     inProgressButtonPanel.setEnabledHangUpButton(false);
                 }

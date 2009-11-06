@@ -185,34 +185,34 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
     private void setMyNameTag(EventType eventType) {
 	CellCache cellCache = ClientContext.getCellCache(session);
 
-	Cell cell = cellCache.getCell(presenceInfo.cellID);
+	Cell cell = cellCache.getCell(presenceInfo.getCellID());
 
         NameTagComponent comp = (NameTagComponent) cell.getComponent(NameTagComponent.class);
 
-	comp.setNameTag(eventType, presenceInfo.userID.getUsername(), 
-	    presenceInfo.usernameAlias);
+	comp.setNameTag(eventType, presenceInfo.getUserID().getUsername(),
+	    presenceInfo.getUsernameAlias());
     }
 
     private void setOtherNameTags(EventType eventType) {
-	String myUsername = presenceInfo.userID.getUsername();
+	String myUsername = presenceInfo.getUserID().getUsername();
 
 	PresenceInfo[] users = pm.getAllUsers();
 
 	CellCache cellCache = ClientContext.getCellCache(session);
 
         for (int i = 0; i < users.length; i++) {
-	    String username = users[i].userID.getUsername();
+	    String username = users[i].getUserID().getUsername();
 
             if (username.equals(myUsername)) {
                 continue;
             }
 
-	    if (users[i].cellID == null) {
+	    if (users[i].getCellID() == null) {
 		LOGGER.warning("No cellID for " + username);
 		continue;
 	    }
 
-	    Cell cell = cellCache.getCell(users[i].cellID);
+	    Cell cell = cellCache.getCell(users[i].getCellID());
 
 	    if (cell == null) {
 		LOGGER.warning("No cell for " + username);
@@ -223,7 +223,7 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
             LOGGER.fine("set other name tags: " + eventType + users[i]);
 
-            comp.setNameTag(eventType, username, users[i].usernameAlias);
+            comp.setNameTag(eventType, username, users[i].getUsernameAlias());
         }
     }
 
