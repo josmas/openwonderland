@@ -64,7 +64,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.TreatmentType;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentDoneMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEndedMessage;
@@ -401,6 +400,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             logger.info("Starting treatment " + setup.treatment + " at (" + setup.x 
 		+ ":" + setup.y + ":" + setup.z + ")");
 
+            System.out.println("Starting treatment " + setup.treatment + " at (" + setup.x 
+		+ ":" + setup.y + ":" + setup.z + ")");
+
             try {
 		Treatment t = vm.createTreatment(treatmentId, setup);
                 group.addTreatment(t);
@@ -668,9 +670,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             break;
 
         case CallStatus.TREATMENTDONE:
-	    if (playOnce == true) {
-		//System.out.println("TREATMENT DONE");
+	    System.out.println("TREATMENT DONE, playOnce " + playOnce);
 
+	    if (playOnce == true) {
 		channelRef.get().sendAll(null, new AudioTreatmentDoneMessage(cellID, callId));
 	    }
 	    break;

@@ -40,7 +40,6 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 

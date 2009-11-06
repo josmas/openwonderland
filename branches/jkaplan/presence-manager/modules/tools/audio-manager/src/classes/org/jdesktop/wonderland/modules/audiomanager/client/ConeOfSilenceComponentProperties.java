@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState.COSBoundsType;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -56,11 +55,12 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     private COSBoundsType originalBoundsType = COSBoundsType.CELL_BOUNDS;
     private Vector3f originalBounds = new Vector3f();
     private boolean originalShowBounds = false;
-    private int originalOutsideAudioVolume = 0;
-    private SpinnerNumberModel fullVolumeRadiusModel = null;
-    private SpinnerNumberModel xExtentModel = null;
-    private SpinnerNumberModel yExtentModel = null;
-    private SpinnerNumberModel zExtentModel = null;
+    private float originalOutsideAudioVolume = 0;
+    private SpinnerNumberModel outsideVolumeModel;
+    private SpinnerNumberModel fullVolumeRadiusModel;
+    private SpinnerNumberModel xExtentModel;
+    private SpinnerNumberModel yExtentModel;
+    private SpinnerNumberModel zExtentModel;
 
     private COSBoundsType boundsType = COSBoundsType.CELL_BOUNDS;
 
@@ -70,6 +70,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     public ConeOfSilenceComponentProperties() {
         initComponents();
 
+        outsideVolumeModel = new SpinnerNumberModel(new Float(0), new Float(0), 
+	    new Float(10), new Float(.05));
+	outsideVolumeSpinner.setModel(outsideVolumeModel);
         // Set the maximum and minimum values for the volume radius spinner
         fullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0), 
 	    new Float(100), new Float(.1));
@@ -137,8 +140,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	originalBounds = state.getBounds();
 	originalShowBounds = state.getShowBounds();
 
-        originalOutsideAudioVolume = VolumeUtil.getClientVolume(
-            state.getOutsideAudioVolume());
+        originalOutsideAudioVolume = (float) state.getOutsideAudioVolume();
 
 	restore();
     }
@@ -189,8 +191,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 		(Float) yExtentSpinner.getValue(), (Float) zExtentSpinner.getValue())); 
 	}
 	
-        state.setOutsideAudioVolume(VolumeUtil.getServerVolume(
-                outsideAudioVolumeSlider.getValue()));
+        state.setOutsideAudioVolume((Float) outsideVolumeSpinner.getValue());
 
 	state.setShowBounds(showBoundsCheckBox.isSelected());
 
@@ -231,7 +232,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	    zExtentSpinner.setValue(originalBounds.getZ());
 	}
 	
-        outsideAudioVolumeSlider.setValue(originalOutsideAudioVolume);
+        outsideVolumeSpinner.setValue(originalOutsideAudioVolume);
         fullVolumeRadiusSpinner.setValue(originalBounds.getX());
 
 	showBoundsCheckBox.setSelected(originalShowBounds);
@@ -329,7 +330,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	    }
 	}
 
-        if (originalOutsideAudioVolume != outsideAudioVolumeSlider.getValue()) {
+        if (originalOutsideAudioVolume != outsideVolumeSpinner.getValue()) {
 	    return true;
 	}
 
@@ -439,7 +440,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         nameTextField = new javax.swing.JTextField();
         fullVolumeRadiusSpinner = new javax.swing.JSpinner();
         jLabel3 = new javax.swing.JLabel();
-        outsideAudioVolumeSlider = new javax.swing.JSlider();
         jLabel4 = new javax.swing.JLabel();
         useCellBoundsRadioButton = new javax.swing.JRadioButton();
         specifyRadiusRadioButton = new javax.swing.JRadioButton();
@@ -449,6 +449,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         zExtentSpinner = new javax.swing.JSpinner();
         boundsLabel = new javax.swing.JLabel();
         showBoundsCheckBox = new javax.swing.JCheckBox();
+        outsideVolumeSpinner = new javax.swing.JSpinner();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         jLabel1.setText(bundle.getString("ConeOfSilenceComponentProperties.jLabel1.text")); // NOI18N
@@ -456,18 +457,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         fullVolumeRadiusSpinner.setEnabled(false);
 
         jLabel3.setText(bundle.getString("ConeOfSilenceComponentProperties.jLabel3.text")); // NOI18N
-
-        outsideAudioVolumeSlider.setMajorTickSpacing(1);
-        outsideAudioVolumeSlider.setMaximum(10);
-        outsideAudioVolumeSlider.setPaintLabels(true);
-        outsideAudioVolumeSlider.setPaintTicks(true);
-        outsideAudioVolumeSlider.setSnapToTicks(true);
-        outsideAudioVolumeSlider.setValue(0);
-        outsideAudioVolumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                outsideAudioVolumeSliderStateChanged(evt);
-            }
-        });
 
         jLabel4.setText(bundle.getString("ConeOfSilenceComponentProperties.jLabel4.text")); // NOI18N
 
@@ -511,6 +500,12 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
             }
         });
 
+        outsideVolumeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                outsideVolumeSpinnerStateChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -544,11 +539,11 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
                                         .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(showBoundsCheckBox))
                                 .add(35, 35, 35))
-                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)))
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(outsideAudioVolumeSlider, 0, 0, Short.MAX_VALUE)))
+                        .add(18, 18, 18)
+                        .add(outsideVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -576,22 +571,13 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
                     .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(showBoundsCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(34, 34, 34))
-                    .add(layout.createSequentialGroup()
-                        .add(outsideAudioVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(outsideVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void outsideAudioVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_outsideAudioVolumeSliderStateChanged
-        if (editor != null) {
-            editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
-        }
-    }//GEN-LAST:event_outsideAudioVolumeSliderStateChanged
 
     private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useCellBoundsRadioButtonActionPerformed
 	if (useCellBoundsRadioButton.isSelected() == false) {
@@ -662,6 +648,14 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	showBounds();
     }//GEN-LAST:event_showBoundsCheckBoxActionPerformed
 
+    private void outsideVolumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_outsideVolumeSpinnerStateChanged
+	if (editor == null) {
+	    return;
+	}
+
+        editor.setPanelDirty(ConeOfSilenceComponentProperties.class, isDirty());
+    }//GEN-LAST:event_outsideVolumeSpinnerStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel boundsLabel;
     private javax.swing.ButtonGroup buttonGroup1;
@@ -670,7 +664,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField nameTextField;
-    private javax.swing.JSlider outsideAudioVolumeSlider;
+    private javax.swing.JSpinner outsideVolumeSpinner;
     private javax.swing.JCheckBox showBoundsCheckBox;
     private javax.swing.JRadioButton specifyBoxRadioButton;
     private javax.swing.JRadioButton specifyRadiusRadioButton;
