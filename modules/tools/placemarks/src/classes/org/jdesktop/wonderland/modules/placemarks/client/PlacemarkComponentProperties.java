@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.placemarks.client;
 
+import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -33,6 +34,8 @@ import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkComponentServe
 @PropertiesFactory(PlacemarkComponentServerState.class)
 public class PlacemarkComponentProperties extends JPanel
         implements PropertiesFactorySPI {
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle");
 
     private CellPropertiesEditor editor;
     private String origName;
@@ -51,7 +54,7 @@ public class PlacemarkComponentProperties extends JPanel
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Placemark";
+        return BUNDLE.getString("Placemark");
     }
 
     /**
