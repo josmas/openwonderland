@@ -1143,7 +1143,7 @@ private void falloffSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
 }//GEN-LAST:event_falloffSliderStateChanged
 
 private void distanceAttenuatedRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_distanceAttenuatedRadioButtonActionPerformed
-    falloffSlider.setEnabled(true);
+    falloffSlider.setEnabled(distanceAttenuatedRadioButton.isSelected());
 
     distanceAttenuated = distanceAttenuatedRadioButton.isSelected();
 
