@@ -38,37 +38,30 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 /**
  * A server component that provides microphone functionality
  * @author jprovino
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class MicrophoneComponentMO extends CellComponentMO {
 
     private static final Logger LOGGER =
-        Logger.getLogger(MicrophoneComponentMO.class.getName());
+            Logger.getLogger(MicrophoneComponentMO.class.getName());
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
-     
     private static final String DEFAULT_NAME = BUNDLE.getString("Microphone");
-
     private String name = null;
-
     private double volume = 1;
-
     private FullVolumeArea fullVolumeArea = new FullVolumeArea();
-
     private boolean showBounds = false;
-
     private ActiveArea activeArea = new ActiveArea();
-
     private boolean showActiveArea = false;
-
     private MicrophoneEnterProximityListener enterProximityListener;
     private MicrophoneActiveAreaProximityListener activeAreaProximityListener;
 
     public MicrophoneComponentMO(CellMO cellMO) {
         super(cellMO);
 
-	if (cellMO.getComponent(ProximityComponentMO.class) == null) {
-	    cellMO.addComponent(new ProximityComponentMO(cellMO));
-	}
+        if (cellMO.getComponent(ProximityComponentMO.class) == null) {
+            cellMO.addComponent(new ProximityComponentMO(cellMO));
+        }
     }
 
     /**
@@ -78,73 +71,59 @@ public class MicrophoneComponentMO extends CellComponentMO {
     public void setServerState(CellComponentServerState serverState) {
         super.setServerState(serverState);
 
-	MicrophoneComponentServerState state = (MicrophoneComponentServerState) serverState;
+        MicrophoneComponentServerState state =
+                (MicrophoneComponentServerState) serverState;
 
-	if (name == null) {
-	    name = DEFAULT_NAME;
-	} else {
-            name = state.getName();
-	}
+        setMyName(state);
 
-	String appendName = "-" + cellRef.get().getCellID();
+        volume = state.getVolume();
 
-	if (name.indexOf(appendName) < 0) {
-	    name += "-" + cellRef.get().getCellID();
-	}
-	
-	volume = state.getVolume();
+        fullVolumeArea = state.getFullVolumeArea();
 
-	fullVolumeArea = state.getFullVolumeArea();
+        showBounds = state.getShowBounds();
 
-	showBounds = state.getShowBounds();
+        activeArea = state.getActiveArea();
 
-	activeArea = state.getActiveArea();
+        showActiveArea = state.getShowActiveArea();
 
-	showActiveArea = state.getShowActiveArea();
+        LOGGER.info("name " + name + " volume " + volume + " fva " +
+                fullVolumeArea + " aa " + activeArea);
 
-	LOGGER.info("name " + name + " volume " + volume
-	    + " fva " + fullVolumeArea + " aa " + activeArea);
-
-	LOGGER.info("name " + name + " volume " + volume
-	    + " fva " + fullVolumeArea + " aa " + activeArea);
-
-	addProximityListeners(isLive());
+        addProximityListeners(isLive());
     }
 
     /**
      * @{inheritDoc}
      */
     @Override
-    public CellComponentServerState getServerState(CellComponentServerState serverState) {
-        MicrophoneComponentServerState state = (MicrophoneComponentServerState) serverState;
+    public CellComponentServerState getServerState(
+            CellComponentServerState serverState) {
+        MicrophoneComponentServerState state =
+                (MicrophoneComponentServerState) serverState;
 
         // Create the proper server state object if it does not yet exist
         if (state == null) {
             state = new MicrophoneComponentServerState();
         }
 
-	String appendName = "-" + cellRef.get().getCellID();
+        setMyName(state);
 
-	if (name.indexOf(appendName) < 0) {
-	    name += "-" + cellRef.get().getCellID();
-	}
+        state.setName(name);
+        state.setVolume(volume);
+        state.setFullVolumeArea(fullVolumeArea);
+        state.setShowBounds(showBounds);
+        state.setActiveArea(activeArea);
+        state.setShowActiveArea(showActiveArea);
 
-	state.setName(name);
-	state.setVolume(volume);
-	state.setFullVolumeArea(fullVolumeArea);
-	state.setShowBounds(showBounds);
-	state.setActiveArea(activeArea);
-	state.setShowActiveArea(showActiveArea);
-
-	return super.getServerState(state);
+        return super.getServerState(state);
     }
 
     /**
      * @{inheritDoc}
      */
     @Override
-    public CellComponentClientState getClientState(CellComponentClientState state,
-            WonderlandClientID clientID,
+    public CellComponentClientState getClientState(
+            CellComponentClientState state, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
         // TODO: Create own client state object?
@@ -169,6 +148,19 @@ public class MicrophoneComponentMO extends CellComponentMO {
         addProximityListeners(live);
     }
 
+    private void setMyName(MicrophoneComponentServerState state) {
+        if (name == null) {
+            name = DEFAULT_NAME;
+        } else {
+            name = state.getName();
+        }
+
+        String appendName = "-" + cellRef.get().getCellID();
+        if (name.indexOf(appendName) < 0) {
+            name += appendName;
+        }
+    }
+
     private void addProximityListeners(boolean live) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
@@ -189,8 +181,8 @@ public class MicrophoneComponentMO extends CellComponentMO {
         // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
             Vector3f activeOrigin = new Vector3f((float) activeArea.activeAreaOrigin.getX(),
-                                                 (float) activeArea.activeAreaOrigin.getY(),
-                                                 (float) activeArea.activeAreaOrigin.getZ());
+                    (float) activeArea.activeAreaOrigin.getY(),
+                    (float) activeArea.activeAreaOrigin.getZ());
 
             BoundingVolume[] bounds = new BoundingVolume[1];
 
@@ -200,11 +192,11 @@ public class MicrophoneComponentMO extends CellComponentMO {
                 bounds[0] = new BoundingSphere((float) activeArea.activeAreaBounds.getX(), activeOrigin);
             } else {
                 bounds[0] = new BoundingBox(activeOrigin, (float) activeArea.activeAreaBounds.getX(),
-                                                          (float) activeArea.activeAreaBounds.getY(),
-                                                          (float) activeArea.activeAreaBounds.getZ());
+                        (float) activeArea.activeAreaBounds.getY(),
+                        (float) activeArea.activeAreaBounds.getZ());
             }
 
-	    LOGGER.info("Active " + bounds[0]);
+            LOGGER.info("Active " + bounds[0]);
 
             activeAreaProximityListener = new MicrophoneActiveAreaProximityListener(cellRef.get(), name, volume);
             component.addProximityListener(activeAreaProximityListener, bounds);
@@ -215,12 +207,12 @@ public class MicrophoneComponentMO extends CellComponentMO {
                 bounds[0] = cellRef.get().getLocalBounds();
                 LOGGER.info("Microphone Using cell bounds:  " + bounds[0]);
             } else if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
-                bounds[0] = new BoundingSphere((float) fullVolumeArea.bounds.getX(), 
-		    new Vector3f());
+                bounds[0] = new BoundingSphere((float) fullVolumeArea.bounds.getX(),
+                        new Vector3f());
                 LOGGER.info("Microphone Using radius:  " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(new Vector3f(), fullVolumeArea.bounds.getX(),
-                    fullVolumeArea.bounds.getY(), fullVolumeArea.bounds.getZ());
+                        fullVolumeArea.bounds.getY(), fullVolumeArea.bounds.getZ());
                 LOGGER.info("Microphone Using Box:  " + bounds[0]);
             }
 
@@ -235,5 +227,4 @@ public class MicrophoneComponentMO extends CellComponentMO {
             }
         }
     }
-
 }
