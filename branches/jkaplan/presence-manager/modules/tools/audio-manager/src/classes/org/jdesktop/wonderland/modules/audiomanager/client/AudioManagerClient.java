@@ -879,9 +879,9 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     private void coneOfSilenceEnterExit(ConeOfSilenceEnterExitMessage msg) {
-        pm.setEnteredConeOfSilence(presenceInfo, msg.entered());
-
         PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+        pm.setEnteredConeOfSilence(info, msg.entered());
 
         if (info == null) {
             logger.warning("No presence info for " + msg.getCallID());
