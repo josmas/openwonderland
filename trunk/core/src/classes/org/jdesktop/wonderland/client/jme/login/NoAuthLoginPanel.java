@@ -40,10 +40,11 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginCont
 /**
  *
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
             Logger.getLogger(NoAuthLoginPanel.class.getName());
     private NoAuthLoginControl control;
     private List<ValidityListener> listeners;
@@ -129,7 +130,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
             storeCredentials(username, fullname);
             return null;
         } catch (LoginFailureException lfe) {
-            logger.log(Level.WARNING, "Login failed", lfe);
+            LOGGER.log(Level.WARNING, "Login failed", lfe);
             return lfe.getMessage();
         }
     }
@@ -151,7 +152,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
             props.list(new PrintWriter(outWriter));
             outWriter.close();
         } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error writing login data", ioe);
+            LOGGER.log(Level.WARNING, "Error writing login data", ioe);
         }
     }
 
@@ -170,7 +171,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
             setUsername(props.getProperty("username"));
             setFullname(props.getProperty("fullname"));
         } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error reading login data", ioe);
+            LOGGER.log(Level.WARNING, "Error reading login data", ioe);
         }
     }
 
@@ -192,14 +193,15 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
         setOpaque(false);
 
-        naServerLabel.setFont(new java.awt.Font("Dialog", 1, 13));
-        naServerLabel.setText("Server:");
+        naServerLabel.setFont(naServerLabel.getFont().deriveFont(naServerLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
+        naServerLabel.setText(bundle.getString("NoAuthLoginPanel.naServerLabel.text")); // NOI18N
 
-        naFullNameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
-        naFullNameLabel.setText("Full Name:");
+        naFullNameLabel.setFont(naFullNameLabel.getFont().deriveFont(naFullNameLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        naFullNameLabel.setText(bundle.getString("NoAuthLoginPanel.naFullNameLabel.text")); // NOI18N
 
-        naUsernameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
-        naUsernameLabel.setText("Username:");
+        naUsernameLabel.setFont(naUsernameLabel.getFont().deriveFont(naUsernameLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        naUsernameLabel.setText(bundle.getString("NoAuthLoginPanel.naUsernameLabel.text")); // NOI18N
 
         naServerField.setEditable(false);
         naServerField.setMinimumSize(new java.awt.Dimension(98, 22));
@@ -226,10 +228,10 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
                     .add(naServerLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(naServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(naFullNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(naServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 274, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -253,7 +255,6 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
     private void naUsernameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_naUsernameFieldKeyReleased
         notifyValidityListeners();
     }//GEN-LAST:event_naUsernameFieldKeyReleased
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField naFullNameField;
     private javax.swing.JLabel naFullNameLabel;
