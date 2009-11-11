@@ -173,7 +173,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	}
 
 	for (int i = 0; i < chatters.length; i++) {
-	    if (chatters[i].clientID == null) {
+	    if (chatters[i].getClientID() == null) {
 		/*
 		 * It's an outworlder.
 		 */
@@ -181,7 +181,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    }
 
 	    WonderlandClientID id =
-               CommsManagerFactory.getCommsManager().getWonderlandClientID(chatters[i].clientID);
+               CommsManagerFactory.getCommsManager().getWonderlandClientID(chatters[i].getClientID());
 
 	    if (id == null) {
 		logger.warning("No ClientID for " + chatters[i]);
@@ -207,7 +207,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    CommsManager cm = CommsManagerFactory.getCommsManager();
 	    
-            WonderlandClientID id = cm.getWonderlandClientID(msg.getCaller().clientID);
+            WonderlandClientID id = cm.getWonderlandClientID(msg.getCaller().getClientID());
 
             if (id == null) {
                 logger.warning("No WonderlandClientID for caller "
@@ -236,7 +236,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
-	    Player player = vm.getPlayer(msg.getCallee().callID);
+	    Player player = vm.getPlayer(msg.getCallee().getCallID());
 
 	    if (player == null) {
 		logger.warning("No player for " + msg.getCallee());
@@ -307,10 +307,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    VoiceChatJoinAcceptedMessage msg = (VoiceChatJoinAcceptedMessage) message;
 
-	    Player player = vm.getPlayer(msg.getCallee().callID);
+	    Player player = vm.getPlayer(msg.getCallee().getCallID());
 
 	    if (player == null) {
-		logger.warning("No player for " + msg.getCallee().callID);
+		logger.warning("No player for " + msg.getCallee().getCallID());
 		return;
 	    }
 
@@ -328,10 +328,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		return;
 	    }
 	
-	    Player player = vm.getPlayer(msg.getCallee().callID);
+	    Player player = vm.getPlayer(msg.getCallee().getCallID());
 
 	    if (player == null) {
-		logger.warning("No player for " + msg.getCallee().callID);
+		logger.warning("No player for " + msg.getCallee().getCallID());
 		return;
 	    }
 
@@ -385,10 +385,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	PresenceInfo caller = msg.getCaller();
 
 	if (msg.getChatType() != null) {
-	    Player player = vm.getPlayer(caller.callID);
+	    Player player = vm.getPlayer(caller.getCallID());
 
 	    if (player == null) {
-		logger.warning("No Player for " + caller.callID);
+		logger.warning("No Player for " + caller.getCallID());
 		return;
 	    }
 
@@ -413,7 +413,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	for (int i = 0; i < calleeList.length; i++) {
 	    PresenceInfo info = calleeList[i];
 
-	    String callID = info.callID;
+	    String callID = info.getCallID();
 
 	    Player player = vm.getPlayer(callID);
 
@@ -422,7 +422,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		continue;
 	    }
 
-	    if (info.clientID == null) {
+	    if (info.getClientID() == null) {
 		/*
 		 * This is an outworlder.  We automatically join them to the group
 	 	 * The InCallDialog can be used to change the privacy setting
@@ -445,7 +445,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    }
 
             WonderlandClientID id = 
-	       CommsManagerFactory.getCommsManager().getWonderlandClientID(info.clientID);
+	       CommsManagerFactory.getCommsManager().getWonderlandClientID(info.getClientID());
 
 	    if (id == null) {
 		logger.warning("No WonderlandClientID for " + info);
@@ -535,7 +535,9 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    playerInfo = audioGroup.getPlayerInfo(player);
 
-	    if (playerInfo != null && playerInfo.isSpeaking && playerInfo.chatType.equals(AudioGroupPlayerInfo.ChatType.PUBLIC) == false) {
+	    if (playerInfo != null && playerInfo.isSpeaking && 
+		    playerInfo.chatType.equals(AudioGroupPlayerInfo.ChatType.PUBLIC) == false) {
+
 		nonPublicAudioGroup = audioGroup;
 		break;
 	    }
@@ -559,6 +561,31 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        stationaryPlayerAudioGroup.setListenAttenuation(player, AudioGroup.MINIMAL_LISTEN_ATTENUATION);
 	    } else {
                 stationaryPlayerAudioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+	    }
+	}
+
+	/*
+	 * If we're in a nonPublicAudioGroup, we also have to attenuate the other groups we're listening to.
+	 */
+	double attenuation;
+
+	if (nonPublicAudioGroup != null) {
+	    attenuation = AudioGroup.MINIMAL_LISTEN_ATTENUATION;
+	} else {
+	    attenuation = AudioGroup.DEFAULT_LISTEN_ATTENUATION;
+	}
+
+	for (int i = 0; i < audioGroups.length; i++) {
+	    AudioGroup audioGroup = audioGroups[i];
+
+	    if (audioGroup.equals(livePlayerAudioGroup) || audioGroup.equals(stationaryPlayerAudioGroup)) {
+		continue;
+	    }
+
+	    playerInfo = audioGroup.getPlayerInfo(player);
+
+	    if (playerInfo.chatType.equals(ChatType.PUBLIC) && playerInfo.listenAttenuation != 0) {
+		audioGroup.setListenAttenuation(player, attenuation);
 	    }
 	}
 
@@ -647,13 +674,13 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	new ConcurrentHashMap();
 
     private void addProximityListener(Player player, PresenceInfo info) {
-	VoiceChatProximityListener proximityListener = proximityListeners.get(info.cellID);
+	VoiceChatProximityListener proximityListener = proximityListeners.get(info.getCellID());
 
 	if (proximityListener != null) {
 	    return;
 	}
 
-	CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
+	CellMO cellMO = CellManagerMO.getCellManager().getCell(info.getCellID());
 
         if (cellMO.getComponent(ProximityComponentMO.class) == null) {
             cellMO.addComponent(new ProximityComponentMO(cellMO));
@@ -669,7 +696,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
         bounds[0] = new BoundingSphere((float) spatializer.getZeroVolumeRadius(), new Vector3f());
 
-	logger.warning("Bounds for " + info.cellID + " " + bounds[0]);
+	logger.warning("Bounds for " + info.getCellID() + " " + bounds[0]);
 
         //proximityListener = new VoiceChatProximityListener(info);
 
@@ -856,14 +883,14 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     private void removeProximityListener(PresenceInfo info) {
-	VoiceChatProximityListener proximityListener = proximityListeners.get(info.cellID);
+	VoiceChatProximityListener proximityListener = proximityListeners.get(info.getCellID());
 
 	if (proximityListener == null) {
-	    logger.warning("No proximity listener for " + info.cellID);
+	    logger.warning("No proximity listener for " + info.getCellID());
 	    return;
 	}
 
-	CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
+	CellMO cellMO = CellManagerMO.getCellManager().getCell(info.getCellID());
 
 	ProximityComponentMO component = cellMO.getComponent(ProximityComponentMO.class);
 	component.removeProximityListener(proximityListener);
@@ -892,14 +919,14 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
         VoiceChatInfoResponseMessage message = new VoiceChatInfoResponseMessage(group, chatters);
 
 	for (int i = 0; i < chatters.length; i++) {
-	    if (chatters[i].clientID == null) {
+	    if (chatters[i].getClientID() == null) {
 		/*
 		 * It's an outworlder.
 		 */
 		continue;
 	    }
 
-            WonderlandClientID clientID = cm.getWonderlandClientID(chatters[i].clientID);
+            WonderlandClientID clientID = cm.getWonderlandClientID(chatters[i].getClientID());
 
 	    if (clientID == null) {
 		logger.warning("Can't find WonderlandClientID for " + chatters[i]);

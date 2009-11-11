@@ -82,6 +82,8 @@ public class VoicebridgeRunner extends BaseRunner {
         Properties props = getDefaultProps();
         props.setProperty("voicebridge.local.hostAddress", System.getProperty(Constants.WEBSERVER_HOST_PROP));
         props.setProperty("voicebridge.webserver.url", System.getProperty(Constants.WEBSERVER_URL_PROP));
+        props.setProperty("voicebridge.webserver.url", System.getProperty(Constants.WEBSERVER_URL_PROP));
+
         return props;
     }
 
@@ -113,6 +115,14 @@ public class VoicebridgeRunner extends BaseRunner {
         props.setProperty("voicebridge.outside.line.prefix", "9");
         props.setProperty("voicebridge.long.distance.prefix", "1");
         props.setProperty("voicebridge.international.prefix", "011");
+        props.setProperty("voicebridge.international.prefix", "011");
+
+	String audioCacheDir = System.getProperty("wonderland.run.dir") 
+	    + System.getProperty("file.separator") + "voice_bridge"
+	    + System.getProperty("file.separator") + "run"
+	    + System.getProperty("file.separator") + "audiocache";
+
+	props.setProperty("voicebridge.sound.cache.path", audioCacheDir);
 
         return props;
     }

@@ -31,7 +31,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -44,7 +43,6 @@ import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
 import org.jdesktop.wonderland.modules.audiomanager.client.DisconnectListener;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatHoldMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
@@ -107,7 +105,7 @@ public class AddHUDPanel
         this.caller = caller;
 
         if (group == null) {
-            group = caller.userID.getUsername() + "-" + groupNumber++;
+            group = caller.getUserID().getUsername() + "-" + groupNumber++;
         }
 
         this.group = group;
@@ -372,12 +370,12 @@ public class AddHUDPanel
                 }
             });
 
-            holdPanel.addVolumeSliderChangeListener(new ChangeListener() {
+            holdPanel.addVolumeChangeListener(new ChangeListener() {
 
                 public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                    JSlider holdVolumeSlider = (JSlider) evt.getSource();
+                    javax.swing.JSpinner holdVolumeSpinner = (javax.swing.JSpinner) evt.getSource();
 
-                    setHoldVolume(holdVolumeSlider.getValue());
+                    setHoldVolume((Float) holdVolumeSpinner.getValue());
                 }
             });
         }
@@ -435,8 +433,8 @@ public class AddHUDPanel
             PresenceInfo[] info = pm.getAllUsers();
 
             for (int i = 0; i < info.length; i++) {
-                if (info[i].usernameAlias.equals(name) ||
-                        info[i].userID.getUsername().equals(name)) {
+                if (info[i].getUsernameAlias().equals(name) ||
+                        info[i].getUserID().getUsername().equals(name)) {
 
                     addPhoneUserPanel.setStatusMessage(
                             BUNDLE.getString("Name_Used"));
@@ -596,11 +594,11 @@ public class AddHUDPanel
         clearPanel();
         showHoldPanel(true);
 
-        int volume = holdPanel.getHoldVolume();
+        float volume = holdPanel.getHoldVolume();
 
         try {
             session.send(client, new VoiceChatHoldMessage(group, myPresenceInfo,
-                    true, VolumeUtil.getServerVolume(volume), client.getCOSName()));
+                    true, volume, client.getCOSName()));
         } catch (IllegalStateException e) {
             leave();
         }
@@ -608,10 +606,10 @@ public class AddHUDPanel
 	CallAnimator.stopCallAnswerAnimation(client);
     }
 
-    private void setHoldVolume(int volume) {
+    private void setHoldVolume(float volume) {
         try {
             session.send(client, new VoiceChatHoldMessage(group, myPresenceInfo,
-                    true, VolumeUtil.getServerVolume(volume), client.getCOSName()));
+		true, volume, client.getCOSName()));
         } catch (IllegalStateException e) {
             leave();
         }
@@ -663,7 +661,7 @@ public class AddHUDPanel
         }
 
         for (PresenceInfo info : selectedValues) {
-            if (info.clientID != null) {
+            if (info.getClientID() != null) {
                 if (inProgressButtonPanel != null) {
                     inProgressButtonPanel.setEnabledHangUpButton(false);
                 }

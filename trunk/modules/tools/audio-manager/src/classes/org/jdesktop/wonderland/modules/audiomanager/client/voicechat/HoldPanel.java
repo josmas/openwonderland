@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.audiomanager.client.voicechat;
 
 import java.awt.event.ActionListener;
 import javax.swing.event.ChangeListener;
+import javax.swing.SpinnerNumberModel;
+
 
 /**
  *
@@ -26,8 +28,17 @@ import javax.swing.event.ChangeListener;
  */
 public class HoldPanel extends javax.swing.JPanel {
 
+    private SpinnerNumberModel volumeModel;
+
     public HoldPanel() {
         initComponents();
+
+	Float value = new Float(0);
+        Float min = new Float(0);
+        Float max = new Float(10);
+        Float step = new Float(.05);
+        volumeModel = new SpinnerNumberModel(value, min, max, step);
+        volumeSpinner.setModel(volumeModel);
     }
 
     public void addHoldListener(ActionListener listener) {
@@ -38,16 +49,16 @@ public class HoldPanel extends javax.swing.JPanel {
         takeOffHoldButton.removeActionListener(listener);
     }
 
-    public void addVolumeSliderChangeListener(ChangeListener listener) {
-        holdVolumeSlider.addChangeListener(listener);
+    public void addVolumeChangeListener(ChangeListener listener) {
+       volumeSpinner.addChangeListener(listener);
     }
 
-    public void removeVolumeSliderChangeListener(ChangeListener listener) {
-        holdVolumeSlider.removeChangeListener(listener);
+    public void removeVolumeChangeListener(ChangeListener listener) {
+        volumeSpinner.removeChangeListener(listener);
     }
 
-    public int getHoldVolume() {
-	return holdVolumeSlider.getValue();
+    public float getHoldVolume() {
+	return (Float) volumeModel.getValue();
     }
 
     /** This method is called from within the constructor to
@@ -60,9 +71,9 @@ public class HoldPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         holdLabel = new javax.swing.JLabel();
-        holdVolumeSlider = new javax.swing.JSlider();
         holdingUsersLabel = new javax.swing.JLabel();
         takeOffHoldButton = new javax.swing.JButton();
+        volumeSpinner = new javax.swing.JSpinner();
 
         setName("Form"); // NOI18N
 
@@ -70,27 +81,16 @@ public class HoldPanel extends javax.swing.JPanel {
         holdLabel.setText("On hold volume:");
         holdLabel.setName("holdLabel"); // NOI18N
 
-        holdVolumeSlider.setMajorTickSpacing(1);
-        holdVolumeSlider.setMaximum(10);
-        holdVolumeSlider.setPaintLabels(true);
-        holdVolumeSlider.setPaintTicks(true);
-        holdVolumeSlider.setSnapToTicks(true);
-        holdVolumeSlider.setValue(1);
-        holdVolumeSlider.setName("holdVolumeSlider"); // NOI18N
-        holdVolumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                holdVolumeSliderStateChanged(evt);
-            }
-        });
-
         holdingUsersLabel.setText(" ");
         holdingUsersLabel.setName("holdingUsersLabel"); // NOI18N
 
         takeOffHoldButton.setText("Take Off Hold");
         takeOffHoldButton.setName("takeOffHoldButton"); // NOI18N
-        takeOffHoldButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                takeOffHoldButtonActionPerformed(evt);
+
+        volumeSpinner.setName("volumeSpinner"); // NOI18N
+        volumeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                volumeSpinnerStateChanged(evt);
             }
         });
 
@@ -101,42 +101,37 @@ public class HoldPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(holdVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(holdLabel)
-                            .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(takeOffHoldButton)))
+                        .add(holdLabel)
+                        .add(18, 18, 18)
+                        .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, takeOffHoldButton))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(holdLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(holdVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(holdingUsersLabel)
-                    .add(takeOffHoldButton))
+                    .add(holdLabel)
+                    .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(holdingUsersLabel)
+                .add(18, 18, 18)
+                .add(takeOffHoldButton)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void takeOffHoldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_takeOffHoldButtonActionPerformed
+    private void volumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSpinnerStateChanged
         // TODO add your handling code here:
-    }//GEN-LAST:event_takeOffHoldButtonActionPerformed
-
-private void holdVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_holdVolumeSliderStateChanged
-// TODO add your handling code here:
-}//GEN-LAST:event_holdVolumeSliderStateChanged
+    }//GEN-LAST:event_volumeSpinnerStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel holdLabel;
-    private javax.swing.JSlider holdVolumeSlider;
     private javax.swing.JLabel holdingUsersLabel;
     private javax.swing.JButton takeOffHoldButton;
+    private javax.swing.JSpinner volumeSpinner;
     // End of variables declaration//GEN-END:variables
 }

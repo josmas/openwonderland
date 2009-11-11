@@ -19,18 +19,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="holdVolumeSlider" alignment="0" pref="318" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="holdLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="holdingUsersLabel" pref="180" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="takeOffHoldButton" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="holdLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="volumeSpinner" min="-2" pref="54" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="holdingUsersLabel" alignment="0" pref="209" max="32767" attributes="0"/>
+                  <Component id="takeOffHoldButton" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -40,14 +38,14 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="holdLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="holdVolumeSlider" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="holdingUsersLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="takeOffHoldButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="holdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="volumeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="holdingUsersLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="takeOffHoldButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -65,20 +63,6 @@
         <Property name="name" type="java.lang.String" value="holdLabel" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSlider" name="holdVolumeSlider">
-      <Properties>
-        <Property name="majorTickSpacing" type="int" value="1"/>
-        <Property name="maximum" type="int" value="10"/>
-        <Property name="paintLabels" type="boolean" value="true"/>
-        <Property name="paintTicks" type="boolean" value="true"/>
-        <Property name="snapToTicks" type="boolean" value="true"/>
-        <Property name="value" type="int" value="1"/>
-        <Property name="name" type="java.lang.String" value="holdVolumeSlider" noResource="true"/>
-      </Properties>
-      <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="holdVolumeSliderStateChanged"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JLabel" name="holdingUsersLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value=" "/>
@@ -90,8 +74,13 @@
         <Property name="text" type="java.lang.String" value="Take Off Hold"/>
         <Property name="name" type="java.lang.String" value="takeOffHoldButton" noResource="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="volumeSpinner">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="volumeSpinner" noResource="true"/>
+      </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="takeOffHoldButtonActionPerformed"/>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="volumeSpinnerStateChanged"/>
       </Events>
     </Component>
   </SubComponents>

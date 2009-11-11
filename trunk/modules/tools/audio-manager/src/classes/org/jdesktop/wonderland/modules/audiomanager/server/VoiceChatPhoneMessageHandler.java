@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.math.BigInteger;
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -80,7 +81,8 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 
 	String externalCallID = group + "-" + callNumber++;
 
-	callee.callID = externalCallID;
+        callee = new PresenceInfo(callee.getCellID(), callee.getClientID(),
+                                  callee.getUserID(), externalCallID);
 
 	String softphoneCallID = message.getSoftphoneCallID();
 
@@ -140,7 +142,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 	}
 
 	cp.setPhoneNumber(message.getPhoneNumber());
-	cp.setName(callee.usernameAlias);
+	cp.setName(callee.getUsernameAlias());
 	cp.setCallId(externalCallID);
 	cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
 	cp.setVoiceDetection(true);
@@ -168,9 +170,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 
 	externalPlayer.setCall(externalCall);
 
-	callee.callID = externalCallID;
-	callee.cellID = null;
-	callee.clientID = null;
+        callee = new PresenceInfo(null, null, callee.getUserID(), externalCallID);
 
 	VoiceChatHandler.getInstance().addPlayerToAudioGroup(audioGroup,
 	    externalPlayer, callee, message.getChatType());

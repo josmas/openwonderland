@@ -33,7 +33,7 @@ public class VoiceChatBusyHUDPanel extends javax.swing.JPanel {
     public VoiceChatBusyHUDPanel(PresenceInfo callee) {
         initComponents();
 
-	busyText.setText(callee.userID.getUsername() 
+	busyText.setText(callee.getUserID().getUsername()
 	    + " is busy and cannot chat with you now");
 
         busyText.setVisible(true);

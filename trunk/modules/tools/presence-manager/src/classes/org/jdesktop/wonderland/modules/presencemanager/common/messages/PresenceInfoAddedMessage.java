@@ -33,7 +33,7 @@ public class PresenceInfoAddedMessage extends CellMessage {
     private PresenceInfo presenceInfo;
 
     public PresenceInfoAddedMessage(PresenceInfo presenceInfo) {
-	super(presenceInfo.cellID);
+	super(presenceInfo.getCellID());
 
 	this.presenceInfo = presenceInfo;
     }

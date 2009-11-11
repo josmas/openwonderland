@@ -19,65 +19,41 @@ package org.jdesktop.wonderland.modules.presencemanager.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import java.math.BigInteger;
-
 import java.util.logging.Logger;
-
-import org.jdesktop.wonderland.client.ClientContext;
-
-import org.jdesktop.wonderland.client.cell.Cell;
-
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
-
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-
 import org.jdesktop.wonderland.common.cell.CellID;
-
 import org.jdesktop.wonderland.common.messages.Message;
-
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeListenerMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
-
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
-
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeAliasMessage;
 
 public class PresenceManagerImpl implements PresenceManager {
 
     private static final Logger logger =
             Logger.getLogger(PresenceManagerImpl.class.getName());
-    private HashMap<CellID, PresenceInfo> cellIDMap = new HashMap();
-    private HashMap<BigInteger, PresenceInfo> sessionIDMap = new HashMap();
-    private HashMap<WonderlandIdentity, PresenceInfo> userIDMap = new HashMap();
-    private HashMap<String, PresenceInfo> callIDMap = new HashMap();
-    private ArrayList<PresenceManagerListener> listeners = new ArrayList();
+    private final Map<CellID, PresenceInfo> cellIDMap = new HashMap();
+    private final Map<BigInteger, PresenceInfo> sessionIDMap = new HashMap();
+    private final Map<WonderlandIdentity, PresenceInfo> userIDMap = new HashMap();
+    private final Map<String, PresenceInfo> callIDMap = new HashMap();
+    private final List<PresenceManagerListener> listeners = new ArrayList();
+    private final Set<PresenceInfo> localInfo = new LinkedHashSet<PresenceInfo>();
+
     private WonderlandSession session;
 
     public PresenceManagerImpl(WonderlandSession session) {
         this.session = session;
-    }
-
-    public void addPresenceInfo(PresenceInfo presenceInfo) {
-	/*
-	 * Add it now so others on this client can see it immediately
-	 */
-        presenceInfoAdded(presenceInfo);
-
-	/*
-	 * Send it to the server so it can be sent to all of the other clients.
-	 */
-        send(new PresenceInfoAddedMessage(presenceInfo));
     }
 
     public void presenceInfoAdded(PresenceInfo presenceInfo) {
@@ -99,30 +75,26 @@ public class PresenceManagerImpl implements PresenceManager {
     private void addPresenceInfoInternal(PresenceInfo presenceInfo) {
         logger.fine("Adding presenceInfo for " + presenceInfo);
 
-        PresenceInfo info;
+        userIDMap.put(presenceInfo.getUserID(), presenceInfo);
 
-        if (presenceInfo.cellID != null) {
-            cellIDMap.put(presenceInfo.cellID, presenceInfo);
+        if (presenceInfo.getCellID() != null) {
+            cellIDMap.put(presenceInfo.getCellID(), presenceInfo);
         }
 
-        if (presenceInfo.clientID != null) {
-            sessionIDMap.put(presenceInfo.clientID, presenceInfo);
+        if (presenceInfo.getClientID() != null) {
+            sessionIDMap.put(presenceInfo.getClientID(), presenceInfo);
         }
 
-        info = userIDMap.get(presenceInfo.userID);
-
-        userIDMap.put(presenceInfo.userID, presenceInfo);
-
-        if (presenceInfo.callID != null) {
-            callIDMap.put(presenceInfo.callID, presenceInfo);
+        if (presenceInfo.getCallID() != null) {
+            callIDMap.put(presenceInfo.getCallID(), presenceInfo);
         }
     }
 
     private boolean alreadyInMaps(PresenceInfo presenceInfo) {
         PresenceInfo info;
 
-        if (presenceInfo.cellID != null) {
-            info = cellIDMap.get(presenceInfo.cellID);
+        if (presenceInfo.getCellID() != null) {
+            info = cellIDMap.get(presenceInfo.getCellID());
 
             if (info != null && info.equals(presenceInfo) == false) {
                 logger.info("Already in cellIDMap:  Existing PI " + info + " new PI " + presenceInfo);
@@ -130,8 +102,8 @@ public class PresenceManagerImpl implements PresenceManager {
             }
         }
 
-        if (presenceInfo.clientID != null) {
-            info = sessionIDMap.get(presenceInfo.clientID);
+        if (presenceInfo.getClientID() != null) {
+            info = sessionIDMap.get(presenceInfo.getClientID());
 
             if (info != null && info.equals(presenceInfo) == false) {
                 logger.info("Already in clientIDMap:  Existing PI " + info + " new PI " + presenceInfo);
@@ -139,8 +111,8 @@ public class PresenceManagerImpl implements PresenceManager {
             }
         }
 
-        if (presenceInfo.userID != null) {
-            info = userIDMap.get(presenceInfo.userID);
+        if (presenceInfo.getUserID() != null) {
+            info = userIDMap.get(presenceInfo.getUserID());
 
             if (info != null && info.equals(presenceInfo) == false) {
                 logger.info("Already in userIDMap:  Existing PI " + info + " new PI " + presenceInfo);
@@ -148,8 +120,8 @@ public class PresenceManagerImpl implements PresenceManager {
             }
         }
 
-        if (presenceInfo.callID != null) {
-            info = callIDMap.get(presenceInfo.callID);
+        if (presenceInfo.getCallID() != null) {
+            info = callIDMap.get(presenceInfo.getCallID());
 
             if (info != null && info.equals(presenceInfo) == false) {
                 logger.info("Already in callIDMap:  Existing PI " + info + " new PI " + presenceInfo);
@@ -158,10 +130,6 @@ public class PresenceManagerImpl implements PresenceManager {
         }
 
         return false;
-    }
-
-    public void presenceInfoChanged(PresenceInfo presenceInfo) {
-	notifyListeners(presenceInfo, ChangeType.UPDATED);
     }
 
     private void notifyListeners(PresenceInfo presenceInfo, ChangeType type) {
@@ -179,25 +147,21 @@ public class PresenceManagerImpl implements PresenceManager {
         }
     }
 
-    public void removePresenceInfo(PresenceInfo presenceInfo) {
-        send(new PresenceInfoRemovedMessage(presenceInfo));
-    }
-
     public void presenceInfoRemoved(PresenceInfo presenceInfo) {
         synchronized (cellIDMap) {
             synchronized (sessionIDMap) {
                 synchronized (userIDMap) {
                     synchronized (callIDMap) {
-                        cellIDMap.remove(presenceInfo.cellID);
+                        cellIDMap.remove(presenceInfo.getCellID());
 
-                        if (presenceInfo.clientID != null) {
-                            sessionIDMap.remove(presenceInfo.clientID);
+                        if (presenceInfo.getClientID() != null) {
+                            sessionIDMap.remove(presenceInfo.getClientID());
                         }
 
-                        userIDMap.remove(presenceInfo.userID);
+                        userIDMap.remove(presenceInfo.getUserID());
 
-                        if (presenceInfo.callID != null) {
-                            callIDMap.remove(presenceInfo.callID);
+                        if (presenceInfo.getCallID() != null) {
+                            callIDMap.remove(presenceInfo.getCallID());
                         }
                     }
                 }
@@ -325,11 +289,20 @@ public class PresenceManagerImpl implements PresenceManager {
      * Get PresenceInfo for a given username.  
      */
     public PresenceInfo getUserPresenceInfo(String username) {
-        WonderlandIdentity userID;
+        PresenceInfo[] users;
 
         synchronized (userIDMap) {
-            return userIDMap.get(username);
+            users = userIDMap.values().toArray(new PresenceInfo[0]);
         }
+
+        for (int i = 0; i < users.length; i++) {
+            if (users[i].getUserID().getUsername().equals(username)) {
+                return users[i];
+	    }
+        }
+
+        logger.fine("No presence info for " + username);
+        return null;
     }
 
     /**
@@ -346,7 +319,7 @@ public class PresenceManagerImpl implements PresenceManager {
         }
 
         for (int i = 0; i < users.length; i++) {
-            if (users[i].usernameAlias.equals(usernameAlias)) {
+            if (users[i].getUsernameAlias().equals(usernameAlias)) {
                 return users[i];
 	    }
         }
@@ -356,20 +329,20 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     /**
+     * Request that the server change this user's alias.
+     * @param alias the alias to change
+     */
+    public void requestChangeUsernameAlias(String alias) {
+        send(new PresenceInfoChangeAliasMessage(alias));
+    }
+
+    /**
      * Change usernameAlias in PresenceInfo.
      * @param String user name
      */
-    public void changeUsernameAlias(PresenceInfo info) {
-        PresenceInfo presenceInfo = getUserPresenceInfo(info.userID.getUsername());
-
-        if (presenceInfo != null) {
-            // update user alias
-            presenceInfo.usernameAlias = info.usernameAlias;
-        }
-
-        send(new PresenceInfoChangeMessage(info));
-
-        //notifyListeners(info, ChangeType.UPDATED);
+    public void changeUsernameAlias(PresenceInfo info, String alias) {
+        info.setUsernameAlias(alias);
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -378,11 +351,9 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param boolean
      */
     public void setSpeaking(PresenceInfo info, boolean isSpeaking) {
-        info.isSpeaking = isSpeaking;
-
-        send(new PresenceInfoChangeMessage(info));
-
-        //notifyListeners(info, ChangeType.UPDATED);
+        info.setSpeaking(isSpeaking);
+        fireAvatarNameEvent(info, isSpeaking?EventType.STARTED_SPEAKING:EventType.STOPPED_SPEAKING);
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -391,11 +362,9 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param boolean
      */
     public void setMute(PresenceInfo info, boolean isMuted) {
-        info.isMuted = isMuted;
-
-        send(new PresenceInfoChangeMessage(info));
-
-        //notifyListeners(info, ChangeType.UPDATED);
+        info.setMuted(isMuted);
+        fireAvatarNameEvent(info, isMuted?EventType.MUTE:EventType.UNMUTE);
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -404,11 +373,9 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param boolean
      */
     public void setEnteredConeOfSilence(PresenceInfo info, boolean inConeOfSilence) {
-        info.inConeOfSilence = inConeOfSilence;
-
-        send(new PresenceInfoChangeMessage(info));
-
-        //notifyListeners(info, ChangeType.UPDATED);
+        info.setInConeOfSilence(inConeOfSilence);
+        fireAvatarNameEvent(info, inConeOfSilence?EventType.ENTERED_CONE_OF_SILENCE:EventType.EXITED_CONE_OF_SILENCE);
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -417,11 +384,43 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param boolean
      */
     public void setInSecretChat(PresenceInfo info, boolean inSecretChat) {
-        info.inSecretChat = inSecretChat;
+        info.setInSecretChat(inSecretChat);
+        notifyListeners(info, ChangeType.UPDATED);
+    }
 
-        send(new PresenceInfoChangeMessage(info));
+    /**
+     * Post an avatar name event, which will update the view of this avatar.
+     * @param info the PresenceInfo that changed
+     * @param type the type of change
+     */
+    private void fireAvatarNameEvent(PresenceInfo info, EventType type) {
+        InputManager.inputManager().postEvent(new AvatarNameEvent(
+                type, info.getUserID().getUsername(), info.getUsernameAlias()));
+    }
 
-        //notifyListeners(info, ChangeType.UPDATED);
+    public void addLocalPresenceInfo(PresenceInfo info) {
+        synchronized (localInfo) {
+            localInfo.add(info);
+            presenceInfoAdded(info);
+        }
+    }
+
+    public void removeLocalPresenceInfo(PresenceInfo info) {
+        if (!isLocal(info)) {
+            logger.fine("Attempt to remove non-local PresenceInfo: " + info);
+            return;
+        }
+
+        synchronized (localInfo) {
+            localInfo.remove(info);
+            presenceInfoRemoved(info);
+        }
+    }
+
+    private boolean isLocal(PresenceInfo info) {
+        synchronized (localInfo) {
+            return localInfo.contains(info);
+        }
     }
 
     /**
@@ -441,8 +440,6 @@ public class PresenceManagerImpl implements PresenceManager {
             info = cellIDMap.values().toArray(new PresenceInfo[0]);
         }
 
-        send(new PlayerInRangeListenerMessage(true));
-
         for (int i = 0; i < info.length; i++) {
             listener.presenceInfoChanged(info[i], ChangeType.USER_ADDED);
         }
@@ -453,8 +450,6 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param PresenceManagerListener the listener to be removed
      */
     public void removePresenceManagerListener(PresenceManagerListener listener) {
-        send(new PlayerInRangeListenerMessage(false));
-
         synchronized (listeners) {
             listeners.remove(listener);
         }

@@ -17,27 +17,35 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.common.messages;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- * Message indicating a player has come into range.
+ * Message indicating a new session has been created
  * @author jprovino
  */
 @ExperimentalAPI
-public class PlayerInRangeListenerMessage extends Message {
+public class PresenceInfoChangedMessage extends CellMessage {
+    public enum Change { SPEAKING, MUTED, CONE_OF_SILENCE, SECRET_CHAT };
 
-    private boolean add;
+    private Change change;
+    private boolean value;
 
-    public PlayerInRangeListenerMessage(boolean add) {
-	this.add = add;
+    public PresenceInfoChangedMessage(CellID cellID, Change change, boolean value) {
+        super (cellID);
+
+        this.change = change;
+        this.value = value;
     }
 
-    public boolean getAdd() {
-	return add;
+    public Change getChange() {
+        return change;
+    }
+
+    public boolean getValue() {
+        return value;
     }
 
 }
