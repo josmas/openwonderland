@@ -96,7 +96,7 @@ public class PresenceManagerConnectionHandler implements
     public void messageReceived(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Message message) {
 
-        logger.info("[PresenceManagerConnectionHandler] received message " + message);
+        logger.fine("[PresenceManagerConnectionHandler] received message " + message);
 
         if (message instanceof ClientConnectMessage) {
             handleClientConnect(sender, clientID, (ClientConnectMessage) message);

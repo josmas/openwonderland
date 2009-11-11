@@ -36,7 +36,7 @@ public class PresenceInfoChangedAliasMessage extends CellMessage {
         this.alias = alias;
     }
 
-    private String getAlias() {
+    public String getAlias() {
         return alias;
     }
 }
