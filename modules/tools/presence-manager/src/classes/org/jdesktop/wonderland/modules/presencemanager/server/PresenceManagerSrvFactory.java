@@ -15,20 +15,21 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.presencemanager.client;
+package org.jdesktop.wonderland.modules.presencemanager.server;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-public interface PresenceManagerListener {
-
-    public enum ChangeType {
-	USER_ADDED,
-	USER_REMOVED,
-	UPDATED,
-	USER_IN_RANGE,
-	USER_OUT_OF_RANGE
+/**
+ * Server-side factory for presence manager implementation
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ */
+public class PresenceManagerSrvFactory {
+    public static PresenceManagerSrv getInstance() {
+        return SingletonHolder.INSTANCE;
     }
 
-    public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type);
-
+    /**
+     * Singleton for holding
+     */
+    private static class SingletonHolder {
+        private static final PresenceManagerSrv INSTANCE = new PresenceManagerSrvImpl();
+    }
 }

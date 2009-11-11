@@ -772,7 +772,7 @@ public class AudioManagerClient extends BaseConnection implements
         if (localAddress != null) {
             try {
                 String sipURL = sc.startSoftphone(
-                        presenceInfo.userID.getUsername(), registrarAddress,
+                        presenceInfo.getUserID().getUsername(), registrarAddress,
                         10, localAddress);
 
                 logger.fine("Starting softphone:  " + presenceInfo);
@@ -808,11 +808,11 @@ public class AudioManagerClient extends BaseConnection implements
     private void changeUsernameAlias(ChangeUsernameAliasMessage msg) {
         PresenceInfo info = msg.getPresenceInfo();
 
-        pm.changeUsernameAlias(info);
+        pm.changeUsernameAlias(info, info.getUsernameAlias());
 
         AvatarNameEvent avatarNameEvent = new AvatarNameEvent(
-                EventType.CHANGE_NAME, info.userID.getUsername(),
-                info.usernameAlias);
+                EventType.CHANGE_NAME, info.getUserID().getUsername(),
+                info.getUsernameAlias());
 
         InputManager.inputManager().postEvent(avatarNameEvent);
     }
@@ -820,7 +820,7 @@ public class AudioManagerClient extends BaseConnection implements
     private void joinVoiceChat(VoiceChatJoinAcceptedMessage msg) {
         logger.fine("GOT JOIN ACCEPTED MESSAGE FOR " + msg.getCallee());
 
-        PresenceInfo info = pm.getPresenceInfo(msg.getCallee().callID);
+        PresenceInfo info = pm.getPresenceInfo(msg.getCallee().getCallID());
 
         logger.fine(
                 "GOT JOIN ACCEPTED FOR " + msg.getCallee() + " info " + info);
@@ -829,13 +829,13 @@ public class AudioManagerClient extends BaseConnection implements
             info = msg.getCallee();
 
             logger.warning("adding pm for " + info);
-            pm.addPresenceInfo(info);
+            pm.addLocalPresenceInfo(info);
         }
 
         if (msg.getChatType() == ChatType.SECRET) {
-            info.inSecretChat = true;
+            info.setInSecretChat(true);
         } else {
-            info.inSecretChat = false;
+            info.setInSecretChat(false);
         }
 
         notifyMemberChangeListeners(msg.getGroup(), info, true);
@@ -848,8 +848,8 @@ public class AudioManagerClient extends BaseConnection implements
 
         notifyMemberChangeListeners(msg.getGroup(), callee, false);
 
-        if (callee.clientID == null) {
-            pm.removePresenceInfo(callee);	// it's an outworlder
+        if (callee.getClientID() == null) {
+            pm.removeLocalPresenceInfo(callee);	// it's an outworlder
         }
     }
 
@@ -865,8 +865,8 @@ public class AudioManagerClient extends BaseConnection implements
             callEnded(callee, reason);
         }
 
-        if (callee.clientID == null) {
-            pm.removePresenceInfo(callee);	// it's an outworlder
+        if (callee.getClientID() == null) {
+            pm.removeLocalPresenceInfo(callee);	// it's an outworlder
         }
 
         notifyMemberChangeListeners(msg.getGroup(), callee, false);
@@ -879,9 +879,9 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     private void coneOfSilenceEnterExit(ConeOfSilenceEnterExitMessage msg) {
-        pm.setEnteredConeOfSilence(presenceInfo, msg.entered());
-
         PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+        pm.setEnteredConeOfSilence(info, msg.entered());
 
         if (info == null) {
             logger.warning("No presence info for " + msg.getCallID());
@@ -895,13 +895,13 @@ public class AudioManagerClient extends BaseConnection implements
 
             avatarNameEvent = new AvatarNameEvent(
                     EventType.ENTERED_CONE_OF_SILENCE,
-                    info.userID.getUsername(), info.usernameAlias);
+                    info.getUserID().getUsername(), info.getUsernameAlias());
         } else {
 	    COSName = null;
 
             avatarNameEvent = new AvatarNameEvent(
                     EventType.EXITED_CONE_OF_SILENCE,
-                    info.userID.getUsername(), info.usernameAlias);
+                    info.getUserID().getUsername(), info.getUsernameAlias());
         }
 
         InputManager.inputManager().postEvent(avatarNameEvent);
@@ -933,10 +933,10 @@ public class AudioManagerClient extends BaseConnection implements
 
         if (msg.isMuted()) {
             avatarNameEvent = new AvatarNameEvent(EventType.MUTE,
-                    info.userID.getUsername(), info.usernameAlias);
+                    info.getUserID().getUsername(), info.getUsernameAlias());
         } else {
             avatarNameEvent = new AvatarNameEvent(EventType.UNMUTE,
-                    info.userID.getUsername(), info.usernameAlias);
+                    info.getUserID().getUsername(), info.getUsernameAlias());
         }
 
         InputManager.inputManager().postEvent(avatarNameEvent);
@@ -958,10 +958,10 @@ public class AudioManagerClient extends BaseConnection implements
 
         if (msg.isSpeaking()) {
             avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SPEAKING,
-                    info.userID.getUsername(), info.usernameAlias);
+                    info.getUserID().getUsername(), info.getUsernameAlias());
         } else {
             avatarNameEvent = new AvatarNameEvent(EventType.STOPPED_SPEAKING,
-                    info.userID.getUsername(), info.usernameAlias);
+                    info.getUserID().getUsername(), info.getUsernameAlias());
         }
 
         InputManager.inputManager().postEvent(avatarNameEvent);
@@ -982,8 +982,8 @@ public class AudioManagerClient extends BaseConnection implements
     private void callEnded(CallEndedMessage msg) {
         PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
-        if (info != null && info.clientID == null) {
-            pm.removePresenceInfo(info);	// it's an outworlder
+        if (info != null && info.getClientID() == null) {
+            pm.removeLocalPresenceInfo(info);	// it's an outworlder
         }
 
         String callID = msg.getCallID();

@@ -21,14 +21,22 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
+
 /**
- * Message to remove PresenceInfo.
+ * Message indicating a new session has been created
  * @author jprovino
  */
 @ExperimentalAPI
-public class PresenceInfoRemovedMessage extends CellMessage {
+public class PresenceInfoChangedAliasMessage extends CellMessage {
+    private String alias;
 
-    public PresenceInfoRemovedMessage(CellID cellID) {
+    public PresenceInfoChangedAliasMessage(CellID cellID, String alias) {
         super (cellID);
+
+        this.alias = alias;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 }

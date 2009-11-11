@@ -17,10 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.common.messages;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -29,8 +27,14 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 @ExperimentalAPI
 public class ClientConnectMessage extends Message {
+    // the id of the avatar cell for this client
+    private CellID avatarCellID;
 
-    public ClientConnectMessage() {
+    public ClientConnectMessage(CellID avatarCellID) {
+        this.avatarCellID = avatarCellID;
     }
 
+    public CellID getAvatarCellID() {
+        return avatarCellID;
+    }
 }

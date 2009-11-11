@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientCon
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 
 import java.util.ArrayList;
@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedAliasMessage;
 
 /**
  *
@@ -109,11 +110,6 @@ public class PresenceManagerClient extends BaseConnection implements
 
     @Override
     public void disconnect() {
-        // send a message if we aren't already disconnected
-        if (session.getStatus() != WonderlandSession.Status.DISCONNECTED) {
-            pm.removePresenceInfo(presenceInfo);
-        }
-
         // LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
@@ -131,11 +127,23 @@ public class PresenceManagerClient extends BaseConnection implements
 
             SoftphoneControlImpl.getInstance().setCallID(callID);
 
-            presenceInfo = new PresenceInfo(cellID, session.getID(), session.getUserID(), callID);
+            // get the list of all presence information
+            ResponseMessage rm;
+            try {
+                rm = sendAndWait(new ClientConnectMessage(cellID));
+                
+                if (rm instanceof ClientConnectResponseMessage) {
+                    handleMessage(rm);
+                } else if (rm instanceof ErrorMessage) {
+                    ErrorMessage em = (ErrorMessage) rm;
+                    logger.log(Level.WARNING, "Error getting presence info " +
+                               em.getErrorMessage(), em.getErrorCause());
+                }
+            } catch (InterruptedException ie) {
+                logger.log(Level.WARNING, "Error reading presence info", ie);
+            }
 
-            pm.addPresenceInfo(presenceInfo);
 
-            session.send(this, new ClientConnectMessage());
 
             logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
         }
@@ -186,32 +194,34 @@ public class PresenceManagerClient extends BaseConnection implements
 		logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
 		pm.presenceInfoAdded(presenceInfo);
 
-		String username = presenceInfo.userID.getUsername();
+		String username = presenceInfo.getUserID().getUsername();
 
-		if (presenceInfo.cellID == null) {
+		if (presenceInfo.getCellID() == null) {
 		    logger.warning("CellID is null for " + presenceInfo);
 		    continue;
 		}
 
-		Cell cell = cellCache.getCell(presenceInfo.cellID);
+		Cell cell = cellCache.getCell(presenceInfo.getCellID());
 
 		if (cell == null) {
-		    logger.warning("Unable to find cell for " + presenceInfo.cellID);
+		    logger.warning("Unable to find cell for " + presenceInfo.getCellID());
 		    continue;
 		}
 
 		NameTagComponent nameTag = cell.getComponent(NameTagComponent.class);
 
-		if (presenceInfo.usernameAlias.equals(username) == false) {
- 		    pm.changeUsernameAlias(presenceInfo);
+		if (presenceInfo.getUsernameAlias().equals(username) == false) {
+ 		    pm.changeUsernameAlias(presenceInfo, presenceInfo.getUsernameAlias());
  		}
 
 		if (nameTag == null) {
 		    continue;
 		}
 
-		nameTag.updateLabel(presenceInfo.usernameAlias, presenceInfo.inConeOfSilence,
-		    presenceInfo.isSpeaking, presenceInfo.isMuted);
+		nameTag.updateLabel(presenceInfo.getUsernameAlias(),
+                                    presenceInfo.isInConeOfSilence(),
+                                    presenceInfo.isSpeaking(),
+                                    presenceInfo.isMuted());
 	    }
 
 //	    if (nameTagList.size() > 0) {
@@ -227,7 +237,7 @@ public class PresenceManagerClient extends BaseConnection implements
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		logger.info("no presence info for callID " + msg.getCallID());
+		logger.fine("no presence info for callID " + msg.getCallID());
 		return;
 	    }
 
@@ -246,17 +256,53 @@ public class PresenceManagerClient extends BaseConnection implements
 
         if (message instanceof PresenceInfoRemovedMessage) {
             PresenceInfoRemovedMessage m = (PresenceInfoRemovedMessage) message;
+            PresenceInfo pi = pm.getPresenceInfo(m.getCellID());
+            if (pi == null) {
+                logger.warning("No presence info found for " + m.getCellID());
+                return;
+            }
 
-            logger.fine("GOT PresenceInfoRemovedMessage for " + m.getPresenceInfo());
-            pm.presenceInfoRemoved(m.getPresenceInfo());
+            logger.fine("GOT PresenceInfoRemovedMessage for " + pi);
+            pm.presenceInfoRemoved(pi);
             return;
         }
 
-        if (message instanceof PresenceInfoChangeMessage) {
-            PresenceInfoChangeMessage m = (PresenceInfoChangeMessage) message;
+        if (message instanceof PresenceInfoChangedMessage) {
+            PresenceInfoChangedMessage m = (PresenceInfoChangedMessage) message;
+            PresenceInfo pi = pm.getPresenceInfo(m.getCellID());
+            if (pi == null) {
+                logger.warning("No presence info found for " + m.getCellID());
+                return;
+            }
 
-            logger.fine("GOT PresenceInfoChangeMessage for " + m.getPresenceInfo());
-	    pm.presenceInfoChanged(m.getPresenceInfo());
+            logger.fine("GOT PresenceInfoChangeMessage for " + pi);
+	    
+            switch (m.getChange()) {
+                case SPEAKING:
+                    pm.setSpeaking(pi, m.getValue());
+                    break;
+                case MUTED:
+                    pm.setMute(pi, m.getValue());
+                    break;
+                case SECRET_CHAT:
+                    pm.setInSecretChat(pi, m.getValue());
+                    break;
+                case CONE_OF_SILENCE:
+                    pm.setEnteredConeOfSilence(pi, m.getValue());
+                    break;
+            }
+            return;
+        }
+
+        if (message instanceof PresenceInfoChangedAliasMessage) {
+            PresenceInfoChangedAliasMessage m = (PresenceInfoChangedAliasMessage) message;
+            PresenceInfo pi = pm.getPresenceInfo(m.getCellID());
+            if (pi == null) {
+                logger.warning("No presence info found for " + m.getCellID());
+                return;
+            }
+
+            pm.changeUsernameAlias(pi, m.getAlias());
             return;
         }
 

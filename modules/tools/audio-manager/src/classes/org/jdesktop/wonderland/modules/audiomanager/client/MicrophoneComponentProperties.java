@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentSe
 import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ActiveArea;
 import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.FullVolumeArea;
 import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 /**
  *
@@ -49,12 +48,13 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     private CellPropertiesEditor editor = null;
 
     private String originalName = null;
-    private int originalVolume = 1;
+    private float originalVolume = 1;
     private FullVolumeArea originalFullVolumeArea = new FullVolumeArea();
     private boolean originalShowBounds = false;
     private ActiveArea originalActiveArea = new ActiveArea();
     private boolean originalShowActiveArea = false;
 
+    private SpinnerNumberModel volumeModel = null;
     private SpinnerNumberModel fullVolumeRadiusModel = null;
     private SpinnerNumberModel xExtentModel = null;
     private SpinnerNumberModel yExtentModel = null;
@@ -81,6 +81,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         // Listen for changes to the text field and spinner
         nameTextField.getDocument().addDocumentListener(
                 new NameTextFieldListener());
+
+        volumeModel = new SpinnerNumberModel(new Float(1), new Float(0),
+            new Float(10), new Float(.05));
+        micVolumeSpinner.setModel(volumeModel);
 
         // Set the maximum and minimum values for the volume radius spinner
         fullVolumeRadiusModel = new SpinnerNumberModel(new Float(1), new Float(0),
@@ -178,7 +182,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
 	originalName = state.getName();
 
-	originalVolume = VolumeUtil.getClientVolume(state.getVolume());
+	originalVolume = (float) state.getVolume();
+
+	System.out.println("Original name " + originalName + " original volume " + originalVolume);
 
 	originalFullVolumeArea = state.getFullVolumeArea();
 
@@ -246,9 +252,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             return;
         }
 
+	System.out.println("Name text field " + nameTextField.getText());
+
         state.setName(nameTextField.getText());
 
-	state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
+	state.setVolume((Float) micVolumeSpinner.getValue());
 
         if (fullVolumeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
 	    state.setFullVolumeArea(new FullVolumeArea());
@@ -286,9 +294,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
      */
     public void restore() {
         // Reset the original values to the GUI
+	System.out.println("Restoring original name to " + originalName);
+
 	nameTextField.setText(originalName);
 
-	volumeSlider.setValue(originalVolume);
+	micVolumeSpinner.setValue(originalVolume);
 
 	fullVolumeRadiusSpinner.setEnabled(false);
 	xExtentSpinner.setEnabled(false);
@@ -404,7 +414,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    return true;
 	}
 
-	if (originalVolume != volumeSlider.getValue()) {
+	if (originalVolume != (Float) micVolumeSpinner.getValue()) {
 	    return true;
 	}
 
@@ -714,6 +724,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
+        jSpinner1 = new javax.swing.JSpinner();
         cellBoundsLabel = new javax.swing.JLabel();
         showBoundsCheckBox = new javax.swing.JCheckBox();
         activeAreaUseCellBoundsRadioButton = new javax.swing.JRadioButton();
@@ -727,7 +738,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         jLabel1 = new javax.swing.JLabel();
         activeAreaSpecifyRadiusRadioButton = new javax.swing.JRadioButton();
         jLabel3 = new javax.swing.JLabel();
-        volumeSlider = new javax.swing.JSlider();
         jLabel2 = new javax.swing.JLabel();
         showActiveAreaCheckBox = new javax.swing.JCheckBox();
         jLabel4 = new javax.swing.JLabel();
@@ -741,6 +751,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         jLabel5 = new javax.swing.JLabel();
         activeAreaXOriginSpinner = new javax.swing.JSpinner();
         useCellBoundsRadioButton = new javax.swing.JRadioButton();
+        micVolumeSpinner = new javax.swing.JSpinner();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         showBoundsCheckBox.setText(bundle.getString("MicrophoneComponentProperties.showBoundsCheckBox.text")); // NOI18N
@@ -778,17 +789,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         });
 
         jLabel3.setText(bundle.getString("MicrophoneComponentProperties.jLabel3.text")); // NOI18N
-
-        volumeSlider.setMajorTickSpacing(1);
-        volumeSlider.setMaximum(10);
-        volumeSlider.setPaintLabels(true);
-        volumeSlider.setPaintTicks(true);
-        volumeSlider.setValue(5);
-        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                volumeSliderStateChanged(evt);
-            }
-        });
 
         jLabel2.setText(bundle.getString("MicrophoneComponentProperties.jLabel2.text")); // NOI18N
 
@@ -842,6 +842,12 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             }
         });
 
+        micVolumeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                micVolumeSpinnerStateChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -864,7 +870,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                             .add(layout.createSequentialGroup()
                                 .add(useCellBoundsRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE))
+                                .add(cellBoundsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(specifyRadiusRadioButton)
@@ -884,36 +890,29 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(activeAreaZOriginSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE))
+                            .add(micVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel5)
+                            .add(activeAreaUseCellBoundsRadioButton)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel5)
+                                    .add(activeAreaSpecifyBoxRadioButton)
                                     .add(layout.createSequentialGroup()
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                            .add(org.jdesktop.layout.GroupLayout.LEADING, activeAreaUseCellBoundsRadioButton)
-                                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                                    .add(activeAreaSpecifyBoxRadioButton)
-                                                    .add(layout.createSequentialGroup()
-                                                        .add(activeAreaSpecifyRadiusRadioButton)
-                                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                                            .add(org.jdesktop.layout.GroupLayout.LEADING, activeAreaXExtentSpinner)
-                                                            .add(org.jdesktop.layout.GroupLayout.LEADING, activeAreaFullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE))))
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                .addContainerGap())
-                            .add(layout.createSequentialGroup()
-                                .add(showActiveAreaCheckBox)
-                                .addContainerGap())))))
+                                        .add(activeAreaSpecifyRadiusRadioButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, activeAreaXExtentSpinner)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, activeAreaFullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE))))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(showActiveAreaCheckBox))
+                        .add(51, 51, 51))))
         );
 
         layout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3, jLabel4}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -928,9 +927,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                     .add(jLabel1)
                     .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(micVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel4)
@@ -971,7 +970,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                     .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(showActiveAreaCheckBox)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1034,12 +1033,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    showActiveArea();
 	}
 }//GEN-LAST:event_activeAreaUseCellBoundsRadioButtonActionPerformed
-
-    private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
-	if (editor != null) {
-	    editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
-	}
-}//GEN-LAST:event_volumeSliderStateChanged
 
     private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useCellBoundsRadioButtonActionPerformed
         fullVolumeAreaBoundsType = MicrophoneBoundsType.CELL_BOUNDS;
@@ -1106,6 +1099,14 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         showActiveArea();
     }//GEN-LAST:event_showActiveAreaCheckBoxActionPerformed
 
+    private void micVolumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_micVolumeSpinnerStateChanged
+	if (editor == null) {
+	    return;
+	}
+
+        editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
+    }//GEN-LAST:event_micVolumeSpinnerStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner activeAreaFullVolumeRadiusSpinner;
     private javax.swing.JRadioButton activeAreaSpecifyBoxRadioButton;
@@ -1126,13 +1127,14 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JSpinner jSpinner1;
+    private javax.swing.JSpinner micVolumeSpinner;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JCheckBox showActiveAreaCheckBox;
     private javax.swing.JCheckBox showBoundsCheckBox;
     private javax.swing.JRadioButton specifyBoxRadioButton;
     private javax.swing.JRadioButton specifyRadiusRadioButton;
     private javax.swing.JRadioButton useCellBoundsRadioButton;
-    private javax.swing.JSlider volumeSlider;
     private javax.swing.JSpinner xExtentSpinner;
     private javax.swing.JSpinner yExtentSpinner;
     private javax.swing.JSpinner zExtentSpinner;

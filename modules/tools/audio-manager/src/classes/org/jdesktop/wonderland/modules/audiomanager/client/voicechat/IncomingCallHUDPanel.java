@@ -72,7 +72,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 
         caller = message.getCaller();
 
-        callerText.setText(caller.usernameAlias);
+        callerText.setText(caller.getUsernameAlias());
 
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 

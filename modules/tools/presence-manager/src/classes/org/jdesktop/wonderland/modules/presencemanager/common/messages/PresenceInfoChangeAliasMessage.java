@@ -18,28 +18,21 @@
 package org.jdesktop.wonderland.modules.presencemanager.common.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- * Message indicating a new session has been created
+ * Message indicating a user's alias has changed
  * @author jprovino
  */
 @ExperimentalAPI
-public class PresenceInfoChangeMessage extends CellMessage {
+public class PresenceInfoChangeAliasMessage extends Message {
+    private String alias;
 
-    private PresenceInfo presenceInfo;
-
-    public PresenceInfoChangeMessage(PresenceInfo presenceInfo) {
-	super(presenceInfo.cellID);
-
-	this.presenceInfo = presenceInfo;
+    public PresenceInfoChangeAliasMessage(String alias) {
+        this.alias = alias;
     }
 
-    public PresenceInfo getPresenceInfo() {
-	return presenceInfo;
+    public String getAlias() {
+        return alias;
     }
-
 }
