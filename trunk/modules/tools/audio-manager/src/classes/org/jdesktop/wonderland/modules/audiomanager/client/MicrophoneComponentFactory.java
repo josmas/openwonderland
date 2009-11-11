@@ -45,7 +45,6 @@ public class MicrophoneComponentFactory implements CellComponentFactorySPI {
     }
 
     public String getDescription() {
-        //return BUNDLE.getString("Microphone_Description");
-        return "Microphone_Description";
+        return BUNDLE.getString("Microphone_Description");
     }
 }

@@ -18,12 +18,11 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -36,7 +35,6 @@ import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
@@ -53,11 +51,21 @@ import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
  * A component that provides audio audio treatments
  * 
  * @author jprovino
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @ExperimentalAPI
-public class AudioTreatmentComponent extends AudioParticipantComponent implements VolumeChangeListener {
+public class AudioTreatmentComponent
+        extends AudioParticipantComponent implements VolumeChangeListener {
 
-    private static Logger logger = Logger.getLogger(AudioTreatmentComponent.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(AudioTreatmentComponent.class.getName());
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+    private static final String PLAY = BUNDLE.getString("Play");
+    private static final String RESUME = BUNDLE.getString("Resume");
+    private static final String STOP = BUNDLE.getString("Stop");
+    private static final String PAUSE = BUNDLE.getString("Pause");
+    private static final String VOLUME = BUNDLE.getString("Volume");
     private ChannelComponent channelComp;
     @UsesCellComponent
     private ContextMenuComponent contextMenu;
@@ -115,9 +123,9 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
                     menuItemAdded = true;
 
                     if (playWhen.equals(PlayWhen.ALWAYS)) {
-                        addMenuItems(new String[] {"Stop", "Pause", "Volume"});;
+                        addMenuItems(new String[] {STOP,PAUSE,VOLUME});
                     } else {
-                        addMenuItems(new String[] {"Play", "Volume"});
+                        addMenuItems(new String[] {PLAY,VOLUME});
                     }
                 }
             }
@@ -156,37 +164,38 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
     }
 
     public void menuItemSelected(ContextMenuItemEvent event) {
-        if (event.getContextMenuItem().getLabel().equals("Play") ||
-                event.getContextMenuItem().getLabel().equals("Resume")) {
+        String label = event.getContextMenuItem().getLabel();
+        CellID cellID = cell.getCellID();
+        if (PLAY.equals(label) || RESUME.equals(label)) {
 
-            addMenuItems(new String[] {"Stop", "Pause", "Volume"});
-            channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), false, false));
+            addMenuItems(new String[] {STOP, PAUSE, VOLUME});
+            channelComp.send(new AudioTreatmentRequestMessage(cellID, false, false));
             return;
         }
 
-        if (event.getContextMenuItem().getLabel().equals("Pause")) {
-            addMenuItems(new String[] {"Stop", "Resume", "Volume"});
-            channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), false, true));
+        if (PAUSE.equals(label)) {
+            addMenuItems(new String[] {STOP, RESUME, VOLUME});
+            channelComp.send(new AudioTreatmentRequestMessage(cellID, false, true));
             return;
         }
 
-        if (event.getContextMenuItem().getLabel().equals("Volume")) {
+        if (VOLUME.equals(label)) {
 	    String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
-            channelComp.send(new AudioVolumeMessage(cell.getCellID(), softphoneCallID,
-		CallID.getCallID(cell.getCellID()), 5, false));
+            channelComp.send(new AudioVolumeMessage(cellID, softphoneCallID,
+		CallID.getCallID(cellID), 5, false));
 	    return;
         }
 
-        if (event.getContextMenuItem().getLabel().equals("Stop") == false) {
+        if (!(STOP.equals(label))) {
             return;
         }
 
-        addMenuItems(new String[] {"Play", "Volume"});
-        channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
+        addMenuItems(new String[] {PLAY, VOLUME});
+        channelComp.send(new AudioTreatmentRequestMessage(cellID, true, true));
     }
 
     public void volumeChanged(CellID cellID, String otherCallID, int volume) {
-	logger.fine("Volume changed " + volume);
+	LOGGER.fine("Volume changed " + volume);
 
 	String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
 
@@ -227,20 +236,20 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 
     private void receive(CellMessage message) {
 	if (message instanceof AudioTreatmentDoneMessage) {
-	    addMenuItems(new String[] {"Play", "Volume"});
+	    addMenuItems(new String[] {PLAY, VOLUME});
 	    channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
 	    return;
 	}
 
 	if (message instanceof AudioTreatmentEndedMessage) {
 	    AudioTreatmentEndedMessage msg = (AudioTreatmentEndedMessage) message;
-	    logger.warning("Treatment ended:  " + msg.getReason());
+	    LOGGER.warning("Treatment ended:  " + msg.getReason());
 	    notifyTreatmentEnded(msg.getReason());
 	    return;
 	}
 
 	if (message instanceof AudioTreatmentEstablishedMessage) {
-	    logger.warning("Treatment established");
+	    LOGGER.warning("Treatment established");
 	    notifyTreatmentEstablished();
 	    return;
 	}
@@ -255,7 +264,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 	    
 	    int clientVolume = VolumeUtil.getClientVolume(serverVolume);
 
-	    logger.fine("Got volume message " + serverVolume);
+	    LOGGER.fine("Got volume message " + serverVolume);
 
 	    new VolumeControlJFrame(cell.getCellID(), this, "", 
 		CallID.getCallID(cell.getCellID()), clientVolume);
@@ -295,9 +304,9 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
 	}
 
         if (playWhen.equals(PlayWhen.ALWAYS)) {
-            addMenuItems(new String[] {"Stop", "Pause", "Volume"});;
+            addMenuItems(new String[] {STOP, PAUSE, VOLUME});
         } else {
-            addMenuItems(new String[] {"Play", "Volume"});
+            addMenuItems(new String[] {PLAY, VOLUME});
         }
     }
 
