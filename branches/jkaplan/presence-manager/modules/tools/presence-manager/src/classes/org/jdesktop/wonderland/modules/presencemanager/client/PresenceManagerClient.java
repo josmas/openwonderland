@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedAliasMessage;
 
 /**
  *
@@ -236,7 +237,7 @@ public class PresenceManagerClient extends BaseConnection implements
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		logger.info("no presence info for callID " + msg.getCallID());
+		logger.fine("no presence info for callID " + msg.getCallID());
 		return;
 	    }
 
@@ -290,6 +291,18 @@ public class PresenceManagerClient extends BaseConnection implements
                     pm.setEnteredConeOfSilence(pi, m.getValue());
                     break;
             }
+            return;
+        }
+
+        if (message instanceof PresenceInfoChangedAliasMessage) {
+            PresenceInfoChangedAliasMessage m = (PresenceInfoChangedAliasMessage) message;
+            PresenceInfo pi = pm.getPresenceInfo(m.getCellID());
+            if (pi == null) {
+                logger.warning("No presence info found for " + m.getCellID());
+                return;
+            }
+
+            pm.changeUsernameAlias(pi, m.getAlias());
             return;
         }
 

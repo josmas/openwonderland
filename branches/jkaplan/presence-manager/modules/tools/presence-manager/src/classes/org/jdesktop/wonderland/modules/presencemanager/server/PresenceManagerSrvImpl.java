@@ -311,7 +311,8 @@ public class PresenceManagerSrvImpl implements PresenceManagerSrv {
         }
 	
         public void playerInRange(Player player, Player playerInRange, boolean isInRange) {
-	    logger.info("[PlayerListener] player in range");
+	    logger.fine("[PlayerListener] player in range");
+
             if (done) {
 		return;
             }

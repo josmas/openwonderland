@@ -407,8 +407,8 @@ public class PresenceManagerImpl implements PresenceManager {
 
     public void removeLocalPresenceInfo(PresenceInfo info) {
         if (!isLocal(info)) {
-            throw new IllegalArgumentException("Attempt to remove non-local " +
-                                               "info " + info);
+            logger.fine("Attempt to remove non-local PresenceInfo: " + info);
+            return;
         }
 
         synchronized (localInfo) {
