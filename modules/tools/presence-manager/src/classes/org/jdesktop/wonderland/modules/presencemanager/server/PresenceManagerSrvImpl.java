@@ -27,6 +27,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedObjectRemoval;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.ObjectNotFoundException;
 import com.sun.sgs.app.util.ScalableHashMap;
 import com.sun.voip.client.connector.CallStatus;
@@ -73,14 +74,6 @@ public class PresenceManagerSrvImpl implements PresenceManagerSrv {
             PresenceManagerSrvImpl.class.getName() + ".LISTENER_BINDING";
 
     protected PresenceManagerSrvImpl() {
-        // create maps
-        Map<BigInteger, PresenceInfo> presenceMap =
-                new ScalableHashMap<BigInteger, PresenceInfo>();
-        AppContext.getDataManager().setBinding(PRESENCE_BINDING, presenceMap);
-
-        Map<BigInteger, PlayerListener> listenerMap =
-                new ScalableHashMap<BigInteger, PlayerListener>();
-        AppContext.getDataManager().setBinding(LISTENER_BINDING, listenerMap);
     }
     
     public PresenceInfo addPresenceInfo(BigInteger clientID, CellID cellID) {
@@ -214,13 +207,33 @@ public class PresenceManagerSrvImpl implements PresenceManagerSrv {
     }
     
     private Map<BigInteger, PresenceInfo> getPresenceInfo() {
-        return (Map<BigInteger, PresenceInfo>) 
-                AppContext.getDataManager().getBinding(PRESENCE_BINDING);
+        Map<BigInteger, PresenceInfo> presenceMap;
+
+        try {
+            presenceMap = (Map<BigInteger, PresenceInfo>)
+                    AppContext.getDataManager().getBinding(PRESENCE_BINDING);
+        } catch (NameNotBoundException nnbe) {
+            // issue #1069: lazily create map if it doesn't exist
+            presenceMap = new ScalableHashMap<BigInteger, PresenceInfo>();
+            AppContext.getDataManager().setBinding(PRESENCE_BINDING, presenceMap);
+        }
+        
+        return presenceMap;
     }
 
     private Map<BigInteger, PlayerListener> getListeners() {
-        return (Map<BigInteger, PlayerListener>) 
+        Map<BigInteger, PlayerListener> listenerMap;
+
+        try {
+            listenerMap = (Map<BigInteger, PlayerListener>)
                 AppContext.getDataManager().getBinding(LISTENER_BINDING);
+        } catch (NameNotBoundException nnbe) {
+            // issue #1069: lazily create map if it doesn't exist
+            listenerMap = new ScalableHashMap<BigInteger, PlayerListener>();
+            AppContext.getDataManager().setBinding(LISTENER_BINDING, listenerMap);
+        }
+        
+        return listenerMap;
     }
 
     private WonderlandClientSender getPresenceSender() {
