@@ -102,7 +102,7 @@ public class CellImporterUtils {
             URL url = getURL(WFS_PREFIX + root + "/directory/");
             return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
-            LOGGER.log(Level.INFO, "Unable to fetch children, root=" +
+            LOGGER.log(Level.WARNING, "Unable to fetch children, root=" +
                     root, excp);
             return null;
         }            
@@ -121,7 +121,7 @@ public class CellImporterUtils {
             URL url = getURL(WFS_PREFIX + root + "/directory/" + canonicalName);
             return CellList.decode(canonicalName, url.openStream());
         } catch (java.lang.Exception excp) {
-            LOGGER.log(Level.INFO, "Error getting WFS Children, root=" +
+            LOGGER.log(Level.WARNING, "Error getting WFS Children, root=" +
                     root + "name=" + canonicalName, excp);
             return null;
         }        

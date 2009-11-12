@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.web.wfs.resources;
 
-import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
@@ -25,8 +24,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.tools.wfs.WFSCell;
@@ -52,7 +49,11 @@ import org.jdesktop.wonderland.common.wfs.CellList.Cell;
  */
 @Path(value="/{wfsname:.*}/directory/{path:.*}")
 public class WFSDirectoryResource {
-    
+
+    // The error logger
+    private static final Logger LOGGER =
+            Logger.getLogger(WFSDirectoryResource.class.getName());
+
     /**
      * Returns the JAXB XML serialization of the cell directory given the
      * name of the root WFS (without the -wfs extension) and the path of the
@@ -64,112 +65,104 @@ public class WFSDirectoryResource {
      * @return The XML serialization of the cell setup information via HTTP GET.
      */
     @GET
-    @Produces("text/plain")
-    public Response getCellResource(@PathParam("wfsname") String wfsName, @PathParam("path") String path) {
-        /* Fetch thhe error logger for use in this method */
-        Logger logger = WFSManager.getLogger();
-        
-        /*
-         * Fetch the wfs manager and the WFS. If invalid, then return a bad
-         * response.
-         */
-        WFSManager wfsm = WFSManager.getWFSManager();
-        WFS wfs = wfsm.getWFS(wfsName);
+    @Produces({"text/plain", "application/xml", "application/json"})
+    public Response getCellResource(@PathParam("wfsname") String wfsName,
+            @PathParam("path") String path) {
+
+        LOGGER.fine("Looking in WFS " + wfsName + " for path " + path);
+
+        // Fetch the wfs manager and the WFS. If invalid, then return a bad
+        // response.
+        WFS wfs = WFSManager.getWFSManager().getWFS(wfsName);
         if (wfs == null) {
-            logger.warning("WFSManager: Unable to find WFS with name " + wfsName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
+            LOGGER.warning("Unable to find WFS with name " + wfsName);
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
         
-        /* Fetch the root directory, check if null, but should never be */
+        // Fetch the root directory, check if null, but should never be
         WFSCellDirectory dir = wfs.getRootDirectory();
         if (dir == null) {
-            logger.warning("WFSManager: Unable to find WFS root with name " + wfsName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
+            LOGGER.warning("Unable to find WFS root with name " + wfsName);
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
         
-        /*
-         * Split the path up into individual components. We then fetch the
-         * object down the chain. We assume the last element is the file. As
-         * a special case if path is an empty string, then set paths[] to an
-         * empty array.
-         */
+        // Split the path up into individual components. We then fetch the
+        // objects down the chain. As a special case if path is an empty string,
+        // then set paths[] to an empty array.
         String paths[] = new String[0];
         if (path.compareTo("") != 0) {
             paths = path.split("/");
         }
         
-        /*
-         * Loop through each component and find the subdirectory in turn.
-         */
+        // Loop through each component and find the subdirectory in turn.
         for (int i = 0; i < paths.length; i++) {
-            /*
-             * First fetch the cell. If it does not exist, then return a bad
-             * response.
-             */
+
+            // First fetch the cell. If it does not exist, then return a bad
+            // response. This is an error since the path should never contain
+            // a Cell that does not exist.
             WFSCell cell = dir.getCellByName(paths[i]);
             if (cell == null) {
-                logger.info("WFSManager: Unable to find cell with path: " + path);
-                ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-                return rb.build();
+                LOGGER.warning("Unable to find WFS Cell with path: " + path);
+                return Response.status(Response.Status.BAD_REQUEST).build();
             }
             
-            /*
-             * Next, get the directory associated with the cell. It also needs
-             * to exist, otherwise, return a bad response. If it does not exist,
-             * it means the cell does not have children.
-             */
-            if ((dir = cell.getCellDirectory()) == null) {
-                ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-                return rb.build();
+            // Next, get the directory associated with the cell. All elements
+            // the path should have a Cell directory, except perhaps for the
+            // last element.
+            dir = cell.getCellDirectory();
+            if (dir == null && i < paths.length - 1) {
+                // Some interior path does not have a Cell directory. This is
+                // an error.
+                LOGGER.warning("Unable to find WFS Cell directory with path: " +
+                        path);
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+            else if (dir == null) {
+                // Otherwise, if the final path does not have a Cell directory,
+                // this is ok. It just means that Cell has no children, so we
+                // return an empty list.
+                LOGGER.fine("Did not find a WFS Cell directory for path " +
+                        path + ". This is ok, returning empty list.");
+                CellList children = new CellList(path, new Cell[] {});
+                return Response.ok(children).build();
             }
         }
         
-        /*
-         * If we have reached here, we have 'dir' with the directory in which
-         * the cells should be. Create a WFSCellChildren object which is used
-         * to serialize the result.
-         */
+        // If we have reached here, we have 'dir' with the directory in which
+        // the cells should be. Create a WFSCellChildren object which is used
+        // to serialize the result.
         String names[] = dir.getCellNames();
         if (names == null) {
-            logger.info("WFSManager: Child names are null in " + path);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
+            // If the directory exists, yet there are no children, this is ok.
+            // Just return an empty list.
+            LOGGER.fine("Did not find WFS Cell children for path " + path +
+                    ". This is ok, returning empty list.");
+            CellList children = new CellList(path, new Cell[]{});
+            return Response.ok(children).build();
         }
+
+        LOGGER.fine("For WFS Cell " + path + " # Children " + names.length);
         
-        /*
-         * Loop through and create the WFSCellChildren object, we need to
-         * include the last modified time so that the client can check whether
-         * the cell has been modified or not.
-         */
+        // Loop through and create the WFSCellChildren object, we need to
+        // include the last modified time so that the client can check whether
+        // the cell has been modified or not.
         LinkedList<Cell> list = new LinkedList<Cell>();
         for (String name : names) {
-            /* Fetch the cell, it should not be null, but we check anyway */
             WFSCell cell = dir.getCellByName(name);
             if (cell == null) {
-                logger.info("WFSManager: no cell exists with name " + name);
+                LOGGER.warning("No WFS cell exists with name " + name);
                 continue;
             }
-            
-            /* Add it to the list */
+            LOGGER.fine("Found WFS child " + name + " in path " + path);
             list.add(new Cell(name, cell.getLastModified()));
         }
         
-        /* Convert the list of CellChilds to an array */
+        // Convert the list of CellChilds to an array, form into a CellList and
+        // send the CellList directly to the client.
         Cell[] childs = list.toArray(new Cell[] {});
+        LOGGER.fine("For WFS Cell " + path + " setting children array " +
+                childs);
         CellList children = new CellList(path, childs);
-        
-        /* Send the serialized cell names to the client */
-        try {
-            StringWriter sw = new StringWriter();
-            children.encode(sw);
-            ResponseBuilder rb = Response.ok(sw.toString());
-            return rb.build();
-        } catch (JAXBException excp) {
-            logger.info("WFSManager: Unable to write dir with path: " + path + ": " + excp.toString());
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
+        return Response.ok(children).build();
     }
 }
