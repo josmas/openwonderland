@@ -79,8 +79,8 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv, S
 	logger.info("viewEnterExit bounds:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	new Exception("viewEnterExit bounds:  " + entered + " cellID " + cellID
-	    + " viewCellID " + viewCellID + " bounds " + proximityVolume).printStackTrace();
+	//new Exception("viewEnterExit bounds:  " + entered + " cellID " + cellID
+	//    + " viewCellID " + viewCellID + " bounds " + proximityVolume).printStackTrace();
 
 	String callId = CallID.getCallID(viewCellID);
 
