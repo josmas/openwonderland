@@ -11,12 +11,6 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
-import com.jme.bounding.OrientedBoundingBox;
-import com.jme.math.Vector3f;
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -29,21 +23,23 @@ import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ActiveArea;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.FullVolumeArea;
 import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.FullVolumeArea;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ActiveArea;
+
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.bounding.OrientedBoundingBox;
+import com.jme.math.Vector3f;
 
 /**
  *
  * @author jp
- * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(MicrophoneComponentServerState.class)
 public class MicrophoneComponentProperties extends javax.swing.JPanel 
 	implements PropertiesFactorySPI {
-
-    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
 
     private CellPropertiesEditor editor = null;
 
@@ -150,7 +146,8 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public String getDisplayName() {
-        return BUNDLE.getString("Microphone");
+        //return BUNDLE.getString("Microphone");
+        return "Microphone";
     }
 
     /**
@@ -184,45 +181,52 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
 	originalVolume = (float) state.getVolume();
 
-	System.out.println("Original name " + originalName + " original volume " + originalVolume);
-
 	originalFullVolumeArea = state.getFullVolumeArea();
+
+	originalShowBounds = state.getShowBounds();
 
 	originalActiveArea = state.getActiveArea();
 
-        BoundingVolume bounds = editor.getCell().getLocalBounds();
+	originalShowActiveArea = state.getShowActiveArea();
 
-        if (bounds instanceof BoundingSphere) {
-            float radius = ((BoundingSphere) bounds).getRadius();
-            String text = BUNDLE.getString("Sphere_With_Radius");
-            text = MessageFormat.format(text, (Math.round(radius * 10) / 10f));
-            cellBoundsLabel.setText(text);
-        } else if (bounds instanceof BoundingBox) {
-            Vector3f extent = new Vector3f();
-            extent = ((BoundingBox) bounds).getExtent(extent);
-            showBoxBounds("Box", extent);
-        } else if (bounds instanceof OrientedBoundingBox) {
-            Vector3f extent = ((OrientedBoundingBox) bounds).getExtent();
-            showBoxBounds("OrientedBox", extent);
-        } else {
-            cellBoundsLabel.setText(bounds.toString());
+	if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
+	    fullVolumeAreaBoundsType = MicrophoneBoundsType.CELL_BOUNDS;
+
+            BoundingVolume bounds = editor.getCell().getLocalBounds();
+
+            if (bounds instanceof BoundingSphere) {
+                float radius = ((BoundingSphere) bounds).getRadius();
+
+                cellBoundsLabel.setText("Sphere with radius " + (Math.round(radius * 10) / 10f));
+            } else {
+                Vector3f extent = new Vector3f();
+                extent = ((BoundingBox) bounds).getExtent(extent);
+
+		float x = Math.round(extent.getX() * 10) / 10f;
+		float y = Math.round(extent.getY() * 10) / 10f;
+		float z = Math.round(extent.getZ() * 10) / 10f;
+
+		cellBoundsLabel.setText("BOX (" + x + ", " + y + ", " + z + ")");
+	    }
+	} else if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
+	    fullVolumeAreaBoundsType = MicrophoneBoundsType.SPHERE;
+	} else {
+	    fullVolumeAreaBoundsType = MicrophoneBoundsType.BOX;
         }
 
+	activeAreaBoundsType = originalActiveArea.activeAreaBoundsType;
+
 	restore();
-    }
-
-    private void showBoxBounds(String s, Vector3f extent) {
-        float x = Math.round(extent.getX() * 10) / 10f;
-        float y = Math.round(extent.getY() * 10) / 10f;
-        float z = Math.round(extent.getZ() * 10) / 10f;
-
-        cellBoundsLabel.setText(s + " (" + x + ", " + y + ", " + z + ")");
     }
 
     /**
      * @{inheritDoc}
      */
     public void close() {
+	hideBounds();
+    }
+
+    private void hideBounds() {
         if (boundsViewerEntity != null) {
             boundsViewerEntity.dispose();
             boundsViewerEntity = null;
@@ -266,8 +270,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    state.setFullVolumeArea(new FullVolumeArea(
 	        new Vector3f((Float) xExtentSpinner.getValue(), (Float) yExtentSpinner.getValue(),
 	        (Float) zExtentSpinner.getValue())));
-
-	    System.out.println("fva " + state.getFullVolumeArea());
         }
 
 	Vector3f origin = new Vector3f((Float) activeAreaXOriginSpinner.getValue(),
@@ -286,6 +288,8 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	        (Float) activeAreaZExtentSpinner.getValue())));
         }
 
+	hideBounds();
+
         editor.addToUpdateList(state);
     }
 
@@ -294,7 +298,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
      */
     public void restore() {
         // Reset the original values to the GUI
-	System.out.println("Restoring original name to " + originalName);
 
 	nameTextField.setText(originalName);
 
@@ -306,12 +309,14 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	zExtentSpinner.setEnabled(false);
 
 	if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
+	    useCellBoundsRadioButton.setSelected(true);
             useCellBoundsRadioButton.setSelected(true);
         } else if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
             specifyRadiusRadioButton.setSelected(true);
 	    fullVolumeRadiusSpinner.setEnabled(true);
 	    fullVolumeRadiusSpinner.setValue(originalFullVolumeArea.bounds.getX());
         } else {
+	    specifyBoxRadioButton.setSelected(true);
 	    fullVolumeRadiusSpinner.setEnabled(false);
 	    xExtentSpinner.setValue(originalFullVolumeArea.bounds.getX());
 	    yExtentSpinner.setValue(originalFullVolumeArea.bounds.getY());
@@ -328,6 +333,12 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	activeAreaXExtentSpinner.setEnabled(false);
 	activeAreaYExtentSpinner.setEnabled(false);
 	activeAreaZExtentSpinner.setEnabled(false);
+
+	Vector3f origin = originalActiveArea.activeAreaOrigin;
+
+	activeAreaXOriginSpinner.setValue(origin.getX());
+	activeAreaYOriginSpinner.setValue(origin.getY());
+	activeAreaZOriginSpinner.setValue(origin.getZ());
 
 	if (originalActiveArea.activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
             activeAreaUseCellBoundsRadioButton.setSelected(true);
@@ -975,6 +986,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     }// </editor-fold>//GEN-END:initComponents
 
     private void activeAreaSpecifyBoxRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activeAreaSpecifyBoxRadioButtonActionPerformed
+	if (activeAreaSpecifyBoxRadioButton.isSelected() == false) {
+	    return;
+	}
+
 	activeAreaBoundsType = MicrophoneBoundsType.BOX;
 
 	activeAreaXOriginSpinner.setEnabled(true);
@@ -995,6 +1010,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 }//GEN-LAST:event_activeAreaSpecifyBoxRadioButtonActionPerformed
 
     private void activeAreaSpecifyRadiusRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activeAreaSpecifyRadiusRadioButtonActionPerformed
+	if (activeAreaSpecifyRadiusRadioButton.isSelected() == false) {
+	    return;
+	}
+
 	activeAreaBoundsType = MicrophoneBoundsType.SPHERE;
 
 	activeAreaXOriginSpinner.setEnabled(true);
@@ -1015,6 +1034,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 }//GEN-LAST:event_activeAreaSpecifyRadiusRadioButtonActionPerformed
 
     private void activeAreaUseCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activeAreaUseCellBoundsRadioButtonActionPerformed
+	if (activeAreaUseCellBoundsRadioButton.isSelected() == false) {
+	    return;
+	}
+
 	activeAreaBoundsType = MicrophoneBoundsType.CELL_BOUNDS;
 
 	activeAreaXOriginSpinner.setEnabled(false);
@@ -1035,6 +1058,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 }//GEN-LAST:event_activeAreaUseCellBoundsRadioButtonActionPerformed
 
     private void useCellBoundsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useCellBoundsRadioButtonActionPerformed
+	if (useCellBoundsRadioButton.isSelected() == false) {
+	    return;
+	}
+
         fullVolumeAreaBoundsType = MicrophoneBoundsType.CELL_BOUNDS;
 
 	fullVolumeRadiusSpinner.setEnabled(false);
@@ -1050,6 +1077,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     }//GEN-LAST:event_useCellBoundsRadioButtonActionPerformed
 
     private void specifyRadiusRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_specifyRadiusRadioButtonActionPerformed
+	if (specifyRadiusRadioButton.isSelected() == false) {
+	    return;
+	}
+
         fullVolumeAreaBoundsType = MicrophoneBoundsType.SPHERE;
 
 	fullVolumeRadiusSpinner.setEnabled(true);
@@ -1065,6 +1096,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     }//GEN-LAST:event_specifyRadiusRadioButtonActionPerformed
 
     private void specifyBoxRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_specifyBoxRadioButtonActionPerformed
+	if (specifyBoxRadioButton.isSelected() == false) {
+	    return;
+	}
+
         fullVolumeAreaBoundsType = MicrophoneBoundsType.BOX;
 
 	fullVolumeRadiusSpinner.setEnabled(false);

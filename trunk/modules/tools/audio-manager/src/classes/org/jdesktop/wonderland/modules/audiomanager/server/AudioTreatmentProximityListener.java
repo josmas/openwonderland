@@ -95,6 +95,7 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
 	    return;
 	}
 
+	//System.out.println("Cell entered, restarting input treatment " + treatment);
 	treatment.restart(false);
     }
 
@@ -114,6 +115,7 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
 	    return;
 	}
 
+	//System.out.println("Cell exited , pausing input treatment " + treatment);
 	treatment.restart(true);
     }
 
