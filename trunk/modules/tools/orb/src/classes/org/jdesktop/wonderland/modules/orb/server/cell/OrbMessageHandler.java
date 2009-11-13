@@ -251,15 +251,11 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 
 	    if (isAttached && msg.getHostCellID() == null) {
 		/*
-		 * The client is asking to tell it if there
-		 * is a host for this orb.
+		 * If hostCellID is null, the client is asking 
+		 * us to tell it if there is a host for this orb.
 		 */
-		if (hostCellID == null) {
-		    return;
-		}
-
 	   	sender.send(clientID, new OrbAttachMessage(
-		    msg.getCellID(), hostCellID, true));
+		    msg.getCellID(), null, false));
 		return;
 	    }
 
