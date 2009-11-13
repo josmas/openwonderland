@@ -212,6 +212,12 @@ public class ViewManager implements ViewPropertiesListener {
             public void init(RenderBuffer arg0) {
                 logger.info("RENDERER IS READY !");
                 waitForReady.release();
+
+                // issue #1047: ignore repaints after the first to avoid
+                // flickering on Windows. The first paint is necessary to
+                // setup the canvas.  Once we get to this point, the canvas
+                // is initialized, and we can ignore further repaints.
+                canvas.setIgnoreRepaint(true);
             }
         });
 
