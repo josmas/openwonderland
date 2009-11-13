@@ -18,20 +18,21 @@
 
 package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 
-import com.jme.bounding.BoundingSphere;
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.scene.shape.Cone;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.state.WireframeState;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 
 /**
  * @author jkaplan
+ * @author Bernard Horan
  */
 public class ConeOfSilenceCellRenderer extends BasicRenderer {
     
@@ -41,32 +42,21 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
     
     protected Node createSceneGraph(Entity entity) {
 
-        /* Fetch the basic info about the cell */
-        String name = cell.getCellID().toString();
-
-        /* Create the scene graph object and set its wireframe state */
-        float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
-        Cone cone = new Cone(name, 30, 30, radius, (float) 1.0 * radius);
         Node node = new Node();
-        node.attachChild(cone);
-
-        // Raise the cone off of the floor, and rotate it about the +x axis 90
-        // degrees so it faces the proper way
-        Vector3f translation = new Vector3f(0.0f, 1.9f, 0.0f);
-        Vector3f axis = new Vector3f(1.0f, 0.0f, 0.0f);
-        float angle = (float)Math.toRadians(90);
-        Quaternion rotation = new Quaternion().fromAngleAxis(angle, axis);
-        node.setLocalTranslation(translation);
-        node.setLocalRotation(rotation);
-        node.setModelBound(new BoundingSphere());
-        node.updateModelBound();
-
-        WireframeState wiState = (WireframeState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
-        wiState.setEnabled(true);
-        node.setRenderState(wiState);
-        node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
-
+        try {
+            attachModel(node);
+        } catch (IOException ex) {
+            Logger.getLogger(ConeOfSilenceCellRenderer.class.getName()).log(Level.SEVERE, "Failed to load cone of silence", ex);
+        }
         return node;
+    }
+
+    private void attachModel(Node aNode) throws IOException {
+        LoaderManager manager = LoaderManager.getLoaderManager();
+        URL url = AssetUtils.getAssetURL("wla://coneofsilence/pwl_3d_coneofsilence_014.dae/pwl_3d_coneofsilence_014.dae.gz.dep", this.getCell());
+        DeployedModel dm = manager.getLoaderFromDeployment(url);
+        Node cosModel = dm.getModelLoader().loadDeployedModel(dm, entity);
+        aNode.attachChild(cosModel);
     }
 
 }
