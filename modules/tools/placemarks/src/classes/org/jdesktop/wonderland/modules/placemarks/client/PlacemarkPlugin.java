@@ -105,7 +105,6 @@ public class PlacemarkPlugin extends BaseClientPlugin
                     JFrame frame = JmeClientMain.getFrame().getFrame();
                     managePlacemarksFrame = new EditPlacemarksJFrame();
                     managePlacemarksFrame.setLocationRelativeTo(frame);
-                    managePlacemarksFrame.setSize(500, 300);
                     managePlacemarksFrameRef =
                             new WeakReference(managePlacemarksFrame);
                 } else {
@@ -113,7 +112,6 @@ public class PlacemarkPlugin extends BaseClientPlugin
                 }
 
                 if (!managePlacemarksFrame.isVisible()) {
-                    managePlacemarksFrame.setSize(400, 300);
                     managePlacemarksFrame.setVisible(true);
                 }
             }

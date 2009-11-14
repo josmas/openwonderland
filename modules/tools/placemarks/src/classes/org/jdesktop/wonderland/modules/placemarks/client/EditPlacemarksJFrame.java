@@ -221,35 +221,15 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        mainPanel = new javax.swing.JPanel();
-        userMainPanel = new javax.swing.JPanel();
-        userScrollPane = new javax.swing.JScrollPane();
-        userButtonPanel = new javax.swing.JPanel();
         addButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        closeButton = new javax.swing.JButton();
+        userScrollPane = new javax.swing.JScrollPane();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle"); // NOI18N
         setTitle(bundle.getString("EditPlacemarksJFrame.title")); // NOI18N
-        getContentPane().setLayout(new java.awt.GridLayout(1, 1));
-
-        mainPanel.setLayout(new java.awt.GridLayout(1, 0));
-
-        userMainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        userMainPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        userMainPanel.add(userScrollPane, gridBagConstraints);
-
-        userButtonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
 
         addButton.setText(bundle.getString("EditPlacemarksJFrame.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -257,7 +237,6 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                 addButtonActionPerformed(evt);
             }
         });
-        userButtonPanel.add(addButton);
 
         editButton.setText(bundle.getString("EditPlacemarksJFrame.editButton.text")); // NOI18N
         editButton.setEnabled(false);
@@ -266,7 +245,6 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                 editButtonActionPerformed(evt);
             }
         });
-        userButtonPanel.add(editButton);
 
         removeButton.setText(bundle.getString("EditPlacemarksJFrame.removeButton.text")); // NOI18N
         removeButton.setEnabled(false);
@@ -275,18 +253,48 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                 removeButtonActionPerformed(evt);
             }
         });
-        userButtonPanel.add(removeButton);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        userMainPanel.add(userButtonPanel, gridBagConstraints);
+        closeButton.setText(bundle.getString("EditPlacemarksJFrame.closeButton.text")); // NOI18N
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeButtonActionPerformed(evt);
+            }
+        });
 
-        mainPanel.add(userMainPanel);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(addButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(removeButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(closeButton))
+                    .add(userScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE))
+                .addContainerGap())
+        );
 
-        getContentPane().add(mainPanel);
+        layout.linkSize(new java.awt.Component[] {addButton, editButton, removeButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(userScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(closeButton)
+                    .add(removeButton)
+                    .add(editButton)
+                    .add(addButton))
+                .addContainerGap())
+        );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -415,13 +423,16 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             registry.registerPlacemark(newPlacemark, PlacemarkType.USER);
         }
     }//GEN-LAST:event_editButtonActionPerformed
+
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
+        this.setVisible(false);
+    }//GEN-LAST:event_closeButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton closeButton;
     private javax.swing.JButton editButton;
-    private javax.swing.JPanel mainPanel;
     private javax.swing.JButton removeButton;
-    private javax.swing.JPanel userButtonPanel;
-    private javax.swing.JPanel userMainPanel;
     private javax.swing.JScrollPane userScrollPane;
     // End of variables declaration//GEN-END:variables
 }
