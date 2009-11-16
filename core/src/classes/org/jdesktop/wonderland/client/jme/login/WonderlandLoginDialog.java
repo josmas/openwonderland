@@ -308,7 +308,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         gradientPanel1.setGradientStartColor(new java.awt.Color(0, 51, 255));
         gradientPanel1.setMinimumSize(new java.awt.Dimension(0, 82));
 
-        worldNameLabel.setFont(new java.awt.Font("Arial", 1, 36));
+        worldNameLabel.setFont(new java.awt.Font("SansSerif", 1, 36)); // NOI18N
         worldNameLabel.setForeground(new java.awt.Color(255, 255, 255));
         worldNameLabel.setText(bundle.getString("WonderlandLoginDialog.worldNameLabel.text")); // NOI18N
 
@@ -337,7 +337,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         loginSpecificPanel.setLayout(new java.awt.BorderLayout());
         gradientPanel2.add(loginSpecificPanel, java.awt.BorderLayout.CENTER);
 
-        tagLineLabel.setFont(new java.awt.Font("Arial", 1, 18));
+        tagLineLabel.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
         tagLineLabel.setForeground(new java.awt.Color(255, 255, 255));
         tagLineLabel.setText(bundle.getString("WonderlandLoginDialog.tagLineLabel.text")); // NOI18N
         tagLineLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -350,7 +350,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         buttonPanel.setPreferredSize(new java.awt.Dimension(453, 65));
 
         cancelButton.setBackground(new java.awt.Color(255, 255, 255));
-        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
         cancelButton.setText(bundle.getString("WonderlandLoginDialog.cancelButton.text")); // NOI18N
         cancelButton.setAlignmentX(0.5F);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -360,7 +360,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         });
 
         loginButton.setBackground(new java.awt.Color(255, 255, 255));
-        loginButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        loginButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
         loginButton.setText(bundle.getString("WonderlandLoginDialog.loginButton.text")); // NOI18N
         loginButton.setAlignmentX(0.5F);
         loginButton.addActionListener(new java.awt.event.ActionListener() {
@@ -369,11 +369,11 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             }
         });
 
-        statusLabel.setFont(new java.awt.Font("Arial", 1, 12));
+        statusLabel.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         statusLabel.setForeground(new java.awt.Color(45, 45, 45));
         statusLabel.setText(bundle.getString("WonderlandLoginDialog.statusLabel.text")); // NOI18N
 
-        advancedButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        advancedButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         advancedButton.setText(bundle.getString("WonderlandLoginDialog.advancedButton.text")); // NOI18N
         advancedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
