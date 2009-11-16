@@ -126,7 +126,13 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 	    PhoneInfo phoneInfo = phoneCellMO.getPhoneInfo();
 
 	    if (m.getPassword() != null) {
-		successful = m.getPassword().equals(phoneInfo.password);
+		String password = System.getProperty("wonderland.phone.password");
+
+		if (password == null || password.length() == 0) {
+	    	    password = phoneInfo.password;
+		}
+
+		successful = m.getPassword().equals(password);
 	    }
 
 	    if (successful) {
