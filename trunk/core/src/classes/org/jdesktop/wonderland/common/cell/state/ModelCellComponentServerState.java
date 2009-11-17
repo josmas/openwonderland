@@ -47,6 +47,8 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
     @XmlElement(name="LightingEnabled")
     private boolean lightingEnabled = true;
 
+    @XmlElement(name="BackfaceCullingEnabled")
+    private boolean backfaceCullingEnabled = true;
 
     /** Default constructor */
     public ModelCellComponentServerState() {
@@ -68,6 +70,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
         ret.collidable = this.collidable;
         ret.pickable = this.pickable;
         ret.lightingEnabled = this.lightingEnabled;
+        ret.backfaceCullingEnabled = this.backfaceCullingEnabled;
 
         return ret;
     }
@@ -77,6 +80,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
         state.setCollisionEnabled(collidable);
         state.setPickingEnabled(pickable);
         state.setLightingEnabled(lightingEnabled);
+        state.setBackfaceCullingEnabled(backfaceCullingEnabled);
 
         return state;
     }
@@ -140,5 +144,13 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
      */
     public void setLightingEnabled(boolean lightingEnabled) {
         this.lightingEnabled = lightingEnabled;
+    }
+
+    @XmlTransient public boolean isBackfactCullingEnabled() {
+        return backfaceCullingEnabled;
+    }
+
+    public void setBackfaceCullingEnabled(boolean backfaceCullingEnabled) {
+        this.backfaceCullingEnabled = backfaceCullingEnabled;
     }
 }

@@ -21,6 +21,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.state.CullState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.resource.ResourceLocator;
@@ -43,18 +44,18 @@ import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.component.CellPhysicsPropertiesComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -84,6 +85,7 @@ public abstract class BasicRenderer implements CellRendererJME {
     private boolean collisionEnabled = true;
     private boolean pickingEnabled = true;
     private boolean lightingEnabled = true;
+    private boolean backfaceCullingEnabled = true;
 
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -475,6 +477,38 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         if (entity != null) {
             adjustLighting(entity);
+        }
+    }
+
+    public void setBackfaceCullingEnabled(boolean backfaceCullingEnabled) {
+        if (this.backfaceCullingEnabled==backfaceCullingEnabled)
+            return;
+
+        this.backfaceCullingEnabled = backfaceCullingEnabled;
+
+        if (entity!=null) {
+            final RenderComponent rc = entity.getComponent(RenderComponent.class);
+            final CullState.Face face = backfaceCullingEnabled ? CullState.Face.Back : CullState.Face.None;
+            if (rc!=null && rc.getSceneRoot()!=null) {
+                ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                    public void update(Object arg0) {
+                        TreeScan.findNode(rc.getSceneRoot(), new ProcessNodeInterface() {
+                            public boolean processNode(Spatial node) {
+                                CullState cs = (CullState) node.getRenderState(RenderState.RS_CULL);
+                                if (cs==null) {
+                                    cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_CULL);
+                                    node.setRenderState(cs);
+                                }
+                                cs.setCullFace(face);
+
+                                return true;
+                            }
+                        });
+                        ClientContextJME.getWorldManager().addToUpdateList(rc.getSceneRoot());
+                    }
+                }, null);
+            }
         }
     }
 
