@@ -19,27 +19,15 @@ package org.jdesktop.wonderland.modules.phone.client.cell;
 
 //import org.jdesktop.wonderland.avatarorb.client.cell.AvatarOrbCell;
 
-import  org.jdesktop.wonderland.modules.phone.common.CallListing;
-
 import com.sun.sgs.client.ClientChannel;
-
 import java.util.logging.Logger;
-
-import org.jdesktop.wonderland.client.cell.Cell;
+import java.util.ResourceBundle;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
-import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.phone.common.CallListing;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEstablishedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
@@ -47,33 +35,24 @@ import org.jdesktop.wonderland.modules.phone.common.messages.EndCallMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.EndCallResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallResponseMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockResponseMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneControlMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.PhoneResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
-
 import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
-
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-
-import javax.swing.SwingUtilities;
 
 /**
  *
  * @author jprovino
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class PhoneMessageHandler {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
             Logger.getLogger(PhoneMessageHandler.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/phone/client/cell/resources/Bundle");
 
     private static final float HOVERSCALE = 1.5f;
     private static final float NORMALSCALE = 1.25f;
@@ -163,7 +142,7 @@ public class PhoneMessageHandler {
 	    final CallEndedResponseMessage msg = (CallEndedResponseMessage) message;
 
             if (msg.wasSuccessful() == false) {    
-                logger.warning("Failed:  " + msg.getReasonCallEnded());
+                LOGGER.warning("Failed:  " + msg.getReasonCallEnded());
 	    }
 
             CallListing listing = msg.getCallListing();
@@ -200,7 +179,7 @@ public class PhoneMessageHandler {
 	}
 
 	if (message instanceof PhoneResponseMessage == false) {
-	    logger.warning("Invalid message:  " + message);
+	    LOGGER.warning("Invalid message:  " + message);
 	    return;
 	}
 
@@ -209,17 +188,17 @@ public class PhoneMessageHandler {
         CallListing listing = msg.getCallListing();
 
 	if (msg instanceof PlaceCallResponseMessage) {
-	    logger.fine("Got place call response...");
+	    LOGGER.fine("Got place call response...");
 
             if (msg.wasSuccessful() == false) {
-                logger.warning("Failed PLACE_CALL!");
+                LOGGER.warning("Failed PLACE_CALL!");
 		return;
 	    }
 
             if (mostRecentCallListing == null ||
 		    listing.equals(mostRecentCallListing) == false) {
 
-		logger.warning("Didn't find listing...");
+		LOGGER.warning("Didn't find listing...");
 		return;
 	    }
 
@@ -232,7 +211,7 @@ public class PhoneMessageHandler {
 	    /*
 	     * Set the call ID used by the server.
 	     */
-	    logger.fine("Updating listing with " + listing.getExternalCallID());
+	    LOGGER.fine("Updating listing with " + listing.getExternalCallID());
 
 	    mostRecentCallListing.setExternalCallID(listing.getExternalCallID());
 
@@ -249,7 +228,7 @@ public class PhoneMessageHandler {
 	if (msg instanceof JoinCallResponseMessage)  {
             //Hearing back from the server means this call has joined the world.
             if (msg.wasSuccessful() == false) {
-                logger.warning("Failed JOIN_CALL");
+                LOGGER.warning("Failed JOIN_CALL");
 		return;
 	    }
 
@@ -281,7 +260,7 @@ public class PhoneMessageHandler {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
 		    if (phoneForm != null) {
-                        phoneForm.setStatusMessage("Dialing...");
+                        phoneForm.setStatusMessage(BUNDLE.getString("Dialing"));
 		    }
                 }
             });
@@ -289,12 +268,12 @@ public class PhoneMessageHandler {
 	}
             
 	if (msg instanceof CallEstablishedResponseMessage) {
-	    logger.fine("Got est resp");
+	    LOGGER.fine("Got est resp");
 
             if (mostRecentCallListing == null ||
 		    listing.equals(mostRecentCallListing) == false) {
 
-		logger.warning("no listing " + mostRecentCallListing 
+		LOGGER.warning("no listing " + mostRecentCallListing
 		    + " listing " + listing);
 
 		return;  // we didn't start this call
@@ -329,7 +308,7 @@ public class PhoneMessageHandler {
         PlaceCallMessage msg = new PlaceCallMessage(phoneCell.getCellID(), 
 	    listing);
 
-	logger.fine("Sending place call message " + phoneCell.getCellID() + " " 
+	LOGGER.fine("Sending place call message " + phoneCell.getCellID() + " "
 	    + " softphoneCallID " + sc.getCallID() + " " + listing);
 
 	synchronized (phoneForm) {
@@ -349,7 +328,7 @@ public class PhoneMessageHandler {
     }
     
     public void endCall() {        
-	logger.fine("call id is " + mostRecentCallListing.getExternalCallID());
+	LOGGER.fine("call id is " + mostRecentCallListing.getExternalCallID());
 
         EndCallMessage msg = new EndCallMessage(phoneCell.getCellID(), 
 	    mostRecentCallListing);
@@ -380,6 +359,7 @@ public class PhoneMessageHandler {
 	    start();
 	}
 
+        @Override
 	public void run() {
 	    while (running) {
 		updateProjectorState();

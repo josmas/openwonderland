@@ -22,6 +22,7 @@ import javax.swing.JDialog;
 /**
  *
  * @author  jm57878
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class JDialogKeypad extends JDialog {
 
@@ -57,7 +58,8 @@ public class JDialogKeypad extends JDialog {
         jButtonClose = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Keypad");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/phone/client/cell/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("JDialogKeypad.title")); // NOI18N
         setBackground(new java.awt.Color(0, 0, 0));
         setResizable(false);
         addKeyListener(new java.awt.event.KeyAdapter() {
@@ -66,7 +68,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton1.setText("1");
+        jButton1.setText(bundle.getString("JDialogKeypad.jButton1.text")); // NOI18N
         jButton1.setDefaultCapable(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -79,7 +81,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton2.setText("2");
+        jButton2.setText(bundle.getString("JDialogKeypad.jButton2.text")); // NOI18N
         jButton2.setDefaultCapable(false);
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -92,7 +94,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton3.setText("3");
+        jButton3.setText(bundle.getString("JDialogKeypad.jButton3.text")); // NOI18N
         jButton3.setDefaultCapable(false);
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -105,7 +107,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton4.setText("4");
+        jButton4.setText(bundle.getString("JDialogKeypad.jButton4.text")); // NOI18N
         jButton4.setDefaultCapable(false);
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -118,7 +120,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton5.setText("5");
+        jButton5.setText(bundle.getString("JDialogKeypad.jButton5.text")); // NOI18N
         jButton5.setDefaultCapable(false);
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -131,7 +133,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton6.setText("6");
+        jButton6.setText(bundle.getString("JDialogKeypad.jButton6.text")); // NOI18N
         jButton6.setDefaultCapable(false);
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -144,7 +146,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton7.setText("7");
+        jButton7.setText(bundle.getString("JDialogKeypad.jButton7.text")); // NOI18N
         jButton7.setDefaultCapable(false);
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -157,7 +159,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton8.setText("8");
+        jButton8.setText(bundle.getString("JDialogKeypad.jButton8.text")); // NOI18N
         jButton8.setDefaultCapable(false);
         jButton8.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -170,7 +172,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton9.setText("9");
+        jButton9.setText(bundle.getString("JDialogKeypad.jButton9.text")); // NOI18N
         jButton9.setDefaultCapable(false);
         jButton9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -183,7 +185,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButtonStar.setText("*");
+        jButtonStar.setText(bundle.getString("JDialogKeypad.jButtonStar.text")); // NOI18N
         jButtonStar.setDefaultCapable(false);
         jButtonStar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -196,7 +198,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButton0.setText("0");
+        jButton0.setText(bundle.getString("JDialogKeypad.jButton0.text")); // NOI18N
         jButton0.setDefaultCapable(false);
         jButton0.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -209,7 +211,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButtonHash.setText("#");
+        jButtonHash.setText(bundle.getString("JDialogKeypad.jButtonHash.text")); // NOI18N
         jButtonHash.setDefaultCapable(false);
         jButtonHash.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -222,7 +224,7 @@ public class JDialogKeypad extends JDialog {
             }
         });
 
-        jButtonClose.setText("Close");
+        jButtonClose.setText(bundle.getString("JDialogKeypad.jButtonClose.text")); // NOI18N
         jButtonClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonCloseActionPerformed(evt);
@@ -247,20 +249,19 @@ public class JDialogKeypad extends JDialog {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(jButton8, 0, 0, Short.MAX_VALUE)
-                                    .add(jButton0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, Short.MAX_VALUE)
+                                    .add(jButton0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 56, Short.MAX_VALUE)
                                     .add(jButton5, 0, 0, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(jButton6, 0, 0, Short.MAX_VALUE)
                                     .add(jButton9, 0, 0, Short.MAX_VALUE)
-                                    .add(jButtonHash, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, Short.MAX_VALUE)))
+                                    .add(jButtonHash, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)))
                             .add(layout.createSequentialGroup()
-                                .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, Short.MAX_VALUE)
+                                .add(jButton1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, Short.MAX_VALUE)
+                                .add(jButton2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
+                                .add(jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
                         .add(53, 53, 53)
                         .add(jButtonClose, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))

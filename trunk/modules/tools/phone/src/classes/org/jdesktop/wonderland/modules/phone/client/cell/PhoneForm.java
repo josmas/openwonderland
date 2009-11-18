@@ -17,33 +17,39 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.modules.phone.common.CallListing;
-
+import java.awt.Color;
+import java.awt.Point;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
+import java.util.ResourceBundle;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.phone.common.CallListing;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import java.awt.Color;
-import java.awt.Point;
-
-import java.util.logging.Logger;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-
 /**
  *
  * @author  nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class PhoneForm extends JDialog implements KeypadListener {
 
-    private static final Logger logger = Logger.getLogger(PhoneForm.class.getName());
-    // we need to know who our parent cell is in order properly pass messages to the server
+    private static final Logger LOGGER =
+            Logger.getLogger(PhoneForm.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/phone/client/cell/resources/Bundle");
+    private static final String CALL = BUNDLE.getString("Call");
+    private static final String END_CALL = BUNDLE.getString("End_Call");
+    private static final String CALL_IN_PROGRESS =
+            BUNDLE.getString("Call_In_Progress");
+
+    // we need to know who our parent cell is in order properly pass messages to
+    // the server
     private boolean locked = false;
     private String phoneNumber;
 
@@ -81,7 +87,9 @@ public class PhoneForm extends JDialog implements KeypadListener {
 
         setLocked(locked);
 
-        setTitle("Phone " + phoneNumber);
+        String title = BUNDLE.getString("Phone_Title");
+        title = MessageFormat.format(title, phoneNumber);
+        setTitle(title);
     }
 
     public void reset() {
@@ -90,7 +98,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
 		contactNameTextField.setText(null);
 		contactNumberTextField.setText(null);
 		keypadButton.setEnabled(false);
-	        callButton.setText("Call");
+	        callButton.setText(CALL);
 		callButton.setEnabled(false);
 		setLocked(locked);
 		statusMessageLabel.setText(null);
@@ -117,20 +125,20 @@ public class PhoneForm extends JDialog implements KeypadListener {
             public void run() {
         	if (locked) {
             	    lockedLabel.setForeground(Color.RED);
-            	    lockedLabel.setText("Locked");
+            	    lockedLabel.setText(BUNDLE.getString("Locked"));
             	    setSimulationMode(true);
             	    privateCallCheckBox.setSelected(false);
             	    privateCallCheckBox.setEnabled(false);
             	    callButton.setEnabled(false);
-            	    unlockButton.setText("Unlock");
+            	    unlockButton.setText(BUNDLE.getString("Unlock"));
         	} else {
 	            lockedLabel.setForeground(new Color(0, 153, 0));
-           	    lockedLabel.setText("Unlocked");
+           	    lockedLabel.setText(BUNDLE.getString("Unlocked"));
 	            setSimulationMode(false);
             	    privateCallCheckBox.setSelected(true);
             	    privateCallCheckBox.setEnabled(true);
             	    setDialoutButtonState();
-            	    unlockButton.setText("Lock");
+            	    unlockButton.setText(BUNDLE.getString("Lock"));
         	}
 	    }
 	});
@@ -164,7 +172,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
 	java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
         	if (contactNameTextField.isEditable() == false) {
-	    	    if (callButton.getText().equals("End Call") == false) {
+	    	    if (callButton.getText().equals(END_CALL) == false) {
                 	callButton.setEnabled(false);
 	    	    }
             	    return;
@@ -174,7 +182,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
                     contactNumberTextField.getText().length() > 0) {
             	    callButton.setEnabled(true);
 		} else {
-		    if (callButton.getText().equals("End Call") == false) {
+		    if (callButton.getText().equals(END_CALL) == false) {
 			callButton.setEnabled(false);
 	    	    }
         	}
@@ -193,7 +201,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
     public void setCallEstablished(final boolean enabled) {
 	java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-        	statusMessageLabel.setText("Call in progress");
+        	statusMessageLabel.setText(CALL_IN_PROGRESS);
 
         	joinButton.setEnabled(enabled);
 
@@ -209,51 +217,53 @@ public class PhoneForm extends JDialog implements KeypadListener {
 
     public void setCallEnded(String reasonCallEnded) {
         if (reasonCallEnded == null) {
-            reasonCallEnded = "Hung up";
+            reasonCallEnded = BUNDLE.getString("Hung_Up");
         } else if (reasonCallEnded.equals("Not Found")) {
             /*
              * The gateway returns "Not Found" meaning Invalid phone number
              */
-            reasonCallEnded = "Invalid phone number";
+            reasonCallEnded = BUNDLE.getString("Invalid_Phone_Number");
         } else if (reasonCallEnded.indexOf("gateway error") >= 0) {
             /*
              * The gateway returned an error.
              */
-            reasonCallEnded = "Telephone connection error";
+            reasonCallEnded = BUNDLE.getString("Telephone_Connection_Error");
         } else if (reasonCallEnded.indexOf("No voip Gateway!") >= 0) {
             /*
              * There is no gateway specified.
              */
-            reasonCallEnded = "No telephone connection";
+            reasonCallEnded = BUNDLE.getString("No_Telephone_Connection");
         } else if (reasonCallEnded.indexOf("User requested call termination") >= 0) {
-            reasonCallEnded = "Hung up";
+            reasonCallEnded = BUNDLE.getString("Hung_Up");
         }
 
-	final String s = reasonCallEnded;
+	final String userVisibleReason = reasonCallEnded;
 
 	java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-        	statusMessageLabel.setText("Ended:  " + s);
+                String status = BUNDLE.getString("Ended");
+                status = MessageFormat.format(status, userVisibleReason);
+                statusMessageLabel.setText(status);
 
-		//jTextFieldContactName.setEditable(true);
-		//jTextFieldContactNumber.setEditable(true);
+                //jTextFieldContactName.setEditable(true);
+                //jTextFieldContactNumber.setEditable(true);
 
-        	setDialoutButtonState();
+                setDialoutButtonState();
 
-        	if (simulationModeCheckBox.isSelected()) {
-            	    privateCallCheckBox.setEnabled(false);
-        	}
+                if (simulationModeCheckBox.isSelected()) {
+                    privateCallCheckBox.setEnabled(false);
+                }
 
-	 	callButton.setText("Call");
-		joinButton.setEnabled(false);
-		keypadButton.setEnabled(false);
+                callButton.setText(CALL);
+                joinButton.setEnabled(false);
+                keypadButton.setEnabled(false);
 
-		unlockButton.setEnabled(true);
+                unlockButton.setEnabled(true);
 
-		if (keypad != null) {
-		    keypad.setVisible(false);
-        	}
-	    }
+                if (keypad != null) {
+                    keypad.setVisible(false);
+                }
+            }
 	});
     }
 
@@ -308,7 +318,8 @@ public class PhoneForm extends JDialog implements KeypadListener {
         keypadButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Place Call");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/phone/client/cell/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("PhoneForm.title")); // NOI18N
         setName("phoneForm"); // NOI18N
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -317,13 +328,13 @@ public class PhoneForm extends JDialog implements KeypadListener {
             }
         });
 
-        placeCallLabel.setFont(new java.awt.Font("Dialog", 1, 13));
-        placeCallLabel.setText("Place Call");
+        placeCallLabel.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
+        placeCallLabel.setText(bundle.getString("PhoneForm.placeCallLabel.text")); // NOI18N
 
         contactNameLabel.setFont(new java.awt.Font("Dialog", 0, 13));
-        contactNameLabel.setText("Contact Name:");
+        contactNameLabel.setText(bundle.getString("PhoneForm.contactNameLabel.text")); // NOI18N
 
-        contactNameTextField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        contactNameTextField.setFont(new java.awt.Font("Dialog", 0, 13));
         contactNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 contactNameTextFieldKeyReleased(evt);
@@ -331,9 +342,9 @@ public class PhoneForm extends JDialog implements KeypadListener {
         });
 
         contactNumberLabel.setFont(new java.awt.Font("Dialog", 0, 13));
-        contactNumberLabel.setText("Phone Number:");
+        contactNumberLabel.setText(bundle.getString("PhoneForm.contactNumberLabel.text")); // NOI18N
 
-        contactNumberTextField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        contactNumberTextField.setFont(new java.awt.Font("Dialog", 0, 13));
         contactNumberTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 contactNumberTextFieldActionPerformed(evt);
@@ -346,7 +357,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
         });
 
         callButton.setFont(new java.awt.Font("Dialog", 0, 13));
-        callButton.setText("Call");
+        callButton.setText(bundle.getString("PhoneForm.callButton.text")); // NOI18N
         callButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 callButtonActionPerformed(evt);
@@ -355,23 +366,23 @@ public class PhoneForm extends JDialog implements KeypadListener {
 
         privateCallCheckBox.setFont(new java.awt.Font("Dialog", 0, 13));
         privateCallCheckBox.setSelected(true);
-        privateCallCheckBox.setText("Private Call");
+        privateCallCheckBox.setText(bundle.getString("PhoneForm.privateCallCheckBox.text")); // NOI18N
 
         simulationModeCheckBox.setFont(new java.awt.Font("Dialog", 0, 13));
-        simulationModeCheckBox.setText("Simulate telephone features");
+        simulationModeCheckBox.setText(bundle.getString("PhoneForm.simulationModeCheckBox.text")); // NOI18N
         simulationModeCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 simulationModeCheckBoxActionPerformed(evt);
             }
         });
 
-        statusLabel.setText("Status:");
+        statusLabel.setText(bundle.getString("PhoneForm.statusLabel.text")); // NOI18N
 
-        statusMessageLabel.setText("Ready");
+        statusMessageLabel.setText(bundle.getString("PhoneForm.statusMessageLabel.text")); // NOI18N
 
         lockedLabel.setForeground(new java.awt.Color(255, 0, 0));
         lockedLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        lockedLabel.setText("Locked");
+        lockedLabel.setText(bundle.getString("PhoneForm.lockedLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout statusPanelLayout = new org.jdesktop.layout.GroupLayout(statusPanel);
         statusPanel.setLayout(statusPanelLayout);
@@ -384,7 +395,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
                 .add(statusMessageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lockedLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(30, 30, 30))
+                .add(90, 90, 90))
         );
         statusPanelLayout.setVerticalGroup(
             statusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -396,10 +407,10 @@ public class PhoneForm extends JDialog implements KeypadListener {
         statusPanelLayout.linkSize(new java.awt.Component[] {lockedLabel, statusLabel, statusMessageLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         simulationLabel.setFont(new java.awt.Font("Dialog", 0, 12));
-        simulationLabel.setText("The phone will simulate calling");
+        simulationLabel.setText(bundle.getString("PhoneForm.simulationLabel.text")); // NOI18N
 
         joinButton.setFont(new java.awt.Font("Dialog", 0, 13));
-        joinButton.setText("Join to World");
+        joinButton.setText(bundle.getString("PhoneForm.joinButton.text")); // NOI18N
         joinButton.setEnabled(false);
         joinButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -408,21 +419,21 @@ public class PhoneForm extends JDialog implements KeypadListener {
         });
 
         closeButton.setFont(new java.awt.Font("Dialog", 0, 13));
-        closeButton.setText("Close");
+        closeButton.setText(bundle.getString("PhoneForm.closeButton.text")); // NOI18N
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
             }
         });
 
-        unlockButton.setText("Unlock");
+        unlockButton.setText(bundle.getString("PhoneForm.unlockButton.text")); // NOI18N
         unlockButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 unlockButtonActionPerformed(evt);
             }
         });
 
-        keypadButton.setText("Keypad");
+        keypadButton.setText(bundle.getString("PhoneForm.keypadButton.text")); // NOI18N
         keypadButton.setEnabled(false);
         keypadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -444,8 +455,8 @@ public class PhoneForm extends JDialog implements KeypadListener {
                             .add(contactNumberLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(contactNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, contactNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
+                            .add(contactNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, contactNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(keypadButton)
                         .add(37, 37, 37))
@@ -470,7 +481,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
                                         .add(simulationLabel))))))
                     .add(layout.createSequentialGroup()
                         .add(placeCallLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 341, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 381, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .add(statusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -517,27 +528,28 @@ public class PhoneForm extends JDialog implements KeypadListener {
     }// </editor-fold>//GEN-END:initComponents
 
 private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_callButtonActionPerformed
-    if (callButton.getText().equals("End Call")) {
+    if (callButton.getText().equals(END_CALL)) {
         phoneMessageHandler.endCall();
-        callButton.setText("Call");
+        callButton.setText(CALL);
         return;
     }
 
     String name = contactNameTextField.getText();
 
     //Disallow empty contact names
-    if (contactNameTextField.getText().equals("")) {
-        JOptionPane.showMessageDialog(this, "You must enter a contact name.");
+    if (name.length() == 0) {
+        JOptionPane.showMessageDialog(this, 
+                BUNDLE.getString("Empty_Contact_Name_Message"));
         return;
     }
 
-    PresenceInfo[] info = pm.getAllUsers();
+    PresenceInfo[] infos = pm.getAllUsers();
 
-    for (int i = 0; i < info.length; i++) {
-        if (info[i].getUsernameAlias().equals(name) ||
-		info[i].getUserID().getUsername().equals(name)) {
+    for (PresenceInfo info : infos) {
+        if (info.getUsernameAlias().equals(name) ||
+		info.getUserID().getUsername().equals(name)) {
 
-            statusMessageLabel.setText("Name is already being used!");
+            statusMessageLabel.setText(BUNDLE.getString("Name_Already_In_Use"));
 	    return;
         }
     }
@@ -550,7 +562,7 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     if (privateCallCheckBox.isSelected()) {
         privateClientName = "Private"; // This is going to be updated on the server side        
-        callButton.setText("End Call");
+        callButton.setText(END_CALL);
     }
 
     CallListing listing = new CallListing(name, contactNumberTextField.getText(),
@@ -564,7 +576,7 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     phoneMessageHandler.placeCall(listing);
 
     if (simulationModeCheckBox.isSelected()) {
-        statusMessageLabel.setText("Call in progress");
+        statusMessageLabel.setText(CALL_IN_PROGRESS);
     }
     // mostRecentCallListing = listing;
 }//GEN-LAST:event_callButtonActionPerformed
@@ -578,7 +590,7 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     keypadButton.setEnabled(false);
     setDialoutButtonState();
-    callButton.setText("Call");
+    callButton.setText(CALL);
     setDialoutButtonState();
     unlockButton.setEnabled(true);
 }//GEN-LAST:event_joinButtonActionPerformed
