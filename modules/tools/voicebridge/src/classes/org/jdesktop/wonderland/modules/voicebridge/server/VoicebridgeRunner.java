@@ -115,7 +115,7 @@ public class VoicebridgeRunner extends BaseRunner {
         props.setProperty("voicebridge.outside.line.prefix", "9");
         props.setProperty("voicebridge.long.distance.prefix", "1");
         props.setProperty("voicebridge.international.prefix", "011");
-        props.setProperty("voicebridge.international.prefix", "011");
+        props.setProperty("voicebridge.password.file", "");
 
 	String audioCacheDir = System.getProperty("wonderland.run.dir") 
 	    + System.getProperty("file.separator") + "voice_bridge"
