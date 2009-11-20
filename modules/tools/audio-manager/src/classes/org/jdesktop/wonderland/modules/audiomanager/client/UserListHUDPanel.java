@@ -63,7 +63,6 @@ import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel.Mode;
@@ -146,9 +145,9 @@ public class UserListHUDPanel
         voiceChatButton.setEnabled(false);
         gotoUserButton.setEnabled(false);
 
-	volumeModel = new SpinnerNumberModel(new Float(1), new Float(0),
-            new Float(10), new Float(.05));
-	volumeSpinner.setModel(volumeModel);
+        volumeModel = new SpinnerNumberModel(new Float(1), new Float(0),
+                new Float(10), new Float(.05));
+        volumeSpinner.setModel(volumeModel);
 
         channelComp = cell.getComponent(ChannelComponent.class);
 
@@ -620,7 +619,7 @@ public class UserListHUDPanel
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(controlPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0)
@@ -734,7 +733,7 @@ public class UserListHUDPanel
             } else {
                 // another user
                 String text = BUNDLE.getString("Private_Volume_For_Single");
-                //text = MessageFormat.format(text, username);
+                text = MessageFormat.format(text, username);
                 volumeLabel.setText(text);
                 editButton.setEnabled(false);
                 textChatButton.setEnabled(true);
@@ -742,7 +741,7 @@ public class UserListHUDPanel
                 gotoUserButton.setEnabled(true);
             }
 
-	    nameLabel.setText(username);
+            nameLabel.setText(username);
 
             if (info != null) {
                 Float v = volumeChangeMap.get(info);
@@ -793,29 +792,24 @@ private void textChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_voiceChatButtonActionPerformed
     ArrayList<PresenceInfo> usersToInvite = new ArrayList();
 
-    Object[] selectedValues = userList.getSelectedValues();
+    for (Object selectedValue : userList.getSelectedValues()) {
+        String username = NameTagNode.getUsername((String) selectedValue);
 
-    if (selectedValues.length > 0) {
-        for (int i = 0; i < selectedValues.length; i++) {
-            String username =
-                    NameTagNode.getUsername((String) selectedValues[i]);
+        PresenceInfo info = pm.getAliasPresenceInfo(username);
 
-            PresenceInfo info = pm.getAliasPresenceInfo(username);
-
-            if (info == null) {
-                LOGGER.warning("no PresenceInfo for " + username);
-                continue;
-            }
-
-            if (info.equals(presenceInfo)) {
-                /*
-                 * I'm the caller and will be added automatically
-                 */
-                continue;
-            }
-
-            usersToInvite.add(info);
+        if (info == null) {
+            LOGGER.warning("no PresenceInfo for " + username);
+            continue;
         }
+
+        if (info.equals(presenceInfo)) {
+            /*
+             * I'm the caller and will be added automatically
+             */
+            continue;
+        }
+
+        usersToInvite.add(info);
     }
 
     AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo,
@@ -826,7 +820,7 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     final HUDComponent hudComponent = mainHUD.createComponent(addHUDPanel);
     addHUDPanel.setHUDComponent(hudComponent);
-    hudComponent.setName("Voice Chat");
+    hudComponent.setName(BUNDLE.getString("Voice_Chat"));
     hudComponent.setIcon(new ImageIcon(getClass().getResource(
             "/org/jdesktop/wonderland/modules/audiomanager/client/" +
             "resources/UserListChatVoice32x32.png")));
@@ -881,7 +875,7 @@ private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     addHUDComponent = mainHUD.createComponent(addHUDPanel);
-    addHUDComponent.setName("Call ");
+    addHUDComponent.setName(BUNDLE.getString("Call"));
     addHUDComponent.setIcon(new ImageIcon(getClass().getResource(
             "/org/jdesktop/wonderland/modules/audiomanager/client/" +
             "resources/UserListChatVoice32x32.png")));
@@ -914,7 +908,7 @@ private void gotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     if (selectedValues.length == 1) {
         String username =
                 NameTagNode.getUsername((String) selectedValues[0]);
-        
+
         // map the user to a presence info
         PresenceInfo info = pm.getAliasPresenceInfo(username);
         if (info == null) {
@@ -927,15 +921,15 @@ private void gotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         if (position == null) {
             LOGGER.warning("unable to find location of " + info.getCellID());
         }
-        
+
         // get the current look direction of the avatar
         ViewCell viewCell = ViewManager.getViewManager().getPrimaryViewCell();
         CellTransform viewTransform = viewCell.getWorldTransform();
-        
+
         // go to the new location
         try {
-            ClientContextJME.getClientMain().gotoLocation(null, position, 
-                                                          viewTransform.getRotation(null));
+            ClientContextJME.getClientMain().gotoLocation(null, position,
+                    viewTransform.getRotation(null));
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING, "Error going to location", ioe);
         }
@@ -943,32 +937,26 @@ private void gotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 }//GEN-LAST:event_gotoUserButtonActionPerformed
 
 private void volumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSpinnerStateChanged
-        float volume = (Float) volumeModel.getValue();
+    float volume = (Float) volumeModel.getValue();
 
-        Object[] selectedValues = userList.getSelectedValues();
+    for (Object selectedValue : userList.getSelectedValues()) {
+        String username = NameTagNode.getUsername((String) selectedValue);
+        PresenceInfo info = pm.getAliasPresenceInfo(username);
 
-        if (selectedValues.length > 0) {
-            for (int i = 0; i < selectedValues.length; i++) {
-                String username =
-                        NameTagNode.getUsername((String) selectedValues[i]);
-
-                PresenceInfo info = pm.getAliasPresenceInfo(username);
-
-                if (info == null) {
-                    LOGGER.warning("no PresenceInfo for " + username);
-                    continue;
-                }
-                LOGGER.info("changing volume for " + username + " to: " + volume);
-
-                volumeChangeMap.put(info, new Float(volume));
-
-        	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-        	session.send(client, new AudioVolumeMessage(info.getCellID(), sc.getCallID(), info.getCallID(), volume, true));
-            }
+        if (info == null) {
+            LOGGER.warning("no PresenceInfo for " + username);
+            continue;
         }
-}//GEN-LAST:event_volumeSpinnerStateChanged
+        LOGGER.info("changing volume for " + username + " to: " + volume);
 
+        volumeChangeMap.put(info, new Float(volume));
+
+        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+        session.send(client, new AudioVolumeMessage(info.getCellID(),
+                sc.getCallID(), info.getCallID(), volume, true));
+    }
+}//GEN-LAST:event_volumeSpinnerStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel controlPanel;
     private javax.swing.JButton editButton;

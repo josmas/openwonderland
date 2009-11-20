@@ -11,6 +11,11 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -23,23 +28,21 @@ import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.FullVolumeArea;
 import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ActiveArea;
-
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
-import com.jme.bounding.OrientedBoundingBox;
-import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.FullVolumeArea;
+import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
 
 /**
  *
  * @author jp
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(MicrophoneComponentServerState.class)
 public class MicrophoneComponentProperties extends javax.swing.JPanel 
 	implements PropertiesFactorySPI {
+
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
 
     private CellPropertiesEditor editor = null;
 
@@ -146,8 +149,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public String getDisplayName() {
-        //return BUNDLE.getString("Microphone");
-        return "Microphone";
+        return BUNDLE.getString("Microphone");
     }
 
     /**
@@ -196,18 +198,21 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
             if (bounds instanceof BoundingSphere) {
                 float radius = ((BoundingSphere) bounds).getRadius();
-
-                cellBoundsLabel.setText("Sphere with radius " + (Math.round(radius * 10) / 10f));
+                String text = BUNDLE.getString("Sphere_With_Radius");
+                text = MessageFormat.format(text, (Math.round(radius * 10) / 10f));
+                cellBoundsLabel.setText(text);
             } else {
                 Vector3f extent = new Vector3f();
                 extent = ((BoundingBox) bounds).getExtent(extent);
 
-		float x = Math.round(extent.getX() * 10) / 10f;
-		float y = Math.round(extent.getY() * 10) / 10f;
-		float z = Math.round(extent.getZ() * 10) / 10f;
+                float x = Math.round(extent.getX() * 10) / 10f;
+                float y = Math.round(extent.getY() * 10) / 10f;
+                float z = Math.round(extent.getZ() * 10) / 10f;
 
-		cellBoundsLabel.setText("BOX (" + x + ", " + y + ", " + z + ")");
-	    }
+                String text = BUNDLE.getString("BOX");
+                text = MessageFormat.format(text, x, y, z);
+                cellBoundsLabel.setText(text);
+            }
 	} else if (originalFullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
 	    fullVolumeAreaBoundsType = MicrophoneBoundsType.SPHERE;
 	} else {

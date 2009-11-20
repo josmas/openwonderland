@@ -19,13 +19,14 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.io.IOException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SpinnerNumberModel;
 import org.jdesktop.wonderland.client.jme.Meter;
 import org.jdesktop.wonderland.client.softphone.MicrophoneInfoListener;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
-
-import javax.swing.SpinnerNumberModel;
 
 /**
  * A microphone level control panel.
@@ -33,13 +34,17 @@ import javax.swing.SpinnerNumberModel;
  * @author jp
  * @author nsimpson
  */
-public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneListener,
-        MicrophoneInfoListener, DisconnectListener {
+public class MicVuMeterPanel extends javax.swing.JPanel implements 
+        SoftphoneListener, MicrophoneInfoListener, DisconnectListener {
 
+    private static final Logger LOGGER =
+            Logger.getLogger(MicVuMeterPanel.class.getName());
     private AudioManagerClient client;
     private Meter meter;
-
     private SpinnerNumberModel micVolumeModel;
+    private static final int VU_COUNT = 10;
+    private int count;
+    private double volume;
 
     public MicVuMeterPanel() {
         this(null);
@@ -92,7 +97,8 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
             try {
                 sc.sendCommandToSoftphone("getMicrophoneVolume");
             } catch (IOException e) {
-                System.out.println("Unable to get Microphone volume:  " + e.getMessage());
+                LOGGER.log(Level.WARNING,
+                        "Unable to get Microphone volume", e);
             }
         }
 
@@ -121,9 +127,6 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
 
     public void microphoneGainTooHigh() {
     }
-    private static final int VU_COUNT = 10;
-    private int count;
-    private double volume;
 
     public void microphoneData(String data) {
         if (count == VU_COUNT) {
@@ -140,10 +143,10 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
 
             volume = 0;
         } else {
-            double volume = Math.abs(Double.parseDouble(data));
+            double tmpVolume = Math.abs(Double.parseDouble(data));
 
-            if (volume > this.volume) {
-                this.volume = volume;
+            if (tmpVolume > volume) {
+                volume = tmpVolume;
             }
         }
 
@@ -168,13 +171,14 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
         jLabel2 = new javax.swing.JLabel();
         micVolumeSpinner = new javax.swing.JSpinner();
 
-        jLabel1.setText("Mic Volume:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("MicVuMeterPanel.jLabel1.text")); // NOI18N
 
         vuMeterPanel.setMinimumSize(new java.awt.Dimension(230, 26));
         vuMeterPanel.setPreferredSize(new java.awt.Dimension(230, 26));
 
         jLabel2.setFont(jLabel2.getFont());
-        jLabel2.setText("Level:");
+        jLabel2.setText(bundle.getString("MicVuMeterPanel.jLabel2.text")); // NOI18N
 
         micVolumeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -196,7 +200,7 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
                         .add(jLabel1)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(micVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -220,12 +224,13 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneList
     private void micVolumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_micVolumeSpinnerStateChanged
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
-        double volume = (Float) micVolumeSpinner.getValue();
+        double micVolume = (Float) micVolumeSpinner.getValue();
 
         try {
-            sc.sendCommandToSoftphone("microphoneVolume=" + volume);
+            sc.sendCommandToSoftphone("microphoneVolume=" + micVolume);
         } catch (IOException e) {
-            System.out.println("Unable to send microphone volume command to softphone:  " + e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "Unable to send microphone volume command to softphone", e);
         }
     }//GEN-LAST:event_micVolumeSpinnerStateChanged
 
