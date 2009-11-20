@@ -17,6 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.bounding.OrientedBoundingBox;
+import com.jme.math.Vector3f;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -24,19 +30,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
-import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState.COSBoundsType;
-
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
-import com.jme.bounding.OrientedBoundingBox;
-import com.jme.math.Vector3f;
 
 /**
  * Properties panel for the cone of silence component.
@@ -242,7 +241,9 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 	if (bounds instanceof BoundingSphere) {
 	    float radius = ((BoundingSphere) bounds).getRadius();
 	    
-	    boundsLabel.setText("Sphere with radius " + (Math.round(radius * 10) / 10f));
+            String text = BUNDLE.getString("Sphere_With_Radius");
+            text = MessageFormat.format(text, (Math.round(radius * 10) / 10f));
+            boundsLabel.setText(text);
 	} else if (bounds instanceof BoundingBox) {
 	    Vector3f extent = new Vector3f();
 	    extent = ((BoundingBox) bounds).getExtent(extent);

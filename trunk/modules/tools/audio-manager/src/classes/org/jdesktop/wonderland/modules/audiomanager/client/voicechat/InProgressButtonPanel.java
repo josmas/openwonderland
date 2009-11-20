@@ -85,7 +85,8 @@ public class InProgressButtonPanel extends javax.swing.JPanel {
         holdButton = new javax.swing.JButton();
         leaveButton = new javax.swing.JButton();
 
-        addButton.setText("Add...");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        addButton.setText(bundle.getString("InProgressButtonPanel.addButton.text")); // NOI18N
         addButton.setName("addButton"); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -93,7 +94,7 @@ public class InProgressButtonPanel extends javax.swing.JPanel {
             }
         });
 
-        hangUpButton.setText("Hang Up");
+        hangUpButton.setText(bundle.getString("InProgressButtonPanel.hangUpButton.text")); // NOI18N
         hangUpButton.setName("hangUpButton"); // NOI18N
         hangUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -101,7 +102,7 @@ public class InProgressButtonPanel extends javax.swing.JPanel {
             }
         });
 
-        holdButton.setText("Hold");
+        holdButton.setText(bundle.getString("InProgressButtonPanel.holdButton.text")); // NOI18N
         holdButton.setName("holdButton"); // NOI18N
         holdButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -109,7 +110,7 @@ public class InProgressButtonPanel extends javax.swing.JPanel {
             }
         });
 
-        leaveButton.setText("Leave");
+        leaveButton.setText(bundle.getString("InProgressButtonPanel.leaveButton.text")); // NOI18N
         leaveButton.setName("leaveButton"); // NOI18N
         leaveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -122,10 +123,10 @@ public class InProgressButtonPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(8, 8, 8)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(addButton)
-                    .add(hangUpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, Short.MAX_VALUE))
+                    .add(hangUpButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(holdButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

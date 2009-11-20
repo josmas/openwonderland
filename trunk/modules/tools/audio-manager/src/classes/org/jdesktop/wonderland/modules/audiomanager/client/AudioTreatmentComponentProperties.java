@@ -17,48 +17,42 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
-import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.content.ContentBrowserManager;
-import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
-import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI.ContentBrowserListener;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
+import org.jdesktop.wonderland.client.content.ContentBrowserManager;
+import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
+import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI.ContentBrowserListener;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.TreatmentType;
-
-import org.jdesktop.wonderland.modules.audiomanager.client.AudioTreatmentComponent;
-
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
-import org.jdesktop.wonderland.modules.contentrepo.client.ui.modules.ModuleRootContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
-import org.jdesktop.wonderland.modules.contentrepo.client.utils.ContentRepositoryUtils;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
-
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
-
-import com.jme.math.Vector3f;
 
 /**
  *
@@ -234,19 +228,23 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	    distanceAttenuated = false;
 	} 
 
-	if (bounds instanceof BoundingSphere) {
-	    float radius = ((BoundingSphere) bounds).getRadius();
-	    
-	    boundsLabel.setText("Sphere with radius " + (Math.round(radius * 10) / 10f));
-	} else {
-	    Vector3f extent = new Vector3f();
-	    extent = ((BoundingBox) bounds).getExtent(extent);
-	    float x = Math.round(extent.getX() * 10) / 10f;
-	    float y = Math.round(extent.getY() * 10) / 10f;
-	    float z = Math.round(extent.getZ() * 10) / 10f;
+        if (bounds instanceof BoundingSphere) {
+            float radius = ((BoundingSphere) bounds).getRadius();
 
-	    boundsLabel.setText("BOX (" + x + ", " + y + ", " + z + ")");
-	}
+            String text = BUNDLE.getString("Sphere_With_Radius");
+            text = MessageFormat.format(text, (Math.round(radius * 10) / 10f));
+            boundsLabel.setText(text);
+        } else {
+            Vector3f extent = new Vector3f();
+            extent = ((BoundingBox) bounds).getExtent(extent);
+            float x = Math.round(extent.getX() * 10) / 10f;
+            float y = Math.round(extent.getY() * 10) / 10f;
+            float z = Math.round(extent.getZ() * 10) / 10f;
+
+            String text = BUNDLE.getString("BOX");
+            text = MessageFormat.format(text, x, y, z);
+            boundsLabel.setText(text);
+        }
 
 	originalShowBounds = compState.getShowBounds();
 

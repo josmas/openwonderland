@@ -521,7 +521,7 @@ public class AudioManagerClient extends BaseConnection implements
 
             micVuMeterComponent = mainHUD.createComponent(micVuMeterPanel);
             micVuMeterComponent.setPreferredLocation(Layout.SOUTH);
-            micVuMeterComponent.setName("Microphone Level");
+            micVuMeterComponent.setName(BUNDLE.getString("Microphone_Level"));
             micVuMeterComponent.setIcon(voiceChatIcon);
             micVuMeterComponent.addEventListener(new HUDEventListener() {
 
