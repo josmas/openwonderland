@@ -217,7 +217,10 @@ public class ViewManager implements ViewPropertiesListener {
                 // flickering on Windows. The first paint is necessary to
                 // setup the canvas.  Once we get to this point, the canvas
                 // is initialized, and we can ignore further repaints.
-                canvas.setIgnoreRepaint(true);
+
+                // issue #1079: temporarily remove fix for issue #1047
+                // since this causes scaling problems in the HUD
+                //canvas.setIgnoreRepaint(true);
             }
         });
 
