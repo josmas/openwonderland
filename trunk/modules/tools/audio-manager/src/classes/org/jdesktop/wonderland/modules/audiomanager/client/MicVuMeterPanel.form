@@ -17,20 +17,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" max="-2" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
-                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="vuMeterPanel" pref="287" max="32767" attributes="1"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="volumeSlider" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jLabel2" alignment="0" min="-2" pref="77" max="-2" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="vuMeterPanel" pref="224" max="32767" attributes="1"/>
+                  <Component id="volumeSlider" alignment="1" pref="224" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -40,21 +36,16 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="vuMeterPanel" pref="43" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                  <Component id="vuMeterPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="volumeSlider" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="1">
-                      <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-                      <Component id="jLabel1" max="32767" attributes="0"/>
-                  </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="jLabel1" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="volumeSlider" alignment="2" min="-2" pref="27" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -94,6 +85,7 @@
     <Component class="javax.swing.JSlider" name="volumeSlider">
       <Properties>
         <Property name="minorTickSpacing" type="int" value="10"/>
+        <Property name="paintTicks" type="boolean" value="true"/>
       </Properties>
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="volumeSliderStateChanged"/>
