@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
 import java.util.ResourceBundle;
-import javax.swing.SpinnerNumberModel;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -48,13 +47,17 @@ public class OrbDialog extends javax.swing.JDialog {
     private CellID avatarCellID;
     private PresenceManager pm;
     private String username;
-    private SpinnerNumberModel volumeModel;
     private BystandersDialog bystandersDialog;
+
+    private VolumeConverter volumeConverter;
 
     /** Creates new form OrbDialog */
     public OrbDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+
+	volumeConverter = new VolumeConverter(volumeSlider.getMinimum(),
+	    volumeSlider.getMaximum());
     }
 
     public OrbDialog(OrbCell orbCell, ChannelComponent channelComp,
@@ -69,6 +72,9 @@ public class OrbDialog extends javax.swing.JDialog {
 
         initComponents();
 
+	volumeConverter = new VolumeConverter(volumeSlider.getMinimum(),
+	    volumeSlider.getMaximum());
+
         if (orbCell.getPlayerWithVpCallID() != null) {
             //attachButton.setEnabled(false);
             attachButton.setText(BYSTANDERS);
@@ -76,10 +82,6 @@ public class OrbDialog extends javax.swing.JDialog {
             muteButton.setEnabled(false);
             nameTextField.setEnabled(false);
         }
-
-        volumeModel = new SpinnerNumberModel(new Float(1), new Float(0),
-                new Float(10), new Float(.05));
-        volumeSpinner.setModel(volumeModel);
 
         setTitle(username);
         setVisible(true);
@@ -105,7 +107,7 @@ public class OrbDialog extends javax.swing.JDialog {
         muteButton = new javax.swing.JButton();
         nameTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        volumeSpinner = new javax.swing.JSpinner();
+        volumeSlider = new javax.swing.JSlider();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -148,9 +150,9 @@ public class OrbDialog extends javax.swing.JDialog {
 
         jLabel2.setText(bundle.getString("OrbDialog.jLabel2.text")); // NOI18N
 
-        volumeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                volumeSpinnerStateChanged(evt);
+                volumeSliderStateChanged(evt);
             }
         });
 
@@ -160,24 +162,24 @@ public class OrbDialog extends javax.swing.JDialog {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .add(18, 18, 18)
-                        .add(nameTextField))
+                        .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .add(18, 18, 18)
-                        .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
                         .add(endCallButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(31, 31, 31)
                         .add(muteButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
                         .add(attachButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(18, 18, 18)
                         .add(okButton)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {jLabel1, jLabel2}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -190,15 +192,15 @@ public class OrbDialog extends javax.swing.JDialog {
                     .add(jLabel2)
                     .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel1)
-                    .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(endCallButton)
-                    .add(muteButton)
+                    .add(okButton)
                     .add(attachButton)
-                    .add(okButton))
+                    .add(muteButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -260,13 +262,13 @@ private void nameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     }
 }//GEN-LAST:event_nameTextFieldActionPerformed
 
-private void volumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSpinnerStateChanged
-    float volume = (Float) volumeSpinner.getValue();
+private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
+    float volume = volumeConverter.getVolume(volumeSlider.getValue());
 
     SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
     channelComp.send(new OrbSetVolumeMessage(orbCell.getCellID(), sc.getCallID(), volume));
-}//GEN-LAST:event_volumeSpinnerStateChanged
+}//GEN-LAST:event_volumeSliderStateChanged
 
     /**
      * @param args the command line arguments
@@ -295,6 +297,6 @@ private void volumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
     private javax.swing.JButton muteButton;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton okButton;
-    private javax.swing.JSpinner volumeSpinner;
+    private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables
 }

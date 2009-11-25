@@ -159,8 +159,7 @@ public class UserListHUDPanel
         editButton.setEnabled(false);
         propertiesButton.setEnabled(true);
 
-	volumeConverter = new VolumeConverter(volumeSlider.getMinimum(),
-	    volumeSlider.getMaximum(), 4);
+	volumeConverter = new VolumeConverter(volumeSlider.getMaximum());
 
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
         sc.addSoftphoneListener(new SoftphoneListener() {
@@ -931,8 +930,6 @@ private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-
 	int v = volumeSlider.getValue();
 
 	float volume = volumeConverter.getVolume(v);
-
-	System.out.println("Slider " + v + " float " + volume);
 
         Object[] selectedValues = userList.getSelectedValues();
 

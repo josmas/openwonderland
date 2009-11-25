@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
   </Properties>
@@ -22,12 +22,9 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="holdLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="volumeSpinner" min="-2" pref="54" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="holdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="holdingUsersLabel" alignment="0" pref="209" max="32767" attributes="0"/>
+                  <Component id="volumeSlider" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="takeOffHoldButton" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -38,15 +35,14 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="holdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="volumeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="holdLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="volumeSlider" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="17" max="32767" attributes="0"/>
               <Component id="holdingUsersLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="takeOffHoldButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -75,12 +71,13 @@
         <Property name="name" type="java.lang.String" value="takeOffHoldButton" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="volumeSpinner">
+    <Component class="javax.swing.JSlider" name="volumeSlider">
       <Properties>
-        <Property name="name" type="java.lang.String" value="volumeSpinner" noResource="true"/>
+        <Property name="minorTickSpacing" type="int" value="10"/>
+        <Property name="name" type="java.lang.String" value="volumeSlider" noResource="true"/>
       </Properties>
       <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="volumeSpinnerStateChanged"/>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="volumeSliderStateChanged"/>
       </Events>
     </Component>
   </SubComponents>

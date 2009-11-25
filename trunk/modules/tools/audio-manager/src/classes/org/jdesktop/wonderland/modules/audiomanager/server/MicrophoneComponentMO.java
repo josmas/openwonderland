@@ -47,7 +47,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
     private static final String DEFAULT_NAME = BUNDLE.getString("Microphone");
-    private String name = null;
+    private String name = DEFAULT_NAME;
     private double volume = 1;
     private FullVolumeArea fullVolumeArea = new FullVolumeArea();
     private boolean showBounds = false;
