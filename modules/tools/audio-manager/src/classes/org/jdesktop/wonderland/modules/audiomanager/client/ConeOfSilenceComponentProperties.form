@@ -53,18 +53,18 @@
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="zExtentSpinner" min="-2" pref="51" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="showBoundsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="showBoundsCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="outsideVolumeSlider" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                               <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="nameTextField" alignment="0" pref="354" max="32767" attributes="1"/>
+                          <Component id="nameTextField" alignment="0" pref="357" max="32767" attributes="1"/>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="outsideVolumeSpinner" min="-2" pref="55" max="-2" attributes="1"/>
-                  </Group>
+                  <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -98,14 +98,16 @@
                   <Component id="yExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="zExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="showBoundsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel3" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
-                  <Component id="outsideVolumeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="showBoundsCheckBox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="jLabel3" min="-2" pref="26" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="outsideVolumeSlider" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="32" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -211,9 +213,12 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showBoundsCheckBoxActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JSpinner" name="outsideVolumeSpinner">
+    <Component class="javax.swing.JSlider" name="outsideVolumeSlider">
+      <Properties>
+        <Property name="minorTickSpacing" type="int" value="10"/>
+      </Properties>
       <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="outsideVolumeSpinnerStateChanged"/>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="outsideVolumeSliderStateChanged"/>
       </Events>
     </Component>
   </SubComponents>

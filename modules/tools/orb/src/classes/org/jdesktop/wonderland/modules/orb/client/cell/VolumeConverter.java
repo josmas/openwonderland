@@ -15,7 +15,12 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common;
+package org.jdesktop.wonderland.modules.orb.client.cell;
+
+/*
+ * WARNING:  THIS IS A COPY OF audiomanage/common/VolumeControl.java
+ * VolumeControl.java needs to be put in a place usable by orb.
+ */
 
 /**
  * Convert integer volume to float.
@@ -70,6 +75,9 @@ public class VolumeConverter {
 	    v = 1 + ((volume - middle) * plusIncrement);
 	}
 	
+	System.out.println("int v " + volume + " float v " + v
+	    + " int v " + getVolume(v));
+
 	return v;
     }
 
@@ -82,7 +90,7 @@ public class VolumeConverter {
 	    return 0;
 	}
 
-	if (volume < 1) {
+	if (volume < middle) {
 	    return (int) (volume / (2 * increment));
 	} 
 
