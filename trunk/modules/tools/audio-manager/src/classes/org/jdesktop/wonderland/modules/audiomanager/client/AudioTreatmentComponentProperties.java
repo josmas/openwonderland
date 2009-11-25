@@ -79,7 +79,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private boolean originalDistanceAttenuated;
     private int originalFalloff;
     private boolean originalShowBounds;
-    private SpinnerNumberModel volumeModel;
+    //private SpinnerNumberModel volumeModel;
     private SpinnerNumberModel fullVolumeAreaPercentModel;
     private SpinnerNumberModel extentRadiusModel;
     private float extentRadius = 0;
@@ -133,7 +133,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                 new AudioGroupTextFieldListener());
         treatmentTextField.getDocument().addDocumentListener(
                 new AudioTreatmentsTextFieldListener());
-        volumeModel.addChangeListener(new VolumeChangeListener());
+        //volumeModel.addChangeListener(new VolumeChangeListener());
         fullVolumeAreaPercentModel.addChangeListener(
                 new FullVolumeAreaPercentChangeListener());
         extentRadiusModel.addChangeListener(new ExtentRadiusChangeListener());
