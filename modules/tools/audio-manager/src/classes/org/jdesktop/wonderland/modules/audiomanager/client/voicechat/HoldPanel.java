@@ -66,29 +66,30 @@ public class HoldPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         holdLabel = new javax.swing.JLabel();
+        volumeSlider = new javax.swing.JSlider();
         holdingUsersLabel = new javax.swing.JLabel();
         takeOffHoldButton = new javax.swing.JButton();
-        volumeSlider = new javax.swing.JSlider();
 
         setName("Form"); // NOI18N
 
-        holdLabel.setFont(holdLabel.getFont().deriveFont(holdLabel.getFont().getStyle() | java.awt.Font.BOLD));
         holdLabel.setText("On hold volume:");
         holdLabel.setName("holdLabel"); // NOI18N
+
+        volumeSlider.setMinorTickSpacing(10);
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setName("volumeSlider"); // NOI18N
+        volumeSlider.setPreferredSize(new java.awt.Dimension(200, 29));
+        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                volumeSliderStateChanged(evt);
+            }
+        });
 
         holdingUsersLabel.setText(" ");
         holdingUsersLabel.setName("holdingUsersLabel"); // NOI18N
 
         takeOffHoldButton.setText("Take Off Hold");
         takeOffHoldButton.setName("takeOffHoldButton"); // NOI18N
-
-        volumeSlider.setMinorTickSpacing(10);
-        volumeSlider.setName("volumeSlider"); // NOI18N
-        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                volumeSliderStateChanged(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -97,9 +98,11 @@ public class HoldPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(holdLabel)
-                    .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(holdLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, takeOffHoldButton))
                 .addContainerGap())
         );
@@ -107,14 +110,14 @@ public class HoldPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(holdLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(holdLabel)
+                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 17, Short.MAX_VALUE)
                 .add(holdingUsersLabel)
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(takeOffHoldButton)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
