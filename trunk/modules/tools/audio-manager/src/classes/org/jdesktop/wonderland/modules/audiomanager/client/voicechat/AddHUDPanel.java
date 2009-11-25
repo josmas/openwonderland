@@ -711,7 +711,7 @@ public class AddHUDPanel
 
         addTypeButtonGroup = new javax.swing.ButtonGroup();
 
-        setPreferredSize(new java.awt.Dimension(295, 220));
+        setPreferredSize(new java.awt.Dimension(322, 150));
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
