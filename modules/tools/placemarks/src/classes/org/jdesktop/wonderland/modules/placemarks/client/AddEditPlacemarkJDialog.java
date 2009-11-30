@@ -17,12 +17,17 @@
  */
 package org.jdesktop.wonderland.modules.placemarks.client;
 
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.util.Locale;
 import java.util.Set;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 
 /**
@@ -43,6 +48,7 @@ public class AddEditPlacemarkJDialog
     private float y = 0.0f;
     private float z = 0.0f;
     private float angle = 0.0f;
+    private DecimalFormat df;
     private Set<Placemark> placemarkSet = null;
     // If we are editing a placemark, we pass in the current placemark to be
     // edited.
@@ -57,13 +63,21 @@ public class AddEditPlacemarkJDialog
         placemarkSet = placemarks;
         initComponents();
 
+        df = (DecimalFormat)DecimalFormat.getNumberInstance();
+        df.setMinimumFractionDigits(2);
+        df.setMaximumFractionDigits(2);
+        xTextField.setFormatterFactory(new DefaultFormatterFactory(new NumberFormatter(df)));
+        yTextField.setFormatterFactory(new DefaultFormatterFactory(new NumberFormatter(df)));
+        zTextField.setFormatterFactory(new DefaultFormatterFactory(new NumberFormatter(df)));
+        angleTextField.setFormatterFactory(new DefaultFormatterFactory(new NumberFormatter(df)));
+
         // Set the initial values for the fields
         nameTextField.setText("");
         urlTextField.setText("");
-        xTextField.setText("0.0");
-        yTextField.setText("0.0");
-        zTextField.setText("0.0");
-        angleTextField.setText("0.0");
+        xTextField.setText("0");
+        yTextField.setText("0");
+        zTextField.setText("0");
+        angleTextField.setText("0");
 
         // Listen for changes in the text fields, to enable/disable buttons,
         // etc.
@@ -240,21 +254,16 @@ public class AddEditPlacemarkJDialog
 
         jLabel9.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel9.text")); // NOI18N
 
-        xTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
         xTextField.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
         xTextField.setText(bundle.getString("AddEditPlacemarkJDialog.xTextField.text")); // NOI18N
 
-        yTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
         yTextField.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
         yTextField.setText(bundle.getString("AddEditPlacemarkJDialog.yTextField.text")); // NOI18N
 
-        zTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
         zTextField.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
         zTextField.setText(bundle.getString("AddEditPlacemarkJDialog.zTextField.text")); // NOI18N
 
-        angleTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
         angleTextField.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
-        angleTextField.setText(bundle.getString("AddEditPlacemarkJDialog.angleTextField.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -264,37 +273,35 @@ public class AddEditPlacemarkJDialog
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jLabel5))
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                        .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel5))
-                                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(angleTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(angleTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel9))
-                                    .add(layout.createSequentialGroup()
-                                        .add(xTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel6)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(yTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel7)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(zTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
-                                    .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)))
+                                .add(jLabel9))
                             .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 317, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                .add(xTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jLabel6)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(yTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jLabel7)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(zTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
                         .add(8, 8, 8))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(cancelButton)
@@ -405,8 +412,9 @@ public class AddEditPlacemarkJDialog
 
         // Otherwise, try to parse it and return it
         try {
-            return Float.parseFloat(floatStr);
-        } catch (NumberFormatException excp) {
+            return df.parse(floatStr).floatValue();
+            //return Float.parseFloat(floatStr);
+        } catch (ParseException excp) {
             return 0.0f;
         }
     }

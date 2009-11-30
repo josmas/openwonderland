@@ -19,8 +19,10 @@ package org.jdesktop.wonderland.modules.placemarks.client;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -52,10 +54,15 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             Logger.getLogger(EditPlacemarksJFrame.class.getName());
     private PlacemarkTableModel placemarksTableModel = null;
     private JTable placemarksTable = null;
+    private DecimalFormat df;
 
     /** Creates new form EditPlacemarksJFrame */
     public EditPlacemarksJFrame() {
         initComponents();
+
+        df = (DecimalFormat)DecimalFormat.getNumberInstance();
+        df.setMinimumFractionDigits(2);
+        df.setMaximumFractionDigits(2);
 
         // Create the user table to display the user Placemarks
         PlacemarkList placemarkList = PlacemarkUtils.getUserPlacemarkList();
@@ -168,11 +175,11 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                 case 1:
                     return item.getUrl();
                 case 2:
-                    return "(" + item.getX() + ", " + item.getY() + ", " +
-                            item.getZ() + ")";
+                    return "(" + df.format(item.getX()) + ", " + df.format(item.getY()) + ", " +
+                            df.format(item.getZ()) + ")";
                 case 3:
                     String value = BUNDLE.getString("Look_Angle_Value");
-                    return MessageFormat.format(value, item.getAngle());
+                    return MessageFormat.format(value, df.format(item.getAngle()));
                 default:
                     return "";
             }
