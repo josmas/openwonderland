@@ -120,8 +120,9 @@ public class ModelRenderer extends BasicRenderer {
                             if (node instanceof Geometry) {
                                 ((Geometry)node).clearBuffers();
                                 TextureState ts = (TextureState) node.getRenderState(RenderState.RS_TEXTURE);
-                                if (ts!=null)
-                                    ts.deleteAll(true);
+                                // deleteAll is too aggressive, it deletes other copies of the same texture
+//                                if (ts!=null)
+//                                    ts.deleteAll(false);
                             }
                             return true;
                         }
