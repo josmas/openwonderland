@@ -156,7 +156,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
         setOpaque(false);
 
         loginTypeBG.add(guestLoginRB);
-        guestLoginRB.setFont(guestLoginRB.getFont().deriveFont(guestLoginRB.getFont().getStyle() | java.awt.Font.BOLD));
+        guestLoginRB.setFont(new java.awt.Font("Arial", 1, 11));
         guestLoginRB.setSelected(true);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         guestLoginRB.setText(bundle.getString("EitherLoginPanel.guestLoginRB.text")); // NOI18N
@@ -167,7 +167,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
         });
 
         loginTypeBG.add(authLoginRB);
-        authLoginRB.setFont(authLoginRB.getFont().deriveFont(authLoginRB.getFont().getStyle() | java.awt.Font.BOLD));
+        authLoginRB.setFont(new java.awt.Font("Arial", 1, 11));
         authLoginRB.setText(bundle.getString("EitherLoginPanel.authLoginRB.text")); // NOI18N
         authLoginRB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -178,14 +178,15 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
         loginPanel.setOpaque(false);
         loginPanel.setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel1.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(87, 101, 115));
         jLabel1.setText(bundle.getString("EitherLoginPanel.jLabel1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, loginPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, loginPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
@@ -193,7 +194,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
                 .add(guestLoginRB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(authLoginRB)
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addContainerGap(80, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -204,7 +205,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
                     .add(authLoginRB)
                     .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(loginPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE))
+                .add(loginPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
