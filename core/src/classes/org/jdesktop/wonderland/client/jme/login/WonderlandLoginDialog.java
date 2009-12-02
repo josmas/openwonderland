@@ -198,10 +198,10 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         webServerField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         gradientPanel1 = new org.jdesktop.wonderland.client.jme.login.GradientPanel();
-        worldNameLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        tagLineLabel = new javax.swing.JLabel();
         gradientPanel2 = new org.jdesktop.wonderland.client.jme.login.GradientPanel();
         loginSpecificPanel = new javax.swing.JPanel();
-        tagLineLabel = new javax.swing.JLabel();
         buttonPanel = new javax.swing.JPanel();
         cancelButton = new javax.swing.JButton();
         loginButton = new javax.swing.JButton();
@@ -211,14 +211,17 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
 
         userPasswordPanel.setOpaque(false);
 
-        upServerLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        upServerLabel.setFont(new java.awt.Font("Arial", 1, 13));
+        upServerLabel.setForeground(new java.awt.Color(87, 101, 115));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         upServerLabel.setText(bundle.getString("WonderlandLoginDialog.upServerLabel.text")); // NOI18N
 
-        upPasswordLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        upPasswordLabel.setFont(new java.awt.Font("Arial", 1, 13));
+        upPasswordLabel.setForeground(new java.awt.Color(87, 101, 115));
         upPasswordLabel.setText(bundle.getString("WonderlandLoginDialog.upPasswordLabel.text")); // NOI18N
 
-        upUsernameLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        upUsernameLabel.setFont(new java.awt.Font("Arial", 1, 13));
+        upUsernameLabel.setForeground(new java.awt.Color(87, 101, 115));
         upUsernameLabel.setText(bundle.getString("WonderlandLoginDialog.upUsernameLabel.text")); // NOI18N
 
         upServerField.setEditable(false);
@@ -265,7 +268,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         );
 
         webPanel.setOpaque(false);
-        webPanel.setPreferredSize(new java.awt.Dimension(402, 140));
+        webPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
         webServerLabel.setFont(new java.awt.Font("Dialog", 1, 13));
         webServerLabel.setText(bundle.getString("WonderlandLoginDialog.webServerLabel.text")); // NOI18N
@@ -286,7 +289,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
                     .add(webPanelLayout.createSequentialGroup()
                         .add(webServerLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(webServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
+                        .add(webServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
                     .add(jLabel1))
                 .addContainerGap())
         );
@@ -295,7 +298,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             .add(org.jdesktop.layout.GroupLayout.TRAILING, webPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 56, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 75, Short.MAX_VALUE)
                 .add(webPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(webServerLabel)
                     .add(webServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -303,54 +306,69 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setBackground(java.awt.Color.white);
 
-        gradientPanel1.setGradientEndColor(new java.awt.Color(163, 183, 255));
-        gradientPanel1.setGradientStartColor(new java.awt.Color(0, 51, 255));
-        gradientPanel1.setMinimumSize(new java.awt.Dimension(0, 82));
+        gradientPanel1.setBackground(java.awt.Color.white);
+        gradientPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 5, 10, 10));
+        gradientPanel1.setAlignmentX(0.0F);
+        gradientPanel1.setAlignmentY(0.0F);
+        gradientPanel1.setGradientEndColor(new java.awt.Color(217, 225, 255));
+        gradientPanel1.setGradientStartColor(new java.awt.Color(255, 255, 255));
+        gradientPanel1.setMinimumSize(new java.awt.Dimension(370, 80));
 
-        worldNameLabel.setFont(new java.awt.Font("SansSerif", 1, 36)); // NOI18N
-        worldNameLabel.setForeground(new java.awt.Color(255, 255, 255));
-        worldNameLabel.setText(bundle.getString("WonderlandLoginDialog.worldNameLabel.text")); // NOI18N
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/client/jme/login/pwl_idy_logomark-type_64.png"))); // NOI18N
+        jLabel2.setAlignmentY(0.0F);
+        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        tagLineLabel.setFont(new java.awt.Font("Arial", 0, 22)); // NOI18N
+        tagLineLabel.setForeground(new java.awt.Color(87, 101, 115));
+        tagLineLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        tagLineLabel.setText(bundle.getString("WonderlandLoginDialog.tagLineLabel.text")); // NOI18N
+        tagLineLabel.setAlignmentY(0.0F);
+        tagLineLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
+        tagLineLabel.setFocusable(false);
 
         org.jdesktop.layout.GroupLayout gradientPanel1Layout = new org.jdesktop.layout.GroupLayout(gradientPanel1);
         gradientPanel1.setLayout(gradientPanel1Layout);
         gradientPanel1Layout.setHorizontalGroup(
             gradientPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(gradientPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(worldNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tagLineLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                .add(0, 0, 0))
         );
         gradientPanel1Layout.setVerticalGroup(
             gradientPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(gradientPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(worldNameLabel)
+                .add(gradientPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(tagLineLabel)
+                    .add(jLabel2))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        gradientPanel2.setGradientEndColor(new java.awt.Color(217, 225, 255));
-        gradientPanel2.setGradientStartColor(new java.awt.Color(163, 183, 255));
+        gradientPanel2.setBackground(java.awt.Color.white);
+        gradientPanel2.setAlignmentX(0.0F);
+        gradientPanel2.setAlignmentY(0.0F);
+        gradientPanel2.setGradientEndColor(new java.awt.Color(163, 183, 255));
+        gradientPanel2.setGradientStartColor(new java.awt.Color(217, 225, 255));
+        gradientPanel2.setMinimumSize(new java.awt.Dimension(360, 174));
+        gradientPanel2.setPreferredSize(new java.awt.Dimension(360, 174));
         gradientPanel2.setLayout(new java.awt.BorderLayout());
 
+        loginSpecificPanel.setMinimumSize(new java.awt.Dimension(370, 114));
         loginSpecificPanel.setOpaque(false);
+        loginSpecificPanel.setPreferredSize(new java.awt.Dimension(370, 114));
         loginSpecificPanel.setLayout(new java.awt.BorderLayout());
         gradientPanel2.add(loginSpecificPanel, java.awt.BorderLayout.CENTER);
 
-        tagLineLabel.setFont(new java.awt.Font("SansSerif", 1, 18));
-        tagLineLabel.setForeground(new java.awt.Color(255, 255, 255));
-        tagLineLabel.setText(bundle.getString("WonderlandLoginDialog.tagLineLabel.text")); // NOI18N
-        tagLineLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        tagLineLabel.setAlignmentY(0.0F);
-        tagLineLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        tagLineLabel.setFocusable(false);
-        gradientPanel2.add(tagLineLabel, java.awt.BorderLayout.NORTH);
-
+        buttonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        buttonPanel.setMinimumSize(new java.awt.Dimension(370, 60));
         buttonPanel.setOpaque(false);
-        buttonPanel.setPreferredSize(new java.awt.Dimension(453, 65));
+        buttonPanel.setPreferredSize(new java.awt.Dimension(370, 60));
 
         cancelButton.setBackground(new java.awt.Color(255, 255, 255));
-        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        cancelButton.setFont(new java.awt.Font("Arial", 1, 13));
         cancelButton.setText(bundle.getString("WonderlandLoginDialog.cancelButton.text")); // NOI18N
         cancelButton.setAlignmentX(0.5F);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -360,7 +378,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         });
 
         loginButton.setBackground(new java.awt.Color(255, 255, 255));
-        loginButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        loginButton.setFont(new java.awt.Font("Arial", 1, 13));
         loginButton.setText(bundle.getString("WonderlandLoginDialog.loginButton.text")); // NOI18N
         loginButton.setAlignmentX(0.5F);
         loginButton.addActionListener(new java.awt.event.ActionListener() {
@@ -369,12 +387,14 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             }
         });
 
-        statusLabel.setFont(new java.awt.Font("SansSerif", 1, 12));
-        statusLabel.setForeground(new java.awt.Color(45, 45, 45));
+        statusLabel.setFont(new java.awt.Font("Arial", 0, 12));
+        statusLabel.setForeground(new java.awt.Color(87, 101, 115));
         statusLabel.setText(bundle.getString("WonderlandLoginDialog.statusLabel.text")); // NOI18N
+        statusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 
-        advancedButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        advancedButton.setFont(new java.awt.Font("Arial", 0, 13));
         advancedButton.setText(bundle.getString("WonderlandLoginDialog.advancedButton.text")); // NOI18N
+        advancedButton.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         advancedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 advancedButtonActionPerformed(evt);
@@ -386,18 +406,15 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         buttonPanelLayout.setHorizontalGroup(
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(buttonPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                     .add(buttonPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(10, 10, 10))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
-                        .addContainerGap(115, Short.MAX_VALUE)
+                        .add(advancedButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 60, Short.MAX_VALUE)
                         .add(cancelButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(loginButton)
-                        .add(40, 40, 40)))
-                .add(advancedButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(loginButton)))
                 .addContainerGap())
         );
 
@@ -405,16 +422,12 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
 
         buttonPanelLayout.setVerticalGroup(
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(statusLabel)
-                    .add(advancedButton))
-                .addContainerGap(30, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
-                .addContainerGap(30, Short.MAX_VALUE)
+                .add(statusLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(loginButton)
+                    .add(advancedButton)
+                    .add(loginButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(cancelButton))
                 .addContainerGap())
         );
@@ -425,15 +438,15 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+            .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
             .add(gradientPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(gradientPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(4, 4, 4)
-                .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
+                .add(gradientPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
+                .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE))
         );
 
         pack();
@@ -510,6 +523,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
     private org.jdesktop.wonderland.client.jme.login.GradientPanel gradientPanel1;
     private org.jdesktop.wonderland.client.jme.login.GradientPanel gradientPanel2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JButton loginButton;
     private javax.swing.JPanel loginSpecificPanel;
     private javax.swing.JLabel statusLabel;
@@ -524,6 +538,5 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
     private javax.swing.JPanel webPanel;
     private javax.swing.JTextField webServerField;
     private javax.swing.JLabel webServerLabel;
-    private javax.swing.JLabel worldNameLabel;
     // End of variables declaration//GEN-END:variables
 }
