@@ -57,6 +57,8 @@ public class ConeOfSilenceCellFactory implements CellFactorySPI {
         ConeOfSilenceCellServerState cellServerState =
                 new ConeOfSilenceCellServerState();
 
+	cellServerState.setName("ConeOfSilence");
+
         // Give the hint for the bounding volume for initial Cell placement
         BoundingSphere sphere = new BoundingSphere(.8f, new Vector3f(0f, 2.2f, 0f));
 	BoundingVolumeHint hint = new BoundingVolumeHint(true, sphere);
