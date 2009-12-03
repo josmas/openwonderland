@@ -29,12 +29,16 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.awt.Dimension;
 
 /**
- * TODO
- * Note: frame handles mtgame and jme update issues itself.
+ * Renders an optional rectangular border around a View2DCell. A frame is comprised of
+ * several frame components: a header, two sides (left and right), a bottom, and a 
+ * resize corner.
+ * <br><br>
  * @author deronj
  */
 @ExperimentalAPI
 public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
+
+    // IMPLEMENTATION NOTE:  The frame handles MTGame and JME update issues internally.
 
     private static final Logger logger = Logger.getLogger(Frame2DCell.class.getName());
 

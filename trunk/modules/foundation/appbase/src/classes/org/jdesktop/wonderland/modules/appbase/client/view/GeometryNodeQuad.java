@@ -30,6 +30,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A quad shaped geometry node.
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 class GeometryNodeQuad extends GeometryNode {

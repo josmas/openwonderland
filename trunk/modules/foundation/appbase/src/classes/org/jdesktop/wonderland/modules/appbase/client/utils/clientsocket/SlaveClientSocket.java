@@ -23,6 +23,8 @@ import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsRepo
 
 /**
  * The slave side of the socket code.
+ *
+ * @author deronj, Krishna Gadepalli
  */
 public class SlaveClientSocket extends ClientSocket {
 

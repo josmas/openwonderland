@@ -27,6 +27,21 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
+/**
+ * A generic view class. A view is an object which can display the contents
+ * of a given window in some sort of display environment. The specific display 
+ * environment is determined by a developer-implemented subclass of <code>View2DDisplayer</code>. 
+ * Often a displayer-specific subclass of <code>View2D</code> will also need to be implemented.
+ * <br><br>
+ * A view has a set of attributes (such as parent, type, and visibility) which are 
+ * determined by the window displayed in the view. Generally, the window-level
+ * code transfers attributes like these into the view using the view set methods.
+ * For best performance in transferring a batch of window operations into the view,
+ * use an argument of update=false in the view set methods and then call view.update().
+ *
+ * @author deronj
+ */
+
 @ExperimentalAPI
 public interface View2D {
 

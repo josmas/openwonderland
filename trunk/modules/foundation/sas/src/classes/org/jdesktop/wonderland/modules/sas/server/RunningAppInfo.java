@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 
 /**
  * Information about provider apps that are running.
+ *
+ * @author deronj
  */
 
 @ExperimentalAPI

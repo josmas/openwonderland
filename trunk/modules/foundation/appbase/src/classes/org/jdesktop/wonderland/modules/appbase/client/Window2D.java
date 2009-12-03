@@ -66,23 +66,15 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
  * The generic 2D window superclass. All 2D windows in Wonderland have this root
  * class. Instances of this class are created by the createWindow methods of
  * App2D subclasses.
- *
+ * <br><br>
  * Windows can be arranged into a stack with other windows. Each window occupies
  * a unique position in the stack. The lowest window is at position 0, the
  * window immediately above that is at position 1, and so on.
+ * <br><br>
+ * A Window2D can have zero or more views. For example, a window can have a view which displays
+ * the window in a cell in the 3D world and it can also have a view which displays the window
+ * in the HUD. 
  *
-// TODO: move this to the class description
-// User configuration of a primary window configures the cell. A cell has only one primary window.
-// TODO: move this to the class description
-// A secondary window is a top-level window which is potentially decorated but which 
-// is positioned relative to the primary. A secondary window may be promoted to a 
-// primary window goes away.
-
-A Window2D can have zero or more views.
-
-fundamental: currently, a window can only have one view for a particular displayer    
-otherwise view.setParent gets really tricky
-
  * @author deronj
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  *
@@ -287,7 +279,7 @@ public abstract class Window2D implements HUDDisplayable {
 
         this.surface = surface;
         surface.setWindow(this);
-
+       
         // Must occur before adding window to the app
         updateTexture();
 
@@ -1717,6 +1709,8 @@ public abstract class Window2D implements HUDDisplayable {
     }
 
     /** Add a new view for the displayer of the view. */
+    // IMPLEMENTATION NOTE: It is a fundamental assumption that a window can have only one
+    // view for a particular displayer. Otherwise it becomes very tricky to implement view.setParent.
     private void addViewForDisplayer(View2D view) {
         View2DDisplayer displayer = view.getDisplayer();
         displayerToView.put(displayer, view);

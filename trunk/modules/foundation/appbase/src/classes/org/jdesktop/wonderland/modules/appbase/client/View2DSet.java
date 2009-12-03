@@ -24,9 +24,15 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 
 /**
- * TODO
+ * Provides storage for all of the views of all of the windows of an app. An app can have multiple
+ * windows, and each of these can, in turn, have multiple views. You can add both windows and 
+ * displayers (that is, <code>View2DDisplayers</code>) to the view set. When you add a window to a
+ * a view set, a view is created for that window in every displayer in the set. When you add 
+ * a displayer to a view set, a view is created in that displayer for every window in the set.
  * Note: A window must belong to only one view set at a time. A displayer must belong to only one view
  * set at a time. (Not enforced).
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 public class View2DSet {

@@ -22,6 +22,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A listener which is called when there is activity from a master or client socket.
+ *
+ * @author deronj, Krishna Gadepalli
  */
 @ExperimentalAPI
 public interface ClientSocketListener {

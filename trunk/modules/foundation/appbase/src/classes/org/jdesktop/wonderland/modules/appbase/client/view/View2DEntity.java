@@ -55,12 +55,42 @@ import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImag
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
- * TODO
- * Each view has entity -> viewNode -> geometryNode -> Geometry
- * @author dj
+ * A view which is capable of displaying a window using an MTGame Entity and scene graph.
+ * At any one time the window contents can be displayed in the 3D world (<code>setOrtho(false)</code)
+ * or in the ortho plane (<code>setOrtho(true)</code). (The ortho plane usually corresponds to the 
+ * Wonderland main HUD, or "on the glass").
+ * <br><br>
+ * By default, the view is a quad, but this can be changed via the method <code>setGeometryNode</code>.
+ * <br><br>
+ * If the user resizable attribute is set to true via <code>setUserResizable</code> this view's dimensions
+ * can be dynamically controlled from elsewhere (often via a GUI element) by calling the methods 
+ * <code>userResizeStart</code>, <code>userResizeUpdate</code> and <code>userResizeFinish</code>.
+ * <br><br>
+ * A view also supports a number of window manipulation methods which relay actions to the view's window.
+ * Examples include windowCloseUser and windowRestackToTop.
+ * <br><br>
+ * Note: this class supports independent pixel scales for the 3D world and the ortho plane. The values
+ * set via <code>setPixelScale</code> are used for the 3D world and the values set via <code>setPixelScaleOrtho</code>
+ * are used for the ortho plane.
+ * <br><br>
+ * This view class also supports a set of positioning methods for when the view is in the ortho plane
+ * (e.g. <code>setLocationOrtho</code>) than when the view is in the 3D world (see the <code>View2D</code) class).
+ * <br><br>
+ * You can move this type of view in the local XY plane when it is in the 3D world by calling 
+ * <code>applyDeltaTranslationUser</code>. This post-multiplies a translation matrix into the view's 
+ * current world-to-local transform matrix. Certain utility routines exit (e.g. <code>userMovePlanarStart</code>, 
+ * <code>userMovePlanarUpdate</code>, and <code>userMovePlanarUpdate</code>) can be called instead in order to make this easier.
+ * (Only view's of type SECONDARY can be moved planar).
+ * <br><br>
+ * TODO: SOMEDAY: Implement move planar for primary views. Must update the cell when doing this.
+ * <br><br>
+ * @author deronj
  */
 @ExperimentalAPI
 public abstract class View2DEntity implements View2D {
+
+    // IMPLEMENTATION NOTE: The entity and scene graph of this type of view has the following structure
+    // Entity -> viewNode -> geometryNode -> Geometry
 
     private static final Logger logger = Logger.getLogger(View2DEntity.class.getName());
 

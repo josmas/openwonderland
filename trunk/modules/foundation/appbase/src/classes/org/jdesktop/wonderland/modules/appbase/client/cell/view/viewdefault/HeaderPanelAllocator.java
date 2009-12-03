@@ -20,6 +20,15 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.SwingUtilities;
 
+/**
+ * This class reduces the number of times that a new Swing header needs
+ * to be created. This greatly minimizes the potential for some deadlocks
+ * which still exist in the code. 
+ * <br><br>
+ * TODO: need to clean this up by single threading the app base.
+ *
+ * @author deronj
+ */
 class HeaderPanelAllocator implements Runnable {
 
     private static final int SIZE = 10;

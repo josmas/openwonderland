@@ -33,6 +33,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * unicast send to the master. NOTE: slaves cannot send to other slaves.
  *
  * The master is notified of slave activity via the listener given to the constructor.
+ *
+ * @author deronj, Krishna Gadepalli
  */
 @ExperimentalAPI
 public class MasterSocketSet implements Runnable {

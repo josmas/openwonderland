@@ -28,6 +28,14 @@ import com.sun.sgs.app.ManagedReference;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+/**
+ * There is one one instance of this data structure for every provider. It is used to store
+ * the app launch messages which have been sent to a provider whose result we have not yet
+ * been told by the provider.
+ *
+ * @author deronj
+ */
+
 // TODO: must have a timeout on how long messages live in this
 @ExperimentalAPI
 public class ProviderMessagesInFlight implements ManagedObject, Serializable {

@@ -23,6 +23,8 @@ import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsRepo
 
 /**
  * The master side of the socket code.
+ *
+ * @author deronj, Krishna Gadepalli
  */
 class MasterClientSocket extends ClientSocket {
 
