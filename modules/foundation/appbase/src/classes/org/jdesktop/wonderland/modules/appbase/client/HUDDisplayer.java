@@ -30,6 +30,16 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 
+/**
+ * Provides a <code>View2DDisplay</code> type which is used for displaying app windows in 
+ * views in main Wonderland HUD. When an instance of this class is added to the view set of an 
+ * app (see <code>View2DSet.add(View2DDisplayer)</code>), all of the app's windows are made 
+ * visible in the HUD. They are usually removed from the HUD when the HUD sends a CLOSED 
+ * HUDEvent to them.
+ *
+ * @author deronj
+ */
+
 @ExperimentalAPI
 public class HUDDisplayer implements View2DDisplayer {
 

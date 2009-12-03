@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsRepo
 
 /**
  * Code which is shared between the master and slaves.
+ *
+ * @author deronj, Krishna Gadepalli
  */
 public class ClientSocket {
 

@@ -26,6 +26,12 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.InternalAPI;
 
+/**
+ * A specific implementation of <code>InputPicker</code> which uses 3D events.
+ *
+ * @author deronj
+ */
+
 @InternalAPI
 public class InputPicker3D extends InputPicker {
 

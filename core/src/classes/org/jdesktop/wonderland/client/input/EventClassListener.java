@@ -28,6 +28,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * This class uses <code>isAssignableFrom</code> to compare the event class with the desired event classes, so if
  * the return array of <code>eventClassesToConsume</code> contains a superclass, events of that class and 
  * all subclasses will be consumed.
+ *
+ * @author deronj
  */
 
 @ExperimentalAPI

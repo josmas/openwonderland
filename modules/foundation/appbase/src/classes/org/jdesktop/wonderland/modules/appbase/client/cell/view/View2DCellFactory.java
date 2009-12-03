@@ -23,6 +23,13 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
 import org.jdesktop.wonderland.common.InternalAPI;
 
+/**
+ * All factory object which create views which live in a cell in the 3D world
+ * must implement this interface. 
+ *
+ * @author deronj
+ */
+
 @InternalAPI
 public interface View2DCellFactory {
     public void initialize ();

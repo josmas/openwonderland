@@ -21,6 +21,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The decoration of a window view displayed in an App cell.
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 public interface Frame2D {

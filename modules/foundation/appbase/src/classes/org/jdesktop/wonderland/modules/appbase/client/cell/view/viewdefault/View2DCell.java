@@ -35,8 +35,10 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import java.awt.Dimension;
 
 /**
- * TODO
- * Each view has entity -> viewNode -> geometryNode -> Geometry
+ * A subclass of <code>View2DEntity</code> which provides additional capabilities above and beyond its super class.
+ * In particular, a <code>View2DCell</code> can be rotated in addition to being translated 
+ * (see <code>applyDeltaRotationUser</code>). It can also have an optionally attached frame.
+ *
  * @author dj
  */
 @ExperimentalAPI

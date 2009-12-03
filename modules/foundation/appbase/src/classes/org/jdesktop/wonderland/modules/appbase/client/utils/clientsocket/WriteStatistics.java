@@ -19,6 +19,12 @@ package org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket;
 
 import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsSet;
 
+/**
+ * Maintains statistics on the number of socket writes performed by the Client Socket code.
+ *
+ * @author deronj
+ */
+
 class WriteStatistics extends StatisticsSet {
 
     /** The associated client socket. */

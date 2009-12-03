@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactor
 /**
  * An object which is created during the user client login process in order to initialize the 
  * app base for that user client.
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 @Plugin

@@ -23,6 +23,8 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
  * Listener interface for cell cache action messages
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 public interface SasProviderConnectionListener {

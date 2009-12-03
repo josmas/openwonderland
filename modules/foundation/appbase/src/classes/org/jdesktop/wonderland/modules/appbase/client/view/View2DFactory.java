@@ -20,6 +20,12 @@ package org.jdesktop.wonderland.modules.appbase.client.view;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.common.InternalAPI;
 
+/**
+ * A factory object which creates <code>View2D</code>s must implement this interface.
+ *
+ * @author deronj
+ */
+
 @InternalAPI
 public interface View2DFactory {
     public View2D createView (View2DDisplayer displayer, Window2D window);

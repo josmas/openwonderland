@@ -37,6 +37,8 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 /**
  * If you want to customize the geometry of a displayer, implement
  * this interface and pass an instance to displayer.setGeometryNode.
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 public abstract class GeometryNode extends Node {

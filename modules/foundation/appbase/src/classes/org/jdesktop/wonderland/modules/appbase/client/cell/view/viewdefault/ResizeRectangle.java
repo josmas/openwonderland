@@ -27,6 +27,17 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import com.jme.renderer.ColorRGBA;
 
+/**
+ * A frame component which is a transparent rectangle. This component is made
+ * visible during the interactive resizing of a view to demonstrate to the user
+ * the currently selected size of the view. Only after the user commits to that
+ * size by releasing the mouse button is the view actually resized. Use of this
+ * "proxy rectangle" is much more efficient than trying to resize the view on
+ * every change.
+ *
+ * @author deronj
+ */
+
 public class ResizeRectangle extends FrameTranspRect {
 
     private boolean visible;
