@@ -80,7 +80,6 @@ public class BoundsDebugger extends javax.swing.JFrame {
         avatarPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Avatar Bounds Debugger");
 
         avatarPanel.setLayout(new java.awt.GridBagLayout());
