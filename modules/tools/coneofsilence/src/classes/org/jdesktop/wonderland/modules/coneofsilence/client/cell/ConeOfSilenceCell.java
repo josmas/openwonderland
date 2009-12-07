@@ -17,32 +17,22 @@
  */
 package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 
-import com.sun.sgs.client.ClientChannel;
 
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.common.messages.Message;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellClientState;
 
-import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 /**
