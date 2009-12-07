@@ -53,7 +53,7 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
 
     private void attachModel(Node aNode) throws IOException {
         LoaderManager manager = LoaderManager.getLoaderManager();
-        URL url = AssetUtils.getAssetURL("wla://coneofsilence/pwl_3d_coneofsilence_014.dae/pwl_3d_coneofsilence_014.dae.gz.dep", this.getCell());
+        URL url = AssetUtils.getAssetURL("wla://coneofsilence/pwl_3d_coneofsilence_016d.dae/pwl_3d_coneofsilence_016d.dae.gz.dep", this.getCell());
         DeployedModel dm = manager.getLoaderFromDeployment(url);
         Node cosModel = dm.getModelLoader().loadDeployedModel(dm, entity);
         aNode.attachChild(cosModel);
