@@ -308,7 +308,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
             WorldManager worldManager = ClientContextJME.getWorldManager();
             worldManager.addUserData(Repository.class, new Repository(worldManager,
                     new WonderlandAvatarCache(url.toExternalForm(),
-                    ClientContext.getUserDirectory(bundle.getString("AvatarCache")))));
+                    ClientContext.getUserDirectory("AvatarCache"))));
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to form avatar base URL", excp);
         } catch(Exception e) {
