@@ -130,7 +130,7 @@ public class VMeter extends JPanel {
         }
 
         // configure meter to show or hide the meter label (at bottom of meter)
-        if (!label.isEmpty()) {
+        if (label.length() > 0) {
             labelWidth = fontMetrics.stringWidth(label);
             labelHeight = fontMetrics.getHeight();
         } else {
@@ -185,13 +185,13 @@ public class VMeter extends JPanel {
         // reset clip rect
         g2.setClip(0, 0, w, h);
 
-        if (!label.isEmpty() || showValue) {
+        if ((label.length() > 0) || showValue) {
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g2.setColor(this.getForeground());
             g2.setFont(font);
         }
 
-        if (!label.isEmpty()) {
+        if (label.length() > 0) {
             // draw the label
             g2.drawString(label, (w - labelWidth) / 2, h - bottomIndent);
         }
