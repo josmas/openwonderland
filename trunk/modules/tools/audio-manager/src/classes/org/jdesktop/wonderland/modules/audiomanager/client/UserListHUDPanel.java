@@ -127,10 +127,10 @@ public class UserListHUDPanel
 
         mutedIcon = new ImageIcon(getClass().getResource(
                 "/org/jdesktop/wonderland/modules/audiomanager/client/" +
-                "resources/UserListMuteOn24x24.png"));
+                "resources/UserListMicMuteOn24x24.png"));
         unmutedIcon = new ImageIcon(getClass().getResource(
                 "/org/jdesktop/wonderland/modules/audiomanager/client/" +
-                "resources/UserListMuteOff24x24.png"));
+                "resources/UserListMicMuteOff24x24.png"));
         upIcon = new ImageIcon(getClass().getResource(
                 "/org/jdesktop/wonderland/modules/audiomanager/client/" +
                 "resources/upArrow23x10.png"));
@@ -427,7 +427,7 @@ public class UserListHUDPanel
 
         setPreferredSize(new java.awt.Dimension(194, 300));
 
-        muteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMuteOff24x24.png"))); // NOI18N
+        muteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMicMuteOff24x24.png"))); // NOI18N
         muteButton.setToolTipText(bundle.getString("UserListHUDPanel.muteButton.toolTipText")); // NOI18N
         muteButton.setBorderPainted(false);
         muteButton.setMaximumSize(new java.awt.Dimension(24, 24));
