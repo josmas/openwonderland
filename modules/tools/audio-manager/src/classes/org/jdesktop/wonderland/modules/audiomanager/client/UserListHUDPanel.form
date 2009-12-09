@@ -104,7 +104,7 @@
         <Component class="javax.swing.JButton" name="muteButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMuteOff24x24.png"/>
+              <Image iconType="3" name="/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMicMuteOff24x24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="UserListHUDPanel.muteButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>

@@ -524,7 +524,7 @@ public class AudioManagerClient extends BaseConnection implements
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
             micVuMeterComponent = mainHUD.createComponent(micVuMeterPanel);
-            micVuMeterComponent.setPreferredLocation(Layout.SOUTH);
+            micVuMeterComponent.setPreferredLocation(Layout.SOUTHEAST);
             micVuMeterComponent.setName(BUNDLE.getString("Microphone_Level"));
             micVuMeterComponent.setIcon(voiceChatIcon);
             micVuMeterComponent.addEventListener(new HUDEventListener() {
@@ -532,10 +532,10 @@ public class AudioManagerClient extends BaseConnection implements
                 public void HUDObjectChanged(HUDEvent event) {
                     switch (event.getEventType()) {
                         case APPEARED:
-                            micVuMeterPanel.startVuMeter(true);
+                            micVuMeterPanel.startMicVuMeter(true);
                             break;
                         case DISAPPEARED:
-                            micVuMeterPanel.startVuMeter(false);
+                            micVuMeterPanel.startMicVuMeter(false);
                             break;
                         default:
                             break;
@@ -543,7 +543,7 @@ public class AudioManagerClient extends BaseConnection implements
                 }
             });
             mainHUD.addComponent(micVuMeterComponent);
-            micVuMeterPanel.startVuMeter(true);
+            micVuMeterPanel.startMicVuMeter(true);
         }
 
         micVuMeterComponent.setVisible(true);
