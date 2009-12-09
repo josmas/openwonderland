@@ -24,7 +24,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
@@ -111,8 +114,8 @@ public class AudioManagerClient extends BaseConnection implements
     private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
     private HashMap<String, ArrayList<MemberChangeListener>> memberChangeListeners =
             new HashMap();
-    private ArrayList<UserInRangeListener> userInRangeListeners =
-            new ArrayList();
+    private List<UserInRangeListener> userInRangeListeners =
+            Collections.synchronizedList(new ArrayList());
     private HUDComponent userListHUDComponent;
     private UserListHUDPanel userListHUDPanel;
     private boolean usersMenuSelected = false;
@@ -166,7 +169,8 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     private void notifyDisconnectListeners() {
-        for (DisconnectListener listener : disconnectListeners) {
+        DisconnectListener[] listeners = disconnectListeners.toArray(new DisconnectListener[0]);
+        for (DisconnectListener listener : listeners) {
             listener.disconnected();
         }
     }
@@ -279,6 +283,22 @@ public class AudioManagerClient extends BaseConnection implements
         userListHUDComponent.setVisible(usersMenuSelected);
     }
 
+    public void removeDialogs() {
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+        if (userListHUDComponent != null) {
+            userListHUDComponent.setVisible(false);
+            mainHUD.removeComponent(userListHUDComponent);
+            userListHUDComponent = null;
+        }
+
+        if (micVuMeterComponent != null) {
+            micVuMeterComponent.setVisible(false);
+            mainHUD.removeComponent(micVuMeterComponent);
+            micVuMeterComponent = null;
+        }
+    }
+
     public synchronized void execute(final Runnable r) {
     }
 
@@ -309,8 +329,10 @@ public class AudioManagerClient extends BaseConnection implements
     public void disconnected() {
         super.disconnected();
 
-        // TODO: add methods to remove listeners!
+        // remove open dialogs
+        removeDialogs();
 
+        // TODO: add methods to remove listeners!
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.removeViewCellConfiguredListener(this);
 
