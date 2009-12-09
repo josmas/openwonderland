@@ -388,7 +388,10 @@ public class SoftphoneControlImpl implements SoftphoneControl {
     }
 
     public void register(String registrarAddress) {
-	sendCommandToSoftphone("ReRegister=" + registrarAddress);
+	try {
+	    sendCommandToSoftphone("ReRegister=" + registrarAddress);
+	} catch (IOException e) {
+	}
     }
 
     public boolean isRunning() {
@@ -445,21 +448,27 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    return;
 	}
 
-	if (isVisible) {
-	    sendCommandToSoftphone("Show");
-	} else {
-	    sendCommandToSoftphone("Hide");
+	try {
+	    if (isVisible) {
+	        sendCommandToSoftphone("Show");
+	    } else {
+	        sendCommandToSoftphone("Hide");
+	    }
+	} catch (IOException e) {
 	}
     }
 
     private boolean isMuted;
 
     public void mute(boolean isMuted) {
-        if (isMuted) {
-            sendCommandToSoftphone("Mute");
-        } else {
-            sendCommandToSoftphone("Unmute");
-        }
+	try {
+            if (isMuted) {
+                sendCommandToSoftphone("Mute");
+            } else {
+                sendCommandToSoftphone("Unmute");
+            }
+	} catch (IOException e) {
+	}
     }
     
     public boolean isMuted() {
@@ -479,10 +488,13 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    return;
 	}
 
-        sendCommandToSoftphone("sampleRate=" + quality.sampleRate());
-        sendCommandToSoftphone("channels=" + quality.channels());
-        sendCommandToSoftphone("transmitSampleRate=" + quality.transmitSampleRate());
-        sendCommandToSoftphone("transmitChannels=" + quality.transmitChannels());
+	try {
+            sendCommandToSoftphone("sampleRate=" + quality.sampleRate());
+            sendCommandToSoftphone("channels=" + quality.channels());
+            sendCommandToSoftphone("transmitSampleRate=" + quality.transmitSampleRate());
+            sendCommandToSoftphone("transmitChannels=" + quality.transmitChannels());
+	} catch (IOException e) {
+	}
     }
 
     public void recordReceivedAudio(String recordingPath)
@@ -492,32 +504,35 @@ public class SoftphoneControlImpl implements SoftphoneControl {
             + recordingPath);
     }
 
-    public void pauseRecordingReceivedAudio() {
+    public void pauseRecordingReceivedAudio() throws IOException {
         sendCommandToSoftphone("pauseRecordingReceivedAudio");
     }
 
-    public void resumeRecordingReceivedAudio() {
+    public void resumeRecordingReceivedAudio() throws IOException {
         sendCommandToSoftphone("resumeRecordingReceivedAudio");
     }
 
-    public void stopRecordingReceivedAudio() {
+    public void stopRecordingReceivedAudio() throws IOException {
         sendCommandToSoftphone("stopRecordingReceivedAudio");
     }
 
-    public void sendCommandToSoftphone(String cmd) {
+    public void sendCommandToSoftphone(String cmd) throws IOException {
         if (softphoneOutputStream == null) {
-	    logger.warning("Unable to send command to softphone, output stream is null "
+	    logger.warning(
+		"Unable to send command to softphone, output stream is null "
 		+ cmd);
-            return;
+	    throw new IOException(
+		"Unable to send command to softphone, output stream is null "
+		+ cmd);
         }
 
         synchronized(softphoneOutputStream) {
             logger.finest("SoftphoneControl sending command to softphone:  " + cmd);
 
-            try {
-		if (cmd.equals("Shutdown")) {
+	    try {
+	        if (cmd.equals("Shutdown")) {
 	    	    shuttingDown = true;
-		}
+	        }
 
                 byte bytes[] = (cmd+"\n").getBytes();
                 softphoneOutputStream.write(bytes);
@@ -533,15 +548,16 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 		//close(
                 //    "There was an error trying to use the software phone.  "
                 //    + "Please check your system's audio settings and try again.");
+		throw e;
             }
         }
     }
     
-    public void runLineTest() {
+    public void runLineTest() throws IOException {
         sendCommandToSoftphone("linetest");
     }
 
-    public void logAudioProblem() {
+    public void logAudioProblem() throws IOException {
         sendCommandToSoftphone("stack");
     }
 
@@ -565,7 +581,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         }
     }
 
-    public void startVuMeter(boolean startVuMeter) {
+    public void startVuMeter(boolean startVuMeter) throws IOException {
 	sendCommandToSoftphone("StartVuMeter=" + startVuMeter);
     }
 
@@ -607,6 +623,48 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	}
     }
 
+    public void startSpeakerVuMeter(boolean startSpeakerVuMeter) throws IOException {
+	sendCommandToSoftphone("StartSpeakerVuMeter=" + startSpeakerVuMeter);
+    }
+
+    private ArrayList<SpeakerInfoListener> speakerInfoListeners = 
+	new ArrayList<SpeakerInfoListener>();
+
+    public void addSpeakerInfoListener(SpeakerInfoListener listener) {
+        synchronized(speakerInfoListeners) {
+	    if (speakerInfoListeners.contains(listener)) {
+		logger.warning("Duplicate listener!!!");
+		return;
+	    }
+
+            speakerInfoListeners.add(listener);
+        }
+    }
+
+    public void removeSpeakerInfoListener(SpeakerInfoListener listener) {
+        synchronized(speakerInfoListeners) {
+            speakerInfoListeners.remove(listener);
+        }
+    }
+
+    private void notifySpeakerInfoListeners(String data, boolean isVuMeterData) {
+        ArrayList<SpeakerInfoListener> listeners = new ArrayList<SpeakerInfoListener>();
+
+        synchronized(speakerInfoListeners) {
+            for (SpeakerInfoListener listener : speakerInfoListeners) {
+                listeners.add(listener);
+            }
+	}
+
+	for (SpeakerInfoListener listener : listeners) {
+	    if (isVuMeterData) {
+	        listener.speakerData(data);
+	    } else {
+		listener.speakerVolume(data);
+	    }
+	}
+    }
+
     private boolean quiet = false;
 
     private void lineReceived(ProcOutputListener source, String line) {
@@ -630,6 +688,18 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    if (line.indexOf("MicrophoneVolume:") >= 0) {
 		String[] tokens = line.split(":");
                 notifyMicrophoneInfoListeners(tokens[1], false);
+	  	return;
+	    }
+
+	    if (line.indexOf("SpeakerVuMeterData:") >= 0) {
+		String[] tokens = line.split(":");
+                notifySpeakerInfoListeners(tokens[1], true);
+	  	return;
+	    }
+
+	    if (line.indexOf("SpeakerVolume:") >= 0) {
+		String[] tokens = line.split(":");
+                notifySpeakerInfoListeners(tokens[1], false);
 	  	return;
 	    }
 
@@ -745,7 +815,11 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 		logger.info("About to ping softphone for the first time...");
 
                 while (true) {
-                    sendCommandToSoftphone("ping");
+		    try {
+                        sendCommandToSoftphone("ping");
+		    } catch (IOException e) {
+		    }
+
                     Thread.sleep(5000);
                 }
             } catch (InterruptedException ie) {}
@@ -816,7 +890,11 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         synchronized(this) {
             if (softphoneOutputStream != null) {
 		logger.finer("SipStarter sending Shutdown to softphone");
-                sendCommandToSoftphone("Shutdown");
+
+		try {
+                    sendCommandToSoftphone("Shutdown");
+		} catch (IOException e) {
+		}
             }
 
 	    softphoneAddress = null;

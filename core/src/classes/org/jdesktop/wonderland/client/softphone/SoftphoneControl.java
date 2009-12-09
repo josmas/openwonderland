@@ -31,7 +31,7 @@ public interface SoftphoneControl {
     public String startSoftphone(String userName, String registrarAddress,
 	    int registrarTimeout, String localHost) throws IOException;
     
-    public void stopSoftphone();
+    public void stopSoftphone() throws IOException;
 
     public void setCallID(String callID);
 
@@ -57,11 +57,11 @@ public interface SoftphoneControl {
 
     public void recordReceivedAudio(String recordingPath) throws IOException;
 
-    public void pauseRecordingReceivedAudio();
+    public void pauseRecordingReceivedAudio() throws IOException;
 
-    public void resumeRecordingReceivedAudio();
+    public void resumeRecordingReceivedAudio() throws IOException;
 
-    public void stopRecordingReceivedAudio();
+    public void stopRecordingReceivedAudio() throws IOException;
 
     public void sendCommandToSoftphone(String cmd) throws IOException;
     
@@ -77,6 +77,12 @@ public interface SoftphoneControl {
 
     public void removeMicrophoneInfoListener(MicrophoneInfoListener listener);
 
-    public void startVuMeter(boolean startVuMeter);
+    public void startVuMeter(boolean startVuMeter) throws IOException;
+
+    public void addSpeakerInfoListener(SpeakerInfoListener listener);
+
+    public void removeSpeakerInfoListener(SpeakerInfoListener listener);
+
+    public void startSpeakerVuMeter(boolean startSpeakerVuMeter) throws IOException;
 
 }
