@@ -30,6 +30,7 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
@@ -58,7 +59,7 @@ import org.jdesktop.wonderland.server.security.SecurityManager;
  * @author jprovino
  */
 public class ConeOfSilenceProximityListener implements ProximityListenerSrv, 
-	AudioGroupListener, Serializable {
+	AudioGroupListener, ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
@@ -82,8 +83,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	//System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
-	//    + " viewCellID " + viewCellID + " " + proximityVolume);
+	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID + " " + proximityVolume);
 
 	this.entered = entered;
 	this.callID = CallID.getCallID(viewCellID);
@@ -153,7 +154,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
         Player player = vm.getPlayer(callId);
 
-        //System.out.println(callId + " entered cone " + name + " player " + player);
+        System.out.println(callId + " entered cone " + name + " player " + player);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
@@ -227,7 +228,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     private void cellExited(String callId) {
         logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
 
-        //System.out.println(callId + " exited cone " + name + " avatar cell ID " + callId);
+        System.out.println(callId + " exited cone " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
