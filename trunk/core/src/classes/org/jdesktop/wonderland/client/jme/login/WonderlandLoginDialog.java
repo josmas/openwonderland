@@ -470,7 +470,11 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
                 String errorMessage = login.doLogin();
                 if (errorMessage == null) {
                     // success
-                    dispose();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            dispose();
+                        }
+                    });
                 } else {
                     String text = BUNDLE.getString("Error_Connecting");
                     text = MessageFormat.format(text, errorMessage);
