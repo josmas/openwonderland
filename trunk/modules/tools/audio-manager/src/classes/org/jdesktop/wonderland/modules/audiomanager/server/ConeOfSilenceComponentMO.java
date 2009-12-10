@@ -64,7 +64,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
     private double outsideAudioVolume = 0;
 
-    ConeOfSilenceProximityListener proximityListener;
+    private ManagedReference<ConeOfSilenceProximityListener> proximityListenerRef;
 
     /**
      * Create a ConeOfSilenceComponent for the given cell. 
@@ -193,12 +193,12 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 	//System.out.println("Adding audio to COS for " + 
 	//    CallID.getCallID(cellMO.getCellID()));
 
-	if (proximityListener == null) {
+	if (proximityListenerRef == null) {
 	    return;
 	}
 
 	audioTreatmentComponentMO.setSpatializer(true);
-	proximityListener.cellEntered(cellMO.getCellID());
+	proximityListenerRef.get().cellEntered(cellMO.getCellID());
     }
 
     public void removeAudioTreatmentComponentMO(CellMO cellMO, 
@@ -207,12 +207,12 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 	//System.out.println("removing audio to COS for " + 
 	//    CallID.getCallID(cellMO.getCellID()));
 
-	if (proximityListener == null) {
+	if (proximityListenerRef == null) {
 	    return;
 	}
 
 	audioTreatmentComponentMO.setSpatializer(false);
-	proximityListener.cellExited(cellMO.getCellID());
+	proximityListenerRef.get().cellExited(cellMO.getCellID());
     }
 
     private void addProximityListener(boolean live) {
@@ -225,11 +225,13 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             return;
         }
 
-	if (proximityListener != null) {
+	if (proximityListenerRef != null) {
+	    ConeOfSilenceProximityListener proximityListener = proximityListenerRef.get();
 	    proximityListener.remove();
-	    component.removeProximityListener(proximityListener);
-	    //System.out.println("Removing proximity listener...");
-	}
+            component.removeProximityListener(proximityListener);
+	    proximityListenerRef = null;
+            //System.out.println("Removing proximity listener...");
+        }
 
         // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
@@ -240,25 +242,24 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 	    if (boundsType.equals(COSBoundsType.CELL_BOUNDS)) {
 		boundingVolume[0] = cellRef.get().getLocalBounds();
 		logger.warning("COS Using cell local bounds:  " + boundingVolume[0]);
-		//System.out.println("COS Using cell local bounds:  " + boundingVolume[0]);
+		System.out.println("COS Using cell local bounds:  " + boundingVolume[0]);
 	    } else if (boundsType.equals(COSBoundsType.BOX)) {
                 boundingVolume[0] = new BoundingBox(new Vector3f(), bounds.getX(), 
 		    bounds.getY(), bounds.getZ());
 		logger.warning("COS Using specified BOX:  " + boundingVolume[0]);
-		//System.out.println("COS Using specified BOX:  " + boundingVolume[0]);
+		System.out.println("COS Using specified BOX:  " + boundingVolume[0]);
 	    } else {
                 boundingVolume[0] = new BoundingSphere(bounds.getX(), new Vector3f());
 		logger.warning("COS Using specified radius:  " + boundingVolume[0]);
-		//System.out.println("COS Using specified radius:  " + boundingVolume[0]);
+		System.out.println("COS Using specified radius:  " + boundingVolume[0]);
 	    }
 
-            proximityListener = new ConeOfSilenceProximityListener(cellRef.get(), name, 
-		outsideAudioVolume);
+            ConeOfSilenceProximityListener proximityListener = 
+		new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
 
+	    proximityListenerRef = AppContext.getDataManager().createReference(proximityListener);
             component.addProximityListener(proximityListener, boundingVolume);
-        } else {
-	    proximityListener = null;
-	}
+        } 
     }
 
 }
