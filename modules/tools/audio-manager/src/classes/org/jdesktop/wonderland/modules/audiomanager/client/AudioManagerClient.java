@@ -337,7 +337,13 @@ public class AudioManagerClient extends BaseConnection implements
         avatar.removeViewCellConfiguredListener(this);
 
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
-        SoftphoneControlImpl.getInstance().sendCommandToSoftphone("Shutdown");
+
+	try {
+            SoftphoneControlImpl.getInstance().sendCommandToSoftphone("Shutdown");
+	} catch (IOException e) {
+            logger.warning("Unable to shutdown softphone:  " + e.getMessage());
+        }
+
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
         notifyDisconnectListeners();
     }
@@ -415,7 +421,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void testAudio() {
-        SoftphoneControlImpl.getInstance().runLineTest();
+	try {
+            SoftphoneControlImpl.getInstance().runLineTest();
+	}  catch (IOException e) {
+            logger.warning("Unable to run line test:  " + e.getMessage());
+        }
     }
 
     public void reconnectSoftphone() {
@@ -441,7 +451,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void logAudioProblem() {
-        SoftphoneControlImpl.getInstance().logAudioProblem();
+	try {
+            SoftphoneControlImpl.getInstance().logAudioProblem();
+	} catch (IOException e) {
+            logger.warning("Unable to log audio problem:  " + e.getMessage());
+        }
     }
 
     public void mute(boolean isMuted) {
