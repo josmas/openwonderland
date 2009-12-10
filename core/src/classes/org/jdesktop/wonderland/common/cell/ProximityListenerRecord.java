@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common.cell;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.Math3DUtils;
+
+import com.jme.math.FastMath;
 
 /**
  *
@@ -151,7 +154,15 @@ public class ProximityListenerRecord implements Serializable {
                                   " on " + this);
                 }
 
-                if (worldProxBounds[i].contains(viewCellWorldTranslation)) {
+		boolean contains;
+
+		if (worldProxBounds[i] instanceof BoundingBox) {
+                    contains = contains((BoundingBox) worldProxBounds[i], viewCellWorldTranslation);
+		} else {
+		    contains = worldProxBounds[i].contains(viewCellWorldTranslation);
+		}
+
+                if (contains) {
                     currentContainerIndex = i;
                 } else {
                     i = worldProxBounds.length; // Exit the while
@@ -207,6 +218,15 @@ public class ProximityListenerRecord implements Serializable {
                 getIndexMap().put(viewCellID, currentContainerIndex);
             }
         }
+    }
+
+    private boolean contains(BoundingBox bounds, Vector3f point) {
+	Vector3f center = bounds.getCenter();
+	Vector3f extent = bounds.getExtent(null);
+	
+        return FastMath.abs(center.x - point.x) - extent.x <= .01
+                && FastMath.abs(center.y - point.y) - extent.y <= .01
+                && FastMath.abs(center.z - point.z) - extent.z <= .01;
     }
 
     /**

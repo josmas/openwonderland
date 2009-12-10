@@ -21,8 +21,10 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ObjectNotFoundException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.ServerProximityListenerRecord.ServerProximityListenerWrapper;
@@ -57,6 +59,8 @@ import org.jdesktop.wonderland.server.spatial.UniverseManager;
  */
 @ExperimentalAPI
 public class ProximityComponentMO extends CellComponentMO {
+    private static final Logger LOGGER =
+	Logger.getLogger(ProximityComponentMO.class.getName());
 
     protected final Map<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners =
         new LinkedHashMap<ProximityListenerSrv, ServerProximityListenerRecord>();
@@ -109,7 +113,7 @@ public class ProximityComponentMO extends CellComponentMO {
      * @param localBounds the set of bounds, in the local coordinate system of the cell
      */
     public void addProximityListener(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
-        String id = getNextID();
+        String id = getIDFor(listener);
 
         if (listener instanceof ManagedObject) {
             listener = new ManagedProximityListenerWrapper(listener, id);
@@ -118,6 +122,7 @@ public class ProximityComponentMO extends CellComponentMO {
         ServerProximityListenerRecord rec = new ServerProximityListenerRecord(
                         new ServerProximityListenerWrapper(cellID, listener, id),
                         localBounds, id);
+
         proximityListeners.put(listener, rec);
        
         UniverseManager mgr = AppContext.getManager(UniverseManager.class);
@@ -130,11 +135,21 @@ public class ProximityComponentMO extends CellComponentMO {
      * @param listener
      */
     public void removeProximityListener(ProximityListenerSrv listener) {
+	if (listener instanceof ManagedObject) {
+            listener = new ManagedProximityListenerWrapper(listener, getIDFor(listener));
+        }
+
         ServerProximityListenerRecord rec = proximityListeners.remove(listener);
+
         if (rec != null) {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();
             rec.setLive(false, cell, mgr);
+        }
+
+	// clean up the binding the wrapper created
+        if (listener instanceof ManagedProximityListenerWrapper) {
+            ((ManagedProximityListenerWrapper) listener).cleanup();
         }
     }
 
@@ -148,7 +163,12 @@ public class ProximityComponentMO extends CellComponentMO {
      * @param localBounds The new bounds list.
      */
     public void setProximityListenerBounds(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
+	if (listener instanceof ManagedObject) {
+            listener = new ManagedProximityListenerWrapper(listener, getIDFor(listener));
+        }
+
         ServerProximityListenerRecord rec = this.proximityListeners.get(listener);
+	
         if (rec != null) {
             rec.setProximityBounds(localBounds);
         }
@@ -179,8 +199,17 @@ public class ProximityComponentMO extends CellComponentMO {
         return null;
     }
 
-    public String getNextID() {
-        return cellID + "." + nextID++;
+    public String getIDFor(ProximityListenerSrv listener) {
+        // issue #1101: if the listener is a managed object, generate
+        // and ID based on the ID of the underlying managed object.
+        if (listener instanceof ManagedObject) {
+            DataManager dm = AppContext.getDataManager();
+            return cellID + "." + dm.createReference(listener).getId();
+        } else {
+            // the object is not a managed object, so return a newly assigned
+            // id
+            return cellID + "." + nextID++;
+        }
     }
 
     static class ManagedProximityListenerWrapper implements ProximityListenerSrv {
@@ -199,11 +228,21 @@ public class ProximityComponentMO extends CellComponentMO {
                                   BoundingVolume proximityVolume, int proximityIndex)
         {
             DataManager dm = AppContext.getDataManager();
-            ProximityListenerSrv listener = (ProximityListenerSrv)
-                    dm.getBinding(BINDING_NAME + id);
-            listener.viewEnterExit(entered, cell, viewCellID,
-                                            proximityVolume, proximityIndex);
-        }
+
+            try {
+                ProximityListenerSrv listener = (ProximityListenerSrv)
+                        dm.getBinding(BINDING_NAME + id);
+                listener.viewEnterExit(entered, cell, viewCellID,
+                                                proximityVolume, proximityIndex);
+            } catch (ObjectNotFoundException onfe) {
+                LOGGER.warning("[ManagedProximityListenerWrapper] Object " +
+                               id + " not found");
+	    }
+	}
+
+	public void cleanup() {
+	    AppContext.getDataManager().removeBinding(BINDING_NAME + id);
+	}
 
         @Override
         public boolean equals(Object o) {
