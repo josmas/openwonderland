@@ -41,7 +41,7 @@ public class AudioMenu extends javax.swing.JPanel {
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private AudioMenuListener audioMenuListener;
     private static AudioMenu audioM = null;
-    private JMenuItem softphoneMenuItem;
+    private JMenuItem audioVolumeMenuItem;
     private JMenuItem personalPhoneMenuItem;
     private JMenuItem voiceChatMenuItem;
     private JCheckBoxMenuItem muteCheckBox;
@@ -51,16 +51,6 @@ public class AudioMenu extends javax.swing.JPanel {
         initComponents();
         this.audioMenuListener = audioMenuListener;
         populateAudioQualityMenu();
-
-        softphoneMenuItem = new JMenuItem(BUNDLE.getString("Softphone"));
-        softphoneMenuItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (audioMenuListener != null) {
-                    audioMenuListener.showSoftphone();
-                }
-            }
-        });
 
         muteCheckBox = new JCheckBoxMenuItem(BUNDLE.getString("Mute"));
         muteCheckBox.setAccelerator(KeyStroke.getKeyStroke('['));
@@ -93,6 +83,16 @@ public class AudioMenu extends javax.swing.JPanel {
                 }
             }
         });
+
+        audioVolumeMenuItem = new JMenuItem("Audio Volume");
+        audioVolumeMenuItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                if (audioMenuListener != null) {
+                    audioMenuListener.audioVolume();
+                }
+            }
+        });
     }
 
     @Override
@@ -109,14 +109,16 @@ public class AudioMenu extends javax.swing.JPanel {
     }
 
     public void addMenus() {
-        JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 5);
+	System.out.println("Adding menus...");
+        JmeClientMain.getFrame().addToWindowMenu(audioVolumeMenuItem, 5);
         JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);
         JmeClientMain.getFrame().addToWindowMenu(voiceChatMenuItem, 3);
         //JmeClientMain.getFrame().addToWindowMenu(personalPhoneMenuItem, 4);
+	System.out.println("Adding menus done");
     }
 
     public void removeMenus() {
-        JmeClientMain.getFrame().removeFromWindowMenu(softphoneMenuItem);
+        JmeClientMain.getFrame().removeFromWindowMenu(audioVolumeMenuItem);
         JmeClientMain.getFrame().removeFromToolsMenu(muteCheckBox);
         JmeClientMain.getFrame().removeFromWindowMenu(voiceChatMenuItem);
         //JmeClientMain.getFrame().removeFromWindowMenu(personalPhoneMenuItem);
@@ -150,7 +152,7 @@ public class AudioMenu extends javax.swing.JPanel {
         testAudioMenuItem = new javax.swing.JMenuItem();
         reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
         logAudioProblemMenuItem = new javax.swing.JMenuItem();
-        micVuMeter = new javax.swing.JMenuItem();
+        softphoneMenuItem = new javax.swing.JMenuItem();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         audioMenu.setText(bundle.getString("AudioMenu.audioMenu.text")); // NOI18N
@@ -200,13 +202,13 @@ public class AudioMenu extends javax.swing.JPanel {
         });
         audioMenu.add(logAudioProblemMenuItem);
 
-        micVuMeter.setText(bundle.getString("AudioMenu.micVuMeter.text")); // NOI18N
-        micVuMeter.addActionListener(new java.awt.event.ActionListener() {
+        softphoneMenuItem.setText(bundle.getString("AudioMenu.softphoneMenuItem.text")); // NOI18N
+        softphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                micVuMeterActionPerformed(evt);
+                softphoneMenuItemActionPerformed(evt);
             }
         });
-        audioMenu.add(micVuMeter);
+        audioMenu.add(softphoneMenuItem);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -251,9 +253,9 @@ public class AudioMenu extends javax.swing.JPanel {
 private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_audioQualityMenuActionPerformed
 }//GEN-LAST:event_audioQualityMenuActionPerformed
 
-private void micVuMeterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micVuMeterActionPerformed
-    audioMenuListener.microphoneVolume();
-}//GEN-LAST:event_micVuMeterActionPerformed
+private void softphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_softphoneMenuItemActionPerformed
+    audioMenuListener.showSoftphone();
+}//GEN-LAST:event_softphoneMenuItemActionPerformed
 
     private void populateAudioQualityMenu() {
         ButtonGroup audioQualityButtons = new ButtonGroup();
@@ -291,8 +293,8 @@ private void micVuMeterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JMenu audioMenu;
     private javax.swing.JMenu audioQualityMenu;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
-    private javax.swing.JMenuItem micVuMeter;
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
+    private javax.swing.JMenuItem softphoneMenuItem;
     private javax.swing.JMenuItem testAudioMenuItem;
     private javax.swing.JMenuItem transferCallMenuItem;
     // End of variables declaration//GEN-END:variables
