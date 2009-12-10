@@ -70,7 +70,9 @@ public class PhoneCellMO extends CellMO {
                 PhoneMessageHandler phoneMessageHandler = phoneMessageHandlerRef.get();
                 phoneMessageHandler.done();
                 AppContext.getDataManager().removeObject(phoneMessageHandler);
-                AppContext.getDataManager().removeObject(incomingCallHandlerRef.get());
+		IncomingCallHandler incomingCallHandler = incomingCallHandlerRef.get();
+		incomingCallHandler.done();
+                AppContext.getDataManager().removeObject(incomingCallHandler);
                 phoneMessageHandlerRef = null;
             }
             return;
