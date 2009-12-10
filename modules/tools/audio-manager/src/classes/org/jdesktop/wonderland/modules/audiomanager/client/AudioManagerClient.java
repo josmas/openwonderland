@@ -545,7 +545,7 @@ public class AudioManagerClient extends BaseConnection implements
     public void microphoneGainTooHigh() {
     }
 
-    public void microphoneVolume() {
+    public void audioVolume() {
         try {
             if (!SoftphoneControlImpl.getInstance().isConnected()) {
                 return;
