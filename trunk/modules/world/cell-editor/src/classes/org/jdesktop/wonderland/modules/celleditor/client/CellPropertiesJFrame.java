@@ -426,6 +426,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         topLevelSplitPane = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
         propertyButtonPanel = new javax.swing.JPanel();
+        refreshButton = new javax.swing.JButton();
         restoreButton = new javax.swing.JButton();
         applyButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -458,6 +459,14 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 
         propertyButtonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 0, 5, 0));
         propertyButtonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
+
+        refreshButton.setText(bundle.getString("CellPropertiesJFrame.refreshButton.text")); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+        propertyButtonPanel.add(refreshButton);
 
         restoreButton.setText(bundle.getString("CellPropertiesJFrame.restoreButton.text")); // NOI18N
         restoreButton.setEnabled(false);
@@ -592,7 +601,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         cellHierarchyPanel.add(treePanel, gridBagConstraints);
 
-        removeCellButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        removeCellButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         removeCellButton.setText(bundle.getString("CellPropertiesJFrame.removeCellButton.text")); // NOI18N
         removeCellButton.setEnabled(false);
         removeCellButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
@@ -675,6 +684,18 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 
         CellUtils.deleteCell(selectedCell);
     }//GEN-LAST:event_removeCellButtonActionPerformed
+
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        // Show a confirmation dialog before the refresh takes place
+         int result = JOptionPane.showConfirmDialog(this,
+                BUNDLE.getString("Refresh_Message"),
+                BUNDLE.getString("Refresh_Title"),
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (result == JOptionPane.YES_OPTION) {
+            refreshValues();
+        }
+    }//GEN-LAST:event_refreshButtonActionPerformed
 
     /**
      * Inner class to deal with selection on the capability list.
@@ -809,6 +830,21 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         dirtyPanelSet.clear();
         applyButton.setEnabled(false);
         restoreButton.setEnabled(false);
+    }
+
+    /**
+     * Refreshes all of the values in the GUI to the values stored by the
+     * server.
+     */
+    private void refreshValues() {
+        // First clear out any existing updates stored by this class and the
+        // "dirty" state for the panel, to ignore any changes made by the
+        // user.
+        stateUpdates.clear();
+        dirtyPanelSet.clear();
+
+        // Then tell the dialog to simply reset the selected Cell
+        setSelectedCell(selectedCell);
     }
 
     /**
@@ -1388,6 +1424,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel propertyButtonPanel;
     private javax.swing.JPanel propertyPanel;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JButton removeCapabilityButton;
     private javax.swing.JButton removeCellButton;
     private javax.swing.JButton restoreButton;
