@@ -137,8 +137,9 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
     }
 
     private void cellEntered(String callId) {
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	
         Player player = vm.getPlayer(callId);
 
         if (player == null) {
@@ -148,8 +149,8 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
-        if (audioGroup == null) {
-	    logger.warning("Can't find audio group " + name);
+	if (audioGroup == null) {
+	    System.out.println("Audio group doesn't exist:  " + name);
 	    return;
 	}
 
@@ -166,7 +167,14 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
     private void activeAreaExited(String callId) {
 	logger.info(callId + " exited active area " + name);
 
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        AudioGroup audioGroup = vm.getAudioGroup(name);
+
+	if (audioGroup == null) {
+	    logger.info("Audio group doesn't exit:  " + name);
+	    return;
+	}
 
         Player player = vm.getPlayer(callId);
 
@@ -175,15 +183,26 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
             return;
         }
 
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-	    logger.warning("Can't find audio group " + name);
-	    return;
-	}
-
 	audioGroup.setSpeaking(player, false);
 	audioGroup.setSpeakingAttenuation(player, volume);
+    }
+
+    private AudioGroup createAudioGroup(String name) {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	AudioGroup audioGroup = vm.getAudioGroup(name);
+
+	if (audioGroup != null) {
+	    return audioGroup;
+	}
+ 
+	AudioGroupSetup ags = new AudioGroupSetup();
+
+        ags.spatializer = new FullVolumeSpatializer();
+
+        ags.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
+
+        return vm.createAudioGroup(name, ags);
     }
 
     public void changeName(String name) {
@@ -191,29 +210,23 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
 	    return;
 	}
 
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
+        AudioGroup audioGroup = AppContext.getManager(VoiceManager.class).getAudioGroup(name);
 
 	this.name = name;
 
-	AudioGroupSetup ags = new AudioGroupSetup();
+	if (audioGroup == null) {
+	    return;
+	}
 
-        ags.spatializer = new FullVolumeSpatializer();
+	AudioGroup newAudioGroup = createAudioGroup(name);
 
-        ags.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
+	Player[] players = audioGroup.getPlayers();
 
-        AudioGroup newAudioGroup = vm.createAudioGroup(name, ags);
+	for (int i = 0; i < players.length; i++) {
+	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(players[i]);
 
-        if (audioGroup != null) {
-	    Player[] players = audioGroup.getPlayers();
-
-	    for (int i = 0; i < players.length; i++) {
-		AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(players[i]);
-
-		audioGroup.removePlayer(players[i]);
-		newAudioGroup.addPlayer(players[i], info);
-	    }
+	    audioGroup.removePlayer(players[i]);
+	    newAudioGroup.addPlayer(players[i], info);
 	}
     }
 

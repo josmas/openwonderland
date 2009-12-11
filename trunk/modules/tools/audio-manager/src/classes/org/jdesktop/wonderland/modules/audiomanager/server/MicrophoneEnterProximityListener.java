@@ -21,6 +21,7 @@ import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.Spatializer;
@@ -146,28 +147,14 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
     }
 
     private void cellBoundsEntered(String callId) {
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        Player player = vm.getPlayer(callId);
+        Player player = AppContext.getManager(VoiceManager.class).getPlayer(callId);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
             return;
         }
 
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-            AudioGroupSetup ags = new AudioGroupSetup();
-
-            ags.spatializer = new FullVolumeSpatializer();
-
-            ags.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
-
-	    ags.audioGroupListener = this;
-
-            audioGroup = vm.createAudioGroup(name, ags);
-        }
+        AudioGroup audioGroup = createAudioGroup(name);
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(false,
             AudioGroupPlayerInfo.ChatType.PUBLIC));
@@ -185,7 +172,7 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
         if (audioGroup == null) {
-            logger.warning("Not a member of audio group " + name);
+            logger.warning("Audio group doesn't exist:  " + name);
             return;
         }
 
@@ -211,34 +198,42 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
         }
     }
 
+    private AudioGroup createAudioGroup(String name) {
+        AudioGroupSetup ags = new AudioGroupSetup();
+
+        ags.spatializer = new FullVolumeSpatializer();
+
+        ags.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+
+	ags.audioGroupListener = this;
+
+        return AppContext.getManager(VoiceManager.class).createAudioGroup(name, ags);
+    }
+
     public void changeName(String name) {
 	if (this.name.equals(name)) {
 	    return;
 	}
 
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
 	this.name = name;
 
-	AudioGroupSetup ags = new AudioGroupSetup();
+        AudioGroup audioGroup = AppContext.getManager(VoiceManager.class).getAudioGroup(name);
 
-        ags.spatializer = new FullVolumeSpatializer();
+	if (audioGroup == null) {
+	    return;
+	}
 
-        ags.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
+	audioGroup.removeAudioGroupListener(this);
 
-        AudioGroup newAudioGroup = vm.createAudioGroup(name, ags);
+        AudioGroup newAudioGroup = createAudioGroup(name);
 
-        if (audioGroup != null) {
-	    Player[] players = audioGroup.getPlayers();
+	Player[] players = audioGroup.getPlayers();
 
-	    for (int i = 0; i < players.length; i++) {
-		AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(players[i]);
+	for (int i = 0; i < players.length; i++) {
+	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(players[i]);
 
-		audioGroup.removePlayer(players[i]);
-		newAudioGroup.addPlayer(players[i], info);
-	    }
+	    audioGroup.removePlayer(players[i]);
+	    newAudioGroup.addPlayer(players[i], info);
 	}
     }
 
