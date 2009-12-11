@@ -37,6 +37,13 @@ import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 
 /**
  *
+ * Properties editor for the ModelCellComponent.
+ *
+ * Note the GraphOptimizerEnabled option is a first pass, eventually this
+ * will need expanding so users can express what transforms (and other nodes) they
+ * need in a loaded model and then the optimizer can optimize everything while
+ * preserving the required structures.
+ *
  * @author paulby
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
@@ -96,6 +103,7 @@ public class ModelCellComponentProperties
             pickingEnabledCB.setSelected(mState.isPickingEnabled());
             lightingEnabledCB.setSelected(mState.isLightingEnabled());
             backfaceCullingEnabledCB.setSelected(mState.isBackfactCullingEnabled());
+            graphOptimizationEnabledCB.setSelected(mState.isGraphOptimizationEnabled());
 
             checkDirty();
         }
@@ -121,6 +129,7 @@ public class ModelCellComponentProperties
         compState.setPickingEnable(pickingEnabledCB.isSelected());
         compState.setLightingEnabled(lightingEnabledCB.isSelected());
         compState.setBackfaceCullingEnabled(backfaceCullingEnabledCB.isSelected());
+        compState.setGraphOptimizationEnabled(graphOptimizationEnabledCB.isSelected());
         editor.addToUpdateList(compState);
     }
 
@@ -134,6 +143,7 @@ public class ModelCellComponentProperties
         pickingEnabledCB.setSelected(origState.isPickingEnabled());
         lightingEnabledCB.setSelected(origState.isLightingEnabled());
         backfaceCullingEnabledCB.setSelected(origState.isBackfactCullingEnabled());
+        graphOptimizationEnabledCB.setSelected(origState.isGraphOptimizationEnabled());
 
         checkDirty();
     }
@@ -170,6 +180,7 @@ public class ModelCellComponentProperties
         dirty |= (pickingEnabledCB.isSelected() != origState.isPickingEnabled());
         dirty |= (lightingEnabledCB.isSelected() != origState.isLightingEnabled());
         dirty |= (backfaceCullingEnabledCB.isSelected() != origState.isBackfactCullingEnabled());
+        dirty |= (graphOptimizationEnabledCB.isSelected() != origState.isGraphOptimizationEnabled());
 
         editor.setPanelDirty(ModelCellComponentProperties.class, dirty);
     }
@@ -189,6 +200,7 @@ public class ModelCellComponentProperties
         pickingEnabledCB = new javax.swing.JCheckBox();
         lightingEnabledCB = new javax.swing.JCheckBox();
         backfaceCullingEnabledCB = new javax.swing.JCheckBox();
+        graphOptimizationEnabledCB = new javax.swing.JCheckBox();
         printSceneGraphB = new javax.swing.JButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
@@ -224,6 +236,15 @@ public class ModelCellComponentProperties
             }
         });
 
+        graphOptimizationEnabledCB.setText(bundle.getString("ModelCellComponentProperties.graphOptimizationEnabledCB.text")); // NOI18N
+        graphOptimizationEnabledCB.setToolTipText(bundle.getString("ModelCellComponentProperties.graphOptimizationEnabledCB.toolTipText")); // NOI18N
+        graphOptimizationEnabledCB.setEnabled(false);
+        graphOptimizationEnabledCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                graphOptimizationEnabledCBActionPerformed(evt);
+            }
+        });
+
         printSceneGraphB.setText(bundle.getString("ModelCellComponentProperties.printSceneGraphB.text")); // NOI18N
         printSceneGraphB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -250,7 +271,10 @@ public class ModelCellComponentProperties
                     .add(printSceneGraphB)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(backfaceCullingEnabledCB)))
+                        .add(backfaceCullingEnabledCB))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(graphOptimizationEnabledCB)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -268,7 +292,9 @@ public class ModelCellComponentProperties
                 .add(lightingEnabledCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(backfaceCullingEnabledCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 95, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(graphOptimizationEnabledCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 66, Short.MAX_VALUE)
                 .add(printSceneGraphB)
                 .addContainerGap())
         );
@@ -304,10 +330,14 @@ public class ModelCellComponentProperties
         checkDirty();
     }//GEN-LAST:event_backfaceCullingEnabledCBActionPerformed
 
+    private void graphOptimizationEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_graphOptimizationEnabledCBActionPerformed
+        checkDirty();
+    }//GEN-LAST:event_graphOptimizationEnabledCBActionPerformed
+
     private void print(Spatial node, int level) {
         for(int i=0; i<level; i++)
             System.err.print(" ");
-        System.err.println(node+"  ");
+        System.err.println(node+"  "+node.getLocalTranslation());
 
         if (node instanceof Node) {
             List<Spatial> children = ((Node)node).getChildren();
@@ -322,6 +352,7 @@ public class ModelCellComponentProperties
     private javax.swing.JCheckBox backfaceCullingEnabledCB;
     private javax.swing.JCheckBox collisionEnabledCB;
     private javax.swing.JTextField deployedModelURLTF;
+    private javax.swing.JCheckBox graphOptimizationEnabledCB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox lightingEnabledCB;
     private javax.swing.JCheckBox pickingEnabledCB;

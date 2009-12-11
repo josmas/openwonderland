@@ -28,6 +28,7 @@ public class ModelCellComponentClientState extends CellComponentClientState {
     private boolean collidable=true;
     private boolean lightingEnabled=true;
     private boolean backfaceCullingEnabled = true;
+    private boolean graphOptimizationEnabled = false;
     
     /** Default constructor */
     public ModelCellComponentClientState() {
@@ -99,5 +100,19 @@ public class ModelCellComponentClientState extends CellComponentClientState {
 
     public boolean isBackfaceCullingEnabled() {
         return backfaceCullingEnabled;
+    }
+
+    /**
+     * @return the graphOptimizationEnabled
+     */
+    public boolean isGraphOptimizationEnabled() {
+        return graphOptimizationEnabled;
+    }
+
+    /**
+     * @param graphOptimizationEnabled the graphOptimizationEnabled to set
+     */
+    public void setGraphOptimizationEnabled(boolean graphOptimizationEnabled) {
+        this.graphOptimizationEnabled = graphOptimizationEnabled;
     }
 }
