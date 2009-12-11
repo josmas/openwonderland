@@ -28,7 +28,7 @@ public class ModelCellComponentClientState extends CellComponentClientState {
     private boolean collidable=true;
     private boolean lightingEnabled=true;
     private boolean backfaceCullingEnabled = true;
-    private boolean graphOptimizationEnabled = false;
+    private boolean graphOptimizationEnabled = true;
     
     /** Default constructor */
     public ModelCellComponentClientState() {

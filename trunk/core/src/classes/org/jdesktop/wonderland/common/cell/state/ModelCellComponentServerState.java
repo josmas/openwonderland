@@ -51,7 +51,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
     private boolean backfaceCullingEnabled = true;
 
     @XmlElement(name="GraphOptimizationEnabled")
-    private boolean graphOptimizationEnabled = false;
+    private boolean graphOptimizationEnabled = true;
 
     /** Default constructor */
     public ModelCellComponentServerState() {
