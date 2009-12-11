@@ -92,6 +92,8 @@ public class ConeOfSilenceCellMO extends CellMO {
         super.setServerState(cellServerState);
 
 	ConeOfSilenceCellServerState coneOfSilenceCellServerState = (ConeOfSilenceCellServerState) cellServerState;
+
+	setLocalBounds(new BoundingSphere(4.5f, new Vector3f()));
     }
 
     /**
