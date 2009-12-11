@@ -79,8 +79,8 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
 	logger.info("viewEnterExit active area:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	System.out.println("viewEnterExit active area:  " + entered + " cellID " + cellID
-	    + " viewCellID " + viewCellID + " bounds " + proximityVolume);
+	//System.out.println("viewEnterExit active area:  " + entered + " cellID " + cellID
+	//    + " viewCellID " + viewCellID + " bounds " + proximityVolume);
 
 	String callId = CallID.getCallID(viewCellID);
 
