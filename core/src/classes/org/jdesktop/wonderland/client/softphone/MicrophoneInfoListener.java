@@ -22,8 +22,8 @@ package org.jdesktop.wonderland.client.softphone;
  */
 public interface MicrophoneInfoListener {
 
-    public void microphoneData(String data);
+    public void microphoneVuMeterValue(String value);
 
-    public void microphoneVolume(String data);
+    public void microphoneVolume(String volume);
 
 }

@@ -22,8 +22,8 @@ package org.jdesktop.wonderland.client.softphone;
  */
 public interface SpeakerInfoListener {
 
-    public void speakerData(String data);
+    public void speakerVuMeterValue(String value);
 
-    public void speakerVolume(String data);
+    public void speakerVolume(String volume);
 
 }

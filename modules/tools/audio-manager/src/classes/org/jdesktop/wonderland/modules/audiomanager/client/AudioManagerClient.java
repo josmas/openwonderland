@@ -558,7 +558,7 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (micVuMeterComponent == null) {
-            final MicVuMeterPanel micVuMeterPanel = new MicVuMeterPanel(this);
+            final VuMeterPanel micVuMeterPanel = new VuMeterPanel(this);
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
