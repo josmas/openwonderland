@@ -398,6 +398,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void connectSoftphone() {
+	if (presenceInfo == null) {
+	    System.out.println("No presence info, can't connect softphone yet...");
+	    return;
+	}
+
         logger.fine("[AudioManagerClient] " +
                 "Sending message to server to get voice bridge...");
 
@@ -537,9 +542,7 @@ public class AudioManagerClient extends BaseConnection implements
          * If presenceInfo is null, connectSoftphone will be called when
          * the presenceInfo is set.
          */
-        if (presenceInfo != null) {
-            connectSoftphone();
-        }
+        connectSoftphone();
     }
 
     public void microphoneGainTooHigh() {
@@ -811,9 +814,8 @@ public class AudioManagerClient extends BaseConnection implements
 
         if (localAddress != null) {
             try {
-                String sipURL = sc.startSoftphone(
-                        presenceInfo.getUserID().getUsername(), registrarAddress,
-                        10, localAddress);
+                String sipURL = sc.startSoftphone(presenceInfo.getUserID().getUsername(), 
+		    registrarAddress, 10, localAddress);
 
                 logger.fine("Starting softphone:  " + presenceInfo);
 
@@ -837,7 +839,7 @@ public class AudioManagerClient extends BaseConnection implements
         } else {
             // XXX Put up a dialog box here
             logger.warning("LOCAL ADDRESS IS NULL.  " +
-                    "AUDIO WILL NOT WORK!!!!!!!!!!!!");
+                "AUDIO WILL NOT WORK!!!!!!!!!!!!");
             /*
              * Try again.
              */
