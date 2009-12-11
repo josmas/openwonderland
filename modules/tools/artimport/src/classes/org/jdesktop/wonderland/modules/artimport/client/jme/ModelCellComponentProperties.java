@@ -238,7 +238,6 @@ public class ModelCellComponentProperties
 
         graphOptimizationEnabledCB.setText(bundle.getString("ModelCellComponentProperties.graphOptimizationEnabledCB.text")); // NOI18N
         graphOptimizationEnabledCB.setToolTipText(bundle.getString("ModelCellComponentProperties.graphOptimizationEnabledCB.toolTipText")); // NOI18N
-        graphOptimizationEnabledCB.setEnabled(false);
         graphOptimizationEnabledCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 graphOptimizationEnabledCBActionPerformed(evt);
@@ -337,7 +336,7 @@ public class ModelCellComponentProperties
     private void print(Spatial node, int level) {
         for(int i=0; i<level; i++)
             System.err.print(" ");
-        System.err.println(node+"  "+node.getLocalTranslation());
+        System.err.println(node+"  "+node.getLocalRotation());
 
         if (node instanceof Node) {
             List<Spatial> children = ((Node)node).getChildren();
