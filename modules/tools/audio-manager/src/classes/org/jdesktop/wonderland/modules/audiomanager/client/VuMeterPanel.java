@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.client.softphone.SpeakerInfoListener;
  * @author nsimpson
  */
 public class VuMeterPanel extends javax.swing.JPanel implements
-        SoftphoneListener, MicrophoneInfoListener, DisconnectListener {
+        SoftphoneListener, MicrophoneInfoListener, SpeakerInfoListener, DisconnectListener {
 
     private static final Logger LOGGER =
             Logger.getLogger(VuMeterPanel.class.getName());
@@ -112,9 +112,11 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         speakerMeter.setWarningValue(speakerWarningLimit);
         speakerMeter.setVisible(true);
         speakerMeterPanel.add(speakerMeter);
+    }
 
-	startMicVuMeter(true);
-	startSpeakerVuMeter(true);
+    public void startVuMeter(boolean start) {
+	startMicVuMeter(start);
+	startSpeakerVuMeter(start);
     }
 
     public void disconnected() {
@@ -164,12 +166,12 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
 	sc.removeSoftphoneListener(this);
-        sc.removeMicrophoneInfoListener(this);
+        sc.removeSpeakerInfoListener(this);
 
         if (startVuMeter) {
             client.addDisconnectListener(this);
 	    sc.addSoftphoneListener(this);
-            sc.addMicrophoneInfoListener(this);
+            sc.addSpeakerInfoListener(this);
 
             try {
                 sc.sendCommandToSoftphone("getSpeakerVolume");
@@ -212,7 +214,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 
     public void softphoneConnected(boolean connected) {
 	try {
-            SoftphoneControlImpl.getInstance().startMicVuMeter(connected);
+            //SoftphoneControlImpl.getInstance().startMicVuMeter(connected);
             SoftphoneControlImpl.getInstance().startSpeakerVuMeter(connected);
 	} catch (IOException e) {
 	    LOGGER.log(Level.WARNING, 
@@ -230,6 +232,8 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         double volume = Math.abs(Double.parseDouble(value));
 
         final double v = Math.round(Math.sqrt(volume) * 100) / 100D;
+
+	//System.out.println("Mic value " + value + " volume " + v);
 
 	java.awt.EventQueue.invokeLater(new Runnable() {
 
@@ -254,16 +258,17 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 
         final double v = Math.round(Math.sqrt(volume) * 100) / 100D;
 
-	System.out.println("Speaker value " + value + " volume " + v);
+	//System.out.println("Speaker value " + value + " volume " + v);
 
 	java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                micMeter.setValue(v);
-                if (v > micWarningLimit) {
-                    micMeterPanel.setBackground(overLimitColor);
+                speakerMeter.setValue(v);
+
+                if (v > speakerWarningLimit) {
+                    speakerMeterPanel.setBackground(overLimitColor);
                 } else {
-                    micMeterPanel.setBackground(micPanelBackground);
+                    speakerMeterPanel.setBackground(micPanelBackground);
                 }
             }
         });
@@ -372,26 +377,34 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         }
     }
 
+    private boolean speakerMuted;
+    private int speakerVolumeSliderValue = 50;
+    private int previousSpeakerVolumeSliderValue = 50;
+
     private void speakerVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_speakerVolumeSliderStateChanged
-        SoftphoneControl sc = SoftphoneControlImpl.getInstance();
+	previousSpeakerVolumeSliderValue = speakerVolumeSliderValue;
+	speakerVolumeSliderValue = speakerVolumeSlider.getValue();
 
-        setSpeakerVolume(volumeConverter.getVolume(speakerVolumeSlider.getValue()));
-    }//GEN-LAST:event_speakerVolumeSliderStateChanged
+        double volume = volumeConverter.getVolume(speakerVolumeSliderValue);
 
-    private void setSpeakerVolume(float volume) {
+	if (previousSpeakerVolumeSliderValue == 0) {
+	    setSpeakerMutedIcon(false);
+	} else if (speakerVolumeSliderValue == 0) {
+	    setSpeakerMutedIcon(true);
+	}
+
         try {
             SoftphoneControlImpl.getInstance().sendCommandToSoftphone("speakerVolume=" + volume);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
 		"Unable to send speaker volume command to softphone", e);
         }
-    }
+    }//GEN-LAST:event_speakerVolumeSliderStateChanged
 
     private void micMuteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micMuteButtonActionPerformed
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
         sc.mute(!sc.isMuted());
-	//setMicVolumeSlider(sc.isMuted());
     }//GEN-LAST:event_micMuteButtonActionPerformed
 
     private void setMicVolumeSlider(final boolean isMuted) {
@@ -411,12 +424,27 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     }
 
     private void speakerMuteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speakerMuteButtonActionPerformed
-        // TODO: handle muting of speaker
-        // TODO: EXTRA CREDIT:
-        // - set speaker volume slider to zero when muted
-        // - unmute when slider dragged
-        // - restore slider position when unmuted
+	boolean speakerMuted = !this.speakerMuted;
+
+	if (speakerMuted) {
+	    speakerVolumeSlider.setValue(0);
+	} else {
+	    speakerVolumeSlider.setValue(previousSpeakerVolumeSliderValue);
+	}
+
+	setSpeakerMutedIcon(speakerMuted);
     }//GEN-LAST:event_speakerMuteButtonActionPerformed
+
+    private void setSpeakerMutedIcon(boolean speakerMuted) {
+	this.speakerMuted = speakerMuted;
+
+	if (speakerMuted) {
+	    speakerMuteButton.setIcon(speakerMutedIcon);
+	} else {
+	    speakerMuteButton.setIcon(speakerUnmutedIcon);
+	}
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel micMeterPanel;
     private javax.swing.JButton micMuteButton;

@@ -119,7 +119,7 @@ public class AudioManagerClient extends BaseConnection implements
     private HUDComponent userListHUDComponent;
     private UserListHUDPanel userListHUDPanel;
     private boolean usersMenuSelected = false;
-    private HUDComponent micVuMeterComponent;
+    private HUDComponent vuMeterComponent;
     private ImageIcon voiceChatIcon;
     private ImageIcon userListIcon;
 
@@ -292,10 +292,10 @@ public class AudioManagerClient extends BaseConnection implements
             userListHUDComponent = null;
         }
 
-        if (micVuMeterComponent != null) {
-            micVuMeterComponent.setVisible(false);
-            mainHUD.removeComponent(micVuMeterComponent);
-            micVuMeterComponent = null;
+        if (vuMeterComponent != null) {
+            vuMeterComponent.setVisible(false);
+            mainHUD.removeComponent(vuMeterComponent);
+            vuMeterComponent = null;
         }
     }
 
@@ -557,35 +557,35 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        if (micVuMeterComponent == null) {
-            final VuMeterPanel micVuMeterPanel = new VuMeterPanel(this);
+        if (vuMeterComponent == null) {
+            final VuMeterPanel vuMeterPanel = new VuMeterPanel(this);
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-            micVuMeterComponent = mainHUD.createComponent(micVuMeterPanel);
-            micVuMeterComponent.setPreferredLocation(Layout.SOUTHEAST);
-            micVuMeterComponent.setName(BUNDLE.getString("Microphone_Level"));
-            micVuMeterComponent.setIcon(voiceChatIcon);
-            micVuMeterComponent.addEventListener(new HUDEventListener() {
+            vuMeterComponent = mainHUD.createComponent(vuMeterPanel);
+            vuMeterComponent.setPreferredLocation(Layout.SOUTHEAST);
+            vuMeterComponent.setName(BUNDLE.getString("Microphone_Level"));
+            vuMeterComponent.setIcon(voiceChatIcon);
+            vuMeterComponent.addEventListener(new HUDEventListener() {
 
                 public void HUDObjectChanged(HUDEvent event) {
                     switch (event.getEventType()) {
                         case APPEARED:
-                            micVuMeterPanel.startMicVuMeter(true);
+                            vuMeterPanel.startVuMeter(true);
                             break;
                         case DISAPPEARED:
-                            micVuMeterPanel.startMicVuMeter(false);
+                            vuMeterPanel.startVuMeter(false);
                             break;
                         default:
                             break;
                     }
                 }
             });
-            mainHUD.addComponent(micVuMeterComponent);
-            micVuMeterPanel.startMicVuMeter(true);
+            mainHUD.addComponent(vuMeterComponent);
+            vuMeterPanel.startVuMeter(true);
         }
 
-        micVuMeterComponent.setVisible(true);
+        vuMeterComponent.setVisible(true);
     }
 
     public void transferCall(String phoneNumber) {
