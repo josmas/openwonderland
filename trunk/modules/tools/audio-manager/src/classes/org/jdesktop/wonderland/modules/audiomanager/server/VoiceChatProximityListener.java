@@ -29,10 +29,13 @@ import com.jme.bounding.BoundingVolume;
 
 import java.io.Serializable;
 
+import com.sun.sgs.app.ManagedObject;
+
 /**
  * @author jprovino
  */
-public class VoiceChatProximityListener implements ProximityListenerSrv, Serializable {
+public class VoiceChatProximityListener implements ProximityListenerSrv, 
+	ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(VoiceChatProximityListener.class.getName());
