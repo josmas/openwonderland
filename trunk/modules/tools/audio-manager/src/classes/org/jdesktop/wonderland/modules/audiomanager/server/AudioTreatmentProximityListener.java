@@ -31,6 +31,7 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
@@ -48,7 +49,8 @@ import java.io.Serializable;
 /**
  * @author jprovino
  */
-public class AudioTreatmentProximityListener implements ProximityListenerSrv, Serializable {
+public class AudioTreatmentProximityListener implements ProximityListenerSrv, 
+	ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentProximityListener.class.getName());
