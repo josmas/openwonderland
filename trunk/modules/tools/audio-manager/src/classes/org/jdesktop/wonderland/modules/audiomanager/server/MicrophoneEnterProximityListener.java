@@ -27,7 +27,7 @@ import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
 import com.sun.sgs.app.AppContext;
-
+import com.sun.sgs.app.ManagedObject;
 
 import java.lang.String;
 
@@ -56,8 +56,8 @@ import org.jdesktop.wonderland.server.security.SecurityManager;
  * A server cell that provides a microphone proximity listener
  * @author jprovino
  */
-public class MicrophoneEnterProximityListener implements ProximityListenerSrv, Serializable,
-	AudioGroupListener {
+public class MicrophoneEnterProximityListener implements ProximityListenerSrv, 
+	ManagedObject, Serializable, AudioGroupListener {
 
     private static final Logger logger =
             Logger.getLogger(MicrophoneEnterProximityListener.class.getName());

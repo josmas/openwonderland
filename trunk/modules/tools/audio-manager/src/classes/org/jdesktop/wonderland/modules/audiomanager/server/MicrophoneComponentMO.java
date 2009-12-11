@@ -35,6 +35,9 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+
 /**
  * A server component that provides microphone functionality
  * @author jprovino
@@ -53,8 +56,8 @@ public class MicrophoneComponentMO extends CellComponentMO {
     private boolean showBounds = false;
     private ActiveArea activeArea = new ActiveArea();
     private boolean showActiveArea = false;
-    private MicrophoneEnterProximityListener enterProximityListener;
-    private MicrophoneActiveAreaProximityListener activeAreaProximityListener;
+    private ManagedReference<MicrophoneEnterProximityListener> enterProximityListenerRef;
+    private ManagedReference<MicrophoneActiveAreaProximityListener> activeAreaProximityListenerRef;
 
     public MicrophoneComponentMO(CellMO cellMO) {
         super(cellMO);
@@ -173,7 +176,17 @@ public class MicrophoneComponentMO extends CellComponentMO {
             return;
         }
 
-        if (enterProximityListener != null) {
+        if (enterProximityListenerRef != null) {
+            MicrophoneEnterProximityListener enterProximityListener = 
+		enterProximityListenerRef.get();
+	    enterProximityListener.remove();
+	    enterProximityListener = null;
+
+            MicrophoneActiveAreaProximityListener activeAreaProximityListener =
+                activeAreaProximityListenerRef.get();
+	    activeAreaProximityListener.remove();
+	    activeAreaProximityListener = null;
+
             component.removeProximityListener(enterProximityListener);
             component.removeProximityListener(activeAreaProximityListener);
         }
@@ -188,17 +201,25 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
             if (activeArea.activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
+		System.out.println("using mic cell bounds " + bounds[0]);
             } else if (activeArea.activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) activeArea.activeAreaBounds.getX(), activeOrigin);
+		System.out.println("using mic sphere " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(activeOrigin, (float) activeArea.activeAreaBounds.getX(),
                         (float) activeArea.activeAreaBounds.getY(),
                         (float) activeArea.activeAreaBounds.getZ());
+		System.out.println("using mic sphere " + bounds[0]);
             }
 
             LOGGER.info("Active " + bounds[0]);
 
-            activeAreaProximityListener = new MicrophoneActiveAreaProximityListener(cellRef.get(), name, volume);
+            MicrophoneActiveAreaProximityListener activeAreaProximityListener = 
+		new MicrophoneActiveAreaProximityListener(cellRef.get(), name, volume);
+
+	    activeAreaProximityListenerRef = AppContext.getDataManager().createReference(
+		activeAreaProximityListener);
+
             component.addProximityListener(activeAreaProximityListener, bounds);
 
             bounds = new BoundingVolume[1];
@@ -206,25 +227,27 @@ public class MicrophoneComponentMO extends CellComponentMO {
             if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
                 LOGGER.info("Microphone Using cell bounds:  " + bounds[0]);
+                System.out.println("Microphone active Using cell bounds:  " + bounds[0]);
             } else if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) fullVolumeArea.bounds.getX(),
                         new Vector3f());
                 LOGGER.info("Microphone Using radius:  " + bounds[0]);
+                System.out.println("Microphone active Using radius:  " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(new Vector3f(), fullVolumeArea.bounds.getX(),
                         fullVolumeArea.bounds.getY(), fullVolumeArea.bounds.getZ());
                 LOGGER.info("Microphone Using Box:  " + bounds[0]);
+                System.out.println("Microphone active Using Box:  " + bounds[0]);
             }
 
-            enterProximityListener = new MicrophoneEnterProximityListener(cellRef.get(), name, volume);
+            MicrophoneEnterProximityListener enterProximityListener = 
+		new MicrophoneEnterProximityListener(cellRef.get(), name, volume);
+
+	    enterProximityListenerRef = AppContext.getDataManager().createReference(
+		enterProximityListener);
+
             component.addProximityListener(enterProximityListener, bounds);
-        } else {
-            if (enterProximityListener != null) {
-                enterProximityListener.remove();
-                enterProximityListener = null;
-                activeAreaProximityListener.remove();
-                activeAreaProximityListener = null;
-            }
-        }
+        } 
     }
+
 }
