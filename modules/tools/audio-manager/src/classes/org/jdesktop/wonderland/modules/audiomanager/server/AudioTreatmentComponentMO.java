@@ -796,7 +796,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	}
     }
 
-    private AudioTreatmentProximityListener proximityListener;
+    private ManagedReference<AudioTreatmentProximityListener> proximityListener;
 
     private void addProximityListener(Treatment treatment) {
         // Fetch the proximity component, we will need this below. If it does
@@ -817,13 +817,15 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         AudioTreatmentProximityListener proximityListener = 
 	    new AudioTreatmentProximityListener(cellRef.get(), treatment);
 
+	this.proximityListener = AppContext.getDataManager().createReference(proximityListener);
+	
         component.addProximityListener(proximityListener, bounds);
     }
 
     private void removeProximityListener() {
 	if (proximityListener != null) {
             ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
-	    component.removeProximityListener(proximityListener);
+	    component.removeProximityListener(proximityListener.get());
 	}
     }
 
