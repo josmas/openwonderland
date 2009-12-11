@@ -105,7 +105,7 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
         if (rendererType == RendererType.RENDERER_JME) {
             try {
                 DeployedModel m =
-                       LoaderManager.getLoaderManager().getLoaderFromDeployment(AssetUtils.getAssetURL("wla://microphone/Microphone.kmz/Microphone.kmz.dep"));
+                       LoaderManager.getLoaderManager().getLoaderFromDeployment(AssetUtils.getAssetURL("wla://microphone/pwl_3d_mic-stand_014.dae/pwl_3d_mic-stand_014.dae.gz.dep"));
                 return new ModelRenderer(this, m);
             } catch (MalformedURLException ex) {
                 Logger.getLogger(MicrophoneCell.class.getName()).log(Level.SEVERE, "Failed to load microphone model", ex);
