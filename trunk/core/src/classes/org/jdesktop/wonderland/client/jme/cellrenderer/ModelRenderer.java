@@ -57,13 +57,17 @@ public class ModelRenderer extends BasicRenderer {
     }
 
     public ModelRenderer(Cell cell, ModelCellComponent modelComponent) {
-        super(cell);
-        this.modelComponent = modelComponent;
+        this(cell, null, modelComponent);
     }
 
     public ModelRenderer(Cell cell, DeployedModel deployedModel) {
+        this(cell, deployedModel, null);
+    }
+
+    public ModelRenderer(Cell cell, DeployedModel deployedModel, ModelCellComponent modelComponent) {
         super(cell);
         this.deployedModel = deployedModel;
+        this.modelComponent = modelComponent;
     }
 
     public ModelRenderer(Cell cell,
@@ -104,8 +108,27 @@ public class ModelRenderer extends BasicRenderer {
         deployedModel.setModelTranslation(modelTranslation);
         deployedModel.setModelRotation(modelRotation);
         deployedModel.setModelScale(modelScale);
+        System.err.println("ModelRenderer modelRotation "+modelRotation);
 
         return loader.loadDeployedModel(deployedModel, entity);
+    }
+
+    /**
+     * For the renderer to reload the scene graph. This is required if the user
+     * changes properties of the graph, such as optimization levels. The detach of
+     * the current graph and loading of the new graph are done asynchronously, this
+     * method returns immediately.
+     */
+    public void reload() {
+        if (sceneRoot!=null) {
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+                public void update(Object arg0) {
+                    ((Node)arg0).removeFromParent();
+                    sceneRoot = createSceneGraph(entity);
+                    rootNode.attachChild(sceneRoot);
+                }
+            }, sceneRoot);
+        }
     }
 
     @Override

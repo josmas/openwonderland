@@ -50,6 +50,7 @@ public class ModelCellComponentMO extends CellComponentMO {
             return;
         }
         this.serverState = (ModelCellComponentServerState) state;
+        System.err.println("SET SERVER STATE "+serverState.getDeployedModelURL());
     }
 
     @Override
@@ -69,7 +70,6 @@ public class ModelCellComponentMO extends CellComponentMO {
         }
 
         serverState.setClientState((ModelCellComponentClientState)state);
-        System.err.println("******** getClientState "+serverState.getDeployedModelURL());
 
         return state;
     }

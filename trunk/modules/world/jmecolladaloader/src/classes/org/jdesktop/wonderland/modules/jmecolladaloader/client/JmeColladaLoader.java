@@ -147,9 +147,6 @@ public class JmeColladaLoader implements ModelLoader {
 
         importer.cleanUp();
 
-        GraphOptimizer optimizer = new GraphOptimizer();
-        optimizer.removeSharedMeshes(modelNode);
-
         setupBounds(modelNode);
 
 //        TreeScan.findNode(modelNode, new ProcessNodeInterface() {
@@ -288,7 +285,9 @@ public class JmeColladaLoader implements ModelLoader {
             ModelCellComponentServerState setup = new ModelCellComponentServerState();
             cellSetup.addComponentServerState(setup);
             cellSetup.setName(importedModel.getWonderlandName());
-            cellSetup.setBoundingVolumeHint(new BoundingVolumeHint(false, importedModel.getModelBG().getWorldBound()));
+            BoundingVolume modelBounds = importedModel.getModelBG().getWorldBound();
+            cellSetup.setBoundingVolumeHint(new BoundingVolumeHint(false, modelBounds));
+            deployedModel.setModelBounds(modelBounds);
 
             Vector3f offset = importedModel.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
@@ -424,39 +423,6 @@ public class JmeColladaLoader implements ModelLoader {
             } catch (IOException ex) {
                 Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Unable to create file " + targetFile, ex);
             }
-
-            // Decided not to do this for deployment. Instead we will create and
-            // manage the binary form in the client asset cache. The binary
-            // files are only slightly smaller than compresses collada.
-            
-            // Fix the texture references in the graph to the deployed URL's
-//            TreeScan.findNode(importedModel.getModelBG(), Geometry.class, new ProcessNodeInterface() {
-//                public boolean processNode(Spatial node) {
-//                    Geometry g = (Geometry)node;
-//                    TextureState ts = (TextureState)g.getRenderState(StateType.Texture);
-//                    if (ts!=null) {
-//                        Texture texture = ts.getTexture();
-////                        System.err.println("Graph Texture "+texture.getImageLocation());
-//                        try {
-//                            String originalURL = importedModel.getTextureFiles().get(new URL(texture.getImageLocation()));
-//                            String deployedURL = "wla://"+moduleName+"/"+deploymentMapping.get(originalURL);
-//                            if (deployedURL!=null)
-//                                texture.setImageLocation(deployedURL);
-////                            System.err.println("DeployedURL "+deployedURL);
-//                        } catch (MalformedURLException ex) {
-//                            Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
-//                        }
-//
-//                    }
-//                    return true;
-//                }
-//
-//            }, false, false);
-//
-//            DeployStorage binaryModelFile = targetDir.createChildFile(filename+".wbm");
-//            OutputStream binaryModelStream = binaryModelFile.getOutputStream();
-//            BinaryExporter.getInstance().save(importedModel.getModelBG(), binaryModelStream);
-//            binaryModelStream.close();
 
         } catch (URISyntaxException ex) {
             Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);

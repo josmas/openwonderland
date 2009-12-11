@@ -50,6 +50,9 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
     @XmlElement(name="BackfaceCullingEnabled")
     private boolean backfaceCullingEnabled = true;
 
+    @XmlElement(name="GraphOptimizationEnabled")
+    private boolean graphOptimizationEnabled = false;
+
     /** Default constructor */
     public ModelCellComponentServerState() {
     }
@@ -71,6 +74,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
         ret.pickable = this.pickable;
         ret.lightingEnabled = this.lightingEnabled;
         ret.backfaceCullingEnabled = this.backfaceCullingEnabled;
+        ret.graphOptimizationEnabled = this.graphOptimizationEnabled;
 
         return ret;
     }
@@ -81,6 +85,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
         state.setPickingEnabled(pickable);
         state.setLightingEnabled(lightingEnabled);
         state.setBackfaceCullingEnabled(backfaceCullingEnabled);
+        state.setGraphOptimizationEnabled(graphOptimizationEnabled);
 
         return state;
     }
@@ -153,4 +158,11 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
     public void setBackfaceCullingEnabled(boolean backfaceCullingEnabled) {
         this.backfaceCullingEnabled = backfaceCullingEnabled;
     }
-}
+
+    @XmlTransient public boolean isGraphOptimizationEnabled() {
+        return graphOptimizationEnabled;
+    }
+
+    public void setGraphOptimizationEnabled(boolean graphOptimizationEnabled) {
+        this.graphOptimizationEnabled = graphOptimizationEnabled;
+    }}

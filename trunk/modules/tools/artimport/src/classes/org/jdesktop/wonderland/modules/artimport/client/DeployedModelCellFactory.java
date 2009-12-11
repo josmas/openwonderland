@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 
 /**
  * A Cell Factory that loads deployed model (.dep) files. This does not appear
@@ -88,7 +89,7 @@ public class DeployedModelCellFactory implements CellFactorySPI {
         }
 
 
-        LOGGER.warning("Loading URL " + url.toExternalForm());
+//        LOGGER.warning("Loading URL " + url.toExternalForm());
 
         // Simply create a new ModelCell by creating a ModelCellServerState
         // with the URL passed in via the properties. First load the deployed
@@ -103,12 +104,23 @@ public class DeployedModelCellFactory implements CellFactorySPI {
             return null;
         }
 
-        // Go ahead and load the model. We need to load the model in order to
-        // find out its bounds to set the hint.
-        ModelLoader loader = dm.getModelLoader();
-        Node node = loader.loadDeployedModel(dm, null);
-        BoundingVolume bounds = node.getWorldBound();
-        BoundingVolumeHint hint = getBoundingVolumeHint(bounds);
+        BoundingVolumeHint hint=null;
+        PositionComponentServerState posComp = new PositionComponentServerState();
+
+        if (dm.getModelBounds()==null) {
+            // Legacy support, the DeployedModels object for new builds contains
+            // the model bounds.
+            // Go ahead and load the model. We need to load the model in order to
+            // find out its bounds to set the hint.
+            ModelLoader loader = dm.getModelLoader();
+            Node node = loader.loadDeployedModel(dm, null);
+            BoundingVolume bounds = node.getWorldBound();
+            hint = getBoundingVolumeHint(bounds);
+            posComp.setBounds(bounds);
+        } else {
+            hint = getBoundingVolumeHint(dm.getModelBounds());
+            posComp.setBounds(dm.getModelBounds());
+        }
 
         // Create a new server state for a Model Cell that knows how to display
         // the URL.
@@ -117,6 +129,7 @@ public class DeployedModelCellFactory implements CellFactorySPI {
         compState.setDeployedModelURL(url.toExternalForm());
         state.addComponentServerState(compState);
         state.setBoundingVolumeHint(hint);
+        state.addComponentServerState(posComp);
 
         // Set the name of the Cell based upon the URL of the model
         state.setName(getFileName(url));
