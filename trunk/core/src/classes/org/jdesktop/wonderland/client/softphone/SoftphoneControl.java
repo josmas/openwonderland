@@ -77,7 +77,7 @@ public interface SoftphoneControl {
 
     public void removeMicrophoneInfoListener(MicrophoneInfoListener listener);
 
-    public void startVuMeter(boolean startVuMeter) throws IOException;
+    public void startMicVuMeter(boolean startVuMeter) throws IOException;
 
     public void addSpeakerInfoListener(SpeakerInfoListener listener);
 

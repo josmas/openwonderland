@@ -581,8 +581,8 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         }
     }
 
-    public void startVuMeter(boolean startVuMeter) throws IOException {
-	sendCommandToSoftphone("StartVuMeter=" + startVuMeter);
+    public void startMicVuMeter(boolean startVuMeter) throws IOException {
+	sendCommandToSoftphone("StartMicVuMeter=" + startVuMeter);
     }
 
     private ArrayList<MicrophoneInfoListener> microphoneInfoListeners = 
@@ -616,7 +616,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 
 	for (MicrophoneInfoListener listener : listeners) {
 	    if (isVuMeterData) {
-	        listener.microphoneData(data);
+	        listener.microphoneVuMeterValue(data);
 	    } else {
 		listener.microphoneVolume(data);
 	    }
@@ -658,7 +658,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 
 	for (SpeakerInfoListener listener : listeners) {
 	    if (isVuMeterData) {
-	        listener.speakerData(data);
+	        listener.speakerVuMeterValue(data);
 	    } else {
 		listener.speakerVolume(data);
 	    }

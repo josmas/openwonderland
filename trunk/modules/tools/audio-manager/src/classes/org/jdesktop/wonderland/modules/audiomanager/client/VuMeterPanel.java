@@ -38,20 +38,17 @@ import org.jdesktop.wonderland.client.softphone.SpeakerInfoListener;
  * @author jp
  * @author nsimpson
  */
-public class MicVuMeterPanel extends javax.swing.JPanel implements
+public class VuMeterPanel extends javax.swing.JPanel implements
         SoftphoneListener, MicrophoneInfoListener, DisconnectListener {
 
     private static final Logger LOGGER =
-            Logger.getLogger(MicVuMeterPanel.class.getName());
+            Logger.getLogger(VuMeterPanel.class.getName());
     private static final double DEFAULT_WARNING_LIMIT = 0.9d;
-    private static final int VU_COUNT = 10;
     private AudioManagerClient client;
     private VMeter micMeter;
     private VMeter speakerMeter;
     private int count;
     private int speakerCount;
-    private double volume;
-    private double speakerVolume;
     private VolumeConverter volumeConverter;
     private Color micPanelBackground;
     private Color speakerPanelBackground;
@@ -63,11 +60,11 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements
     private ImageIcon speakerMutedIcon;
     private ImageIcon speakerUnmutedIcon;
 
-    public MicVuMeterPanel() {
+    public VuMeterPanel() {
         this(null);
     }
 
-    public MicVuMeterPanel(AudioManagerClient client) {
+    public VuMeterPanel(AudioManagerClient client) {
         this.client = client;
 
         initComponents();
@@ -147,7 +144,7 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements
         }
 
 	try {
-            sc.startVuMeter(startVuMeter);
+            sc.startMicVuMeter(startVuMeter);
 	} catch (IOException e) {
 	    LOGGER.log(Level.WARNING, 
 		"Unable to start mic VU meter:  " + e.getMessage());
@@ -215,7 +212,7 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements
 
     public void softphoneConnected(boolean connected) {
 	try {
-            SoftphoneControlImpl.getInstance().startVuMeter(connected);
+            SoftphoneControlImpl.getInstance().startMicVuMeter(connected);
             SoftphoneControlImpl.getInstance().startSpeakerVuMeter(connected);
 	} catch (IOException e) {
 	    LOGGER.log(Level.WARNING, 
@@ -229,68 +226,47 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements
     public void microphoneGainTooHigh() {
     }
 
-    public void microphoneData(String data) {
-        if (count == VU_COUNT) {
-            count = 0;
+    public void microphoneVuMeterValue(String value) {
+        double volume = Math.abs(Double.parseDouble(value));
 
-            volume = Math.round(Math.sqrt(volume) * 100) / 100D;
+        final double v = Math.round(Math.sqrt(volume) * 100) / 100D;
 
-            java.awt.EventQueue.invokeLater(new Runnable() {
+	java.awt.EventQueue.invokeLater(new Runnable() {
 
-                public void run() {
-                    micMeter.setValue(volume);
-                    if (volume > micWarningLimit) {
-                        micMeterPanel.setBackground(overLimitColor);
-                    } else {
-                        micMeterPanel.setBackground(micPanelBackground);
-                    }
+            public void run() {
+                micMeter.setValue(v);
+
+                if (v > micWarningLimit) {
+                    micMeterPanel.setBackground(overLimitColor);
+                } else {
+                    micMeterPanel.setBackground(micPanelBackground);
                 }
-            });
-
-            volume = 0;
-        } else {
-            double tmpVolume = Math.abs(Double.parseDouble(data));
-
-            if (tmpVolume > volume) {
-                volume = (int) tmpVolume;
             }
-        }
-
-        count++;
+	});
     }
 
     public void microphoneVolume(String data) {
         micVolumeSlider.setValue(volumeConverter.getVolume((Float.parseFloat(data))));
     }
 
-    public void speakerData(String data) {
-        if (speakerCount == VU_COUNT) {
-            speakerCount = 0;
+    public void speakerVuMeterValue(String value) {
+        double volume = Math.abs(Double.parseDouble(value));
 
-            volume = Math.round(Math.sqrt(volume) * 100) / 100D;
+        final double v = Math.round(Math.sqrt(volume) * 100) / 100D;
 
-            java.awt.EventQueue.invokeLater(new Runnable() {
+	System.out.println("Speaker value " + value + " volume " + v);
 
-                public void run() {
-                    micMeter.setValue(volume);
-                    if (volume > micWarningLimit) {
-                        micMeterPanel.setBackground(overLimitColor);
-                    } else {
-                        micMeterPanel.setBackground(micPanelBackground);
-                    }
+	java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                micMeter.setValue(v);
+                if (v > micWarningLimit) {
+                    micMeterPanel.setBackground(overLimitColor);
+                } else {
+                    micMeterPanel.setBackground(micPanelBackground);
                 }
-            });
-
-            volume = 0;
-        } else {
-            double tmpVolume = Math.abs(Double.parseDouble(data));
-
-            if (tmpVolume > volume) {
-                volume = tmpVolume;
             }
-        }
-
-        count++;
+        });
     }
 
     public void speakerVolume(String data) {
@@ -332,7 +308,7 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements
         add(micMeterPanel);
         micMeterPanel.setBounds(20, 10, 20, 160);
 
-        micMuteButton.setFont(new java.awt.Font("Arial", 1, 8)); // NOI18N
+        micMuteButton.setFont(new java.awt.Font("Arial", 1, 8));
         micMuteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMicMuteOff24x24.png"))); // NOI18N
         micMuteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -358,7 +334,7 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements
         add(speakerMeterPanel);
         speakerMeterPanel.setBounds(65, 10, 20, 160);
 
-        speakerMuteButton.setFont(new java.awt.Font("Arial", 1, 8)); // NOI18N
+        speakerMuteButton.setFont(new java.awt.Font("Arial", 1, 8));
         speakerMuteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListSpeakerMuteOff24x24.png"))); // NOI18N
         speakerMuteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -399,8 +375,7 @@ public class MicVuMeterPanel extends javax.swing.JPanel implements
     private void speakerVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_speakerVolumeSliderStateChanged
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
-        float speakerVolume = volumeConverter.getVolume(speakerVolumeSlider.getValue());
-	setSpeakerVolume(volumeConverter.getVolume(speakerVolume));
+        setSpeakerVolume(volumeConverter.getVolume(speakerVolumeSlider.getValue()));
     }//GEN-LAST:event_speakerVolumeSliderStateChanged
 
     private void setSpeakerVolume(float volume) {
