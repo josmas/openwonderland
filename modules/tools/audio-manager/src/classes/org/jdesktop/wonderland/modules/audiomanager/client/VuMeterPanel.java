@@ -105,7 +105,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         speakerMeter = new VMeter("");
         speakerMeter.setBackground(Color.WHITE);
         speakerMeter.setForeground(Color.DARK_GRAY);
-        speakerMeter.setPreferredSize(micMeterPanel.getPreferredSize());
+        speakerMeter.setPreferredSize(speakerMeterPanel.getPreferredSize());
         speakerMeter.setShowValue(false);
         speakerMeter.setShowTicks(false);
         speakerMeter.setMaxValue(1D);
@@ -268,7 +268,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
                 if (v > speakerWarningLimit) {
                     speakerMeterPanel.setBackground(overLimitColor);
                 } else {
-                    speakerMeterPanel.setBackground(micPanelBackground);
+                    speakerMeterPanel.setBackground(speakerPanelBackground);
                 }
             }
         });
