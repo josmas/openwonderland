@@ -679,7 +679,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    	quiet = true;
 	    }
 
-	    if (line.indexOf("VuMeterData:") >= 0) {
+	    if (line.indexOf("MicVuMeterData:") >= 0) {
 		String[] tokens = line.split(":");
                 notifyMicrophoneInfoListeners(tokens[1], true);
 	  	return;
