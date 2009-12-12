@@ -24,6 +24,8 @@ import java.io.IOException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.client.jme.VMeter;
 import org.jdesktop.wonderland.client.softphone.MicrophoneInfoListener;
@@ -253,6 +255,8 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         micVolumeSlider.setValue(volumeConverter.getVolume((Float.parseFloat(data))));
     }
 
+    private Timer speakerVuMeterTimer;
+
     public void speakerVuMeterValue(String value) {
         double volume = Math.abs(Double.parseDouble(value));
 
@@ -260,10 +264,30 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 
 	//System.out.println("Speaker value " + value + " volume " + v);
 
+	if (speakerVuMeterTimer != null) {
+	    speakerVuMeterTimer.cancel();
+	}
+
+	speakerVuMeterTimer = new Timer();
+
 	java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
                 speakerMeter.setValue(v);
+
+		speakerVuMeterTimer.schedule(new TimerTask() {
+		
+		    public void run() {
+			java.awt.EventQueue.invokeLater(new Runnable() {
+
+		            public void run() {
+                		speakerMeter.setValue(0);
+			    }
+
+		        });
+		    }
+
+		}, 2000);
 
                 if (v > speakerWarningLimit) {
                     speakerMeterPanel.setBackground(overLimitColor);
@@ -387,11 +411,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 
         double volume = volumeConverter.getVolume(speakerVolumeSliderValue);
 
-	if (previousSpeakerVolumeSliderValue == 0) {
-	    setSpeakerMutedIcon(false);
-	} else if (speakerVolumeSliderValue == 0) {
-	    setSpeakerMutedIcon(true);
-	}
+	setSpeakerMutedIcon(speakerVolumeSliderValue == 0);
 
         try {
             SoftphoneControlImpl.getInstance().sendCommandToSoftphone("speakerVolume=" + volume);
