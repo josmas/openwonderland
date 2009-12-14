@@ -71,6 +71,8 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
 	cellID = cellMO.getCellID();
         this.name = name;
 	this.volume = volume;
+
+	createAudioGroup(name);
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -147,17 +149,39 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
     }
 
     private void cellBoundsEntered(String callId) {
-        Player player = AppContext.getManager(VoiceManager.class).getPlayer(callId);
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        Player player = vm.getPlayer(callId);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
             return;
         }
 
-        AudioGroup audioGroup = createAudioGroup(name);
+	AudioGroup audioGroup = vm.getAudioGroup(name);
 
-        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(false,
+        if (audioGroup == null) {
+            logger.warning("Audio group doesn't exist:  " + name);
+            return;
+        }
+
+	boolean isSpeaking = false;
+
+	AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
+
+	if (info != null && info.isSpeaking) {
+	    /*
+	     * Player is already in audio group and speaking.
+	     * This could happen if the active area is outside of the
+	     * listening area.
+	     */
+	    isSpeaking = true;
+	}
+
+        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(isSpeaking,
             AudioGroupPlayerInfo.ChatType.PUBLIC));
+
+	//System.out.println("Player entered mic hearing range:  " + player);
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
@@ -184,6 +208,7 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
         }
 
         audioGroup.removePlayer(player);
+	//System.out.println("Player exited mic hearing range:  " + player);
     }
 
     public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
@@ -192,10 +217,6 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
 
         player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
             AudioGroup.DEFAULT_LISTEN_ATTENUATION);
-
-        if (audioGroup.getNumberOfPlayers() == 0) {
-            AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
-        }
     }
 
     private AudioGroup createAudioGroup(String name) {
