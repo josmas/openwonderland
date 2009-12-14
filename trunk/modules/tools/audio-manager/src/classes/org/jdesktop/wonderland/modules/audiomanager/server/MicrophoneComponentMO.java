@@ -65,6 +65,8 @@ public class MicrophoneComponentMO extends CellComponentMO {
         if (cellMO.getComponent(ProximityComponentMO.class) == null) {
             cellMO.addComponent(new ProximityComponentMO(cellMO));
         }
+
+        name += "-" + cellMO.getCellID();
     }
 
     /**
@@ -182,16 +184,18 @@ public class MicrophoneComponentMO extends CellComponentMO {
         if (enterProximityListenerRef != null) {
             MicrophoneEnterProximityListener enterProximityListener = 
 		enterProximityListenerRef.get();
-	    enterProximityListener.remove();
+
+            if (live == false) {
+	        enterProximityListener.remove();
+	    }
+
 	    enterProximityListener = null;
 
             MicrophoneActiveAreaProximityListener activeAreaProximityListener =
                 activeAreaProximityListenerRef.get();
-	    activeAreaProximityListener.remove();
-	    activeAreaProximityListener = null;
-
             component.removeProximityListener(enterProximityListener);
             component.removeProximityListener(activeAreaProximityListener);
+	    activeAreaProximityListener = null;
         }
 
         // If we are making this component live, then add a listener to the proximity component.

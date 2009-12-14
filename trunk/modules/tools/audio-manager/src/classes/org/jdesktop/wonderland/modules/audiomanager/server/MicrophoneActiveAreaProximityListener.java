@@ -161,6 +161,9 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
 	    audioGroup.setSpeaking(player, true);
 	}
 
+	//System.out.println("Active area entered, Setting speaking volume to " 
+	//    + volume + " for " + player);
+
 	audioGroup.setSpeakingAttenuation(player, volume);
     }
 
@@ -183,63 +186,11 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
             return;
         }
 
+	//System.out.println("Active area exit, Player is no longer speaking in audio group. " 
+	//    + player);
+
 	audioGroup.setSpeaking(player, false);
 	audioGroup.setSpeakingAttenuation(player, volume);
-    }
-
-    private AudioGroup createAudioGroup(String name) {
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	AudioGroup audioGroup = vm.getAudioGroup(name);
-
-	if (audioGroup != null) {
-	    return audioGroup;
-	}
- 
-	AudioGroupSetup ags = new AudioGroupSetup();
-
-        ags.spatializer = new FullVolumeSpatializer();
-
-        ags.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
-
-        return vm.createAudioGroup(name, ags);
-    }
-
-    public void changeName(String name) {
-	if (this.name.equals(name)) {
-	    return;
-	}
-
-        AudioGroup audioGroup = AppContext.getManager(VoiceManager.class).getAudioGroup(name);
-
-	this.name = name;
-
-	if (audioGroup == null) {
-	    return;
-	}
-
-	AudioGroup newAudioGroup = createAudioGroup(name);
-
-	Player[] players = audioGroup.getPlayers();
-
-	for (int i = 0; i < players.length; i++) {
-	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(players[i]);
-
-	    audioGroup.removePlayer(players[i]);
-	    newAudioGroup.addPlayer(players[i], info);
-	}
-    }
-
-    public void remove() {
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-            return;
-        }
-
-        vm.removeAudioGroup(audioGroup);
     }
 
 }
