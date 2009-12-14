@@ -202,6 +202,7 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         titleLabel.setFont(titleLabel.getFont().deriveFont(titleLabel.getFont().getStyle() | java.awt.Font.BOLD, titleLabel.getFont().getSize()+1));
         titleLabel.setForeground(new java.awt.Color(255, 255, 255));
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        titleLabel.setMinimumSize(new java.awt.Dimension(0, 17));
 
         hudButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/hideHUD16x16.png"))); // NOI18N
         hudButton.setBorderPainted(false);
