@@ -46,6 +46,10 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     private static final Logger LOGGER =
             Logger.getLogger(VuMeterPanel.class.getName());
     private static final double DEFAULT_WARNING_LIMIT = 0.9d;
+    private static final Color CONNECTED_COLOR = new Color(51, 204, 0);
+    private static final Color DISCONNECTED_COLOR = new Color(255, 0, 0);
+    private static final Color PROBLEM_COLOR = new Color(255, 255, 51);
+
     private AudioManagerClient client;
     private VMeter micMeter;
     private VMeter speakerMeter;
@@ -218,6 +222,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 	try {
             //SoftphoneControlImpl.getInstance().startMicVuMeter(connected);
             SoftphoneControlImpl.getInstance().startSpeakerVuMeter(connected);
+            setStatusLED(CONNECTED_COLOR);
 	} catch (IOException e) {
 	    LOGGER.log(Level.WARNING, 
 		"Unable to start/stop VU meter:  " + e.getMessage());
@@ -225,6 +230,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     }
 
     public void softphoneExited() {
+        setStatusLED(DISCONNECTED_COLOR);
     }
 
     public void microphoneGainTooHigh() {
@@ -311,6 +317,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        statusLED = new javax.swing.JPanel();
         micVolumeSlider = new javax.swing.JSlider();
         micMeterPanel = new javax.swing.JPanel();
         micMuteButton = new javax.swing.JButton();
@@ -320,6 +327,12 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 
         setPreferredSize(new java.awt.Dimension(95, 205));
         setLayout(null);
+
+        statusLED.setBackground(new java.awt.Color(255, 0, 0));
+        statusLED.setPreferredSize(new java.awt.Dimension(10, 10));
+        statusLED.setSize(new java.awt.Dimension(10, 10));
+        add(statusLED);
+        statusLED.setBounds(4, 190, 10, 10);
 
         micVolumeSlider.setMinorTickSpacing(10);
         micVolumeSlider.setOrientation(javax.swing.JSlider.VERTICAL);
@@ -465,6 +478,11 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 	}
     }
 
+    private void setStatusLED(Color color) {
+        statusLED.setBackground(color);
+        repaint();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel micMeterPanel;
     private javax.swing.JButton micMuteButton;
@@ -472,5 +490,6 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     private javax.swing.JPanel speakerMeterPanel;
     private javax.swing.JButton speakerMuteButton;
     private javax.swing.JSlider speakerVolumeSlider;
+    private javax.swing.JPanel statusLED;
     // End of variables declaration//GEN-END:variables
 }
