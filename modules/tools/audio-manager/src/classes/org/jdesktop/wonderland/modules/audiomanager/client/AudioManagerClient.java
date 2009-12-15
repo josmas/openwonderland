@@ -75,6 +75,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatCallEndedMessage;
@@ -318,16 +319,24 @@ public class AudioManagerClient extends BaseConnection implements
             viewConfigured(avatar);
         }
 
+	System.out.println("add listener");
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
 
         // enable the menus
         AudioMenu.getAudioMenu(this).setEnabled(true);
         userListJMenuItem.setEnabled(true);
+
+	audioProblemJFrame = new AudioProblemJFrame(this);
+
+	connected = true;
     }
 
     @Override
     public void disconnected() {
         super.disconnected();
+
+	System.out.println("DISCONNECTED");
+	connected = false;
 
         // remove open dialogs
         removeDialogs();
@@ -336,6 +345,7 @@ public class AudioManagerClient extends BaseConnection implements
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.removeViewCellConfiguredListener(this);
 
+	System.out.println("remove listener");
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
 
 	try {
@@ -463,15 +473,22 @@ public class AudioManagerClient extends BaseConnection implements
         }
     }
 
-    public void mute(boolean isMuted) {
+    public void toggleMute() {
+	setMute(!isMuted);
+    }
+
+    public void setMute(boolean isMuted) {
+	if (this.isMuted == isMuted) {
+	    return;
+	}
+
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
         String callID = sc.getCallID();
 
         if (callID == null) {
             return;
         }
-
-        this.isMuted = isMuted;
 
         sc.mute(isMuted);
 
@@ -521,6 +538,7 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void softphoneVisible(boolean isVisible) {
     }
+
     private boolean isMuted = true;
 
     public void softphoneMuted(boolean isMuted) {
@@ -528,11 +546,17 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
+	this.isMuted = isMuted;
+
         AudioMenu.getAudioMenu(this).mute(isMuted);
-        mute(isMuted);
     }
 
+    private AudioProblemJFrame audioProblemJFrame;
+
     public void softphoneConnected(boolean connected) {
+	if (connected == false) {
+	    softphoneProblem("Softphone Disconnected");
+	}
     }
 
     public void softphoneExited() {
@@ -542,19 +566,32 @@ public class AudioManagerClient extends BaseConnection implements
          * If presenceInfo is null, connectSoftphone will be called when
          * the presenceInfo is set.
          */
+	audioProblemJFrame.setText("Softphone Exited, attempting to restart...");
         connectSoftphone();
+    }
+
+    public void softphoneProblem(String problem) {
+	if (connected == false) {
+	    return;
+	}
+
+	audioProblemJFrame.setText(problem);
+
+	if (SoftphoneControlImpl.getInstance().isVisible() == false) {
+	    showSoftphone();
+	}
     }
 
     public void microphoneGainTooHigh() {
     }
 
     public void audioVolume() {
+	boolean isConnected = false;
         try {
-            if (!SoftphoneControlImpl.getInstance().isConnected()) {
-                return;
+            if (SoftphoneControlImpl.getInstance().isConnected()) {
+		isConnected = true;
             }
         } catch (IOException e) {
-            return;
         }
 
         if (vuMeterComponent == null) {

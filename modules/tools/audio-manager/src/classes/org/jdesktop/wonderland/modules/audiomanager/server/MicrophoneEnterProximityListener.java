@@ -185,7 +185,7 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        player.attenuateOtherGroups(audioGroup, 0, 0);
+        //player.attenuateOtherGroups(audioGroup, 0, 0);
     }
 
     private void cellExited(String callId) {
@@ -215,8 +215,8 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
 	logger.info("Attenuate other groups... " + audioGroup + " player " + player
 	    + " info " + info);
 
-        player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-            AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+        //player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
+        //    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
     }
 
     private AudioGroup createAudioGroup(String name) {

@@ -58,7 +58,7 @@ public class AudioMenu extends javax.swing.JPanel {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 if (audioMenuListener != null) {
-                    audioMenuListener.mute(muteCheckBox.isSelected());
+                    audioMenuListener.setMute(muteCheckBox.isSelected());
                 }
             }
         });
