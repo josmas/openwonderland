@@ -41,11 +41,6 @@ public class ModelCellMO extends CellMO {
         super(bounds, transform);
     }
     
-    public void addComponent(CellComponentMO component, Class componentClass) {
-        super.addComponent(component, componentClass);
-        System.err.println("ADDING COMP "+componentClass);
-        Thread.dumpStack();
-    }
     @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.ModelCell";
     }
