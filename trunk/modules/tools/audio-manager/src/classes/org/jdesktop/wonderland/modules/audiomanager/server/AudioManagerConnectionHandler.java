@@ -347,6 +347,8 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
         throw new UnsupportedOperationException("Unknown message:  " + message);
     }
 
+    private static final String JOIN_SOUND = "joinBELL.au";
+
     private void placeCall(WonderlandClientID clientID, PlaceCallRequestMessage msg) {
         PresenceInfo info = msg.getPresenceInfo();
 
@@ -401,6 +403,7 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
 
         setJoinConfirmation(cp);
 
+	cp.setCallEstablishedTreatment(JOIN_SOUND);
         cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
         cp.setVoiceDetection(true);
         cp.setDtmfDetection(true);
