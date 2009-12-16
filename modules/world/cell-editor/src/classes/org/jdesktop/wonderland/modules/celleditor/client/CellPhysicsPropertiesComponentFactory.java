@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
  * @author Paul Byrne
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@CellComponentFactory
+//@CellComponentFactory
 public class CellPhysicsPropertiesComponentFactory
         implements CellComponentFactorySPI {
 

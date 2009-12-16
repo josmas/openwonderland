@@ -1362,10 +1362,6 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         // Loop through all of the root cells and add into the world
         Collection<Cell> rootCells = cache.getRootCells();
         for (Cell rootCell : rootCells) {
-            // Special case to ignore Avatar Cells
-            if (rootCell instanceof AvatarCell) {
-                continue;
-            }
             createJTreeNode(rootCell);
         }
         cellHierarchyTree.repaint();
@@ -1375,6 +1371,12 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
      * Creates a new tree node for the given Cell and inserts it into the tree.
      */
     private void createJTreeNode(Cell cell) {
+        // As a special case, if the Cell is an AvatarCell, then simply ignore
+        // and return, since Avatar Cells are returned by the Cell cache.
+        if (cell instanceof AvatarCell) {
+            return;
+        }
+
         // Create the tree node and put into the map of all nodes. We override
         // the toString() method to return a string containing the Cell ID.
         // This is used in the drag and drop mechanism to figure out which

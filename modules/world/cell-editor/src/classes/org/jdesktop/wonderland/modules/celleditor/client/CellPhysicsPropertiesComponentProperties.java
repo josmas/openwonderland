@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * @author Paul Byrne
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@PropertiesFactory(CellPhysicsPropertiesComponentServerState.class)
+//@PropertiesFactory(CellPhysicsPropertiesComponentServerState.class)
 public class CellPhysicsPropertiesComponentProperties
         extends JPanel implements PropertiesFactorySPI {
 
