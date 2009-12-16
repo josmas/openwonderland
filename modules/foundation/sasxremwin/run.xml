@@ -15,7 +15,7 @@
     <target name="run" depends="-find-properties">
         <exec command="chmod +x bin/runxremwin"/>
         <exec command="chmod +x bin/linux/Xvfb-xremwin"/>
-        <!--exec command="chmod +x bin/linux64/Xvfb-xremwin"/-->
+        <exec command="chmod +x bin/linux64/Xvfb-xremwin"/>
         <exec command="chmod +x bin/solaris/Xvfb-xremwin"/>
         <java classname="org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain"
               fork="true">
