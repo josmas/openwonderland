@@ -26,6 +26,7 @@ public interface SoftphoneListener {
     public void softphoneMuted(boolean muted);
     public void softphoneConnected(boolean connected);
     public void softphoneExited();
+    public void softphoneProblem(String problem);
 
     /*
      * This will allow some feedback to the user that the mic gain is too high.
