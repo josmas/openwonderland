@@ -226,11 +226,20 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     }
 
     public void softphoneConnected(boolean connected) {
+	enableControls(connected);
 	startVuMeter(connected);
     }
 
     public void softphoneExited() {
+	enableControls(false);
 	startVuMeter(false);
+    }
+
+    private void enableControls(boolean isEnabled) {
+	micMuteButton.setEnabled(isEnabled);
+	micVolumeSlider.setEnabled(isEnabled);
+	speakerMuteButton.setEnabled(isEnabled);
+	speakerVolumeSlider.setEnabled(isEnabled);
     }
 
     public void microphoneGainTooHigh() {
