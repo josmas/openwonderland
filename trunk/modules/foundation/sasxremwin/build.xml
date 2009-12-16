@@ -81,7 +81,7 @@
 
             <!-- add the core native escher libraries -->
             <zipfileset file="${top.dir}/core/ext/linux/native/libEscher.so" prefix="lib/linux/native"/>
-            <!--zipfileset file="${top.dir}/core/ext/linux64/native/libEscher.so" prefix="lib/linux64/native"/-->
+            <zipfileset file="${top.dir}/core/ext/linux64/native/libEscher.so" prefix="lib/linux64/native"/>
             <zipfileset file="${top.dir}/core/ext/solaris/native/libEscher.so" prefix="lib/solaris/native"/>
         </zip>
     </target>
