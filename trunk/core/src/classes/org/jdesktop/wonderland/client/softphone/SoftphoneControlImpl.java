@@ -63,13 +63,16 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 
     private String callID;
 
+    private String problem;
+
     private SoftphoneControlImpl() {
     }
 
     /**
      * State of the softphone
      */
-    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, DISCONNECTED, EXITED, TOO_LOUD }
+    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, DISCONNECTED, EXITED, TOO_LOUD,
+	PROBLEM }
     
     /**
      * Gets the one instance of SoftphoneControlImpl
@@ -675,8 +678,14 @@ public class SoftphoneControlImpl implements SoftphoneControl {
                 logger.info(line);
 	    }
       
-	    if (line.indexOf("Connected:") >= 0) {
+	    if (line.indexOf("Softphone Connected") >= 0) {
 	    	quiet = true;
+	    }
+
+	    if (line.indexOf("Softphone Problem:") >= 0) {
+		problem = line;
+		notifyListeners(State.PROBLEM);
+		return;
 	    }
 
 	    if (line.indexOf("MicVuMeterData:") >= 0) {
@@ -703,11 +712,11 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	  	return;
 	    }
 
-	    if (line.indexOf("Connected") >= 0) {
+	    if (line.indexOf("Softphone Connected") >= 0) {
 		connected = true;
 		mute(isMuted);
                 notifyListeners(State.CONNECTED);
-	    } else if (line.indexOf("Disconnected") >= 0) {
+	    } else if (line.indexOf("Softphone Disconnected") >= 0) {
 		connected = false;
                 notifyListeners(State.DISCONNECTED);
 	    }
@@ -796,6 +805,8 @@ public class SoftphoneControlImpl implements SoftphoneControl {
                 case EXITED:
                     listener.softphoneExited();
                     break;
+		case PROBLEM:
+		    listener.softphoneProblem(problem);
                 }
             }
 	}
