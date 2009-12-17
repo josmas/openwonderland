@@ -76,6 +76,7 @@ import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -536,7 +537,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 logger.warning("No default avatar factory is registered.");
                 return null;
             }
-            ret = factory.getAvatarLoader().getAvatarCharacter(cell, username, avatarConfigInfo);
+
+            // We need to rewrite the AvatarConfigInfo object here a bit,
+            // otherwise, the loader may still loader the wrong avatar. If
+            // we set the URL in the AvatarConfigInfo to null, that should do
+            // the trick. (Note that since we manually obtained the
+            // AvatarLoaderFactorySPI, we don't need to update the factory
+            // class name in the AvatarConfigInfo object, but we do anyway).
+            String defaultClassName = factory.getClass().getName();
+            AvatarConfigInfo defaultInfo =
+                    new AvatarConfigInfo(null, defaultClassName);
+
+            // Go ahead and load the default avatar
+            ret = factory.getAvatarLoader().getAvatarCharacter(cell, username,
+                    defaultInfo);
         }
         else {
             // If the avatar has a non-null configuration information, then
