@@ -281,19 +281,14 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
             if (activeArea.activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
-		System.out.println("using mic talk area cell bounds " + bounds[0]);
             } else if (activeArea.activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) activeArea.activeAreaBounds.getX(), activeOrigin);
-		System.out.println("using mic talk area SPHERE " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(activeOrigin, (float) activeArea.activeAreaBounds.getX(),
                         (float) activeArea.activeAreaBounds.getY(),
                         (float) activeArea.activeAreaBounds.getZ());
 
-		System.out.println("using mic talk area BOX " + bounds[0] + " origin " + activeOrigin);
             }
-
-            LOGGER.info("Active " + bounds[0]);
 
             MicrophoneActiveAreaProximityListener activeAreaProximityListener = 
 		new MicrophoneActiveAreaProximityListener(cellRef.get(), name, volume);
@@ -301,24 +296,24 @@ public class MicrophoneComponentMO extends CellComponentMO {
 	    activeAreaProximityListenerRef = AppContext.getDataManager().createReference(
 		activeAreaProximityListener);
 
+	    LOGGER.info("mic talk area using:  " + bounds[0] + " origin " 
+		+ activeOrigin);
+
+	    System.out.println("mic talk area using:  " + bounds[0] + " origin " 
+		+ activeOrigin);
+
             component.addProximityListener(activeAreaProximityListener, bounds);
 
             bounds = new BoundingVolume[1];
 
             if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
-                LOGGER.info("Microphone Using cell bounds:  " + bounds[0]);
-                System.out.println("Microphone fva Using cell bounds:  " + bounds[0]);
             } else if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) fullVolumeArea.bounds.getX(),
                         new Vector3f());
-                LOGGER.info("Microphone Using radius:  " + bounds[0]);
-                System.out.println("Microphone fva Using radius:  " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(new Vector3f(), fullVolumeArea.bounds.getX(),
                         fullVolumeArea.bounds.getY(), fullVolumeArea.bounds.getZ());
-                LOGGER.info("Microphone Using Box:  " + bounds[0]);
-                System.out.println("Microphone fva Using Box:  " + bounds[0]);
             }
 
             MicrophoneEnterProximityListener enterProximityListener = 
@@ -326,6 +321,10 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
 	    enterProximityListenerRef = AppContext.getDataManager().createReference(
 		enterProximityListener);
+
+            LOGGER.info("Microphone Using Box:  " + bounds[0]);
+
+            System.out.println("Microphone Listen Area using:  " + bounds[0]);
 
             component.addProximityListener(enterProximityListener, bounds);
         } 
