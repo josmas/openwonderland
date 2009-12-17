@@ -22,6 +22,7 @@ import com.sun.sgs.client.ClientChannelListener;
 import com.sun.sgs.client.simple.SimpleClient;
 import com.sun.sgs.client.simple.SimpleClientListener;
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -941,7 +942,10 @@ public class WonderlandSessionImpl implements WonderlandSession {
                 wait(10000);
                 if (!loginComplete) {
                     logger.warning("Still waiting for login response from server...");
-                    if (waitingDialog==null) {
+                    // TODO this should be refactored to remove UI code from this class.
+                    // Instead a callback should be passed into the login method which
+                    // will be periodically notified if the the login takes too long
+                    if (waitingDialog==null && !GraphicsEnvironment.isHeadless()) {
                         waitingDialog = new JDialog(JmeClientMain.getFrame().getFrame(), java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/login/Bundle").getString("WAITING_FOR_SERVER"));
                         waitingDialog.getContentPane().add(new WaitingDialogPanel());
                         waitingDialog.pack();
