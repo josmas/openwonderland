@@ -192,7 +192,11 @@ public class CellChannelConnection extends BaseConnection
      */
     public void cellStatusChanged(Cell cell, CellStatus status) {
         // if the cell is newly loaded, set its channel
-        if (status == CellStatus.INACTIVE) {
+        // Issue #405: wait until the cell becomes ACTIVE to deliver delayed
+        // messages. Many cells and components don't register listeners until
+        // they are set to ACTIVE, so delivering delayed messages before that
+        // will cause messages to get dropped.
+        if (status == CellStatus.ACTIVE) {
             ChannelComponent channel = cell.getComponent(ChannelComponent.class);
             CellMessageDelivery cmd = getCellMessageDelivery(cell.getCellID());
             if (channel == null) {
