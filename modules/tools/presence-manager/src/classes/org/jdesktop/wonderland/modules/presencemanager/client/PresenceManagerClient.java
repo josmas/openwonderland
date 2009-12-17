@@ -68,6 +68,7 @@ public class PresenceManagerClient extends BaseConnection implements
     private PresenceManagerImpl pm;
     private PresenceInfo presenceInfo;
     private static PresenceManagerClient client;
+    private boolean connectionComplete = false;
 
     public static PresenceManagerClient getInstance() {
 	return client;
@@ -115,6 +116,9 @@ public class PresenceManagerClient extends BaseConnection implements
         super.disconnect();
 
 	PresenceManagerFactory.reset();
+
+        // connection information is no longer valid
+        setConnectionComplete(false);
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
@@ -228,8 +232,16 @@ public class PresenceManagerClient extends BaseConnection implements
 //		new NameTagUpdater(nameTagList);
 //	    }
 
+            // connection is complete
+            setConnectionComplete(true);
+
 	    return;
 	}
+
+        // Issue #1113: if the connection is not complete, ignore messages
+        if (!isConnectionComplete()) {
+            return;
+        }
 
         if (message instanceof PlayerInRangeMessage) {
 	    PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
@@ -307,6 +319,14 @@ public class PresenceManagerClient extends BaseConnection implements
         }
 
         throw new UnsupportedOperationException("Unknown message:  " + message);
+    }
+
+    private synchronized boolean isConnectionComplete() {
+        return connectionComplete;
+    }
+
+    private synchronized void setConnectionComplete(boolean connectionComplete) {
+        this.connectionComplete = connectionComplete;
     }
 
     /*
