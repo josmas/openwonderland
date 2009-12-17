@@ -33,7 +33,9 @@ import com.jme.scene.Spatial;
 import com.jme.scene.Geometry;
 import com.jme.scene.Spatial.CullHint;
 import com.jme.scene.shape.Box;
+import com.jme.scene.state.GLSLShaderObjectsState;
 import com.jme.scene.state.RenderState;
+import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
 import imi.character.CharacterAnimationProcessor;
 import imi.character.CharacterMotionListener;
@@ -50,6 +52,8 @@ import imi.scene.PMatrix;
 import imi.scene.PTransform;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import javax.media.opengl.GLException;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionInfo;
@@ -62,6 +66,7 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -75,6 +80,7 @@ import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -520,7 +526,17 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (shaderCheck != null && shaderCheck.equals("true")) {
             shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
         }
-        if (rm.supportsOpenGL20() == false || !shaderPass) {
+
+        // Issue XXX: make sure the system is telling the truth about what
+        // it supports by trying a mock shader program
+        boolean uniformsPass = shaderPass && tryAvatarShader();
+
+        logger.fine("Checking avatar detail level.  OpenGL20: " +
+                    rm.supportsOpenGL20() + " ShaderCheck: " + shaderPass +
+                    " UniformsCheck: " + uniformsPass);
+
+        if (rm.supportsOpenGL20() == false || !shaderPass || !uniformsPass) {
+            logger.warning("Forcing low detail.");
             avatarDetail = "low";
         }
 
@@ -656,7 +672,54 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
          }
     }
 
+    /**
+     * Check whether the graphics card will actually support the types of
+     * shaders used by avatars.
+     */
+    private boolean tryAvatarShader() {
+        // the sceneworker will set this value
+        final MutableBoolean out = new MutableBoolean();
 
+        // this semaphore will be unlocked when the sceneworker is done
+        final Semaphore done = new Semaphore(0);
+        SceneWorker.addWorker(new WorkCommit() {
+            public void commit() {
+                try {
+                    RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+                    GLSLShaderObjectsState shaderState = (GLSLShaderObjectsState)rm.createRendererState(StateType.GLSLShaderObjects);
+                    shaderState.setEnabled(true);
+                    shaderState.load(TEST_VERTEX, null);
+                    shaderState.apply();
+                } catch (GLException ex) {
+                    logger.log(Level.FINE, "Unable to load avatar sample " +
+                            "shader. High quality avatars are not available.",
+                            ex);
+                    out.value = false;
+                } finally  {
+                    done.release();
+                }
+            }
+        });
+
+        // wait for the worker to finish, and return the result
+        try {
+            done.acquire();
+            return out.value;
+        } catch (InterruptedException ie) {
+            return false;
+        }
+
+    }
+    // test with 55 shader uniform matrices, to see if that is supported
+    private static final String TEST_VERTEX =
+            "uniform mat4 pose[55];\n" +
+            "void main(void){}";
+
+    class MutableBoolean {
+        volatile boolean value = true;
+    }
+
+    
     /**
      * Sets the Z-buffer state on the given node.
      * 
