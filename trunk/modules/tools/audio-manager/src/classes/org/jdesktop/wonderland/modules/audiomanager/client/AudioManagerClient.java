@@ -1024,7 +1024,8 @@ public class AudioManagerClient extends BaseConnection implements
         PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
         if (info == null) {
-            logger.warning("No presence info for " + msg.getCallID());
+            // Issue #1113: ignore this error
+            logger.fine("No presence info for " + msg.getCallID());
             return;
         }
 
