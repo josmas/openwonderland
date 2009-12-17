@@ -431,7 +431,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
                         new ComponentStateMessageReceiver(this));
             }
 
-            Collection<ManagedReference<CellComponentMO>> compList = components.values();
+            // Issue #1108: copy components into an array to avoid concurrent
+            // modification issues.  Note that the cell is live at this point,
+            // so all components added in this call will be set live
+            // immediately.
+            ManagedReference<CellComponentMO>[] compList =
+                    components.values().toArray(new ManagedReference[components.size()]);
+
             for(ManagedReference<CellComponentMO> c : compList) {
                 resolveAutoComponentAnnotationsForComponent(c);
             }
@@ -444,7 +450,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
         // Notify all components of new live state
         Collection<ManagedReference<CellComponentMO>> compList = components.values();
         for(ManagedReference<CellComponentMO> c : compList) {
-            c.get().setLive(live);
+            // Issue #1108: if the component was added from another component
+            // above, it may already be live.  Don't set it live a second
+            // time.
+            if (c.get().isLive() != live) {
+                c.get().setLive(live);
+            }
         }
         
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
