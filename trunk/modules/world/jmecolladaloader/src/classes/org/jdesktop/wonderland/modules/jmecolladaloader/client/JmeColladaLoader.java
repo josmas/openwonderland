@@ -499,6 +499,12 @@ public class JmeColladaLoader implements ModelLoader {
     private void copyAsset(URL source, File targetFile, boolean compress) {
         InputStream in = null;
         OutputStream out = null;
+
+        if (source==null) {
+            logger.warning("Null asset source for targetFile "+targetFile);
+            return;
+        }
+
         try {
             in = new BufferedInputStream(source.openStream());
             if (compress)
