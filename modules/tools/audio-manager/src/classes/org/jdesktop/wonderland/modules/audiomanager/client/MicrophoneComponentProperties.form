@@ -37,7 +37,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="showBoundsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="showListenAreaCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="useCellBoundsRadioButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -94,7 +94,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="activeAreaZExtentSpinner" linkSize="2" min="-2" pref="60" max="-2" attributes="1"/>
                           </Group>
-                          <Component id="showActiveAreaCheckBox" min="-2" max="-2" attributes="0"/>
+                          <Component id="showTalkAreaCheckBox" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
                   </Group>
@@ -140,7 +140,7 @@
                   <Component id="zExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="showBoundsCheckBox" min="-2" max="-2" attributes="0"/>
+              <Component id="showListenAreaCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="jLabel3" alignment="2" min="-2" max="-2" attributes="0"/>
@@ -164,7 +164,7 @@
                   <Component id="activeAreaZExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="showActiveAreaCheckBox" min="-2" max="-2" attributes="0"/>
+              <Component id="showTalkAreaCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="203" max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -173,14 +173,14 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="cellBoundsLabel">
     </Component>
-    <Component class="javax.swing.JCheckBox" name="showBoundsCheckBox">
+    <Component class="javax.swing.JCheckBox" name="showListenAreaCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.showBoundsCheckBox.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.showListenAreaCheckBox.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showBoundsCheckBoxActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showListenAreaCheckBoxActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JRadioButton" name="activeAreaUseCellBoundsRadioButton">
@@ -257,14 +257,14 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="showActiveAreaCheckBox">
+    <Component class="javax.swing.JCheckBox" name="showTalkAreaCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.showActiveAreaCheckBox.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.showTalkAreaCheckBox.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showActiveAreaCheckBoxActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showTalkAreaCheckBoxActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">

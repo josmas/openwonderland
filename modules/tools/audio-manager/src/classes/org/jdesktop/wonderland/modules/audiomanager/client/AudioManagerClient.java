@@ -319,7 +319,6 @@ public class AudioManagerClient extends BaseConnection implements
             viewConfigured(avatar);
         }
 
-	System.out.println("add listener");
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
 
         // enable the menus
@@ -335,7 +334,6 @@ public class AudioManagerClient extends BaseConnection implements
     public void disconnected() {
         super.disconnected();
 
-	System.out.println("DISCONNECTED");
 	connected = false;
 
         // remove open dialogs
@@ -345,7 +343,6 @@ public class AudioManagerClient extends BaseConnection implements
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.removeViewCellConfiguredListener(this);
 
-	System.out.println("remove listener");
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
 
 	try {

@@ -244,7 +244,6 @@ public class AudioTreatmentComponent
     private void receive(CellMessage message) {
 	if (message instanceof AudioTreatmentDoneMessage) {
 	    addMenuItems(new String[] {PLAY, VOLUME});
-	    System.out.println("Got treatment done message");
 	    channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
 	    return;
 	}

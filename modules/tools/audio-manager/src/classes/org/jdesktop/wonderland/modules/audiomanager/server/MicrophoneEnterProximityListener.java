@@ -18,13 +18,8 @@
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
-import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
 import com.sun.sgs.app.AppContext;
@@ -58,7 +53,7 @@ import org.jdesktop.wonderland.server.security.SecurityManager;
  * @author jprovino
  */
 public class MicrophoneEnterProximityListener implements ProximityListenerSrv, 
-	ManagedObject, Serializable, AudioGroupListener {
+	ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(MicrophoneEnterProximityListener.class.getName());
@@ -71,19 +66,15 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
 	cellID = cellMO.getCellID();
         this.name = name;
 	this.volume = volume;
-
-	createAudioGroup(name);
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-	logger.info("viewEnterExit bounds:  " + entered + " cellID " + cellID
-	    + " viewCellID " + viewCellID);
-
-	//System.out.println("viewEnterExit bounds:  " + entered + " cellID " + cellID
-	//    + " viewCellID " + viewCellID + " bounds " + proximityVolume);
+	System.out.println("viewEnterExit Listen Area:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID + " bounds " + proximityVolume + " index " 
+	    + proximityIndex);
 
 	String callId = CallID.getCallID(viewCellID);
 
@@ -153,6 +144,8 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
 
         Player player = vm.getPlayer(callId);
 
+	System.out.println("Player entered mic hearing range:  " + player);
+
         if (player == null) {
             logger.warning("Can't find player for " + callId);
             return;
@@ -180,12 +173,6 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(isSpeaking,
             AudioGroupPlayerInfo.ChatType.PUBLIC));
-
-	//System.out.println("Player entered mic hearing range:  " + player);
-    }
-
-    public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        //player.attenuateOtherGroups(audioGroup, 0, 0);
     }
 
     private void cellExited(String callId) {
@@ -208,66 +195,7 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
         }
 
         audioGroup.removePlayer(player);
-	//System.out.println("Player exited mic hearing range:  " + player);
-    }
-
-    public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-	logger.info("Attenuate other groups... " + audioGroup + " player " + player
-	    + " info " + info);
-
-        //player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-        //    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
-    }
-
-    private AudioGroup createAudioGroup(String name) {
-        AudioGroupSetup ags = new AudioGroupSetup();
-
-        ags.spatializer = new FullVolumeSpatializer();
-
-        ags.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
-
-	ags.audioGroupListener = this;
-
-        return AppContext.getManager(VoiceManager.class).createAudioGroup(name, ags);
-    }
-
-    public void changeName(String name) {
-	if (this.name.equals(name)) {
-	    return;
-	}
-
-	this.name = name;
-
-        AudioGroup audioGroup = AppContext.getManager(VoiceManager.class).getAudioGroup(name);
-
-	if (audioGroup == null) {
-	    return;
-	}
-
-	audioGroup.removeAudioGroupListener(this);
-
-        AudioGroup newAudioGroup = createAudioGroup(name);
-
-	Player[] players = audioGroup.getPlayers();
-
-	for (int i = 0; i < players.length; i++) {
-	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(players[i]);
-
-	    audioGroup.removePlayer(players[i]);
-	    newAudioGroup.addPlayer(players[i], info);
-	}
-    }
-
-    public void remove() {
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-            return;
-        }
-
-        vm.removeAudioGroup(audioGroup);
+	System.out.println("Player exited mic hearing range:  " + player);
     }
 
 }

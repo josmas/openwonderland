@@ -38,6 +38,14 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 
+import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.AudioGroupSetup;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
+import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.VoiceManager;
+
 /**
  * A server component that provides microphone functionality
  * @author jprovino
@@ -51,6 +59,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
             "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
     private static final String DEFAULT_NAME = BUNDLE.getString("Microphone");
     private String name = DEFAULT_NAME;
+    private String currentName;
     private double volume = 1;
     private FullVolumeArea fullVolumeArea = new FullVolumeArea();
     private boolean showBounds = false;
@@ -154,6 +163,12 @@ public class MicrophoneComponentMO extends CellComponentMO {
         super.setLive(live);
 
         addProximityListeners(live);
+
+	if (live) {
+	    createAudioGroup(name);
+	} else {
+	    removeAudioGroup(name);
+	}
     }
 
     private void setMyName(MicrophoneComponentServerState state) {
@@ -169,6 +184,67 @@ public class MicrophoneComponentMO extends CellComponentMO {
         }
     }
 
+    private void createAudioGroup(String name) {
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	if (name.equals(currentName)) {
+	    return;
+	}
+	
+        AudioGroupSetup ags = new AudioGroupSetup();
+
+        ags.spatializer = new FullVolumeSpatializer();
+
+        ags.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+
+	ags.removeWhenLastPlayerRemoved = false;
+
+	System.out.println("Create audio group for " + name);
+
+        AudioGroup newAudioGroup = vm.createAudioGroup(name, ags);
+
+	if (currentName != null) {
+	    System.out.println("Renaming audio group " + currentName
+		+ " to " + name);
+
+	    AudioGroup currentAudioGroup = vm.getAudioGroup(currentName);
+
+	    if (currentAudioGroup == null) {
+		LOGGER.warning("Can't find audio group for " + currentName);
+		return;
+	    }
+
+	    changeName(currentAudioGroup, newAudioGroup);
+
+	    vm.removeAudioGroup(currentAudioGroup);
+	}
+
+	currentName = name;
+    }
+
+    private void changeName(AudioGroup currentAudioGroup, AudioGroup newAudioGroup) {
+	Player[] players = currentAudioGroup.getPlayers();
+
+	for (int i = 0; i < players.length; i++) {
+	    AudioGroupPlayerInfo info = currentAudioGroup.getPlayerInfo(players[i]);
+
+	    currentAudioGroup.removePlayer(players[i]);
+	    newAudioGroup.addPlayer(players[i], info);
+	}
+    }
+
+    private void removeAudioGroup(String name) {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        AudioGroup audioGroup = vm.getAudioGroup(name);
+
+        if (audioGroup == null) {
+            return;
+        }
+
+        vm.removeAudioGroup(audioGroup);
+    }
+
     private void addProximityListeners(boolean live) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
@@ -182,18 +258,15 @@ public class MicrophoneComponentMO extends CellComponentMO {
         }
 
         if (enterProximityListenerRef != null) {
+	    System.out.println("Removing existing proximity listeners");
+
             MicrophoneEnterProximityListener enterProximityListener = 
 		enterProximityListenerRef.get();
-
-            if (live == false) {
-	        enterProximityListener.remove();
-	    }
-
+            component.removeProximityListener(enterProximityListener);
 	    enterProximityListener = null;
 
             MicrophoneActiveAreaProximityListener activeAreaProximityListener =
                 activeAreaProximityListenerRef.get();
-            component.removeProximityListener(enterProximityListener);
             component.removeProximityListener(activeAreaProximityListener);
 	    activeAreaProximityListener = null;
         }
@@ -208,15 +281,16 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
             if (activeArea.activeAreaBoundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
-		//System.out.println("using mic active cell bounds " + bounds[0]);
+		System.out.println("using mic talk area cell bounds " + bounds[0]);
             } else if (activeArea.activeAreaBoundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) activeArea.activeAreaBounds.getX(), activeOrigin);
-		//System.out.println("using mic active sphere " + bounds[0]);
+		System.out.println("using mic talk area SPHERE " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(activeOrigin, (float) activeArea.activeAreaBounds.getX(),
                         (float) activeArea.activeAreaBounds.getY(),
                         (float) activeArea.activeAreaBounds.getZ());
-		//System.out.println("using mic active sphere " + bounds[0]);
+
+		System.out.println("using mic talk area BOX " + bounds[0] + " origin " + activeOrigin);
             }
 
             LOGGER.info("Active " + bounds[0]);
@@ -234,17 +308,17 @@ public class MicrophoneComponentMO extends CellComponentMO {
             if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
                 LOGGER.info("Microphone Using cell bounds:  " + bounds[0]);
-                //System.out.println("Microphone fva Using cell bounds:  " + bounds[0]);
+                System.out.println("Microphone fva Using cell bounds:  " + bounds[0]);
             } else if (fullVolumeArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) fullVolumeArea.bounds.getX(),
                         new Vector3f());
                 LOGGER.info("Microphone Using radius:  " + bounds[0]);
-                //System.out.println("Microphone fva Using radius:  " + bounds[0]);
+                System.out.println("Microphone fva Using radius:  " + bounds[0]);
             } else {
                 bounds[0] = new BoundingBox(new Vector3f(), fullVolumeArea.bounds.getX(),
                         fullVolumeArea.bounds.getY(), fullVolumeArea.bounds.getZ());
                 LOGGER.info("Microphone Using Box:  " + bounds[0]);
-                //System.out.println("Microphone fva Using Box:  " + bounds[0]);
+                System.out.println("Microphone fva Using Box:  " + bounds[0]);
             }
 
             MicrophoneEnterProximityListener enterProximityListener = 
