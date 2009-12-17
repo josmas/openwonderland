@@ -236,13 +236,13 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             boundsViewerEntity.dispose();
             boundsViewerEntity = null;
 
-	    showBoundsCheckBox.setSelected(false);
+	    showListenAreaCheckBox.setSelected(false);
         }
 
         if (activeAreaViewerEntity != null) {
             activeAreaViewerEntity.dispose();
             activeAreaViewerEntity = null;
-	    showActiveAreaCheckBox.setSelected(false);
+	    showTalkAreaCheckBox.setSelected(false);
         }
     }
 
@@ -260,8 +260,6 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         if (state == null) {
             return;
         }
-
-	System.out.println("Name text field " + nameTextField.getText());
 
         state.setName(nameTextField.getText());
 
@@ -359,6 +357,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    activeAreaXExtentSpinner.setValue(originalActiveArea.activeAreaBounds.getX());
 	    activeAreaYExtentSpinner.setValue(originalActiveArea.activeAreaBounds.getY());
 	    activeAreaZExtentSpinner.setValue(originalActiveArea.activeAreaBounds.getZ());
+	    activeAreaXOriginSpinner.setValue(origin.getX());
+	    activeAreaYOriginSpinner.setValue(origin.getY());
+	    activeAreaZOriginSpinner.setValue(origin.getZ());
 	    activeAreaXExtentSpinner.setEnabled(true);
 	    activeAreaYExtentSpinner.setEnabled(true);
 	    activeAreaZExtentSpinner.setEnabled(true);
@@ -377,7 +378,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    boundsViewerEntity = null;
 	}
 
-        if (showBoundsCheckBox.isSelected() == false) {
+        if (showListenAreaCheckBox.isSelected() == false) {
 	    return;
 	}
 
@@ -402,7 +403,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    activeAreaViewerEntity = null;
 	}
 
-        if (showActiveAreaCheckBox.isSelected() == false) {
+        if (showTalkAreaCheckBox.isSelected() == false) {
 	    return;
 	}
 
@@ -528,11 +529,11 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	    return true;
 	}
 
-	if (originalShowBounds != showBoundsCheckBox.isSelected()) {
+	if (originalShowBounds != showListenAreaCheckBox.isSelected()) {
 	    return true;
 	}
 
-	if (originalShowActiveArea != showActiveAreaCheckBox.isSelected()) {
+	if (originalShowActiveArea != showTalkAreaCheckBox.isSelected()) {
 	    return true;
 	}
 
@@ -742,7 +743,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         buttonGroup2 = new javax.swing.ButtonGroup();
         jSpinner1 = new javax.swing.JSpinner();
         cellBoundsLabel = new javax.swing.JLabel();
-        showBoundsCheckBox = new javax.swing.JCheckBox();
+        showListenAreaCheckBox = new javax.swing.JCheckBox();
         activeAreaUseCellBoundsRadioButton = new javax.swing.JRadioButton();
         activeAreaZOriginSpinner = new javax.swing.JSpinner();
         activeAreaYOriginSpinner = new javax.swing.JSpinner();
@@ -755,7 +756,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         activeAreaSpecifyRadiusRadioButton = new javax.swing.JRadioButton();
         jLabel3 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        showActiveAreaCheckBox = new javax.swing.JCheckBox();
+        showTalkAreaCheckBox = new javax.swing.JCheckBox();
         jLabel4 = new javax.swing.JLabel();
         activeAreaZExtentSpinner = new javax.swing.JSpinner();
         activeAreaFullVolumeRadiusSpinner = new javax.swing.JSpinner();
@@ -770,10 +771,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         volumeSlider = new javax.swing.JSlider();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
-        showBoundsCheckBox.setText(bundle.getString("MicrophoneComponentProperties.showBoundsCheckBox.text")); // NOI18N
-        showBoundsCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        showListenAreaCheckBox.setText(bundle.getString("MicrophoneComponentProperties.showListenAreaCheckBox.text")); // NOI18N
+        showListenAreaCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showBoundsCheckBoxActionPerformed(evt);
+                showListenAreaCheckBoxActionPerformed(evt);
             }
         });
 
@@ -808,10 +809,10 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 
         jLabel2.setText(bundle.getString("MicrophoneComponentProperties.jLabel2.text")); // NOI18N
 
-        showActiveAreaCheckBox.setText(bundle.getString("MicrophoneComponentProperties.showActiveAreaCheckBox.text")); // NOI18N
-        showActiveAreaCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        showTalkAreaCheckBox.setText(bundle.getString("MicrophoneComponentProperties.showTalkAreaCheckBox.text")); // NOI18N
+        showTalkAreaCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showActiveAreaCheckBoxActionPerformed(evt);
+                showTalkAreaCheckBoxActionPerformed(evt);
             }
         });
 
@@ -882,7 +883,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(showBoundsCheckBox)
+                            .add(showListenAreaCheckBox)
                             .add(layout.createSequentialGroup()
                                 .add(useCellBoundsRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -925,7 +926,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                                 .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(showActiveAreaCheckBox))
+                            .add(showTalkAreaCheckBox))
                         .add(53, 53, 53))
                     .add(layout.createSequentialGroup()
                         .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -962,7 +963,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                     .add(yExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(zExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(showBoundsCheckBox)
+                .add(showListenAreaCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(jLabel3)
@@ -983,7 +984,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
                     .add(activeAreaYExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(activeAreaZExtentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(showActiveAreaCheckBox)
+                .add(showTalkAreaCheckBox)
                 .addContainerGap(203, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1117,7 +1118,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	}
     }//GEN-LAST:event_specifyBoxRadioButtonActionPerformed
 
-    private void showBoundsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showBoundsCheckBoxActionPerformed
+    private void showListenAreaCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showListenAreaCheckBoxActionPerformed
 	if (editor == null) {
 	    return;
 	}
@@ -1125,9 +1126,9 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
         showBounds();
-    }//GEN-LAST:event_showBoundsCheckBoxActionPerformed
+    }//GEN-LAST:event_showListenAreaCheckBoxActionPerformed
 
-    private void showActiveAreaCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showActiveAreaCheckBoxActionPerformed
+    private void showTalkAreaCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTalkAreaCheckBoxActionPerformed
 	if (editor == null) {
 	    return;
 	}
@@ -1135,7 +1136,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
         showActiveArea();
-    }//GEN-LAST:event_showActiveAreaCheckBoxActionPerformed
+    }//GEN-LAST:event_showTalkAreaCheckBoxActionPerformed
 
     private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
 	if (editor == null) {
@@ -1167,8 +1168,8 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     private javax.swing.JLabel jLabel5;
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.JTextField nameTextField;
-    private javax.swing.JCheckBox showActiveAreaCheckBox;
-    private javax.swing.JCheckBox showBoundsCheckBox;
+    private javax.swing.JCheckBox showListenAreaCheckBox;
+    private javax.swing.JCheckBox showTalkAreaCheckBox;
     private javax.swing.JRadioButton specifyBoxRadioButton;
     private javax.swing.JRadioButton specifyRadiusRadioButton;
     private javax.swing.JRadioButton useCellBoundsRadioButton;

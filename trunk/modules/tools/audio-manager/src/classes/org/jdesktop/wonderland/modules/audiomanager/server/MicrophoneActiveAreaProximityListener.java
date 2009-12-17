@@ -79,8 +79,8 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
 	logger.info("viewEnterExit active area:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	//System.out.println("viewEnterExit active area:  " + entered + " cellID " + cellID
-	//    + " viewCellID " + viewCellID + " bounds " + proximityVolume);
+	System.out.println("viewEnterExit active area:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID + " bounds " + proximityVolume);
 
 	String callId = CallID.getCallID(viewCellID);
 
@@ -142,6 +142,9 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
 	
         Player player = vm.getPlayer(callId);
 
+	System.out.println("Talk area entered, Setting speaking volume to " 
+	    + volume + " for " + player);
+
         if (player == null) {
             logger.warning("Can't find player for " + callId);
             return;
@@ -160,9 +163,6 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
 	} else {
 	    audioGroup.setSpeaking(player, true);
 	}
-
-	//System.out.println("Active area entered, Setting speaking volume to " 
-	//    + volume + " for " + player);
 
 	audioGroup.setSpeakingAttenuation(player, volume);
     }
@@ -186,8 +186,8 @@ public class MicrophoneActiveAreaProximityListener implements ProximityListenerS
             return;
         }
 
-	//System.out.println("Active area exit, Player is no longer speaking in audio group. " 
-	//    + player);
+	System.out.println("Talk area exit, Player is no longer speaking in audio group. " 
+	    + player);
 
 	audioGroup.setSpeaking(player, false);
 	audioGroup.setSpeakingAttenuation(player, volume);

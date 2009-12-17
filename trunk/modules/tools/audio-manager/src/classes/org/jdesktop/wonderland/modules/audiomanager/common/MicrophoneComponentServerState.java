@@ -192,7 +192,7 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
 	}
 
         public ActiveArea(Vector3f origin, Vector3f bounds) {
-            this(new Vector3f(), MicrophoneBoundsType.BOX, bounds);
+            this(origin, MicrophoneBoundsType.BOX, bounds);
         }
 
 	private ActiveArea (Vector3f activeAreaOrigin, MicrophoneBoundsType activeAreaBoundsType, 
