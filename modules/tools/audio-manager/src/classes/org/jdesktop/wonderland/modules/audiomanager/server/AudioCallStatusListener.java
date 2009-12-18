@@ -134,7 +134,7 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 		return;
 	    }
 
-	    vm.dump("all");
+	    //vm.dump("all");
 	    player.setPrivateMixes(true);
 
 	    sender.send(new CallEstablishedMessage(callID));

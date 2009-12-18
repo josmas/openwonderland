@@ -18,8 +18,12 @@
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.AudioGroupSetup;
+import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
 import com.sun.sgs.app.AppContext;
@@ -41,6 +45,7 @@ import java.io.Serializable;
 
 import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellResourceManager;
 import org.jdesktop.wonderland.server.security.ActionMap;
 import org.jdesktop.wonderland.server.security.Resource;
@@ -52,17 +57,17 @@ import org.jdesktop.wonderland.server.security.SecurityManager;
  * A server cell that provides a microphone proximity listener
  * @author jprovino
  */
-public class MicrophoneEnterProximityListener implements ProximityListenerSrv, 
+public class MicrophoneTalkAreaProximityListener implements ProximityListenerSrv, 
 	ManagedObject, Serializable {
 
     private static final Logger logger =
-            Logger.getLogger(MicrophoneEnterProximityListener.class.getName());
+            Logger.getLogger(MicrophoneTalkAreaProximityListener.class.getName());
 
     private CellID cellID;
     private String name;
     private double volume;
 
-    public MicrophoneEnterProximityListener(CellMO cellMO, String name, double volume) {
+    public MicrophoneTalkAreaProximityListener(CellMO cellMO, String name, double volume) {
 	cellID = cellMO.getCellID();
         this.name = name;
 	this.volume = volume;
@@ -72,30 +77,23 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-	System.out.println("viewEnterExit Listen Area:  " + entered + " cellID " + cellID
-	    + " viewCellID " + viewCellID + " bounds " + proximityVolume + " index " 
-	    + proximityIndex);
+	logger.info("viewEnterExit talk area:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID);
+
+	System.out.println("viewEnterExit talk area:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID + " bounds " + proximityVolume);
 
 	String callId = CallID.getCallID(viewCellID);
 
 	if (entered) {
-	    cellEntered(callId);
+	    talkAreaEntered(callId);
 	} else {
-	    cellExited(callId);
+	    talkAreaExited(callId);
 	}
     }
 
-    private void cellEntered(String callId) {
-        /*
-         * The avatar has entered the Microphone cell.
-         * Set the public and incoming spatializers for the avatar to be
-         * the zero volume spatializer.
-         * Set a private spatializer for the given fullVolume radius
-         * for all the other avatars in the cell.
-         * For each avatar already in the cell, set a private spatializer
-         * for this avatar.
-         */
-        logger.info(callId + " entered microphone " + name);
+    private void talkAreaEntered(String callId) {
+	logger.info(callId + " entered talk area " + name);
 
         // get the security manager
         SecurityManager security = AppContext.getManager(SecurityManager.class);
@@ -112,18 +110,18 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
             request.put(resource.getId(), am);
 
             // perform the security check
-            security.doSecure(request, new CellBoundsEnteredTask(resource.getId(), callId));
+            security.doSecure(request, new CellEnteredTask(resource.getId(), callId));
         } else {
             // no security, just make the call directly
-            cellBoundsEntered(callId);
+            cellEntered(callId);
         }
     }
 
-    private class CellBoundsEnteredTask implements SecureTask, Serializable {
+    private class CellEnteredTask implements SecureTask, Serializable {
         private String resourceID;
         private String callId;
 
-        public CellBoundsEnteredTask(String resourceID, String callId) {
+        public CellEnteredTask(String resourceID, String callId) {
             this.resourceID = resourceID;
             this.callId = callId;
         }
@@ -132,60 +130,59 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
             ActionMap am = granted.get(resourceID);
             if (am != null && !am.isEmpty()) {
                 // request was granted -- the user has permission to enter
-                cellBoundsEntered(callId);
+                cellEntered(callId);
             } else {
-                logger.warning("Access denied to enter microphone bounds");
+                logger.warning("Access denied to enter microphone talk area.");
             }
         }
     }
 
-    private void cellBoundsEntered(String callId) {
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+    private void cellEntered(String callId) {
 
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	
         Player player = vm.getPlayer(callId);
 
-	System.out.println("Player entered mic hearing range:  " + player);
+	System.out.println("Talk area entered, Setting speaking volume to " 
+	    + volume + " for " + player);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
             return;
         }
-
-	AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-            logger.warning("Audio group doesn't exist:  " + name);
-            return;
-        }
-
-	boolean isSpeaking = false;
-
-	AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
-
-	if (info != null && info.isSpeaking) {
-	    /*
-	     * Player is already in audio group and speaking.
-	     * This could happen if the active area is outside of the
-	     * listening area.
-	     */
-	    isSpeaking = true;
-	}
-
-        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(isSpeaking,
-            AudioGroupPlayerInfo.ChatType.PUBLIC));
-    }
-
-    private void cellExited(String callId) {
-        logger.info(callId + " exited microphone " + name);
-
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
-        if (audioGroup == null) {
-            logger.warning("Audio group doesn't exist:  " + name);
-            return;
-        }
+	if (audioGroup == null) {
+	    CellMO cellMO = CellManagerMO.getCellManager().getCell(cellID);
+
+	    MicrophoneComponentMO microphoneComponentMO = 
+		cellMO.getComponent(MicrophoneComponentMO.class);
+
+	    audioGroup = microphoneComponentMO.createAudioGroup(name);
+	}
+
+	if (audioGroup.getPlayerInfo(player) == null) {
+            audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
+                AudioGroupPlayerInfo.ChatType.PUBLIC));
+	} else {
+	    audioGroup.setSpeaking(player, true);
+	}
+
+	audioGroup.setSpeakingAttenuation(player, volume);
+    }
+
+    private void talkAreaExited(String callId) {
+	logger.info(callId + " exited talk area " + name);
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        AudioGroup audioGroup = vm.getAudioGroup(name);
+
+	if (audioGroup == null) {
+	    logger.info("Audio group doesn't exit:  " + name);
+	    return;
+	}
 
         Player player = vm.getPlayer(callId);
 
@@ -194,8 +191,11 @@ public class MicrophoneEnterProximityListener implements ProximityListenerSrv,
             return;
         }
 
-        audioGroup.removePlayer(player);
-	System.out.println("Player exited mic hearing range:  " + player);
+	System.out.println("Talk area exit, Player is no longer speaking in audio group. " 
+	    + player);
+
+	audioGroup.setSpeaking(player, false);
+	audioGroup.setSpeakingAttenuation(player, volume);
     }
 
 }

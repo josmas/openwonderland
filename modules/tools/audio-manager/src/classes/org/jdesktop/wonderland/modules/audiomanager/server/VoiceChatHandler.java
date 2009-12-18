@@ -981,7 +981,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    PresenceInfo info = playerMap.get(player.getId());
 	
 	    if (info == null) {
-		logger.warning("Unable to find presence info for " 
+		logger.fine("Unable to find presence info for " 
 		    + player.getId() + " group " + group);
 		continue;
 	    }

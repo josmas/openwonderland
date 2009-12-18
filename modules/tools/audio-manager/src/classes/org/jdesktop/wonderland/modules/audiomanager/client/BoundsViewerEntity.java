@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
@@ -105,9 +106,12 @@ public class BoundsViewerEntity extends Entity {
 
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
-        Vector3f translation = cell.getWorldTransform().getTranslation(null);
+	CellTransform transform = cell.getWorldTransform();
+
+        Vector3f translation = transform.getTranslation(null);
 	translation = translation.add(bounds.getCenter());
         rootNode.setLocalTranslation(translation);
+	rootNode.setLocalRotation(transform.getRotation(null));
 
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the bounds viewer. We also re-set the size
@@ -125,6 +129,7 @@ public class BoundsViewerEntity extends Entity {
                         Vector3f translation = transform.getTranslation(null);
 		        translation = translation.add(bounds.getCenter());
                         rootNode.setLocalTranslation(translation);
+			rootNode.setLocalRotation(transform.getRotation(null));
                         wm.addToUpdateList(rootNode);
                     }
                 };
