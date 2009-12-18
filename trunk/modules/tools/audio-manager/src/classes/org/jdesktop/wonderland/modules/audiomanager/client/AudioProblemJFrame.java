@@ -66,16 +66,32 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        reconfigureButton = new javax.swing.JButton();
-        reconnectButton = new javax.swing.JButton();
-        okButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         audioProblemLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         audioProblemTextArea = new javax.swing.JTextArea();
+        reconfigureButton = new javax.swing.JButton();
+        reconnectButton = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
 
         setTitle("Audio Problem");
 
-        reconfigureButton.setText("Reconfigure");
+        audioProblemLabel.setFont(audioProblemLabel.getFont().deriveFont(audioProblemLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        audioProblemLabel.setText("Softphone Problem: ");
+        audioProblemLabel.setFocusable(false);
+        audioProblemLabel.setRequestFocusEnabled(false);
+
+        audioProblemTextArea.setBackground(new java.awt.Color(238, 238, 238));
+        audioProblemTextArea.setColumns(1);
+        audioProblemTextArea.setEditable(false);
+        audioProblemTextArea.setLineWrap(true);
+        audioProblemTextArea.setRows(3);
+        audioProblemTextArea.setBorder(null);
+        audioProblemTextArea.setFocusable(false);
+        audioProblemTextArea.setRequestFocusEnabled(false);
+        jScrollPane2.setViewportView(audioProblemTextArea);
+
+        reconfigureButton.setText("Reconfigure...");
         reconfigureButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reconfigureButtonActionPerformed(evt);
@@ -96,42 +112,47 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
             }
         });
 
-        audioProblemLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-
-        audioProblemTextArea.setColumns(20);
-        audioProblemTextArea.setRows(5);
-        jScrollPane2.setViewportView(audioProblemTextArea);
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                    .add(audioProblemLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(reconfigureButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(reconnectButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(okButton)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(9, 9, 9)
+                .add(audioProblemLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(okButton)
+                    .add(reconnectButton)
+                    .add(reconfigureButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(audioProblemLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(reconfigureButton)
-                        .add(65, 65, 65)
-                        .add(reconnectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 73, Short.MAX_VALUE)
-                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(38, 38, 38)
-                .add(audioProblemLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 140, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(reconfigureButton)
-                    .add(okButton)
-                    .add(reconnectButton))
-                .addContainerGap())
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -163,6 +184,7 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel audioProblemLabel;
     private javax.swing.JTextArea audioProblemTextArea;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton okButton;
     private javax.swing.JButton reconfigureButton;
