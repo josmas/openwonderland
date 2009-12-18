@@ -25,84 +25,89 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="jLabel3" alignment="1" max="32767" attributes="1"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jLabel4" max="32767" attributes="1"/>
                   <Component id="jLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel4" alignment="1" max="32767" attributes="1"/>
+                  <Component id="jLabel3" alignment="0" pref="76" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="showListenAreaCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="useCellBoundsRadioButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cellBoundsLabel" pref="223" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="specifyRadiusRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="specifyBoxRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="fullVolumeRadiusSpinner" linkSize="2" alignment="0" pref="60" max="32767" attributes="1"/>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="activeAreaXOriginSpinner" linkSize="2" alignment="0" pref="60" max="32767" attributes="1"/>
-                                          <Component id="xExtentSpinner" linkSize="2" alignment="1" pref="60" max="32767" attributes="1"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="activeAreaYOriginSpinner" linkSize="2" max="32767" attributes="1"/>
-                                          <Component id="yExtentSpinner" linkSize="2" alignment="0" pref="46" max="32767" attributes="1"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="zExtentSpinner" linkSize="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="activeAreaZOriginSpinner" linkSize="2" min="-2" max="-2" attributes="1"/>
-                              </Group>
-                          </Group>
-                          <Component id="volumeSlider" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="showListenAreaCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="volumeSlider" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Group type="102" alignment="0" attributes="1">
+                          <Component id="listenAreaUseCellBoundsRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                          <Component id="cellBoundsLabel" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="nameTextField" alignment="0" max="32767" attributes="1"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
+                          <Component id="listenAreaXOriginSpinner" min="-2" pref="55" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="listenAreaYOriginSpinner" min="-2" pref="53" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="listenAreaZOriginSpinner" min="-2" pref="54" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="activeAreaUseCellBoundsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="activeAreaSpecifyBoxRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="activeAreaSpecifyRadiusRadioButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                          <Component id="activeAreaXExtentSpinner" linkSize="2" alignment="0" max="32767" attributes="1"/>
-                                          <Component id="activeAreaFullVolumeRadiusSpinner" linkSize="2" alignment="0" pref="58" max="32767" attributes="1"/>
+                          <Component id="talkAreaUseCellBoundsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="showTalkAreaCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" alignment="0" groupAlignment="1" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="listenAreaSpecifyRadiusRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="listenAreaSpecifyBoxRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="listenAreaRadiusSpinner" pref="66" max="32767" attributes="1"/>
+                                      <Component id="listenAreaXExtentSpinner" linkSize="2" alignment="0" pref="60" max="32767" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                                  <Component id="listenAreaYExtentSpinner" min="-2" pref="54" max="-2" attributes="1"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="listenAreaZExtentSpinner" min="-2" pref="48" max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="talkAreaSpecifyBoxRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="talkAreaSpecifyRadiusRadioButton" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                              <Component id="talkAreaXExtentSpinner" linkSize="2" alignment="0" max="32767" attributes="1"/>
+                                              <Component id="talkAreaRadiusSpinner" linkSize="2" alignment="0" pref="58" max="32767" attributes="1"/>
+                                              <Component id="talkAreaXOriginSpinner" linkSize="2" alignment="1" pref="60" max="32767" attributes="1"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="talkAreaYExtentSpinner" linkSize="2" min="-2" pref="60" max="-2" attributes="1"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="talkAreaZExtentSpinner" linkSize="2" min="-2" pref="60" max="-2" attributes="1"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="talkAreaYOriginSpinner" linkSize="2" min="-2" max="-2" attributes="1"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="talkAreaZOriginSpinner" linkSize="2" min="-2" max="-2" attributes="1"/>
                                       </Group>
                                   </Group>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="activeAreaYExtentSpinner" linkSize="2" min="-2" pref="60" max="-2" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="activeAreaZExtentSpinner" linkSize="2" min="-2" pref="60" max="-2" attributes="1"/>
                           </Group>
-                          <Component id="showTalkAreaCheckBox" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="nameTextField" min="-2" pref="200" max="-2" attributes="1"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="60" max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -119,53 +124,58 @@
                   <Component id="volumeSlider" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" pref="27" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaXOriginSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaYOriginSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaZOriginSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="useCellBoundsRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="listenAreaUseCellBoundsRadioButton" min="-2" max="-2" attributes="0"/>
                   <Component id="cellBoundsLabel" min="-2" pref="22" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="specifyRadiusRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="fullVolumeRadiusSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaSpecifyRadiusRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaRadiusSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="specifyBoxRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="xExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="yExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="zExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaSpecifyBoxRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaXExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaYExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="listenAreaZExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               <Component id="showListenAreaCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="jLabel3" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel5" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeAreaXOriginSpinner" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeAreaYOriginSpinner" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeAreaZOriginSpinner" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaXOriginSpinner" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaYOriginSpinner" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaZOriginSpinner" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="activeAreaUseCellBoundsRadioButton" min="-2" max="-2" attributes="0"/>
+              <Component id="talkAreaUseCellBoundsRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="activeAreaSpecifyRadiusRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeAreaFullVolumeRadiusSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaSpecifyRadiusRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaRadiusSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="activeAreaSpecifyBoxRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeAreaXExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeAreaYExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeAreaZExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaSpecifyBoxRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaXExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaYExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="talkAreaZExtentSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="showTalkAreaCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="203" max="32767" attributes="0"/>
+              <EmptySpace pref="125" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -183,41 +193,41 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showListenAreaCheckBoxActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JRadioButton" name="activeAreaUseCellBoundsRadioButton">
+    <Component class="javax.swing.JRadioButton" name="talkAreaUseCellBoundsRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup2"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.activeAreaUseCellBoundsRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.talkAreaUseCellBoundsRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="activeAreaUseCellBoundsRadioButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="talkAreaUseCellBoundsRadioButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JSpinner" name="activeAreaZOriginSpinner">
+    <Component class="javax.swing.JSpinner" name="talkAreaZOriginSpinner">
     </Component>
-    <Component class="javax.swing.JSpinner" name="activeAreaYOriginSpinner">
+    <Component class="javax.swing.JSpinner" name="talkAreaYOriginSpinner">
     </Component>
-    <Component class="javax.swing.JSpinner" name="xExtentSpinner">
+    <Component class="javax.swing.JSpinner" name="listenAreaXExtentSpinner">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="yExtentSpinner">
+    <Component class="javax.swing.JSpinner" name="listenAreaYExtentSpinner">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="fullVolumeRadiusSpinner">
+    <Component class="javax.swing.JSpinner" name="listenAreaRadiusSpinner">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="nameTextField">
     </Component>
-    <Component class="javax.swing.JSpinner" name="zExtentSpinner">
+    <Component class="javax.swing.JSpinner" name="listenAreaZExtentSpinner">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
@@ -229,22 +239,23 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JRadioButton" name="activeAreaSpecifyRadiusRadioButton">
+    <Component class="javax.swing.JRadioButton" name="talkAreaSpecifyRadiusRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup2"/>
         </Property>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.activeAreaSpecifyRadiusRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.talkAreaSpecifyRadiusRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="activeAreaSpecifyRadiusRadioButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="talkAreaSpecifyRadiusRadioButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
+        <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.jLabel3.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
@@ -274,60 +285,60 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="activeAreaZExtentSpinner">
+    <Component class="javax.swing.JSpinner" name="talkAreaZExtentSpinner">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="activeAreaFullVolumeRadiusSpinner">
+    <Component class="javax.swing.JSpinner" name="talkAreaRadiusSpinner">
     </Component>
-    <Component class="javax.swing.JRadioButton" name="activeAreaSpecifyBoxRadioButton">
+    <Component class="javax.swing.JRadioButton" name="talkAreaSpecifyBoxRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup2"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.activeAreaSpecifyBoxRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.talkAreaSpecifyBoxRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="activeAreaSpecifyBoxRadioButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="talkAreaSpecifyBoxRadioButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JSpinner" name="activeAreaYExtentSpinner">
+    <Component class="javax.swing.JSpinner" name="talkAreaYExtentSpinner">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="activeAreaXExtentSpinner">
+    <Component class="javax.swing.JSpinner" name="talkAreaXExtentSpinner">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JRadioButton" name="specifyRadiusRadioButton">
+    <Component class="javax.swing.JRadioButton" name="listenAreaSpecifyRadiusRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.specifyRadiusRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.listenAreaSpecifyRadiusRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="specifyRadiusRadioButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="listenAreaSpecifyRadiusRadioButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JRadioButton" name="specifyBoxRadioButton">
+    <Component class="javax.swing.JRadioButton" name="listenAreaSpecifyBoxRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.specifyBoxRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.listenAreaSpecifyBoxRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="specifyBoxRadioButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="listenAreaSpecifyBoxRadioButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
@@ -337,20 +348,20 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="activeAreaXOriginSpinner">
+    <Component class="javax.swing.JSpinner" name="talkAreaXOriginSpinner">
     </Component>
-    <Component class="javax.swing.JRadioButton" name="useCellBoundsRadioButton">
+    <Component class="javax.swing.JRadioButton" name="listenAreaUseCellBoundsRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.useCellBoundsRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.listenAreaUseCellBoundsRadioButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="useCellBoundsRadioButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="listenAreaUseCellBoundsRadioButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JSlider" name="volumeSlider">
@@ -364,6 +375,19 @@
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="volumeSliderStateChanged"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel6">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="MicrophoneComponentProperties.jLabel6.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="listenAreaXOriginSpinner">
+    </Component>
+    <Component class="javax.swing.JSpinner" name="listenAreaYOriginSpinner">
+    </Component>
+    <Component class="javax.swing.JSpinner" name="listenAreaZOriginSpinner">
     </Component>
   </SubComponents>
 </Form>

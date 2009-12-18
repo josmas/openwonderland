@@ -45,14 +45,14 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
     private String name = BUNDLE.getString("Microphone");
     @XmlElement(name = "volume")
     private double volume = 1;
-    @XmlElement(name = "fullVolumeArea")
-    private FullVolumeArea fullVolumeArea = new FullVolumeArea();
+    @XmlElement(name = "listenArea")
+    private ListenArea listenArea = new ListenArea();
     @XmlElement(name = "showBounds")
     private boolean showBounds = false;
-    @XmlElement(name = "activeArea")
-    private ActiveArea activeArea = new ActiveArea();
-    @XmlElement(name = "showActiveArea")
-    private boolean showActiveArea = false;
+    @XmlElement(name = "talkArea")
+    private TalkArea talkArea = new TalkArea();
+    @XmlElement(name = "showTalkArea")
+    private boolean showTalkArea = false;
 
     public enum MicrophoneBoundsType {
 	CELL_BOUNDS,
@@ -64,13 +64,13 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
     public MicrophoneComponentServerState() {
     }
 
-    public MicrophoneComponentServerState(String name, double volume, FullVolumeArea fullVolumeArea,
-	    ActiveArea activeArea) {
+    public MicrophoneComponentServerState(String name, double volume, ListenArea listenArea,
+	    TalkArea talkArea) {
 
         this.name = name;
 	this.volume = volume;
-	this.fullVolumeArea = fullVolumeArea;
-	this.activeArea = activeArea;
+	this.listenArea = listenArea;
+	this.talkArea = talkArea;
     }
 
     public String getServerComponentClassName() {
@@ -95,13 +95,13 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
 	return volume;
     }
 
-    public void setFullVolumeArea(FullVolumeArea fullVolumeArea) {
-	this.fullVolumeArea = fullVolumeArea;
+    public void setListenArea(ListenArea listenArea) {
+	this.listenArea = listenArea;
     }
 
     @XmlTransient
-    public FullVolumeArea getFullVolumeArea() {
-	return fullVolumeArea;
+    public ListenArea getListenArea() {
+	return listenArea;
     }
 
     public void setShowBounds(boolean showBounds) {
@@ -113,28 +113,31 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
 	return showBounds;
     }
 
-    public void setActiveArea(ActiveArea activeArea) {
-	this.activeArea = activeArea;
+    public void setTalkArea(TalkArea talkArea) {
+	this.talkArea = talkArea;
     }
 
     @XmlTransient
-    public ActiveArea getActiveArea() {
-	return activeArea;
+    public TalkArea getTalkArea() {
+	return talkArea;
     }
 
-    public void setShowActiveArea(boolean showActiveArea) {
-	this.showActiveArea = showActiveArea;
+    public void setShowTalkArea(boolean showTalkArea) {
+	this.showTalkArea = showTalkArea;
     }
 
     @XmlTransient
-    public boolean getShowActiveArea() {
-	return showActiveArea;
+    public boolean getShowTalkArea() {
+	return showTalkArea;
     }
 
-    @XmlRootElement(name = "microphone-component-fullVolumeArea")
+    @XmlRootElement(name = "microphone-component-listenArea")
     @ServerState
-    public static class FullVolumeArea implements Serializable {
+    public static class ListenArea implements Serializable {
 
+	@XmlElement(name="listenAreaOrigin")
+        @XmlJavaTypeAdapter(Vector3fAdapter.class)
+        public Vector3f listenAreaOrigin = new Vector3f();
 	@XmlElement(name="boundsType") public MicrophoneBoundsType boundsType = 
 	    MicrophoneBoundsType.CELL_BOUNDS;
 	@XmlElement(name="bounds") 
@@ -142,70 +145,74 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
 	public Vector3f bounds = new Vector3f();
 
         /** Default constructor */
-        public FullVolumeArea() {
-            this(MicrophoneBoundsType.CELL_BOUNDS, new Vector3f());
+        public ListenArea() {
+	}
+
+        public ListenArea(Vector3f origin) {
+            this(origin, MicrophoneBoundsType.CELL_BOUNDS, origin);
         }
 
-        public FullVolumeArea(double fullVolumeRadius) {
-            this(MicrophoneBoundsType.SPHERE, new Vector3f((float) fullVolumeRadius, 0f, 0f));
+        public ListenArea(Vector3f origin, double listenRadius) {
+            this(origin, MicrophoneBoundsType.SPHERE, new Vector3f((float) listenRadius, 0f, 0f));
         }
 
-        public FullVolumeArea(Vector3f bounds) {
-            this(MicrophoneBoundsType.BOX, bounds);
+        public ListenArea(Vector3f origin, Vector3f bounds) {
+            this(origin, MicrophoneBoundsType.BOX, bounds);
         }
 
-	private FullVolumeArea(MicrophoneBoundsType boundsType, Vector3f bounds) {
+	private ListenArea(Vector3f origin, MicrophoneBoundsType boundsType, Vector3f bounds) {
+	    this.listenAreaOrigin = origin;
 	    this.boundsType = boundsType;
 	    this.bounds = bounds;
 	}
 
 	public String toString() {
-	    return "MicrophoneBoundsType " + boundsType + " bounds " + bounds;
+	    return "Origin " + listenAreaOrigin + " MicrophoneBoundsType " + boundsType + " bounds " + bounds;
 	}
 
     }
 
-    @XmlRootElement(name = "microphone-component-activeArea")
+    @XmlRootElement(name = "microphone-component-talkArea")
     @ServerState
-    public static class ActiveArea implements Serializable {
+    public static class TalkArea implements Serializable {
 
-	@XmlElement(name="activeAreaOrigin")
+	@XmlElement(name="talkAreaOrigin")
         @XmlJavaTypeAdapter(Vector3fAdapter.class)
-        public Vector3f activeAreaOrigin = new Vector3f();
-	@XmlElement(name="activeAreaBoundsType") 
-	public MicrophoneBoundsType activeAreaBoundsType = MicrophoneBoundsType.BOX;
-	@XmlElement(name="activeAreaBounds") 
+        public Vector3f talkAreaOrigin = new Vector3f();
+	@XmlElement(name="talkAreaBoundsType") 
+	public MicrophoneBoundsType talkAreaBoundsType = MicrophoneBoundsType.BOX;
+	@XmlElement(name="talkAreaBounds") 
         @XmlJavaTypeAdapter(Vector3fAdapter.class)
-	public Vector3f activeAreaBounds = new Vector3f();
+	public Vector3f talkAreaBounds = new Vector3f();
 
         /** Default constructor */
-        public ActiveArea() {
+        public TalkArea() {
             this(new Vector3f());
         }
 
-        public ActiveArea (Vector3f origin) {
+        public TalkArea (Vector3f origin) {
 	    this(origin, MicrophoneBoundsType.CELL_BOUNDS, new Vector3f());
 	}
 
-        public ActiveArea (Vector3f origin, double fullVolumeRadius) {
-            this(origin, MicrophoneBoundsType.SPHERE, new Vector3f((float) fullVolumeRadius, 0f, 0f));
+        public TalkArea (Vector3f origin, double listenRadius) {
+            this(origin, MicrophoneBoundsType.SPHERE, new Vector3f((float) listenRadius, 0f, 0f));
 	}
 
-        public ActiveArea(Vector3f origin, Vector3f bounds) {
+        public TalkArea(Vector3f origin, Vector3f bounds) {
             this(origin, MicrophoneBoundsType.BOX, bounds);
         }
 
-	private ActiveArea (Vector3f activeAreaOrigin, MicrophoneBoundsType activeAreaBoundsType, 
-		Vector3f activeAreaBounds) {
+	private TalkArea (Vector3f talkAreaOrigin, MicrophoneBoundsType talkAreaBoundsType, 
+		Vector3f talkAreaBounds) {
 
-	    this.activeAreaOrigin = activeAreaOrigin;
-	    this.activeAreaBoundsType = activeAreaBoundsType;
-	    this.activeAreaBounds = activeAreaBounds;
+	    this.talkAreaOrigin = talkAreaOrigin;
+	    this.talkAreaBoundsType = talkAreaBoundsType;
+	    this.talkAreaBounds = talkAreaBounds;
 	}
 
 	public String toString() {
-	    return "Origin " + activeAreaOrigin + " Bounds Type " + activeAreaBoundsType 
-		+ " bounds " + activeAreaBounds;
+	    return "Origin " + talkAreaOrigin + " Bounds Type " + talkAreaBoundsType 
+		+ " bounds " + talkAreaBounds;
         }
 
     } 
