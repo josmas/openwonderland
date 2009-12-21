@@ -76,7 +76,6 @@ import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -520,7 +519,17 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (shaderCheck != null && shaderCheck.equals("true")) {
             shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
         }
-        if (rm.supportsOpenGL20() == false || !shaderPass) {
+
+        // Issue 1114: make sure the system is telling the truth about what
+        // it supports by trying a mock shader program
+        boolean uniformsPass = shaderPass && ShaderTest.getInstance().testShaders();
+
+        logger.warning("Checking avatar detail level.  OpenGL20: " +
+                       rm.supportsOpenGL20() + " ShaderCheck: " + shaderPass +
+                       " UniformsCheck: " + uniformsPass);
+
+        if (rm.supportsOpenGL20() == false || !shaderPass || !uniformsPass) {
+            logger.warning("Forcing low detail.");
             avatarDetail = "low";
         }
 
@@ -655,7 +664,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             ac.removeCollisionListener(collisionListener);
          }
     }
-
 
     /**
      * Sets the Z-buffer state on the given node.
