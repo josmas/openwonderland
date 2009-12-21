@@ -834,13 +834,19 @@ public class AudioManagerClient extends BaseConnection implements
             logger.warning(e.getMessage());
 
             logger.warning("The client is unable to connect to the bridge " +
-                    "public address. Trying the bridge private Address.");
+                    "public address. Trying InetAddress.getLocalHost().");
 
             try {
-                InetAddress ia = NetworkAddress.getPrivateLocalAddress(
-                        "server:" + tokens[2] + ":" + tokens[4] + ":10000");
+                //InetAddress ia = NetworkAddress.getPrivateLocalAddress(
+                //        "server:" + tokens[2] + ":" + tokens[4] + ":10000");
 
-                localAddress = ia.getHostAddress();
+                //localAddress = ia.getHostAddress();
+		localAddress = InetAddress.getLocalHost().getHostAddress();
+
+		if (localAddress.startsWith("127")) {
+		    logger.warning("local address is " + localAddress
+			+ ".  This can only work if the server is running locally."); 
+		}
             } catch (UnknownHostException ee) {
                 logger.warning(ee.getMessage());
             }
