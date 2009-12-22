@@ -46,7 +46,7 @@ public class NameTagNode extends Node {
     // colors
     public static final Color SPEAKING_COLOR = Color.RED;
     public static final Color NOT_SPEAKING_COLOR = Color.WHITE;
-    public static final Color CONE_OF_SILENCE_COLOR = Color.BLACK;
+    public static final Color CONE_OF_SILENCE_COLOR = Color.LIGHT_GRAY;
 
     private Color foregroundColor = NOT_SPEAKING_COLOR;
     private Color backgroundColor = new Color(0f, 0f, 0f);
