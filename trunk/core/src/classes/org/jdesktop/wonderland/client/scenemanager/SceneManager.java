@@ -180,6 +180,12 @@ public class SceneManager {
             return;
         }
         else if (policy.isSingleSelection(event) == true) {
+            // issue #1115: ignore the event if it is selecting an object that
+            // is already selected
+            if (selectedEntityList.contains(entity) == true) {
+                return;
+            }
+
             // Clear out the list, add the new Entity and fire an event
             selectedEntityList.clear();
             selectedEntityList.add(entity);
