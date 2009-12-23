@@ -15,13 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * UserJPanel.java
- *
- * Created on Oct 6, 2009, 3:52:54 PM
- */
-
 package org.jdesktop.wonderland.testharness.manager.ui;
 
 import java.awt.Color;
