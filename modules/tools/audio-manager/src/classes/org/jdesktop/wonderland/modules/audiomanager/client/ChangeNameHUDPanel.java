@@ -15,12 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * ChangeNameHUDPanel.java
- *
- * Created on Jun 16, 2009, 4:34:43 PM
- */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeListener;

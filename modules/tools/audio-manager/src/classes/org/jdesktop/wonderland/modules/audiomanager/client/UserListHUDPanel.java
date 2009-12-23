@@ -15,12 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * UserListHUDPanel.java
- *
- * Created on Jun 16, 2009, 11:57:10 AM
- */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import com.jme.math.Vector3f;

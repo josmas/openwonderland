@@ -15,12 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * NamePropertiesHUDPanel.java
- *
- * Created on Jun 16, 2009, 3:30:01 PM
- */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeListener;
