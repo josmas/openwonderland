@@ -15,13 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * BoundsDebugger.java
- *
- * Created on Nov 30, 2009, 3:52:06 PM
- */
-
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import java.awt.GridBagConstraints;
