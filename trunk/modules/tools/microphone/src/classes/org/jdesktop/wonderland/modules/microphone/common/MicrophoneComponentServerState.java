@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common;
+package org.jdesktop.wonderland.modules.microphone.common;
 
 import com.jme.math.Vector3f;
 import java.io.Serializable;
@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 public class MicrophoneComponentServerState extends CellComponentServerState {
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
+            "org/jdesktop/wonderland/modules/microphone/common/Bundle");
     @XmlElement(name = "name")
     private String name = BUNDLE.getString("Microphone");
     @XmlElement(name = "volume")
@@ -74,7 +74,7 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
     }
 
     public String getServerComponentClassName() {
-        return "org.jdesktop.wonderland.modules.audiomanager." + "server.MicrophoneComponentMO";
+        return "org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneComponentMO";
     }
 
     public void setName(String name) {
@@ -137,12 +137,12 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
 
 	@XmlElement(name="listenAreaOrigin")
         @XmlJavaTypeAdapter(Vector3fAdapter.class)
-        public Vector3f listenAreaOrigin = new Vector3f();
+        public Vector3f listenAreaOrigin = new Vector3f(0, 0, -9);
 	@XmlElement(name="boundsType") public MicrophoneBoundsType boundsType = 
-	    MicrophoneBoundsType.CELL_BOUNDS;
+	    MicrophoneBoundsType.BOX;
 	@XmlElement(name="bounds") 
         @XmlJavaTypeAdapter(Vector3fAdapter.class)
-	public Vector3f bounds = new Vector3f();
+	public Vector3f bounds = new Vector3f(10, 1, 10);
 
         /** Default constructor */
         public ListenArea() {
@@ -178,16 +178,15 @@ public class MicrophoneComponentServerState extends CellComponentServerState {
 
 	@XmlElement(name="talkAreaOrigin")
         @XmlJavaTypeAdapter(Vector3fAdapter.class)
-        public Vector3f talkAreaOrigin = new Vector3f();
+        public Vector3f talkAreaOrigin = new Vector3f(0, 0, 0);
 	@XmlElement(name="talkAreaBoundsType") 
 	public MicrophoneBoundsType talkAreaBoundsType = MicrophoneBoundsType.BOX;
 	@XmlElement(name="talkAreaBounds") 
         @XmlJavaTypeAdapter(Vector3fAdapter.class)
-	public Vector3f talkAreaBounds = new Vector3f();
+	public Vector3f talkAreaBounds = new Vector3f(1, 1, 1);
 
         /** Default constructor */
         public TalkArea() {
-            this(new Vector3f());
         }
 
         public TalkArea (Vector3f origin) {

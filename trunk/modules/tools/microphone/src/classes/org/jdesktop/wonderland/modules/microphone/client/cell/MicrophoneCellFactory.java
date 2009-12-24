@@ -41,7 +41,7 @@ public class MicrophoneCellFactory implements CellFactorySPI {
     private final static Logger LOGGER =
             Logger.getLogger(MicrophoneCellFactory.class.getName());
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+            "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[]{};

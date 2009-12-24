@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.server;
+package org.jdesktop.wonderland.modules.microphone.server.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -26,10 +26,10 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.TalkArea;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ListenArea;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.TalkArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.ListenArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.MicrophoneBoundsType;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
@@ -56,7 +56,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
     private static final Logger LOGGER =
             Logger.getLogger(MicrophoneComponentMO.class.getName());
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
+            "org/jdesktop/wonderland/modules/microphone/common/Bundle");
     private static final String DEFAULT_NAME = BUNDLE.getString("Microphone");
     private String name = DEFAULT_NAME;
     private String currentName;
@@ -152,7 +152,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
      */
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.modules.audiomanager.client.MicrophoneComponent";
+        return "org.jdesktop.wonderland.modules.microphone.client.cell.MicrophoneComponent";
     }
 
     /**

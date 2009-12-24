@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
+import org.jdesktop.wonderland.common.security.annotation.Actions;
+
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
@@ -39,10 +41,13 @@ import org.jdesktop.wonderland.modules.phone.common.PhoneCellClientState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 
+import org.jdesktop.wonderland.modules.phone.common.cell.security.UnlockPhoneAction;
+
 /**
  * A server cell that provides conference phone functionality
  * @author jprovino
  */
+@Actions(UnlockPhoneAction.class)
 public class PhoneCellMO extends CellMO {
 
     private static final Logger logger =
