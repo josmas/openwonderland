@@ -1,21 +1,15 @@
-/**
- * Project Wonderland
- *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
- *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
- *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
- *
- * Sun designates this particular file as subject to the "Classpath"
- * exception as provided by Sun in the License file that accompanied
- * this code.
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
-package org.jdesktop.wonderland.modules.audiomanager.client;
+
+/*
+ * MicrophoneComponentProperties.java
+ *
+ * Created on Sep 15, 2009, 12:14:47 PM
+ */
+
+package org.jdesktop.wonderland.modules.microphone.client.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -33,11 +27,13 @@ import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFacto
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.TalkArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.ListenArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.MicrophoneBoundsType;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeConverter;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.TalkArea;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.ListenArea;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState.MicrophoneBoundsType;
+import org.jdesktop.wonderland.modules.audiomanager.client.BoundsViewerEntity;
 
 /**
  *
@@ -49,7 +45,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	implements PropertiesFactorySPI {
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+            "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
 
     private CellPropertiesEditor editor = null;
 
@@ -76,8 +72,8 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
     private SpinnerNumberModel talkAreaYOriginModel = null;
     private SpinnerNumberModel talkAreaZOriginModel = null;
 
-    private MicrophoneBoundsType listenAreaBoundsType = MicrophoneBoundsType.CELL_BOUNDS;
-    private MicrophoneBoundsType talkAreaBoundsType = MicrophoneBoundsType.CELL_BOUNDS;
+    private MicrophoneBoundsType listenAreaBoundsType = MicrophoneBoundsType.BOX;
+    private MicrophoneBoundsType talkAreaBoundsType = MicrophoneBoundsType.BOX;
 
     private BoundsViewerEntity boundsViewerEntity;
     private BoundsViewerEntity talkAreaViewerEntity;
@@ -99,7 +95,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             new Float(100), new Float(.1));
         listenAreaRadiusSpinner.setModel(listenRadiusModel);
 
-        listenAreaXExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
+        listenAreaXExtentModel = new SpinnerNumberModel(new Float(10), new Float(0),
             new Float(100), new Float(.1));
         listenAreaXExtentSpinner.setModel(listenAreaXExtentModel);
 
@@ -107,7 +103,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             new Float(100), new Float(.1));
         listenAreaYExtentSpinner.setModel(listenAreaYExtentModel);
 
-        listenAreaZExtentModel = new SpinnerNumberModel(new Float(1), new Float(0),
+        listenAreaZExtentModel = new SpinnerNumberModel(new Float(10), new Float(0),
             new Float(100), new Float(.1));
         listenAreaZExtentSpinner.setModel(listenAreaZExtentModel);
 
@@ -149,7 +145,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             new Float(100), new Float(.1));
         talkAreaZExtentSpinner.setModel(talkAreaZExtentModel);
 
-        talkAreaXOriginModel = new SpinnerNumberModel(new Float(0), new Float(-100),
+        talkAreaXOriginModel = new SpinnerNumberModel(new Float(-9), new Float(-100),
             new Float(100), new Float(.1));
         talkAreaXOriginSpinner.setModel(talkAreaXOriginModel);
 
@@ -343,7 +339,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
 	listenAreaYOriginSpinner.setEnabled(false);
 	listenAreaZOriginSpinner.setEnabled(false);
 
-	Vector3f listenOrigin = originalTalkArea.talkAreaOrigin;
+	Vector3f listenOrigin = originalListenArea.listenAreaOrigin;
 
 	listenAreaXOriginSpinner.setValue(listenOrigin.getX());
 	listenAreaYOriginSpinner.setValue(listenOrigin.getY());
@@ -701,7 +697,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             if (editor != null) {
                 editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		showTalkArea();
+		showBounds();
             }
         }
     }
@@ -716,7 +712,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             if (editor != null) {
                 editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		showTalkArea();
+		showBounds();
             }
         }
     }
@@ -731,7 +727,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
             if (editor != null) {
                 editor.setPanelDirty(MicrophoneComponentProperties.class, isDirty());
 
-		showTalkArea();
+		showBounds();
             }
         }
     }
@@ -884,7 +880,7 @@ public class MicrophoneComponentProperties extends javax.swing.JPanel
         listenAreaYOriginSpinner = new javax.swing.JSpinner();
         listenAreaZOriginSpinner = new javax.swing.JSpinner();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle"); // NOI18N
         showListenAreaCheckBox.setText(bundle.getString("MicrophoneComponentProperties.showListenAreaCheckBox.text")); // NOI18N
         showListenAreaCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

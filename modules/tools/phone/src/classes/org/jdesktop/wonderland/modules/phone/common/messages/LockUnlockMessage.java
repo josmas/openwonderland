@@ -22,10 +22,15 @@ import org.jdesktop.wonderland.modules.phone.common.CallListing;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.common.security.annotation.Actions;
+
+import org.jdesktop.wonderland.modules.phone.common.cell.security.UnlockPhoneAction;
+
 /**
  *
  * @author jprovino
  */
+@Actions(UnlockPhoneAction.class)
 public class LockUnlockMessage extends PhoneControlMessage {   
     
     private String password;

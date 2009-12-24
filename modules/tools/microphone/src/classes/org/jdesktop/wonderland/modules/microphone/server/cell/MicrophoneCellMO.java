@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 
-import org.jdesktop.wonderland.modules.audiomanager.server.MicrophoneComponentMO;
+import org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneComponentMO;
 
 import com.jme.bounding.BoundingBox;
 
@@ -39,7 +39,7 @@ import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
-import org.jdesktop.wonderland.modules.audiomanager.server.MicrophoneComponentMO;
+import org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneComponentMO;
 
 import com.sun.sgs.app.ManagedReference;
 

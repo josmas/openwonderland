@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.client;
+package org.jdesktop.wonderland.modules.microphone.client.cell;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;

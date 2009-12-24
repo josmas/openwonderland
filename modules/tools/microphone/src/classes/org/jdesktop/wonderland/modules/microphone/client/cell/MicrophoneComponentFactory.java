@@ -15,13 +15,13 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.client;
+package org.jdesktop.wonderland.modules.microphone.client.cell;
 
 import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState;
 
 /**
  * The cell component factory for the MicrophoneComponent.
@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.MicrophoneComponentSe
 public class MicrophoneComponentFactory implements CellComponentFactorySPI {
 
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+            "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
 
     public String getDisplayName() {
         return BUNDLE.getString("Microphone");
