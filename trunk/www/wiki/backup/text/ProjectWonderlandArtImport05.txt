@@ -1,0 +1,104 @@
+%WEBTOPICLIST%   <!-- This creates the navigation links to :  Home | Help | Index | etc.  -->
+
+---++ Project Wonderland (v0.5): Importing 3D Models
+by Jordan Slott (<a href="mailto:jslott@dev.java.net">jslott@dev.java.net</a>)
+
+---+++ %BLUE%Purpose%ENDCOLOR%
+
+The purpose of this tutorial is to describe how to import art work (specifically, 3D models) in Google Earth (kmz) format into Project Wonderland. After you have imported the 3D model you can position it, rotate it, and resize it in your world.
+
+This tutorial is designed for Project Wonderland v0.5 User Preview 2.
+
+<center><strong>Expected Duration: 30 minutes</strong></center>
+
+---+++ %BLUE%Prerequisites%ENDCOLOR%
+
+If you have already downloaded and compiled Project Wonderland v0.5 or are running the Project Wonderland client from Java Web Start, you are ready to import artwork. Otherwise, download, install and start a Project Wonderland server by following these instructions:
+
+   * <a href="https://wonderland.dev.java.net/binary-builds.html">Download and Install Project Wonderland</a> (to use the binary version)
+   * <a href="/bin/view/Javadesktop/ProjectWonderlandDownloadBuildSource05">Download, Configure, Build and Run from the Project Wonderland v0.5 Source</a> (to use the source version)
+
+This tutorial uses a 3D model of a satellite found on the <a href="http://sketchup.google.com/3dwarehouse/">Google 3D Warehouse</a>. First, download the !SketchUp (skp) file of <a href="http://sketchup.google.com/3dwarehouse/details?mid=3dc6e89f828e341aa8ee930afa0ad31&amp;prevstart=12">Communications Satellite by Marian</a>. You will also need to download and install <a href="http://sketchup.google.com/">SketchUp (TM)</a>.
+
+---+++ %BLUE%Converting a !SketchUp (skp) file to Google Earth format (kmz)%ENDCOLOR%
+
+First, to convert your !SketchUp (skp) file to a Google Earth (kmz) file:
+
+   1 Download and install Google !SketchUp on your computer (<a href="http://sketchup.google.com/">http://sketchup.google.com/</a>)
+   1 Save a 3D model from the 3D Warehouse in Google !SketchUp (skp) format to your computer, using the version that most closely matches the version of !SketchUp installed on your machine. Save the model as a file named *satellite.skp*.
+   1 Launch !SketchUp
+   1 Open the *satellite.skp* model (File --> Open...)
+   1 Export the model (File --> Export --> 3D Model...)
+   1 Save as format: Google Earth 4 (*.kmz) as a file named *satellite.kmz*
+
+Keep in mind that many models in the Google 3D Warehouse were not created for the type of real-time interaction that happens in Project Wonderland; therefore, some complicated models may have a negative impact on performance when imported into Project Wonderland. The Google 3D Warehouse models that work best in Project Wonderland are ones created for Google Earth. These are flagged with a blue ribbon near the name. The models that will give you the very best performance are the ones marked with a complexity of "Simple." This information is displayed in the lower right corner of the model page. Other simple models will probably also work well, but the Google Earth models have been vetted and given a complexity rating by Google, so you can be confident that those will not have a negative performance impact. 
+
+---+++ %BLUE%Two ways to import models%ENDCOLOR%
+
+In Project Wonderland, there are two means to import 3D models: via *drag-and-drop* and via the *Import -> Model* menu item. The two serve different purposes, as will be described in this tutorial.
+
+---++++ Importing a model via drag-and-drop
+
+To import a 3D model into Project Wonderland, you may simply drag-and-drop the Google Earth (kmz) file from your computer desktop into the Project Wonderland client window. This means is most suited for end users. The client displays a message that the model is uploading. Shortly thereafter, the model appears directly in front of your avatar, unless it's a very large model, in which case it will be centered around your avatar. For example, the following shows the result of dragging-and-dropping the satellite model into Project Wonderland.
+
+*Figure 1: Imported satellite model via drag-and-drop (click on the image for a full-sized version)*
+
+<a href="https://wonderland.dev.java.net/wiki/artimport/satellite-dnd.png"><img src="https://wonderland.dev.java.net/wiki/artimport/satellite-dnd-thumbnail.png"></a>
+
+When using drag-and-drop to import a 3D model, Project Wonderland imports and uploads the model files to the WebDav-based content repository on the server. Each user has his/her own space created automatically for them; all imported 3D models are placed beneath the user's *art* directory. You can view the imported 3D model files using the Content Browser (Tools -> Content Browser from the main menu).
+
+*Figure 2: The content browser displaying the imported satellite model (click on the image for a full-sized version)*
+
+<a href="https://wonderland.dev.java.net/wiki/artimport/satellite-dnd-content-browser.png"><img src="https://wonderland.dev.java.net/wiki/artimport/satellite-dnd-content-browser-thumbnail.png"></a>
+
+Note that several auxiliary files (e.g. those with *dep* and *ldr* extensions) are created and associated with the 3D model. The purpose of these files will be discussed in a future tutorial.
+
+---++++ Importing a model via the Import -> Model menu item
+
+You may also import a 3D model using the Import -> Model item on the main menu. While this means has the same effect as dragging-and-dropping a 3D model into the client, the underlying mechanism is slightly different, and geared more for developers.
+
+The following picture shows the Import -> Model menu item. When selected, the Import Manager dialog box should appear.
+
+*Figure 3: The Import -> Model menu item (click on the image for a full-sized version)*
+
+<a href="https://wonderland.dev.java.net/wiki/artimport/import-menu.png"><img src="https://wonderland.dev.java.net/wiki/artimport/import-menu-thumbnail.png"></a>
+
+*Figure 4: The Insert Model dialog box*
+
+<img src="https://wonderland.dev.java.net/wiki/artimport/import-manager.png"/>
+
+Next, click the Load Model... button and select the file you have downloaded to your computer desktop using the file navigator. Select the Google Earth (kmz) file and click Open. The model should be loaded and appear in the world at the feet of your avatar. The 3D model appears only on your client for now. A second dialog box appears, Model Import, that lets you position, rotate, and scale the model before you upload it to the server. You should see the following:
+
+*Figure 5: Importing a 3D model (click on the image for a full-sized version)*
+
+<a href="https://wonderland.dev.java.net/wiki/artimport/import.png"><img src="https://wonderland.dev.java.net/wiki/artimport/import-thumbnail.png"></a>
+
+The Model Import dialog provides very basic functionality for positioning, scaling, and rotating your model. Edit any of the values in the Model Import dialog text fields. Note that when you change a value, it immediately takes effect. Click OK in the Model Import dialog when you're satisfied with your changes. In the example below, the 3D model is translated to (0, 3.2, 3) and is rotated by (-149, 0, -90). 
+
+*Figure 6: Transforming a 3D model during import (click on the image for a full-sized version)*
+
+<a href="https://wonderland.dev.java.net/wiki/artimport/import-transformed.png"><img src="https://wonderland.dev.java.net/wiki/artimport/import-transformed-thumbnail.png"></a>
+
+When you click OK on the Model Import dialog, the name of your model appears in the list in the Import Manager dialog:
+
+*Figure 7: Insert Model dialog populated with name of imported model*
+
+<img src="https://wonderland.dev.java.net/wiki/artimport/import-manager-populated.png" />
+
+In order for others to see the model, you must deploy it to the server.
+ 
+   1 In the Model Import dialog, select the imported model in the table
+   1 In the Target Name text field, enter !SatelliteModel
+   1 Click the Deploy to server button
+
+This will automatically package your 3D model into a Project Wonderland module and upload it to the server. Your model should disappear for a moment and then re-appear when it has been upload to the server. At this point, other clients should see your 3D model too. This functionality is useful for developers who wish to include 3D models in Project Wonderland modules they are developing.
+
+All artwork (including 3D models) packaged into modules are visible in the Content Browser. From the main menu, select Tools -> Content Browser to view the newly imported 3D model in the Modules section.
+
+*Figure 8: The content browser displaying the imported satellite model as a module (click on the image for a full-sized version)*
+
+<a href="https://wonderland.dev.java.net/wiki/artimport/satellite-import-content-browser.png"><img src="https://wonderland.dev.java.net/wiki/artimport/satellite-import-content-browser-thumbnail.png"></a>
+
+---+++ %BLUE%Conclusion%ENDCOLOR%
+
+This tutorial described how to import 3D model using two different methods: drag-and-drop and the Import -> Model menu item. In future tutorials you will learn how to assemble worlds using the 3D models you have imported, and display 3D models in custom Cell types that you have developed.
