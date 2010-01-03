@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.runner;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -125,7 +127,7 @@ public class DeploymentManager {
      */
     protected DeploymentPlan loadPlan() throws IOException {
         Reader planReader;
-        
+
         if (getRemotePlanURL() != null) {
             logger.info("Loading deployment plan from URL: " + getRemotePlanURL());
             planReader = new InputStreamReader(getRemotePlanURL().openStream());

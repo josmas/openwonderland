@@ -21,6 +21,8 @@ import org.jdesktop.wonderland.common.login.AuthenticationInfo;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -40,7 +42,7 @@ public class ServerDetails implements Cloneable {
     private String serverURL;
     private long timeStamp;
     private AuthenticationInfo authInfo;
-    private DarkstarServer[] darkstarServers;
+    private List<DarkstarServer> darkstarServers;
 
     private static JAXBContext jaxbContext = null;
     static {
@@ -68,7 +70,7 @@ public class ServerDetails implements Cloneable {
      */
     public ServerDetails(String serverURL, long timeStamp,
                          AuthenticationInfo authInfo,
-                         DarkstarServer[] darkstarServers)
+                         List<DarkstarServer> darkstarServers)
     {
         this.serverURL = serverURL;
         this.timeStamp = timeStamp;
@@ -139,7 +141,7 @@ public class ServerDetails implements Cloneable {
      * @return an ordered list of Darkstar servers
      */
     @XmlElement
-    public DarkstarServer[] getDarkstarServers() {
+    public List<DarkstarServer> getDarkstarServers() {
         return darkstarServers;
     }
 
@@ -147,7 +149,7 @@ public class ServerDetails implements Cloneable {
      * Set the list of Darkstar servers
      * @param darkstarServers the servers to connect to
      */
-    public void setDarkstarServers(DarkstarServer[] darkstarServers) {
+    public void setDarkstarServers(List<DarkstarServer> darkstarServers) {
         this.darkstarServers = darkstarServers;
     }
 
@@ -199,11 +201,10 @@ public class ServerDetails implements Cloneable {
         out.setAuthInfo(getAuthInfo().clone());
         out.setTimeStamp(getTimeStamp());
 
-        // copy servers array
-        DarkstarServer[] inServers = getDarkstarServers();
-        DarkstarServer[] outServers = new DarkstarServer[inServers.length];
-        for (int i = 0; i < inServers.length; i++) {
-            outServers[i] = inServers[i].clone();
+        // copy servers array, cloning each element
+        List<DarkstarServer> outServers = new ArrayList<DarkstarServer>();
+        for (DarkstarServer server : getDarkstarServers()) {
+            outServers.add(server.clone());
         }
         out.setDarkstarServers(outServers);
 

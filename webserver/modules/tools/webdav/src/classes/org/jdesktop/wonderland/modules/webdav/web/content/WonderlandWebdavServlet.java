@@ -77,9 +77,9 @@ public class WonderlandWebdavServlet extends WebdavServlet {
                 }
 
             };*/
-        } catch (IOException ioe) {
+        } catch (Exception ex) {
             throw new ServletException("Unable to initialize webdav servlet",
-                                       ioe);
+                                       ex);
         }
     }
 

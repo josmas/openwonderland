@@ -61,7 +61,7 @@ public class GetModuleListResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @Produces({"text/plain", "application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public Response getModuleList(@PathParam("state") String state) {
         ModuleManager manager = ModuleManager.getModuleManager();
         ModuleList moduleList = new ModuleList();

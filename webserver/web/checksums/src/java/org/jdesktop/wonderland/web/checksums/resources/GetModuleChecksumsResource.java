@@ -58,7 +58,7 @@ public class GetModuleChecksumsResource {
     private static Logger logger = Logger.getLogger(GetModuleChecksumsResource.class.getName());
 
     @GET
-    @Produces({ "text/plain", "application/xml", "application/json" })
+    @Produces({ "application/xml", "application/json" })
     @Path("/{assettype}")
     public Response getChecksums(@PathParam("modulename") String moduleName,
             @PathParam("modulePart") String modulePart) {
@@ -93,7 +93,7 @@ public class GetModuleChecksumsResource {
     }
 
     @GET
-    @Produces({ "text/plain", "application/xml", "application/json" })
+    @Produces({ "application/xml", "application/json" })
     public Response getChecksums(@PathParam("modulename") String moduleName) {
         return getChecksums(moduleName, null);
     }

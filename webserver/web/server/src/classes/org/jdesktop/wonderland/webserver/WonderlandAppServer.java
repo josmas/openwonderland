@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.webserver;
 
-import org.glassfish.embed.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.ModuleDependency;
@@ -36,7 +35,11 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.embedded.EmbeddedDeployer;
+import org.glassfish.api.embedded.LifecycleException;
+import org.glassfish.api.embedded.Server;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
 import org.jvnet.hk2.component.Habitat;
 
@@ -44,19 +47,24 @@ import org.jvnet.hk2.component.Habitat;
  *
  * @author jkaplan
  */
-public class WonderlandAppServer extends Server {
+public class WonderlandAppServer {
     private static final Logger logger =
             Logger.getLogger(WonderlandAppServer.class.getName());
 
+    private final Server server;
     private boolean deployable = false;
-    private WonderlandBootstrap bootstrap;
 
-    public WonderlandAppServer(EmbeddedInfo info)
-            throws EmbeddedException
-    {
-        super(info);
+    public WonderlandAppServer(Server server) {
+        this.server = server;
 
-        bootstrap = new WonderlandBootstrap(this);
+        // add a module to properly specify the classpath
+        Habitat h = server.getHabitat();
+        ModulesRegistry mr = h.getComponent(ModulesRegistry.class);
+        mr.add(new ClasspathModuleDefinition(WebServerLauncher.getClassLoader()));
+    }
+
+    public Server getServer() {
+        return server;
     }
 
     public synchronized boolean isDeployable() {
@@ -67,63 +75,37 @@ public class WonderlandAppServer extends Server {
         this.deployable = deployable;
     }
 
-    @Override
-    protected EmbeddedBootstrap createBootstrap() {
-        return bootstrap;
+    public void start() throws LifecycleException {
+        getServer().start();
     }
 
-    @Override
-    public void stop() throws EmbeddedException {
-        super.stop();
+    public void stop() throws LifecycleException  {
+        getServer().stop();
         setDeployable(false);
     }
 
-    public String deploy(File file, Properties props)
-            throws EmbeddedException
+    public String deploy(File file, DeployCommandParameters params)
+        throws LifecycleException
     {
         try {
-            ArchiveFactory af = bootstrap.getHabitat().getComponent(ArchiveFactory.class);
-            ReadableArchive ra = af.openArchive(file);
-            return deploy(ra, props);
+            if (!file.exists()) {
+                throw new IOException("File " + file.getPath() + " not found.");
+            }
+
+            return server.getDeployer().deploy(file, params);
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            throw new EmbeddedException(ioe);
+            throw new LifecycleException(ioe);
         }
     }
 
-    public String deploy(File file) throws EmbeddedException {
-        return deploy(file, null);
+    public String deploy(File file) throws LifecycleException {
+        DeployCommandParameters params = new DeployCommandParameters(file);
+        return deploy(file, params);
     }
 
-    public String deploy(ReadableArchive a, Properties params)
-            throws EmbeddedException
-    {
-        return getDeployer().deploy(a, params);
-    }
-
-    static class WonderlandBootstrap extends EmbeddedBootstrap {
-        private Habitat habitat;
-
-        public WonderlandBootstrap(WonderlandAppServer server) {
-            super (server);
-        }
-
-        public Habitat getHabitat() {
-            return habitat;
-        }
-
-        @Override
-        protected InhabitantsParser createInhabitantsParser(Habitat parentHabitat) {
-            InhabitantsParser out = super.createInhabitantsParser(parentHabitat);
-
-            this.habitat = out.habitat;
-
-            // add a module
-            ModulesRegistry mr = out.habitat.getComponent(ModulesRegistry.class);
-            mr.add(new ClasspathModuleDefinition(WebServerLauncher.getClassLoader()));
-
-            return out;
-        }
+    public EmbeddedDeployer getDeployer() {
+        return server.getDeployer();
     }
 
     static class ClasspathModuleDefinition implements ModuleDefinition {

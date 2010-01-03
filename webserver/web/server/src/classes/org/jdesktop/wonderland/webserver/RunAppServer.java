@@ -35,9 +35,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.embed.EmbeddedException;
-import org.glassfish.embed.EmbeddedFileSystem;
-import org.glassfish.embed.EmbeddedInfo;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.embedded.ContainerBuilder;
+import org.glassfish.api.embedded.EmbeddedFileSystem;
+import org.glassfish.api.embedded.LifecycleException;
+import org.glassfish.api.embedded.Server;
 import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
@@ -87,8 +89,8 @@ public class RunAppServer {
         try {
             createAppServer();
             getAppServer().start();
-        } catch (EmbeddedException ee) {
-            throw new IOException(ee);
+        } catch (LifecycleException le) {
+            throw new IOException(le);
         }
 
         // deploy built-in web apps
@@ -215,6 +217,8 @@ public class RunAppServer {
         // deploy all webapps
         File deployDir = new File(RunUtil.getRunDir(), getWebappDir());
         for (File war : deployDir.listFiles(WAR_FILTER)) {
+            logger.warning("Deploying " + war.getPath());
+            
             try {
                 as.deploy(war);
             } catch (Exception excp) {
@@ -406,7 +410,7 @@ public class RunAppServer {
     }
 
     synchronized static void createAppServer()
-        throws EmbeddedException, IOException
+        throws IOException
     {
         if (appServer != null) {
             throw new IllegalStateException("App server already created.");
@@ -414,7 +418,11 @@ public class RunAppServer {
 
         File install_dir = new File(RunUtil.getRunDir(), "web_install");
         File instance_dir = new File(RunUtil.getRunDir(), "web_run");
+        File module_dir = new File(install_dir, "modules");
         File docroot_dir = new File(RunUtil.getRunDir(), "docRoot");
+
+        File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
+        File logFile = new File(logDir, "web_server.log");
 
         // set environment variables that will be substituted into
         // domain.xml
@@ -424,23 +432,28 @@ public class RunAppServer {
         // make directories
         install_dir.mkdirs();
         instance_dir.mkdirs();
+        module_dir.mkdirs();
 
-        // created embedded info
-        EmbeddedInfo info = new EmbeddedInfo();
+        // extract the domain.xml file
+        File domainXml = RunUtil.extract(RunAppServer.class,
+                                         "/domain.xml", install_dir);
 
-        // create filesystem
-        EmbeddedFileSystem efs = info.getFileSystem();
-        efs.setInstallRoot(install_dir);
-        efs.setInstanceRoot(instance_dir);
-        efs.setDomainXmlSource(RunUtil.extract(RunAppServer.class,
-                "/domain.xml", install_dir));
+        EmbeddedFileSystem.Builder efsBuilder = new EmbeddedFileSystem.Builder();
+        efsBuilder.installRoot(install_dir);
+        efsBuilder.instanceRoot(instance_dir);
+        efsBuilder.configurationFile(domainXml);
 
-        File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
-        File logFile = new File(logDir, "web_server.log");
-        efs.setLogFile(logFile);
+        Server.Builder serverBuilder = new Server.Builder("test");
+        serverBuilder.embeddedFileSystem(efsBuilder.build());
+        //serverBuilder.setLogFile(logFile);
+
+        Server server = serverBuilder.build();
+
+        server.createPort(8080);
+        server.addContainer(ContainerBuilder.Type.all);
 
         // setup and launch
-        appServer = new WonderlandAppServer(info);
+        appServer = new WonderlandAppServer(server);
     }
     
     private static final FilenameFilter WAR_FILTER = new FilenameFilter() {

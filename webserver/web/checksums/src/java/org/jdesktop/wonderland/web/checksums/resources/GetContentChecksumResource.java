@@ -51,7 +51,7 @@ public class GetContentChecksumResource {
     private static Logger logger = Logger.getLogger(GetContentChecksumResource.class.getName());
 
     @GET
-    @Produces({ "text/plain", "application/xml", "applications/json" })
+    @Produces({ "application/xml", "applications/json" })
     public Response getChecksum(@PathParam("contentroot") String contentRoot,
             @PathParam("assetpath") String assetPath) {
 

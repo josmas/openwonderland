@@ -9,8 +9,10 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
-    <!--pathconvert property="module-weblib.classpath">
-    </pathconvert-->
+    <pathconvert property="module-weblib.classpath">
+        <path location="${top.dir}/core/build/lib/wonderland-common.jar"/>
+        <path location="${top.dir}/web/server/build/lib/wonderland-webserver.jar"/>
+    </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
