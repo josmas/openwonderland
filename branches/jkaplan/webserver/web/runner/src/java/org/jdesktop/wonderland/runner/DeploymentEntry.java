@@ -17,12 +17,11 @@
  */
 package org.jdesktop.wonderland.runner;
 
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Store information for starting a single runners
@@ -33,7 +32,7 @@ public class DeploymentEntry {
     private String runnerName;
     private String runnerClass;
     private String location = "localhost";
-    private Properties runProps = new Properties();
+    private Properties props = new Properties();
     
     public DeploymentEntry() {
         // default no-arg constructor
@@ -44,33 +43,14 @@ public class DeploymentEntry {
         this.runnerClass = runnerClass;
     }
     
-    @XmlTransient
-    public Properties getRunProps() {
-        return runProps;
-    }
-
-    public void setRunProps(Properties runProps) {
-        this.runProps = runProps;
-    }
-
     @XmlElement(name="property")
-    public Property[] getProperties() {
-        Property[] out = new Property[getRunProps().size()];
-        int i = 0;
-        for (Entry<Object, Object> entry : getRunProps().entrySet()) {
-            out[i++] = new Property(entry);
-        }
-        
-        return out;
+    @XmlJavaTypeAdapter(PropertyAdapter.class)
+    public Properties getProperties() {
+        return props;
     }
     
-    public void setProperties(Property[] properties) {
-        Properties props = new Properties();
-        for (Property prop : properties) {
-            props.setProperty(prop.key, prop.value);
-        }
-        
-        setRunProps(props);
+    public void setProperties(Properties props) {
+        this.props = props;
     }
     
     @XmlElement
@@ -124,9 +104,36 @@ public class DeploymentEntry {
     
     @Override
     public String toString() {
-        return getRunnerName() + " " + getRunnerClass() + " " + getRunProps().size();
+        return getRunnerName() + " " + getRunnerClass() + " " + getProperties().size();
     } 
-    
+
+    private static class PropertyAdapter extends XmlAdapter<Property[], Properties> {
+
+        @Override
+        public Properties unmarshal(Property[] vt) throws Exception {
+            Properties out = new Properties();
+            for (Property prop : vt) {
+                out.setProperty(prop.key, prop.value);
+            }
+            return out;
+        }
+
+        @Override
+        public Property[] marshal(Properties bt) throws Exception {
+            Property[] out = new Property[bt.size()];
+            int count = 0;
+
+            for (String propertyName : bt.stringPropertyNames()) {
+                out[count++] = new Property(propertyName,
+                                   bt.getProperty(propertyName));
+            }
+
+            return out;
+        }
+
+
+    }
+
     // internal representation of elements in the properties set
     protected static class Property {
         @XmlElement public String key;
@@ -134,9 +141,9 @@ public class DeploymentEntry {
 
         private Property() {} //Required by JAXB
 
-        public Property(Map.Entry<Object, Object> entry) {
-            this.key = (String) entry.getKey();
-            this.value = (String) entry.getValue();
+        public Property(String key, String value) {
+            this.key = key;
+            this.value = value;
         }
     }
 }

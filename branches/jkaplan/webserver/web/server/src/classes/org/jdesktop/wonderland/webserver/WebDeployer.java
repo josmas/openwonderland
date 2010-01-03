@@ -24,12 +24,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.ParameterNames;
-import org.glassfish.embed.EmbeddedException;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.embedded.LifecycleException;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
@@ -195,15 +194,16 @@ public class WebDeployer implements ModuleDeployerSPI {
             contextRoot = contextRoot.substring(0,
                                         contextRoot.length() - ".war".length());
         }
-        Properties props = new Properties();
-        props.put(ParameterNames.CONTEXT_ROOT, contextRoot);
+
+        DeployCommandParameters dcp = new DeployCommandParameters(record.getFile());
+        dcp.contextroot = contextRoot;
 
         // finally, deploy the application to the web server
         try {
             String name = RunAppServer.getAppServer().deploy(record.getFile(),
-                                                             props);
+                                                             dcp);
             record.setAppName(name);
-        } catch (EmbeddedException ee) {
+        } catch (LifecycleException ee) {
             throw new IOException(ee);
         }
     }
@@ -268,13 +268,9 @@ public class WebDeployer implements ModuleDeployerSPI {
     }
 
     protected void doUndeploy(DeployRecord remove) {
-        try {
-            // undeploy the app
-            if (remove.getAppName() != null) {
-                RunAppServer.getAppServer().getDeployer().undeploy(remove.getAppName());
-            }
-        } catch (EmbeddedException ee) {
-            logger.log(Level.WARNING, "Error undeploying " + remove, ee);
+        // undeploy the app
+        if (remove.getAppName() != null) {
+            RunAppServer.getAppServer().getDeployer().undeploy(remove.getAppName(), null);
         }
     }
 

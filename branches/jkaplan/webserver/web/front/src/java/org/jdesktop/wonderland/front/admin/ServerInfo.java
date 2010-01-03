@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.front.admin;
 
+import java.util.ArrayList;
 import org.jdesktop.wonderland.client.login.DarkstarServer;
 import org.jdesktop.wonderland.client.login.ServerDetails;
 import org.jdesktop.wonderland.common.login.AuthenticationInfo;
@@ -40,7 +41,7 @@ public class ServerInfo {
 
        // Darkstar servers will be filled in later as they are
        // created
-       ServerDetailsHolder.INSTANCE.setDarkstarServers(new DarkstarServer[0]);
+       ServerDetailsHolder.INSTANCE.setDarkstarServers(new ArrayList<DarkstarServer>());
     }
 
     /**

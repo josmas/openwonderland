@@ -63,6 +63,18 @@ public class ScannedClassLoader extends URLClassLoader {
     }
 
     /**
+     * Create a scanned classloader that scans the given urls, using the
+     * default parent classloader.
+     * @param urls the urls to scan
+     */
+
+    public ScannedClassLoader(URL[] urls) {
+        super (urls);
+
+        createDB(urls);
+    }
+
+    /**
      * Create a scanned classloader that scans the given urls.
      * @param urls the urls to scan
      * @param parent the parent classlaoder to delegate to

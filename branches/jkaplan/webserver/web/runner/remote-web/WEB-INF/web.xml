@@ -3,7 +3,7 @@
     <display-name>Wonderland Server Remote Runner</display-name>
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
-        <servlet-class>com.sun.jersey.impl.container.servlet.ServletAdaptor</servlet-class>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     

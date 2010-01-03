@@ -376,7 +376,7 @@ public class RunManager {
 
         Properties props = runner.getDefaultProperties();
         if (de != null) {
-            props.putAll(de.getRunProps());
+            props.putAll(de.getProperties());
 
             // add in the name and location (since these might have changed)
             props.setProperty("runner.name", de.getRunnerName());

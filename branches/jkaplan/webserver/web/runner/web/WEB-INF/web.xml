@@ -16,7 +16,7 @@
     </servlet>
      <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
-        <servlet-class>com.sun.jersey.impl.container.servlet.ServletAdaptor</servlet-class>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
@@ -74,11 +74,12 @@
             30
         </session-timeout>
     </session-config>
-    <welcome-file-list>
+    <!--taglib>
+        <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
+        <taglib-location>/WEB-INF/tlds/c.tld</taglib-location>
+    </taglib-->
+   <welcome-file-list>
         <welcome-file>run</welcome-file>
         <welcome-file>RunServlet</welcome-file>
     </welcome-file-list>
-    <taglib>
-        <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
-        <taglib-location>/WEB-INF/tlds/c.tld</taglib-location>
-    </taglib></web-app>
+</web-app>

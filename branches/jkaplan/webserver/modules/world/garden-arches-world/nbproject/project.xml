@@ -50,7 +50,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">lib/webdavclient4j-core-0.92.jar:lib/commons-httpclient-3.0.1.jar:../../../web/lib/glassfish/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar:../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jaxb-impl.jar:../../../web/utils/dist/wonderland-web-utils.jar:../content-repository/build/client/contentrepo-client.jar:../content-repository/build/lib/contentrepo-spi.jar</classpath>
+                <classpath mode="compile">lib/webdavclient4j-core-0.92.jar:lib/commons-httpclient-3.0.1.jar:../../../web/lib/glassfish/glassfish-embedded-all-3.0-b74b.jar:../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jaxb-impl.jar:../../../web/utils/dist/wonderland-web-utils.jar:../content-repository/build/client/contentrepo-client.jar:../content-repository/build/lib/contentrepo-spi.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

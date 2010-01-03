@@ -23,13 +23,18 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Store information for starting runners
@@ -37,19 +42,22 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name="DeploymentPlan")
 public class DeploymentPlan implements Cloneable {
-    private Collection<DeploymentEntry> entries = 
+    private static final Logger logger =
+            Logger.getLogger(DeploymentPlan.class.getName());
+
+    private final Set<DeploymentEntry> entries =
             new LinkedHashSet<DeploymentEntry>();
 
-    
     /* The JAXB context for later use */
     private static JAXBContext context = null;
     
     /* Create the XML marshaller and unmarshaller once for all DeploymentEntries */
     static {
         try {
-            context = JAXBContext.newInstance(DeploymentPlan.class);
+            context = JAXBContext.newInstance(DeploymentPlan.class,
+                                              DeploymentEntry.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            logger.log(Level.WARNING, "Error creating unmarshaller", excp);
         }
     }
     
@@ -64,13 +72,19 @@ public class DeploymentPlan implements Cloneable {
     public DeploymentPlan(Collection<DeploymentEntry> entries) {
         this.entries.addAll(entries);
     }
-    
+
     public void addEntry(DeploymentEntry entry) {
         entries.add(entry);
+
+        logger.info("Add entry (" + this.entries.size() +
+                    "): " + this.entries.toString());
     }
     
     public void removeEntry(DeploymentEntry entry) {
         entries.remove(entry);
+
+        logger.info("Remove entry (" + this.entries.size() +
+                    "): " + this.entries.toString());
     }
         
     public DeploymentEntry getEntry(String name) {
@@ -85,20 +99,18 @@ public class DeploymentPlan implements Cloneable {
     }
     
     /* Setters and getters */
-    @XmlElements({
-        @XmlElement(name="entry")
-    })
-    public Collection<DeploymentEntry> getEntries() { 
+    @XmlElement(name="entry")
+    @XmlJavaTypeAdapter(EntrySetAdapter.class)
+    public Set<DeploymentEntry> getEntries() {
         return this.entries; 
     }
      
-    public void setEntries(Collection<DeploymentEntry> entries) {
+    public void setEntries(Set<DeploymentEntry> entries) {
         this.entries.clear();
         this.entries.addAll(entries);
-    }
-    
-    public void setEntries(DeploymentEntry[] entries) {
-        setEntries(Arrays.asList(entries));
+
+        logger.info("Set entries (" + this.entries.size() +
+                    "): " + this.entries.toString());
     }
     
     /**
@@ -158,5 +170,37 @@ public class DeploymentPlan implements Cloneable {
 
         out += "}";
         return out;
+    }
+
+    private static class EntrySetAdapter
+            extends XmlAdapter<DeploymentEntry[], Set<DeploymentEntry>>
+    {
+
+        @Override
+        public Set<DeploymentEntry> unmarshal(DeploymentEntry[] vt)
+                throws Exception
+        {
+            Set<DeploymentEntry> out = new LinkedHashSet<DeploymentEntry>();
+
+            for (DeploymentEntry de : vt) {
+                out.add(de);
+            }
+
+            return out;
+        }
+
+        @Override
+        public DeploymentEntry[] marshal(Set<DeploymentEntry> bt)
+                throws Exception
+        {
+            DeploymentEntry[] out = new DeploymentEntry[bt.size()];
+            int count = 0;
+
+            for (DeploymentEntry de : bt) {
+                out[count++] = de;
+            }
+
+            return out;
+        }
     }
 }
