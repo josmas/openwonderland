@@ -52,9 +52,7 @@ public class MicrophoneCellFactory implements CellFactorySPI {
         // Create a setup with some default values
         MicrophoneCellServerState cellServerState = new MicrophoneCellServerState();
 
-	cellServerState.setName("Microphone");
-
-        LOGGER.info("MICROPHONE!!!!");
+	cellServerState.setName(BUNDLE.getString("Microphone"));
         return (T) cellServerState;
     }
 

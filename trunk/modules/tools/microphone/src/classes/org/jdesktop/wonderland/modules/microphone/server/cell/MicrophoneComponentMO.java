@@ -21,7 +21,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -55,9 +54,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
     private static final Logger LOGGER =
             Logger.getLogger(MicrophoneComponentMO.class.getName());
-    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/microphone/common/Bundle");
-    private static final String DEFAULT_NAME = BUNDLE.getString("Microphone");
+    private static final String DEFAULT_NAME = "Microphone";
     private String name = DEFAULT_NAME;
     private String currentName;
     private double volume = 1;
