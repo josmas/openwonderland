@@ -17,25 +17,17 @@
  */
 package org.jdesktop.wonderland.server.comms;
 
-import com.sun.sgs.app.AppContext;
-
 /**
  * Create the comms manager.
  * @author jkaplan
  */
 public class CommsManagerFactory {
-    static final String BINDING_NAME = CommsManagerImpl.class.getName();
-    
     /**
      * Setup the comms manager
      */
     public static void initialize() {
         // initialize the comms manager
         CommsManagerImpl.initialize();
-        
-        // instantiate the manager
-        CommsManagerImpl cm = new CommsManagerImpl();
-        AppContext.getDataManager().setBinding(BINDING_NAME, cm);
     }
 
     /**
@@ -43,6 +35,15 @@ public class CommsManagerFactory {
      * @return the comms manager
      */
     public static CommsManager getCommsManager() {
-        return (CommsManager) AppContext.getDataManager().getBinding(BINDING_NAME);
+        return SingletonHolder.INSTANCE;
+    }
+
+    /**
+     * Hold the singleton CommsManagerImpl instance. A singleton is OK here
+     * because the CommsManagerImpl is stateless.  All changes are made by
+     * first dereferencing a ManagedObject.
+     */
+    private static class SingletonHolder {
+        private static final CommsManagerImpl INSTANCE = new CommsManagerImpl();
     }
 }

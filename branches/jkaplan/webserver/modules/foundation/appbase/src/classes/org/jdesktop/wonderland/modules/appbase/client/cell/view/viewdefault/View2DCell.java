@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import org.jdesktop.mtgame.Entity;
 import com.jme.math.Quaternion;
+import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -34,8 +35,10 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import java.awt.Dimension;
 
 /**
- * TODO
- * Each view has entity -> viewNode -> geometryNode -> Geometry
+ * A subclass of <code>View2DEntity</code> which provides additional capabilities above and beyond its super class.
+ * In particular, a <code>View2DCell</code> can be rotated in addition to being translated 
+ * (see <code>applyDeltaRotationUser</code>). It can also have an optionally attached frame.
+ *
  * @author dj
  */
 @ExperimentalAPI
@@ -57,6 +60,9 @@ public class View2DCell extends View2DEntity {
 
     /** Did we create our own movable component? */
     private boolean selfCreatedMovableComponent;
+
+    /** The resize rectangle for this view. */
+    private ResizeRectangle resizeRect;
 
     /**
      * Create an instance of View2DCell with default geometry node.
@@ -87,6 +93,11 @@ public class View2DCell extends View2DEntity {
     @Override
     public synchronized void cleanup () {
         super.cleanup();
+
+        if (resizeRect != null) {
+            resizeRect.cleanup();
+            resizeRect = null;
+        }
 
         if (frame != null) {
             frame.cleanup();
@@ -121,6 +132,7 @@ public class View2DCell extends View2DEntity {
         changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
+            updateFrame();
         }
     }
         
@@ -136,8 +148,9 @@ public class View2DCell extends View2DEntity {
     // Uses: type, parent
     @Override
     protected Entity getParentEntity () {
-        Entity cellEntity = 
-            ((App2DCellRendererJME)cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
+        App2DCellRendererJME renderer = (App2DCellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        if (renderer == null) return null;
+        Entity cellEntity = renderer.getEntity();
 
         switch (type) {
 
@@ -322,6 +335,53 @@ public class View2DCell extends View2DEntity {
             frame.update(newWidth3D, newHeight3D, newSize);
         } catch (InstantiationException ex) {
             logger.warning("Instantiation exception during user resize of frame");
+        }
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable (boolean userResizable, boolean update) {
+        super.setUserResizable(userResizable, update);
+
+        if (userResizable) {
+            resizeRect = new ResizeRectangle(this);
+        } else {
+            if (resizeRect != null) {
+                resizeRect.cleanup();
+                resizeRect = null;
+            }
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void userResizeStart () {
+        if (resizeRect != null) {
+            resizeRect.updateSizeFromView();
+            resizeRect.setVisible(true);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void userResizeUpdate (Vector2f dragVector) {
+        if (resizeRect != null) {
+            resizeRect.sizeAdd(dragVector);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void userResizeFinish () {
+        if (resizeRect != null) {
+            Dimension userResizeNewSize = resizeRect.getViewSize();
+            resizeRect.setVisible(false);
+            window.userSetSize(userResizeNewSize.width, userResizeNewSize.height);
         }
     }
 }

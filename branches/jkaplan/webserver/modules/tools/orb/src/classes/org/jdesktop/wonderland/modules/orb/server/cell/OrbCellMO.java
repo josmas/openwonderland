@@ -62,11 +62,14 @@ import java.lang.reflect.InvocationTargetException;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.server.cell.annotation.NoSnapshot;
 
 /**
  * A server cell that provides Orb functionality
  * @author jprovino
  */
+@NoSnapshot
 public class OrbCellMO extends CellMO {
 
     private static final Logger logger =
@@ -164,7 +167,8 @@ public class OrbCellMO extends CellMO {
 	    WonderlandClientID clientID, ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new OrbCellClientState(username, username, callID, 
+            WonderlandIdentity id = new WonderlandIdentity(username, null, null);
+            cellClientState = new OrbCellClientState(id, username, callID,
 		getPlayerWithVpCallID(), bystanders);
         }
 

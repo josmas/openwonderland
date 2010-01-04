@@ -16,6 +16,7 @@
             <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
             <path path="${core.dir}/build/lib/wonderland-client.jar"/>
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
+            <path path="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         </pathconvert>
     </target>
 
@@ -41,7 +42,7 @@
                  ant task -->
             <zipfileset src="${core.dir}/build/lib/wonderland-client.jar">
                 <include name="org/jdesktop/wonderland/client/login/**"/>
-                <include name="org/jdesktop/wonderland/client/comms/SessionStatusListener*.class"/>
+                <include name="org/jdesktop/wonderland/client/comms/**"/>
             </zipfileset>
         </jar>
 

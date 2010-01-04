@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.testharness.slave;
 
 import java.util.Properties;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
+import org.jdesktop.wonderland.testharness.slave.SlaveMain.ReplySender;
 
 /**
  * Interface for processing test requests. RequestProcessors are created
@@ -39,7 +40,7 @@ public interface RequestProcessor {
      * @throws ProcessingException if there is an error initializing,
      * such as a problem logging in
      */
-    public void initialize(String username, Properties props)
+    public void initialize(String username, Properties props, ReplySender replyHandler)
             throws ProcessingException;
 
     /**

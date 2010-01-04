@@ -83,6 +83,11 @@ public class DeployManager {
         Iterator<ModuleDeployerSPI> it = getDeployers().iterator();
         logger.info("[DEPLOY] Module has parts " + parts.keySet().toString());
         logger.info("[DEPLOY] Number of Deployers " + this.deployers.size());
+        for (Class clazz : deployers.keySet()) {
+            logger.warning("[DEPLOY] Deployer Class " + clazz.getName() + " " +
+                    deployers.get(clazz).getName());
+        }
+        
         while (it.hasNext() == true) {
             /*
              * Fetch the module part types that the deployer supports. If none,
@@ -234,6 +239,9 @@ public class DeployManager {
             /* Loop through each part type and see if there is a module part */
             for (String partType : partTypes) {
                 if (parts.containsKey(partType) == true) {
+                    logger.warning("For module " + module.getName() + " can " +
+                            "undeploy part " + partType + " with deployer " +
+                            deployer.getName() + " class " + deployer.getClass().getName());
                     if (deployer.isUndeployable(partType, module, parts.get(partType)) == false) {
                         return false;
                     }

@@ -60,6 +60,10 @@ public class ContainerComponent extends CellComponent
             prox.addProximityListener(this, bounds);
         } else if (!increasing && status == CellStatus.INACTIVE) {
             prox.removeProximityListener(this);
+
+            // issue 923 - make sure to unregister when the component
+            // is removed
+            ContainerClientPlugin.getRegistry().unrequestParent(cell);
         }
     }
 

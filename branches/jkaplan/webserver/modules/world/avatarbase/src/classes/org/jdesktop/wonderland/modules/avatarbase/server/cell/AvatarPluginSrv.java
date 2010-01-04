@@ -28,5 +28,6 @@ public class AvatarPluginSrv implements ServerPlugin {
 
     public void initialize() {
         CellManagerMO.getCellManager().registerAvatarCellComponent(AvatarConfigComponentMO.class);
+        CellManagerMO.getCellManager().registerAvatarCellComponent(NameTagComponentMO.class);
     }
 }

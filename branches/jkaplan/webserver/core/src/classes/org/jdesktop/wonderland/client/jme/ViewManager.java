@@ -149,6 +149,9 @@ public class ViewManager implements ViewPropertiesListener {
         return viewProperties;
     }
 
+    /**
+     * Note: this disables focus traversal keys for the canvas it creates.
+     */
     void attachViewCanvas(JPanel panel) {
         rb = ClientContextJME.getWorldManager().getRenderManager().createRenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
         ClientContextJME.getWorldManager().getRenderManager().addRenderBuffer(rb);
@@ -156,7 +159,9 @@ public class ViewManager implements ViewPropertiesListener {
 
         canvas.setVisible(true);
         canvas.setBounds(0, 0, width, height);
-        panel.add(canvas, BorderLayout.CENTER);
+
+        // Fix bug 884
+        canvas.setFocusTraversalKeysEnabled(false);
 
         panel.addComponentListener(new ComponentListener() {
 
@@ -207,8 +212,24 @@ public class ViewManager implements ViewPropertiesListener {
             public void init(RenderBuffer arg0) {
                 logger.info("RENDERER IS READY !");
                 waitForReady.release();
+
+                // issue #1047: ignore repaints after the first to avoid
+                // flickering on Windows. The first paint is necessary to
+                // setup the canvas.  Once we get to this point, the canvas
+                // is initialized, and we can ignore further repaints.
+
+                // issue #1079: temporarily remove fix for issue #1047
+                // since this causes scaling problems in the HUD
+                //canvas.setIgnoreRepaint(true);
             }
         });
+
+        // issue 999: don't add the canvas until after the BufferUpdater is
+        // registered, to make sure we don't miss the initialization call.  Also
+        // force a repaint to be sure the initialization call happens eventually,
+        // even on headless clients
+        panel.add(canvas, BorderLayout.CENTER);
+        canvas.repaint();
 
         try {
             waitForReady.acquire();

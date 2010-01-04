@@ -53,7 +53,6 @@ public class ServerCache {
     
     /** Constructor, takes base URL  of the server */
     public ServerCache(String serverURL) {
-        System.out.println("[ServerCache] create cache for " + serverURL);
 
         this.serverURL = serverURL;
         this.reload();

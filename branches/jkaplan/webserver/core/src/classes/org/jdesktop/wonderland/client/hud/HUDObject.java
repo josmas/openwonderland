@@ -352,8 +352,14 @@ public interface HUDObject extends HUDEventSource {
     public void setIcon(ImageIcon iconImage);
 
     /**
-     * Gets the icon for ths HUD object
+     * Gets the icon for this HUD object
      * @return the icon image
      */
     public ImageIcon getIcon();
+
+    /**
+     * Gets whether the HUD object has control
+     * @return true if the HUD object has control, false otherwise
+     */
+    public boolean hasControl();
 }

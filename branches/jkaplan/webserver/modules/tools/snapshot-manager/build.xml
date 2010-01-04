@@ -24,7 +24,7 @@
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         <path location="${web.dir}/wfs/dist/wonderland-wfs.jar"/>
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
-        <path location="${current.dir}/../darkstar/build/weblib/darkstar-runner.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 
@@ -51,7 +51,7 @@
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
 
-            <requires name="darkstar" version="1"/>
+            <requires name="darkstar-api" version="1"/>
 
             <part name="web">
                 <jar name="snapshot.war">

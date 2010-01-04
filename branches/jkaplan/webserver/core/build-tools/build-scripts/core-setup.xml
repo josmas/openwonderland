@@ -38,7 +38,6 @@
         <!-- Escher -->
         <unpack-lib-zip pkgname="escher"
                         srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
-
     </target>
 
     <!--
@@ -140,7 +139,14 @@
 
     <target name="clean-core-libs" description="Clean external libraries">
         <delete dir="${core.sgs.dir}"/>
-        <delete dir="${core.lib.os.dir}/.."/>
+
+        <!-- remove all OS directories -->
+        <for list="${ostypes}" param="ostype">
+            <sequential>
+                <delete dir="${core.lib.dir}/@{ostype}"/>
+            </sequential>
+        </for>
+
         <delete dir="${downloads.dir}"/>
     </target>    
 </project>

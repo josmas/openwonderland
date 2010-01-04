@@ -53,6 +53,7 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.SlaveClientSocket;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import java.io.EOFException;
 
 // TODO: 0.4 protocol
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -147,21 +148,14 @@ class ServerProxySlave implements ServerProxy {
             disconnectListener.disconnected();
             disconnectListener = null;
         }
-        AppXrw.logger.severe("ServerProxySlave disconnected");
+        AppXrw.logger.info("ServerProxySlave disconnected");
     }
 
     private void establishConnection() throws IOException {
 
         Socket socket = new Socket(connectionInfo.getHostName(), connectionInfo.getPortNum());
-        if (socket == null) {
-            throw new IOException("Cannot create socket to connect to host " + connectionInfo.getHostName() +
-                    " and port number " + connectionInfo.getPortNum());
-        }
 
         slaveSocket = new SlaveClientSocket(session.getID(), socket, new MyListener());
-        if (slaveSocket == null) {
-            throw new IOException("Cannot create SlaveSocketchannel for slave");
-        }
         slaveSocket.initialize();
     }
 
@@ -169,9 +163,15 @@ class ServerProxySlave implements ServerProxy {
         disconnect();
         client = null;
         scanLineBuf = null;
-        bufQueue = null;
-        AppXrw.logger.severe("ServerProxySlave cleaned up");
+        if (bufQueue != null) {
+            bufQueue.close();
+            bufQueue = null;
+        }
+        AppXrw.logger.info("ServerProxySlave cleaned up");
     }
+
+    // Debug: Error Insertion: for testing fix for 761.
+    //private int msgCounter = 0;
 
     private class MyListener implements ClientSocketListener {
 
@@ -188,6 +188,12 @@ class ServerProxySlave implements ServerProxy {
                     welcomeReceived = true;
                 }
             }
+
+            /* Debug: Error Insertion: for testing fix for 761.
+            if (++msgCounter == 5) {
+                bufQueue.close();
+            }
+            */
         }
 
         public void otherClientHasLeft(BigInteger otherClientID) {
@@ -196,7 +202,7 @@ class ServerProxySlave implements ServerProxy {
         }
     }
 
-    private void initialHandshake() {
+    private void initialHandshake() throws EOFException {
 
         String userName = session.getUserID().getUsername();
         int strLen = userName.length();
@@ -265,7 +271,7 @@ class ServerProxySlave implements ServerProxy {
         client.updateSlaveWindows();
     }
 
-    private void syncWindowStateNext() {
+    private void syncWindowStateNext() throws EOFException {
         AppXrw.logger.info("Enter syncWindowStateNext");
 
         CreateWindowMsgArgs crtMsgArgs = new CreateWindowMsgArgs();
@@ -375,17 +381,20 @@ class ServerProxySlave implements ServerProxy {
         slaveSocket.send(buf);
     }
 
-    public Proto.ServerMessageType getMessageType() {
+    public Proto.ServerMessageType getMessageType() throws EOFException {
         if (bufQueue == null) {
             return Proto.ServerMessageType.SERVER_DISCONNECT;
         }
-        int msgCode = (int) bufQueue.nextByte();
-        AppXrw.logger.info("msgCode = " + msgCode);
-        Proto.ServerMessageType msgType = Proto.ServerMessageType.values()[msgCode];
-        return msgType;
+        try {
+            int msgCode = (int) bufQueue.nextByte();
+            AppXrw.logger.info("msgCode = " + msgCode);
+            return Proto.ServerMessageType.values()[msgCode];
+        } catch (EOFException ex) {
+            return Proto.ServerMessageType.SERVER_DISCONNECT;
+        }
     }
 
-    public void getData(CreateWindowMsgArgs msgArgs) {
+    public void getData(CreateWindowMsgArgs msgArgs) throws EOFException {
         msgArgs.decorated = bufQueue.nextByte() != 0;
         bufQueue.nextShort(); // Skip 2 bytes of pad
         msgArgs.wid = bufQueue.nextInt();
@@ -395,12 +404,12 @@ class ServerProxySlave implements ServerProxy {
         msgArgs.hAndBorder = bufQueue.nextInt();
     }
 
-    public void getData(DestroyWindowMsgArgs msgArgs) {
+    public void getData(DestroyWindowMsgArgs msgArgs) throws EOFException {
         bufQueue.skipBytes(3); // Skip 3 bytes of pad
         msgArgs.wid = bufQueue.nextInt();
     }
 
-    public void getData(ShowWindowMsgArgs msgArgs) {
+    public void getData(ShowWindowMsgArgs msgArgs) throws EOFException {
         msgArgs.show = (bufQueue.nextByte() != 0);
 
         // TODO: 0.4 protocol: skip 2 bytes of transient and pad (ignore transient for now)
@@ -413,7 +422,7 @@ class ServerProxySlave implements ServerProxy {
         //msgArgs.transientFor = bufQueue.nextInt();
     }
 
-    public void getData(ConfigureWindowMsgArgs msgArgs) {
+    public void getData(ConfigureWindowMsgArgs msgArgs) throws EOFException {
         bufQueue.skipBytes(3); // Skip 3 bytes of pad
         msgArgs.clientId = bufQueue.nextInt();
         msgArgs.wid = bufQueue.nextInt();
@@ -424,7 +433,7 @@ class ServerProxySlave implements ServerProxy {
         msgArgs.sibid = bufQueue.nextInt();
     }
 
-    public void getData(PositionWindowMsgArgs msgArgs) {
+    public void getData(PositionWindowMsgArgs msgArgs) throws EOFException {
         bufQueue.skipBytes(3); // Skip 3 bytes of pad
         msgArgs.clientId = bufQueue.nextInt();
         msgArgs.wid = bufQueue.nextInt();
@@ -432,26 +441,26 @@ class ServerProxySlave implements ServerProxy {
         msgArgs.y = bufQueue.nextShort();
     }
 
-    public void getData(RestackWindowMsgArgs msgArgs) {
+    public void getData(RestackWindowMsgArgs msgArgs) throws EOFException {
         bufQueue.skipBytes(3); // Skip 3 bytes of pad
         msgArgs.clientId = bufQueue.nextInt();
         msgArgs.wid = bufQueue.nextInt();
         msgArgs.sibid = bufQueue.nextInt();
     }
 
-    public void getData(WindowSetDecoratedMsgArgs msgArgs) {
+    public void getData(WindowSetDecoratedMsgArgs msgArgs) throws EOFException {
         msgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
         bufQueue.nextShort(); // Skip 2 bytes of pad
         msgArgs.wid = bufQueue.nextInt();
     }
 
-    public void getData(WindowSetBorderWidthMsgArgs msgArgs) {
+    public void getData(WindowSetBorderWidthMsgArgs msgArgs) throws EOFException {
         bufQueue.nextByte();  // Skip 1 byte of pad
         msgArgs.borderWidth = bufQueue.nextShort();
         msgArgs.wid = bufQueue.nextInt();
     }
 
-    public void getData(WindowSetUserDisplMsgArgs msgArgs) {
+    public void getData(WindowSetUserDisplMsgArgs msgArgs) throws EOFException {
         bufQueue.skipBytes(3); // Skip 3 bytes of pad
         msgArgs.clientId = bufQueue.nextInt();
         msgArgs.wid = bufQueue.nextInt();
@@ -463,7 +472,7 @@ class ServerProxySlave implements ServerProxy {
                 Float.intBitsToFloat(iz));
     }
 
-    public void getData(WindowSetRotateYMsgArgs msgArgs) {
+    public void getData(WindowSetRotateYMsgArgs msgArgs) throws EOFException {
         bufQueue.skipBytes(3); // Skip 3 bytes of pad
         msgArgs.clientId = bufQueue.nextInt();
         msgArgs.wid = bufQueue.nextInt();
@@ -471,7 +480,7 @@ class ServerProxySlave implements ServerProxy {
         msgArgs.roty = Float.intBitsToFloat(iroty);
     }
 
-    public void getData(DisplayPixelsMsgArgs msgArgs) {
+    public void getData(DisplayPixelsMsgArgs msgArgs) throws EOFException {
         int encodingCode = bufQueue.nextByte();
         msgArgs.encoding = Proto.PixelEncoding.values()[encodingCode];
 
@@ -485,7 +494,7 @@ class ServerProxySlave implements ServerProxy {
         bufQueue.nextShort();
     }
 
-    public void getData(CopyAreaMsgArgs msgArgs) {
+    public void getData(CopyAreaMsgArgs msgArgs) throws EOFException {
         // Skip 3 bytes of pad
         bufQueue.nextByte();
         bufQueue.nextShort();
@@ -499,7 +508,7 @@ class ServerProxySlave implements ServerProxy {
         msgArgs.dstY = bufQueue.nextInt();
     }
 
-    public void getData(ControllerStatusMsgArgs msgArgs) {
+    public void getData(ControllerStatusMsgArgs msgArgs) throws EOFException {
         int status = (int) bufQueue.nextByte();
         msgArgs.status = Proto.ControllerStatus.values()[status];
 
@@ -509,7 +518,7 @@ class ServerProxySlave implements ServerProxy {
         msgArgs.clientId = bufQueue.nextInt();
     }
 
-    public void getData(SetWindowTitleMsgArgs msgArgs) {
+    public void getData(SetWindowTitleMsgArgs msgArgs) throws EOFException {
         // Skip 3 byte of pad
         bufQueue.nextByte();
         bufQueue.nextShort();
@@ -524,7 +533,7 @@ class ServerProxySlave implements ServerProxy {
         msgArgs.title = new String(bytes);
     }
 
-    public void getData(SlaveCloseWindowMsgArgs msgArgs) {
+    public void getData(SlaveCloseWindowMsgArgs msgArgs) throws EOFException {
         bufQueue.skipBytes(3); // Skip 3 bytes of pad
         msgArgs.clientId = bufQueue.nextInt();
         msgArgs.wid = bufQueue.nextInt();
@@ -533,7 +542,7 @@ class ServerProxySlave implements ServerProxy {
     public void getData() {
     }
 
-    public void getData(UserNameMsgArgs msgArgs) {
+    public void getData(UserNameMsgArgs msgArgs) throws EOFException {
 
         // Skip 1 byte of pad
         bufQueue.nextByte();
@@ -557,7 +566,7 @@ class ServerProxySlave implements ServerProxy {
         return controllingUserName;
     }
 
-    public void getData(SetPopupParentMsgArgs msgArgs) {
+    public void getData(SetPopupParentMsgArgs msgArgs) throws EOFException {
 
         // Skip 3 bytes of pad
         bufQueue.nextByte();
@@ -569,7 +578,7 @@ class ServerProxySlave implements ServerProxy {
 
 
     // TODO: 0.4 protocol
-    public void getData(DisplayCursorMsgArgs msg) {
+    public void getData(DisplayCursorMsgArgs msg) throws EOFException {
         // Skip 3 bytes of pad
         bufQueue.nextByte();
         bufQueue.nextShort();
@@ -587,7 +596,7 @@ class ServerProxySlave implements ServerProxy {
     }
 
     // TODO: 0.4 protocol
-    public void getData(MoveCursorMsgArgs msg) {
+    public void getData(MoveCursorMsgArgs msg) throws EOFException {
         // Skip 3 bytes of pad
         bufQueue.nextByte();
         bufQueue.nextShort();
@@ -598,7 +607,7 @@ class ServerProxySlave implements ServerProxy {
     }
 
     // TODO: 0.4 protocol
-    public void getData(ShowCursorMsgArgs msg) {
+    public void getData(ShowCursorMsgArgs msg) throws EOFException {
         msg.show = (bufQueue.nextByte() == 1) ? true : false;
     }
 
@@ -606,23 +615,24 @@ class ServerProxySlave implements ServerProxy {
         // No need to do anything
     }
 
-    public byte[] readScanLine() {
+    public byte[] readScanLine() throws EOFException {
         return bufQueue.nextBuffer();
     }
 
-    public int readRleInt() {
+    public int readRleInt() throws EOFException {
         int value = bufQueue.nextInt();
         return value;
     }
 
-    public void readRleChunk(byte[] buf) {
+    public void readRleChunk(byte[] buf) throws EOFException {
         bufQueue.nextBytes(buf);
     }
 
-    public void readRleChunk(byte[] buf, int len) {
+    public void readRleChunk(byte[] buf, int len) throws EOFException {
         bufQueue.nextBytes(buf, len);
     }
 
+    /* NOTE: on the slave, this must be called on the EDT. */
     public void writeEvent(int wid, MouseEvent event) throws IOException {
         int mask = 0;
         int n = 0;
@@ -666,6 +676,7 @@ class ServerProxySlave implements ServerProxy {
         slaveSocket.send(sign(pointerEventBuf));
     }
 
+    /* NOTE: on the slave, this must be called on the EDT. */
     public void writeWheelEvent(int wid, MouseWheelEvent event) throws IOException {
         int wheelRotation = event.getWheelRotation();
         int mask = (wheelRotation == -1) ? BUTTON4_MASK : BUTTON5_MASK;
@@ -715,6 +726,7 @@ class ServerProxySlave implements ServerProxy {
         slaveSocket.send(sign(pointerEventBuf));
     }
 
+    /* NOTE: on the slave, this must be called on the EDT. */
     public void writeEvent(KeyEvent event) throws IOException {
         char keyChar;
         int keyCode;

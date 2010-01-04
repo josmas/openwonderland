@@ -50,9 +50,9 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.contentrepo.web.spi.WebContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.web.spi.WebContentRepositoryRegistry;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin.DarkstarServerListener;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin.DarkstarServerListener;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLoginFactory;
 import org.jdesktop.wonderland.modules.xappsconfig.common.XAppRegistryItem;
 import org.jdesktop.wonderland.modules.xappsconfig.web.XAppsWebConfigConnection;
 
@@ -122,9 +122,10 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
             else if (action != null && action.equalsIgnoreCase("check") == true) {
                 handleCheck(request, response, xAppsCollection);
             }
-
-            // Otherwise, display the items
-            handleBrowse(request, response, xAppsCollection);
+            else {
+                // Otherwise, display the items
+                handleBrowse(request, response, xAppsCollection);
+            }
         } catch (java.lang.Exception cre) {
             throw new ServletException(cre);
         }
@@ -167,6 +168,13 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
         if (obj != null) {
             XAppsWebConfigConnection connection = (XAppsWebConfigConnection)obj;
             connection.removeX11App(appName);
+        }
+
+        // After we have deleted the entry, then redisplay the listings
+        try {
+            handleBrowse(request, response, xAppsCollection);
+        } catch (java.lang.Exception cre) {
+            throw new ServletException(cre);
         }
     }
 
@@ -233,6 +241,13 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
             XAppsWebConfigConnection connection = (XAppsWebConfigConnection)obj;
             connection.addX11App(appName, command);
         }
+
+        // After we have added the entry, then redisplay the listings
+        try {
+            handleBrowse(request, response, xAppsCollection);
+        } catch (java.lang.Exception cre) {
+            throw new ServletException(cre);
+        }
     }
 
     /**
@@ -291,12 +306,10 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
         // Loop through all of the entries in the content repo and spit out
         // the information to a collection of X11AppEntry objects. This will
         // be displayed by the jsp.
-        Collection<X11AppEntry> entries = new ArrayList();
         for (ContentNode child : c.getChildren()) {
             if (child instanceof ContentResource) {
                 // Find out the information about the content resource item
                 ContentResource resource = (ContentResource)child;
-                String path = resource.getPath();
 
                 // Use JAXB to parse the item
                 Reader r = new InputStreamReader(resource.getInputStream());
@@ -368,18 +381,18 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
     public void contextInitialized(ServletContextEvent sce) {
         // register with the admininstration page
         context = sce.getServletContext();
-        ar = new AdminRegistration("X Apps",
+        ar = new AdminRegistration("Manage Apps",
                                    "/xapps-config/wonderland-xapps-config/browse");
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
 
         // add ourselves as a listener for when the Darkstar server changes
-        DarkstarWebLogin.getInstance().addDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().addDarkstarServerListener(this);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
         // remove the Darkstar server listener
-        DarkstarWebLogin.getInstance().removeDarkstarServerListener(this);
+        DarkstarWebLoginFactory.getInstance().removeDarkstarServerListener(this);
         
         // register with the admininstration page
         AdminRegistration.unregister(ar, context);

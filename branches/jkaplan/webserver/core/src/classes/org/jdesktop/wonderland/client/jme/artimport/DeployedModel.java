@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -32,6 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.utils.jaxb.BoundingVolumeAdapter;
 import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
 import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
@@ -73,6 +75,10 @@ public class DeployedModel {
     @XmlElement(name="modelBGRotation", nillable=true)
     @XmlJavaTypeAdapter(QuaternionAdapter.class)
     private Quaternion modelBGRotation = null;
+
+    @XmlElement(name="modelBounds", nillable=true)
+    @XmlJavaTypeAdapter(BoundingVolumeAdapter.class)
+    private BoundingVolume modelBounds = null;
 
     @XmlElement(name="modelLoaderClassname")
     private String modelLoaderClassname;
@@ -222,6 +228,21 @@ public class DeployedModel {
      */
     public void setLoaderData(Object loaderDeploymentData) {
         this.loaderData = loaderDeploymentData;
+    }
+
+
+    /**
+     * @return the modelBounds
+     */
+    @XmlTransient public BoundingVolume getModelBounds() {
+        return modelBounds;
+    }
+
+    /**
+     * @param modelBounds the modelBounds to set
+     */
+    public void setModelBounds(BoundingVolume modelBounds) {
+        this.modelBounds = modelBounds;
     }
 
     /**

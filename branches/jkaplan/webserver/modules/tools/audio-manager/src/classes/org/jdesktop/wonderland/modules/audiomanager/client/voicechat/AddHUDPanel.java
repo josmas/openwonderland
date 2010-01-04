@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client.voicechat;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Point;
@@ -29,7 +31,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -42,10 +43,8 @@ import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
 import org.jdesktop.wonderland.modules.audiomanager.client.DisconnectListener;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatHoldMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
@@ -59,9 +58,9 @@ public class AddHUDPanel
         extends javax.swing.JPanel implements DisconnectListener {
 
     public enum Mode {
-
         ADD, INITIATE, IN_PROGRESS, HOLD
     };
+
     public Mode mode;
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
@@ -79,7 +78,6 @@ public class AddHUDPanel
     private PresenceInfo myPresenceInfo;
     private PresenceInfo caller;
     private String group;
-    private ChatType chatType;
     private static int groupNumber;
     private static ArrayList<AddHUDPanel> addHUDPanelList = new ArrayList();
     private PropertyChangeSupport listeners;
@@ -107,7 +105,7 @@ public class AddHUDPanel
         this.caller = caller;
 
         if (group == null) {
-            group = caller.userID.getUsername() + "-" + groupNumber++;
+            group = caller.getUserID().getUsername() + "-" + groupNumber++;
         }
 
         this.group = group;
@@ -136,7 +134,7 @@ public class AddHUDPanel
             public void HUDObjectChanged(HUDEvent e) {
 		//System.out.println("GOT EVENT " + e);
 
-                if (e.getEventType().equals(HUDEventType.CLOSED)) {
+                if (mode.equals(Mode.IN_PROGRESS) && e.getEventType().equals(HUDEventType.CLOSED)) {
                     leave();
                 }
             }
@@ -193,6 +191,12 @@ public class AddHUDPanel
 
     public void setClosed() {
         addHUDComponent.setClosed();
+    }
+
+    public void setPrivacy(ChatType chatType) {
+	if (addUserPanel != null) {
+	    addUserPanel.setPrivacy(chatType);
+	}
     }
 
     public void disconnected() {
@@ -366,23 +370,28 @@ public class AddHUDPanel
                 }
             });
 
-            holdPanel.addVolumeSliderChangeListener(new ChangeListener() {
+            holdPanel.addVolumeChangeListener(new ChangeListener() {
 
                 public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                    JSlider holdVolumeSlider = (JSlider) evt.getSource();
+                    javax.swing.JSpinner holdVolumeSpinner = (javax.swing.JSpinner) evt.getSource();
 
-                    setHoldVolume(holdVolumeSlider.getValue());
+                    setHoldVolume((Float) holdVolumeSpinner.getValue());
                 }
             });
         }
 
         holdPanel.setVisible(showPanel);
+
         if (showPanel) {
             add(holdPanel, BorderLayout.NORTH);
             if (normalHeight == 0) {
                 normalHeight = addHUDComponent.getHeight();
             }
-            addHUDComponent.setHeight(holdPanel.getPreferredSize().height);
+	    /*
+	     * FIX ME:  setting the height confuses the mouse listener
+	     * and clicking on the Take Off Hold button doesn't work.
+	     */
+            //addHUDComponent.setHeight(holdPanel.getPreferredSize().height);
         }
     }
 
@@ -424,8 +433,8 @@ public class AddHUDPanel
             PresenceInfo[] info = pm.getAllUsers();
 
             for (int i = 0; i < info.length; i++) {
-                if (info[i].usernameAlias.equals(name) ||
-                        info[i].userID.getUsername().equals(name)) {
+                if (info[i].getUsernameAlias().equals(name) ||
+                        info[i].getUserID().getUsername().equals(name)) {
 
                     addPhoneUserPanel.setStatusMessage(
                             BUNDLE.getString("Name_Used"));
@@ -493,6 +502,8 @@ public class AddHUDPanel
         AddHUDPanel addHUDPanel = new AddHUDPanel(client, session,
                 myPresenceInfo, myPresenceInfo, group, Mode.ADD);
 
+	addHUDPanel.setPrivacy(addUserPanel.getPrivacy());
+
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         addModeAddHUDComponent = mainHUD.createComponent(addHUDPanel);
         addHUDPanel.setHUDComponent(addModeAddHUDComponent);
@@ -529,7 +540,8 @@ public class AddHUDPanel
     }
 
     private void leave() {
-        session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+        session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo,
+	    client.getCOSName()));
         addHUDComponent.setVisible(false);
         addHUDPanelList.remove(this);
 
@@ -537,7 +549,7 @@ public class AddHUDPanel
             addModeAddHUDComponent.setVisible(false);
         }
 
-        client.getWlAvatarCharacter().stop();
+	CallAnimator.stopCallAnswerAnimation(client);
     }
 
     private void hangup(ActionEvent e) {
@@ -563,26 +575,41 @@ public class AddHUDPanel
         showAddUserPanel(true, true);
         showInProgressButtons(true);
         holdOtherCalls();
+
+	if (addUserPanel.getPrivacy().equals(ChatType.PRIVATE)) {
+	   CallAnimator.animateCallAnswer(client);
+	   
+	   String COSName = client.getCOSName();
+
+	   if (COSName != null) {
+                session.send(client,
+                    new VoiceChatHoldMessage(group, myPresenceInfo, false, 1, COSName));
+	   }
+	} else {
+	   CallAnimator.stopCallAnswerAnimation(client);
+	}
     }
 
     private void setHoldMode() {
         clearPanel();
         showHoldPanel(true);
 
-        int volume = holdPanel.getHoldVolume();
+        float volume = holdPanel.getHoldVolume();
 
         try {
             session.send(client, new VoiceChatHoldMessage(group, myPresenceInfo,
-                    true, VolumeUtil.getServerVolume(volume)));
+                    true, volume, client.getCOSName()));
         } catch (IllegalStateException e) {
             leave();
         }
+
+	CallAnimator.stopCallAnswerAnimation(client);
     }
 
-    private void setHoldVolume(int volume) {
+    private void setHoldVolume(float volume) {
         try {
             session.send(client, new VoiceChatHoldMessage(group, myPresenceInfo,
-                    true, VolumeUtil.getServerVolume(volume)));
+		true, volume, client.getCOSName()));
         } catch (IllegalStateException e) {
             leave();
         }
@@ -603,7 +630,7 @@ public class AddHUDPanel
     private void takeOffHold() {
         try {
             session.send(client,
-                    new VoiceChatHoldMessage(group, myPresenceInfo, false, 1));
+                    new VoiceChatHoldMessage(group, myPresenceInfo, false, 1, client.getCOSName()));
             setMode(Mode.IN_PROGRESS);
         } catch (IllegalStateException e) {
             leave();
@@ -634,7 +661,7 @@ public class AddHUDPanel
         }
 
         for (PresenceInfo info : selectedValues) {
-            if (info.clientID != null) {
+            if (info.getClientID() != null) {
                 if (inProgressButtonPanel != null) {
                     inProgressButtonPanel.setEnabledHangUpButton(false);
                 }
@@ -684,7 +711,7 @@ public class AddHUDPanel
 
         addTypeButtonGroup = new javax.swing.ButtonGroup();
 
-        setPreferredSize(new java.awt.Dimension(295, 220));
+        setPreferredSize(new java.awt.Dimension(322, 150));
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

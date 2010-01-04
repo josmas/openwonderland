@@ -27,8 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
-
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**

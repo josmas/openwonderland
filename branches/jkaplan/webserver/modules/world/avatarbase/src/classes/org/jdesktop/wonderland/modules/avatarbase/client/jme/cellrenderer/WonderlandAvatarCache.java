@@ -80,8 +80,10 @@ public class WonderlandAvatarCache implements CacheBehavior {
      * {@inheritDoc}
      */
     public boolean isFileCached(URL location) {
-        logger.info("Is File Cached? URL=" + location.toExternalForm() +
-                " Protocol " + location.getProtocol());
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("Is File Cached? URL=" + location.toExternalForm() +
+                    " Protocol " + location.getProtocol());
+        }
 
         File cacheFile = urlToCacheFile(location);
         return cacheFile.exists();
@@ -180,22 +182,40 @@ public class WonderlandAvatarCache implements CacheBehavior {
      * {@inheritDoc}
      */
     public Texture loadTexture(URL location) {
-        logger.info("Load Texture URL=" + location.toExternalForm() +
-                " Protocol " + location.getProtocol());
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("Load Texture URL=" + location.toExternalForm() +
+                    " Protocol " + location.getProtocol());
+        }
 
         String evolver = location.getFile();
-        if (evolver.contains("avatars/evolver") && location.getProtocol().equalsIgnoreCase("wlcontent")) {
-            System.err.println("Orig "+evolver);
+        boolean isEvolver = evolver.contains("avatars/evolver");
+        if (isEvolver && location.getProtocol().equalsIgnoreCase("wlcontent")) {
             evolver = evolver.substring(evolver.indexOf("localRepo"));
             evolver = evolver.substring(evolver.indexOf('/'));
-            System.err.println("TRIMMED "+evolver);
             try {
-                location = new URL("wlcontent://users@"+location.getHost()+":"+location.getPort()+"/"+ evolver);
+                location = new URL("wlcontent://users@" + location.getHost() + ":" + location.getPort() + "/" + evolver);
             } catch (MalformedURLException ex) {
-                Logger.getLogger(WonderlandAvatarCache.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
             }
-            System.err.println("NEW "+location.toExternalForm());
         }
+
+        // XXX HACK
+        // Replace for multi-mesh evolvers if an absolute path. Yuk!
+        // XXX HACK
+        boolean isEvolverMultimesh = evolver.contains("avatars/multimesh-evolver");
+        if (isEvolverMultimesh && location.getProtocol().equalsIgnoreCase("wlcontent")) {
+            int index = evolver.indexOf("localRepo");
+            if (index != -1) {
+                evolver = evolver.substring(evolver.indexOf("localRepo"));
+                evolver = evolver.substring(evolver.indexOf('/'));
+            }
+            try {
+                location = new URL("wlcontent://users@" + location.getHost() + ":" + location.getPort() + "/" + evolver);
+            } catch (MalformedURLException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+
         // XXX HACK
         // If the protocl is "file", then check to see if we are taking about
         // a .bhf file. In this case, we lop off the path with some hard-coded
@@ -203,7 +223,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
         // URLs that are not .bhf files, do nothing.
         // XXX HACK
         String urlString = location.toExternalForm();
-        if (location.getProtocol().equalsIgnoreCase("file") == true) {
+        if (!isEvolver && !isEvolverMultimesh && location.getProtocol().equalsIgnoreCase("file") == true) {
 //            if (urlString.endsWith(".bhf") == true) {
                 int assetsIndex = urlString.indexOf("assets/");
                 if (assetsIndex != -1) {

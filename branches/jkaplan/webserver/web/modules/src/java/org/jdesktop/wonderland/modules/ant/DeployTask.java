@@ -100,9 +100,16 @@ public class DeployTask extends Task {
             ServerSessionManager ssm = LoginManager.getSessionManager(serverUrl.toString());
             ServerDetails details = ssm.getDetails();
 
-            if (details.getAuthInfo().getType() == AuthenticationInfo.Type.WEB_SERVICE) {
-                out = AuthenticationManager.login(details.getAuthInfo(),
-                                                  username, password);
+            AuthenticationInfo info = details.getAuthInfo().clone();
+
+            // if the type is EITHER, we choose to login with authentication,
+            // since guest logins won't be allowed without authentication
+            if (info.getType() == AuthenticationInfo.Type.EITHER) {
+                info.setType(AuthenticationInfo.Type.WEB_SERVICE);
+            }
+
+            if (info.getType() == AuthenticationInfo.Type.WEB_SERVICE) {
+                out = AuthenticationManager.login(info, username, password);
             }
         }
 

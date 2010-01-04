@@ -147,6 +147,10 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 
         case CallStatus.ENDED: 
+	    if (ended) {
+		return;
+	    }
+
 	    System.out.println("Orb ended " + callID + " this call id " + this.callID);
 
 	    if (this.callID.equals(callID)) {

@@ -82,13 +82,13 @@ public class BystandersDialog extends javax.swing.JFrame implements BystandersLi
 	ArrayList<String> bystandersNames = new ArrayList();
 
 	for (PresenceInfo info : bystanders) {
-	    if (info.callID == null) {
+	    if (info.getCallID() == null) {
                 // It's a virtual player, skip it.
                 continue;
             }
 
-	    String usernameAlias = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-                info.isMuted);
+	    String usernameAlias = NameTagNode.getDisplayName(
+                    info.getUsernameAlias(), info.isSpeaking(), info.isMuted());
 
 	    bystandersNames.add(usernameAlias);
 	}

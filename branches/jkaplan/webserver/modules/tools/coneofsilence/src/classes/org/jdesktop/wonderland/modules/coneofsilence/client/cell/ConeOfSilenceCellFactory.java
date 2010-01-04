@@ -25,8 +25,13 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
+
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.math.Vector3f;
 
 /**
  * The cell factory for the sample cell.
@@ -53,10 +58,14 @@ public class ConeOfSilenceCellFactory implements CellFactorySPI {
         ConeOfSilenceCellServerState cellServerState =
                 new ConeOfSilenceCellServerState();
 
-        cellServerState.setName("COS");
-        cellServerState.setFullVolumeRadius((float) 1.5);
+	cellServerState.setName("ConeOfSilence");
 
-        LOGGER.fine("COS!!!!");
+        // Give the hint for the bounding volume for initial Cell placement
+        BoundingBox box = new BoundingBox(new Vector3f(), 2f, 0f, 2f);
+	    
+	BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
+	cellServerState.setBoundingVolumeHint(hint);
+
         return (T) cellServerState;
     }
 

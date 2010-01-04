@@ -504,6 +504,13 @@ public class HUDObject2D implements HUDObject {
     /**
      * {@inheritDoc}
      */
+    public boolean hasControl() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void addEventListener(HUDEventListener listener) {
         listeners.add(listener);
         logger.finest(this.getClass().getSimpleName() + " added event listener: " + listener.getClass().getSimpleName() + ", " + listeners.size() + " listeners");

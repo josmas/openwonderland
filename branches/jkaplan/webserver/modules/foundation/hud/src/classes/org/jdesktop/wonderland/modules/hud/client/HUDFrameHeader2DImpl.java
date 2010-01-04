@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import org.jdesktop.swingworker.SwingWorker;
 
 /**
  * The 2D frame header Swing implementation.
@@ -47,23 +48,52 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         initComponents();
         addListeners();
         paint = new GradientPaint(0, 0, gradientStartColor,
-                0, (int)getPreferredSize().getHeight(), gradientEndColor);
+                0, (int) getPreferredSize().getHeight(), gradientEndColor);
     }
 
     private void addListeners() {
+        hudButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(final ActionEvent e) {
+                logger.info("hud action performed");
+                (new SwingWorker<String, Object>() {
+
+                    @Override
+                    public String doInBackground() {
+                        notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "hud"));
+                        return null;
+                    }
+                }).execute();
+            }
+        });
+
         minimizeButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 logger.info("minimize action performed");
-                notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "minimize"));
+                (new SwingWorker<String, Object>() {
+
+                    @Override
+                    public String doInBackground() {
+                        notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "minimize"));
+                        return null;
+                    }
+                }).execute();
             }
         });
 
         closeButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 logger.info("close action performed");
-                notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "close"));
+                (new SwingWorker<String, Object>() {
+
+                    @Override
+                    public String doInBackground() {
+                        notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "close"));
+                        return null;
+                    }
+                }).execute();
             }
         });
     }
@@ -86,8 +116,24 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         }
     }
 
+    public void setFrameColor(Color color) {
+        setFrameColor(color, color);
+    }
+
+    public void setFrameColor(Color startColor, Color endColor) {
+        setGradientStartColor(startColor);
+        setGradientEndColor(endColor);
+        repaint();
+    }
+
+    public void setTextColor(Color textColor) {
+        titleLabel.setForeground(textColor);
+    }
+
     public void setGradientStartColor(Color gradientStartColor) {
         this.gradientStartColor = gradientStartColor;
+        paint = new GradientPaint(0, 0, gradientStartColor,
+                0, (int) getPreferredSize().getHeight(), gradientEndColor);
     }
 
     public Color getGradientStartColor() {
@@ -96,6 +142,8 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
 
     public void setGradientEndColor(Color gradientEndColor) {
         this.gradientEndColor = gradientEndColor;
+        paint = new GradientPaint(0, 0, gradientStartColor,
+                0, (int) getPreferredSize().getHeight(), gradientEndColor);
     }
 
     public Color getGradientEndColor() {
@@ -108,6 +156,10 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
 
     public String getTitle() {
         return titleLabel.getText();
+    }
+
+    public void showHUDButton(boolean show) {
+        hudButton.setVisible(show);
     }
 
     @Override
@@ -131,6 +183,7 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         minimizeButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         titleLabel = new javax.swing.JLabel();
+        hudButton = new javax.swing.JButton();
 
         minimizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/minimize16x16.png"))); // NOI18N
         minimizeButton.setBorderPainted(false);
@@ -149,6 +202,14 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         titleLabel.setFont(titleLabel.getFont().deriveFont(titleLabel.getFont().getStyle() | java.awt.Font.BOLD, titleLabel.getFont().getSize()+1));
         titleLabel.setForeground(new java.awt.Color(255, 255, 255));
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        titleLabel.setMinimumSize(new java.awt.Dimension(0, 17));
+
+        hudButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/hideHUD16x16.png"))); // NOI18N
+        hudButton.setBorderPainted(false);
+        hudButton.setIconTextGap(0);
+        hudButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hudButton.setMaximumSize(new java.awt.Dimension(16, 16));
+        hudButton.setMinimumSize(new java.awt.Dimension(2, 2));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -156,8 +217,10 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+                .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(hudButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
                 .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0)
                 .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -168,12 +231,14 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
             .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(layout.createSequentialGroup()
-                .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 20, Short.MAX_VALUE)
+                .add(hudButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0))
+            .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 20, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
+    private javax.swing.JButton hudButton;
     private javax.swing.JButton minimizeButton;
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables

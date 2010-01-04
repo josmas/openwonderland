@@ -82,14 +82,15 @@ public class PhonePasswordDialog extends JDialog {
         keepUnlockedLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Enter Password");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/phone/client/cell/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("PhonePasswordDialog.title")); // NOI18N
         setResizable(false);
 
         passwordLabel.setFont(new java.awt.Font("Dialog", 0, 13));
-        passwordLabel.setText("Password:");
+        passwordLabel.setText(bundle.getString("PhonePasswordDialog.passwordLabel.text")); // NOI18N
 
-        phonePasswordOkButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        phonePasswordOkButton.setText("Unlock");
+        phonePasswordOkButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        phonePasswordOkButton.setText(bundle.getString("PhonePasswordDialog.phonePasswordOkButton.text")); // NOI18N
         phonePasswordOkButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 phonePasswordOkButtonActionPerformed(evt);
@@ -97,7 +98,7 @@ public class PhonePasswordDialog extends JDialog {
         });
 
         phonePasswordCancelButton.setFont(new java.awt.Font("Dialog", 0, 13));
-        phonePasswordCancelButton.setText("Cancel");
+        phonePasswordCancelButton.setText(bundle.getString("PhonePasswordDialog.phonePasswordCancelButton.text")); // NOI18N
         phonePasswordCancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 phonePasswordCancelButtonActionPerformed(evt);
@@ -105,7 +106,7 @@ public class PhonePasswordDialog extends JDialog {
         });
 
         keepUnlockedCheckBox.setFont(new java.awt.Font("Dialog", 0, 13));
-        keepUnlockedCheckBox.setText("Keep Unlocked");
+        keepUnlockedCheckBox.setText(bundle.getString("PhonePasswordDialog.keepUnlockedCheckBox.text")); // NOI18N
         keepUnlockedCheckBox.setEnabled(false);
         keepUnlockedCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -127,13 +128,13 @@ public class PhonePasswordDialog extends JDialog {
 
         invalidPasswordLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         invalidPasswordLabel.setForeground(new java.awt.Color(255, 0, 0));
-        invalidPasswordLabel.setText("Password incorrect");
+        invalidPasswordLabel.setText(bundle.getString("PhonePasswordDialog.invalidPasswordLabel.text")); // NOI18N
 
         dialogLabel.setFont(new java.awt.Font("Dialog", 0, 13));
-        dialogLabel.setText("Enter the password to lock or unlock the phone");
+        dialogLabel.setText(bundle.getString("PhonePasswordDialog.dialogLabel.text")); // NOI18N
 
         keepUnlockedLabel.setFont(new java.awt.Font("Dialog", 0, 12));
-        keepUnlockedLabel.setText("The phone will stay unlocked after making a call");
+        keepUnlockedLabel.setText(bundle.getString("PhonePasswordDialog.keepUnlockedLabel.text")); // NOI18N
         keepUnlockedLabel.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -153,9 +154,9 @@ public class PhonePasswordDialog extends JDialog {
                                 .add(phonePasswordText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(invalidPasswordLabel)))))
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(93, Short.MAX_VALUE)
+                .addContainerGap(153, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)

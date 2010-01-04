@@ -24,7 +24,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="cellselection" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                description="Determines which Cell to Create" builddir="${build.dir}">
+                moduleDescription="Cell creation library" builddir="${build.dir}">
 
             <client>
                 <clientjar name="cellselection-client" basedir="${build.classes.dir}">

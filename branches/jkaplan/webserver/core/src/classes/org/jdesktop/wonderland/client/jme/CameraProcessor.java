@@ -99,15 +99,32 @@ public class CameraProcessor extends ProcessorComponent {
         }
     }
 
+    /**
+     * Set the camera controller. Note this call will return immediately but
+     * the camera controller will not be applied to the system until the
+     * next frame is rendererd, the change is applied in the compute method of
+     * this processor.
+     * @param cameraController
+     */
     public void setCameraController(CameraController cameraController) {
         synchronized(this) {
             pendingController = cameraController;
         }
     }
 
+    /**
+     * Return the camera controller. This method returns the most recently set
+     * cameraController, which may not be the controller being used this frame.
+     * CameraController changes are applied in the processor commit method, this
+     * method will return the most recently set camera controller, the application
+     * of which may still be pending.
+     * @return
+     */
     public CameraController getCameraController() {
         synchronized (this) {
-            return pendingController;
+            if (pendingController!=null)
+                return pendingController;
+            return cameraController;
         }
     }
 }

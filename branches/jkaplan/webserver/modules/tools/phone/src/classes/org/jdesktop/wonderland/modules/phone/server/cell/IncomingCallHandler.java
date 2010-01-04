@@ -122,6 +122,12 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	return incomingCallHandler;
     }
 
+    public void done() {
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	vm.removeCallStatusListener(incomingCallHandler);
+	vm.removeCallBeginEndListener(incomingCallHandler);
+    }
+
     public void addPhone(CellID phoneCellID, PhoneInfo phoneInfo) {
 
 	logger.info("adding phone " + phoneInfo.phoneNumber + " "

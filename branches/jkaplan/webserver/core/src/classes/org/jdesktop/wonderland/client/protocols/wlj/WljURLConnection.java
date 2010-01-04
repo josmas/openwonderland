@@ -64,7 +64,6 @@ public class WljURLConnection extends URLConnection {
     
     @Override
     public void connect() throws IOException {
-//        System.out.println("Connect to "+url);
     }
     
     @Override
@@ -79,8 +78,7 @@ public class WljURLConnection extends URLConnection {
             // be loaded
             Asset asset = AssetManager.getAssetManager().getAsset(uri, factory);
             if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
-                throw new IOException("No such asset "+url);
-//                return null;
+                throw new IOException("No such asset " + url);
             }
 
             return new FileInputStream(asset.getLocalCacheFile());

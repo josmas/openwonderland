@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.client.softphone.AudioQuality;
  */
 public interface AudioMenuListener {
 
-    public void mute(boolean isMuted);
+    public void setMute(boolean isMuted);
 
     public void showSoftphone();
 
@@ -44,6 +44,6 @@ public interface AudioMenuListener {
 
     public void voiceChat();
 
-    public void microphoneVolume();
+    public void audioVolume();
 
 }

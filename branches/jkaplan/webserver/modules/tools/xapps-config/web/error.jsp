@@ -16,9 +16,10 @@
         <title>Error</title>
     </head>
     <body>
-        <h2>X11 Apps Error</h2>
+        <h2>Error Adding New Desktop (X11) App</h2>
         ${requestScope['message']}
-        <br><br>
-        <a href="/xapps-config/wonderland-xapps-config/browse">Ok</a>
+        <div id="actionLinks">
+            <a href="/xapps-config/wonderland-xapps-config/browse">OK</a>
+        </div>
     </body>
 </html>

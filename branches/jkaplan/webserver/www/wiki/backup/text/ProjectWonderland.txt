@@ -1,0 +1,169 @@
+%WEBTOPICLIST%   <!-- This creates the navigation links to :  Home | Help | Index | etc.  -->
+<html>
+<head>
+  <style type="text/css">
+    /* Styles for the rounded corners complements of "Nifty Corners: rounded corners without
+        images" by Alessandro Fulciniti at http://www.html.it/articoli/nifty/index.html */
+    div#rounded{ margin: 0 0%; background: #88A1FF }
+    b.rtop, b.rbottom{display:block; background: #FFF }
+    b.rtop b, b.rbottom b{display: block; height: 1px; overflow: hidden; background: #88A1FF }
+    b.r1{margin: 0 5px}
+    b.r2{margin: 0 3px}
+    b.r3{margin: 0 2px}
+    b.rtop b.r4 b.rbottom b.r4{margin: 0 1px; height: 2px}
+    headers { margin: 10 10px }
+
+    /* Create spacing around the content */
+    table { width: 98%; margin: 0 0 }
+
+    /* Table styles for left and right column */
+    td.left { width: 30%; vertical-align: top}
+    td.right { width: 70%; vertical-align: top}
+
+  </style>
+</head>
+
+<body>
+
+<h2>Project Wonderland Documentation Wiki</h2>
+
+<h3>
+August 24, 2009, 11:07pm: Restoration of the wiki content is proceeding. At this point, most of the developer documentation has been restored, save a couple of tutorials. The remaining documentation to be restored focus on end users, content developers (artists), and sys admins. Special thanks to Maggie L for sending recovered data our way! I'll likely break for the evening shortly.
+</h3>
+
+<!-- Everyone -->
+
+<div id="rounded">
+<b class="rtop"><b class="r1"></b> <b class="r2"></b> <b class="r3"></b> <b class="r4"></b></b>
+<headers>&nbsp;For Everyone</headers>
+<b class="rbottom"><b class="r4"></b> <b class="r3"></b> <b class="r2"></b> <b class="r1"></b></b>
+</div>
+
+<table cellspacing="5">
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/WonderlandRoadmap">Project Roadmap and Release Plan Estimates</a></td>
+  <td class="right">Our best guess at the timeframes for the upcoming releases and what will be included in them</td>
+</tr>
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandResources">Multimedia Resources</a></td>
+  <td class="right">This page has a collection of videos, presentations, screenshots, and web resources on Project Wonderland.</td>
+</tr>
+</table>
+</div>
+
+<!-- Users Documents -->
+
+<div id="rounded">
+<b class="rtop"><b class="r1"></b> <b class="r2"></b> <b class="r3"></b> <b class="r4"></b></b>
+<headers>&nbsp;For Users &nbsp;&nbsp;&nbsp;</headers>
+<b class="rbottom"><b class="r4"></b> <b class="r3"></b> <b class="r2"></b> <b class="r1"></b></b>
+</div>
+
+<table cellspacing="5">
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWebStart05">Launching the Client</a></td>
+  <td class="right">This tutorial describes how users launch the Project Wonderland client using Java(TM) Web Start.</td>
+</tr>
+</table>
+</div>
+
+<!-- System Administrators Documents -->
+
+<div id="rounded">
+<b class="rtop"><b class="r1"></b> <b class="r2"></b> <b class="r3"></b> <b class="r4"></b></b>
+<headers>&nbsp;For System Administrators &nbsp;&nbsp;&nbsp;</headers>
+<b class="rbottom"><b class="r4"></b> <b class="r3"></b> <b class="r2"></b> <b class="r1"></b></b>
+</div>
+
+<table cellspacing="5">
+<tr>
+  <td class="left"><a href="https://wonderland.dev.java.net/binary-builds.html">Download and Install Wonderland</a></td>
+  <td class="right">Leads you step-by-step to download, install, configure, and run Project Wonderland.</a>.</td>
+</tr>
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandConfigureFirewall05">Firewall Configuration</a></td>
+  <td class="right">This tutorial describes how to configure Project Wonderland if your server is behind a firewall or NAT.</td>
+</tr>
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandAuthentication05">Configuring Authentication</a></td>
+  <td class="right">This tutorial describes how to configure authentication for Project Wonderland.</td>
+</tr>
+</table>
+</div>
+
+<!-- Content Developers -->
+
+<div id="rounded">
+<b class="rtop"><b class="r1"></b> <b class="r2"></b> <b class="r3"></b> <b class="r4"></b></b>
+<headers>&nbsp;For Content Developers &nbsp;&nbsp;&nbsp;</headers>
+<b class="rbottom"><b class="r4"></b> <b class="r3"></b> <b class="r2"></b> <b class="r1"></b></b>
+</div>
+
+<table cellspacing="5">
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandArtImport05">Importing 3D Models</a></td>
+  <td class="right">This tutorial describes how to import 3D models into Project Wonderland.</td>
+</tr>
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorldAssembly05">Assembling Worlds</a></td>
+  <td class="right">This tutorial describes how position, resize, and rotate Objects (Cells) in a world.</td>
+</tr>
+</table>
+
+<!-- Developer -->
+
+<div id="rounded">
+<b class="rtop"><b class="r1"></b> <b class="r2"></b> <b class="r3"></b> <b class="r4"></b></b>
+<headers>&nbsp;For Developers &nbsp;&nbsp;&nbsp;</headers>
+<b class="rbottom"><b class="r4"></b> <b class="r3"></b> <b class="r2"></b> <b class="r1"></b></b>
+</div>
+
+<table cellspacing="5">
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDownloadBuildSource05">Download, Build, Configure, and Run from the Source Code</a></td>
+  <td class="right">This tutorial provides an introduction for all developers: how to download and compile the source code, configure the Wonderland distribution, and run both the server and client.</td>
+</tr>
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDownloadBuildModules05">Download, Build, and Deploy Optional Modules from the Source Code</a></td>
+  <td class="right">This tutorial describes how developers can download and compile the source code, and deploy the optional add-on modules.</td>
+</tr>
+
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorkingWithModules05">Working with Modules</a></td>
+  <td class="right">This tutorial describes the basics of the Project Wonderland module system and how to install modules.</td>
+</tr>
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05">Developing a New Cell</a></td>
+  <td class="right">The primary means to extend Project Wonderland is by developing a new kind of Cell. There are a number of tutorials, from basic and advanced on this page. Beginning may first want to read Douglas Finnigan's tutorials ([[https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_01.pdf][Part 1]], [[https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_02.pdf][Part 2]]). The following four-part tutorial series goes in-depth for developers on how to create a new Cell: <a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part1">Part 1</a>, <a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part2">Part 2</a>, <a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part3">Part 3</a>, <a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part4">Part 4</a>.</td>
+</tr>
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWritingPlugin05">Writing a Client or Server "Plugin"</a></td>
+  <td class="right">A "plugin" is a piece of code bundled in a module that runs when either the client or server first starts up.</td>
+</tr>
+
+<tr>
+  <td class="left"><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCreatingHUD05">Developing a HUD-enabled module</a></td>
+  <td class="right">This tutorial describes how to develop a module that displays a window on the HUD (Heads-up display).</td>
+</tr>
+<tr>
+  <td class="left">[[WonderlandReleasepoint5][Version 0.5 Technical Documents]]</td>
+  <td class="right">A wiki containing technical documents and plans for Project Wonderland v0.5</td>
+</tr>
+</table>
+
+<!-- Students -->
+
+<div id="rounded">
+<b class="rtop"><b class="r1"></b> <b class="r2"></b> <b class="r3"></b> <b class="r4"></b></b>
+<headers>&nbsp;For Students &nbsp;&nbsp;&nbsp;</headers>
+<b class="rbottom"><b class="r4"></b> <b class="r3"></b> <b class="r2"></b> <b class="r1"></b></b>
+</div>
+
+<table cellspacing="5">
+<tr>
+  <td class="left">[[StudentProjects][Project Ideas for Students (and others)]]</td>
+  <td class="right">An ever-growing list of Wonderland projects, organized by level-of-effort, suitable for students or others interesting in extending Wonderland.</td>
+</tr>
+</table>
+</body>
+</html>

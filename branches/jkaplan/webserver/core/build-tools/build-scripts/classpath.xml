@@ -34,7 +34,6 @@
         <path location="${core.common.dir}/swing-worker-1.2.jar"/>
         <path location="${core.common.dir}/mtgame.jar"/>
         <path location="${core.common.dir}/jbullet.jar"/>
-        <path location="${core.common.dir}/vecmath.jar"/>
         <path location="${core.common.dir}/javolution.jar"/>
     </pathconvert>
     
@@ -62,6 +61,7 @@
         <path location="${core.common.dir}/scannotation-1.0.2.jar"/>
         <path location="${core.common.dir}/javassist.jar"/>
         <path location="${top.dir}/utils/wonderland-version/dist/wonderland-version.jar"/>
+        <path location="${core.common.dir}/vecmath.jar"/>
     </pathconvert>
     
     <pathconvert property="core-common.classpath">

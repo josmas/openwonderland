@@ -4,7 +4,7 @@
     Author     : jkaplan
 --%>
 
-<%@page contentType="text/html" pageEncoding="MacRoman"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 
@@ -16,18 +16,21 @@
         <meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
         <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
-        <title>Manage Snapshots</title>
+        <title>Manage Worlds</title>
     </head>
     <body>
-        <h3>Initial Worlds</h3>
+        <h2>Manage Worlds</h2>
 
         <c:set var="currentRoot" value="${requestScope['currentroot']}"/>
 
-        <table class="installed">
+        <table class="installed" id="runnerTable">
+            <caption>
+              <span class="heading">Initial Worlds</span>
+            </caption>
             <tr class="header">
-                <td class="installed"><b>World Name</b></td>
-                <td class="installed"><b>Path</b></td>
-                <td class="installed"><b>Actions</b></td>
+                <td class="installed">World Name</td>
+                <td class="installed">Path</td>
+                <td class="installed">Actions</td>
             </tr>
             <c:forEach var="root" items="${requestScope['roots']}">
                 <tr class="installed_a">
@@ -47,14 +50,17 @@
             </c:forEach>
         </table>
 
-        <h3>World Snapshots</h3>
+        <br>
 
-        <table class="installed">
+        <table class="installed" id="runnerTable">
+            <caption>
+              <span class="heading">Snapshots</span>
+            </caption>
             <tr class="header">
-                <td class="installed"><b>Name</b></td>
-                <td class="installed"><b>Date</b></td>
-                <td class="installed"><b>Description</b></td>
-                <td class="installed"><b>Actions</b></td>
+                <td class="installed">Name</td>
+                <td class="installed">Date</td>
+                <td class="installed">Description</td>
+                <td class="installed">Actions</td>
             </tr>
             <c:forEach var="snapshot" items="${requestScope['snapshots']}">
                 <tr class="installed_a">
@@ -75,9 +81,9 @@
                     </td>
                 </tr>
             </c:forEach>
-            <tr>
-                <td colspan="4" align="right"><a href="?action=snapshot">Create snapshot</a></td>
-            </tr>
         </table>
+        <div id="actionLinks">
+            <a href="?action=snapshot">Create snapshot</a>
+        </div>
     </body>
 </html>

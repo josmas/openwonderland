@@ -39,8 +39,17 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 	MANUAL
     }
 
+    public enum TreatmentType {
+	FILE,
+	CONTENT_REPOSITORY,
+	URL
+    }
+
     @XmlElement(name="groupId")
     private String groupId = "";
+
+    @XmlElement(name="treatmentType")
+    private TreatmentType treatmentType = TreatmentType.FILE;
 
     @XmlElements({
 	@XmlElement(name="treatment")
@@ -59,6 +68,9 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlElement(name="extent")
     private double extent = 10;
 
+    @XmlElement(name="useCellBounds")
+    private boolean useCellBounds = false;
+
     @XmlElement(name="fullVolumeAreaPercent")
     private double fullVolumeAreaPercent = 25;
 
@@ -67,6 +79,9 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 
     @XmlElement(name="falloff")
     private double falloff = 50;
+
+    @XmlElement(name="showBounds")
+    private boolean showBounds = false;
 
     public AudioTreatmentComponentServerState() {
 	super(false, false);
@@ -79,6 +94,15 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlTransient
     public String getGroupId() {
 	return groupId;
+    }
+
+    public void setTreatmentType(TreatmentType treatmentType) {
+	this.treatmentType = treatmentType;
+    }
+
+    @XmlTransient
+    public TreatmentType getTreatmentType() {
+	return treatmentType;
     }
 
     public void setTreatments(String[] treatments) {
@@ -126,6 +150,14 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 	return extent;
     }
 
+    public void setUseCellBounds(boolean useCellBounds) {
+	this.useCellBounds = useCellBounds;
+    }
+
+    @XmlTransient
+    public boolean getUseCellBounds() {
+	return useCellBounds;
+    }
     public void setFullVolumeAreaPercent(double fullVolumeAreaPercent) {
 	this.fullVolumeAreaPercent = fullVolumeAreaPercent;
     }
@@ -151,6 +183,15 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlTransient
     public double getFalloff() {
 	return falloff;
+    }
+
+    public void setShowBounds(boolean showBounds) {
+	this.showBounds = showBounds;
+    }
+
+    @XmlTransient
+    public boolean getShowBounds() {
+	return showBounds;
     }
 
     public String getServerComponentClassName() {

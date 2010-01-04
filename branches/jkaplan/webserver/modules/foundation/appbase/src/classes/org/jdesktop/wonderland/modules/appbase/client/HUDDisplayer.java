@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.appbase.client;
 
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.HashMap;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -30,6 +30,16 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 
+/**
+ * Provides a <code>View2DDisplay</code> type which is used for displaying app windows in 
+ * views in main Wonderland HUD. When an instance of this class is added to the view set of an 
+ * app (see <code>View2DSet.add(View2DDisplayer)</code>), all of the app's windows are made 
+ * visible in the HUD. They are usually removed from the HUD when the HUD sends a CLOSED 
+ * HUDEvent to them.
+ *
+ * @author deronj
+ */
+
 @ExperimentalAPI
 public class HUDDisplayer implements View2DDisplayer {
 
@@ -38,24 +48,21 @@ public class HUDDisplayer implements View2DDisplayer {
     /** The HUD. */
     private HUD mainHUD;
     /** HUD components for windows shown in the HUD. */
-    private LinkedList<HUDComponent> hudComponents;
+    private HashMap<HUDComponent,Window2D> hudComponents;
 
     public HUDDisplayer (App2D app) {
         this.app = app;
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        hudComponents = new LinkedList<HUDComponent>();
+        hudComponents = new HashMap<HUDComponent,Window2D>();
     }
 
     public void cleanup () {
-        if (hudComponents != null) {
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            for (HUDComponent component : hudComponents) {
-                component.setVisible(false);
-                mainHUD.removeComponent(component);
-            }
-            hudComponents.clear();
-            hudComponents = null;
-        }
+
+        // See if cleanup has already happened
+        if (mainHUD == null) return;
+        
+        destroyAllViews();
+
         mainHUD = null;
         app = null;
     }
@@ -67,15 +74,30 @@ public class HUDDisplayer implements View2DDisplayer {
 
         HUDComponent component = mainHUD.createComponent(window);
         component.setName(app.getName());
-        component.setPreferredLocation(Layout.NORTH);
-        hudComponents.add(component);
+        component.setPreferredLocation(Layout.CENTER);
+
+        // Maintain an association between components and their windows.
+        // Note: it would be nice of the HUD could do this but its tricky.
+        hudComponents.put(component, window);
 
         component.addEventListener(new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
-                    // TODO: currently we take the entire app off the HUD when
-                    // any HUD view of any app window is quit
-                    app.setShowInHUD(false);
+                    HUDComponent comp = (HUDComponent)e.getObject();
+                    if (mainHUD != null) {
+                        mainHUD.removeComponent(comp);
+                    }
+                    Window2D compWindow = hudComponents.get(comp);
+                    hudComponents.remove(comp);
+
+                    if (compWindow != null) {
+                        if (compWindow.getType() == Window2D.Type.PRIMARY ||
+                            compWindow.getType() == Window2D.Type.UNKNOWN) {
+                            if (app != null) {
+                                app.setShowInHUD(false);
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -83,14 +105,20 @@ public class HUDDisplayer implements View2DDisplayer {
         mainHUD.addComponent(component);
         component.setVisible(true);
 
-        // TODO: get the view from the HUD component and return it?
+        // Note: it is okay that null is returned here. The caller never uses it.
         return null;
     }
 
     public void destroyView (View2D view) {
+        // Intentionally a no-op
     }
 
     public void destroyAllViews () {
+        for (HUDComponent component : hudComponents.keySet()) {
+            component.setVisible(false);
+            mainHUD.removeComponent(component);
+        }
+        hudComponents.clear();
     }
 
     public Iterator<? extends View2D> getViews () {

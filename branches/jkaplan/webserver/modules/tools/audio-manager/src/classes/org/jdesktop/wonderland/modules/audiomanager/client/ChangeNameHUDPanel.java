@@ -15,12 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * ChangeNameHUDPanel.java
- *
- * Created on Jun 16, 2009, 4:34:43 PM
- */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeListener;
@@ -58,9 +52,9 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
         this.pm = pm;
         this.presenceInfo = presenceInfo;
         String text = BUNDLE.getString("Change_Alias_For");
-        text = MessageFormat.format(text, presenceInfo.userID.getUsername());
+        text = MessageFormat.format(text, presenceInfo.getUserID().getUsername());
         aliasLabel.setText(text);
-        usernameAliasTextField.setText(presenceInfo.userID.getUsername());
+        usernameAliasTextField.setText(presenceInfo.getUserID().getUsername());
         setVisible(true);
     }
 
@@ -198,8 +192,8 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
         String alias = usernameAliasTextField.getText();
 
         for (int i = 0; i < info.length; i++) {
-            if (info[i].usernameAlias.equals(alias) ||
-                    info[i].userID.getUsername().equals(alias)) {
+            if (info[i].getUsernameAlias().equals(alias) ||
+                    info[i].getUserID().getUsername().equals(alias)) {
 
                 if (!presenceInfo.equals(info[i])) {
                     statusLabel.setText(BUNDLE.getString("Alias_Used"));
@@ -210,8 +204,8 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
 
         statusLabel.setText("");
 
-        presenceInfo.usernameAlias = usernameAliasTextField.getText();
-        pm.changeUsernameAlias(presenceInfo);
+        presenceInfo.setUsernameAlias(usernameAliasTextField.getText());
+        pm.requestChangeUsernameAlias(presenceInfo.getUsernameAlias());
         listener.changeUsernameAlias(presenceInfo);
         listeners.firePropertyChange("ok", new String(""), null);
 }//GEN-LAST:event_okButtonActionPerformed

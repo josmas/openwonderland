@@ -29,12 +29,16 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.awt.Dimension;
 
 /**
- * TODO
- * Note: frame handles mtgame and jme update issues itself.
+ * Renders an optional rectangular border around a View2DCell. A frame is comprised of
+ * several frame components: a header, two sides (left and right), a bottom, and a 
+ * resize corner.
+ * <br><br>
  * @author deronj
  */
 @ExperimentalAPI
 public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
+
+    // IMPLEMENTATION NOTE:  The frame handles MTGame and JME update issues internally.
 
     private static final Logger logger = Logger.getLogger(Frame2DCell.class.getName());
 
@@ -279,9 +283,9 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
 
     /**
      * {@inheritDoc}
+     * THREAD USAGE NOTE: Called on the EDT.
      */
-    public synchronized void updateControl(ControlArb controlArb) {
-        
+    public void updateControl(ControlArb controlArb) {
         // Sometimes some of these are null during debugging
         if (header != null) {
             header.updateControl(controlArb);
@@ -303,6 +307,78 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     @Override
     public String toString () {
         return name;
+    }
+
+    // Returns the width of the header in local coordinates
+    float getHeaderWidth () {
+        if (header != null) {
+            return header.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the header in local coordinates
+    float getHeaderHeight () {
+        if (header != null) {
+            return header.getHeight();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the width of the frame left side in local coordinates
+    float getLeftSideWidth () {
+        if (leftSide != null) {
+            return leftSide.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the frame left side in local coordinates
+    float getLeftSideHeight () {
+        if (leftSide != null) {
+            return leftSide.getHeight();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the width of the frame right side in local coordinates
+    float getRightSideWidth () {
+        if (rightSide != null) {
+            return rightSide.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the frame right side in local coordinates
+    float getRightSideHeight () {
+        if (rightSide != null) {
+            return rightSide.getHeight();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the width of the frame bottom side in local coordinates
+    float getBottomSideWidth () {
+        if (bottomSide != null) {
+            return bottomSide.getWidth();
+        } else {
+            return 0f;
+        }
+    }
+
+    // Returns the height of the frame bottom side in local coordinates
+    float getBottomSideHeight () {
+        if (bottomSide != null) {
+            return bottomSide.getHeight();
+        } else {
+            return 0f;
+        }
     }
 }
 

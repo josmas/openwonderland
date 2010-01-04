@@ -63,7 +63,11 @@ public class ViewCell extends Cell {
                     CellClientSession s = (CellClientSession)getCellCache().getSession();
                     if (s.getCellCacheConnection().getViewCellID().equals(getCellID()))
                         s.getLocalAvatar().viewCellConfigured(getCellID());
-                    movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
+                    
+                    MovableComponent mc = getComponent(MovableComponent.class);
+                    if (mc != null && mc instanceof MovableAvatarComponent) {
+                        movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
+                    }
                 }
                 break;
             case INACTIVE :

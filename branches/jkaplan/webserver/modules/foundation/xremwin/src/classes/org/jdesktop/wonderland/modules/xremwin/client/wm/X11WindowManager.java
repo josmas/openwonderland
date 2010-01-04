@@ -349,7 +349,9 @@ final public class X11WindowManager extends Application
 	    exit_now = true;
 	}
 	dispatch(firstEvent);    
-	display.flush();
+        if (display != null) {
+            display.flush();
+        }
     }
 
     private void dispatch(Event event) {

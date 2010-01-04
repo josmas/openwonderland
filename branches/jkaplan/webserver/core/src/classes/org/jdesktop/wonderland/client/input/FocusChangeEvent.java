@@ -23,6 +23,8 @@ import org.jdesktop.wonderland.common.InternalAPI;
 /**
  * An internal event which is used to change focus sets in a way which is 
  * atomic with repect to the <code>EventDistributor</code>'sevent queue.
+ *
+ * @author deronj
  */
 
 @InternalAPI

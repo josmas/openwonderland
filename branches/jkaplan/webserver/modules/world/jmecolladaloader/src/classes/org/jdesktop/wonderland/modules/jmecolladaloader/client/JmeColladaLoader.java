@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
@@ -37,10 +38,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +54,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.util.GraphOptimizer;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
@@ -145,11 +149,14 @@ public class JmeColladaLoader implements ModelLoader {
 
         setupBounds(modelNode);
 
-
 //        TreeScan.findNode(modelNode, new ProcessNodeInterface() {
 //
 //            public boolean processNode(Spatial node) {
-//                System.err.println(node);
+//                System.err.print(node);
+//                if (node instanceof Geometry) {
+//                    System.err.println("  "+((Geometry)node).getModelBound());
+//                } else
+//                    System.err.println();
 //                return true;
 //            }
 //
@@ -210,7 +217,9 @@ public class JmeColladaLoader implements ModelLoader {
                         ResourceLocatorTool.TYPE_TEXTURE,
                         resourceLocator);
             }
- 
+
+            modelBG.updateGeometricState(0, true);
+
             return modelBG;
         } catch (IOException ex) {
             Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
@@ -235,8 +244,10 @@ public class JmeColladaLoader implements ModelLoader {
 
             public boolean processNode(Spatial node) {
                 if (node instanceof Geometry) {
-                    node.setModelBound(new BoundingSphere());
-                    node.updateModelBound();
+                    if (node.getWorldBound()==null) {
+                        node.setModelBound(new BoundingBox());
+                        node.updateModelBound();
+                    }
                 }
                 return true;
             }
@@ -251,15 +262,15 @@ public class JmeColladaLoader implements ModelLoader {
     }
 
     public DeployedModel deployToModule(File moduleRootDir, ImportedModel importedModel) throws IOException {
-            String modelName = getFilename(importedModel.getOriginalURL());
-            
+        try {
+            String modelName = getFilename(importedModel.getOriginalURL().toURI().getPath());
             HashMap<String, String> textureDeploymentMapping = new HashMap();
             DeployedModel deployedModel = new DeployedModel(importedModel.getOriginalURL(), this);
             LoaderData data = new LoaderData();
             data.setDeployedTextures(textureDeploymentMapping);
             data.setModelLoaderClassname(this.getClass().getName());
             deployedModel.setLoaderData(data);
-            
+
             // TODO replace getName with getModuleName(moduleRootDir)
             String moduleName = moduleRootDir.getName();
 
@@ -274,7 +285,9 @@ public class JmeColladaLoader implements ModelLoader {
             ModelCellComponentServerState setup = new ModelCellComponentServerState();
             cellSetup.addComponentServerState(setup);
             cellSetup.setName(importedModel.getWonderlandName());
-            cellSetup.setBoundingVolumeHint(new BoundingVolumeHint(false, importedModel.getModelBG().getWorldBound()));
+            BoundingVolume modelBounds = importedModel.getModelBG().getWorldBound();
+            cellSetup.setBoundingVolumeHint(new BoundingVolumeHint(false, modelBounds));
+            deployedModel.setModelBounds(modelBounds);
 
             Vector3f offset = importedModel.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
@@ -303,20 +316,24 @@ public class JmeColladaLoader implements ModelLoader {
 
             deployedModel.addCellServerState(cellSetup);
 
-            deployModels(targetDir, 
+            deployModels(targetDir,
                          moduleName,
                          deployedModel,
                          importedModel,
                          textureDeploymentMapping, setup);
 
             return deployedModel;
-    
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     protected void deployDeploymentData(File targetDir, 
             DeployedModel deployedModel,
             String filename) {
         LoaderData data = (LoaderData) deployedModel.getLoaderData();
+//        System.err.println("CREATING deploymentData "+filename);
         File deploymentDataFile = new File(targetDir, filename+".dep");
         File loaderDataFile = new File(targetDir, filename+".ldr");
         try {
@@ -354,27 +371,28 @@ public class JmeColladaLoader implements ModelLoader {
             ImportedModel importedModel,
             HashMap<String, String> deploymentMapping,
             ModelCellComponentServerState state) {
-        URL[] source = importedModel.getAllOriginalModels();
-        
-        String filename = getFilename(importedModel.getOriginalURL());
-        String filenameGZ = filename+".gz";
-        File targetFile = new File(targetDir, filenameGZ);
         try {
-            targetFile.createNewFile();
-            // TODO compress the dae file using gzip stream
-            copyAsset(source[0], targetFile, true); // TODO handle multiple dae files
-            deployedModel.setModelURL(importedModel.getDeploymentBaseURL()+filename+"/"+filenameGZ);
+            URL[] source = importedModel.getAllOriginalModels();
+            String filename = getFilename(importedModel.getOriginalURL().toURI().getPath());
+//            System.err.println("DEPLOY filename "+filename);
+            String filenameGZ = filename + ".gz";
+            File targetFile = new File(targetDir, filenameGZ);
+            try {
+                targetFile.createNewFile();
+                // TODO compress the dae file using gzip stream
+                copyAsset(source[0], targetFile, true); // TODO handle multiple dae files
+                deployedModel.setModelURL(importedModel.getDeploymentBaseURL() + filename + "/" + filenameGZ);
 //            deployedModel.setModelURL("wla://"+moduleName+"/"+filename+"/"+filenameGZ);
-            deployedModel.setLoaderDataURL(deployedModel.getModelURL()+".ldr");
 
-            deployDeploymentData(targetDir, deployedModel, filenameGZ);
-            state.setDeployedModelURL(deployedModel.getModelURL()+".dep");
+//                System.err.println("--------> "+deployedModel.toString());
 
-            // Decided not to do this for deployment. Instead we will create and
-            // manage the binary form in the client asset cache. The binary
-            // files are only slightly smaller than compresses collada.
-            
-            // Fix the texture references in the graph to the deployed URL's
+                deployedModel.setLoaderDataURL(deployedModel.getModelURL() + ".ldr");
+                deployDeploymentData(targetDir, deployedModel, filenameGZ);
+                state.setDeployedModelURL(deployedModel.getModelURL() + ".dep");
+                // Decided not to do this for deployment. Instead we will create and
+                // manage the binary form in the client asset cache. The binary
+                // files are only slightly smaller than compresses collada.
+                // Fix the texture references in the graph to the deployed URL's
 //            TreeScan.findNode(importedModel.getModelBG(), Geometry.class, new ProcessNodeInterface() {
 //                public boolean processNode(Spatial node) {
 //                    Geometry g = (Geometry)node;
@@ -402,9 +420,12 @@ public class JmeColladaLoader implements ModelLoader {
 //            OutputStream binaryModelStream = binaryModelFile.getOutputStream();
 //            BinaryExporter.getInstance().save(importedModel.getModelBG(), binaryModelStream);
 //            binaryModelStream.close();
+            } catch (IOException ex) {
+                Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Unable to create file " + targetFile, ex);
+            }
 
-        } catch (IOException ex) {
-            Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Unable to create file "+targetFile, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -478,6 +499,12 @@ public class JmeColladaLoader implements ModelLoader {
     private void copyAsset(URL source, File targetFile, boolean compress) {
         InputStream in = null;
         OutputStream out = null;
+
+        if (source==null) {
+            logger.warning("Null asset source for targetFile "+targetFile);
+            return;
+        }
+
         try {
             in = new BufferedInputStream(source.openStream());
             if (compress)
@@ -585,7 +612,7 @@ public class JmeColladaLoader implements ModelLoader {
             try {
                 String spec = URLEncoder.encode( resourceName, "UTF-8" );
                 //this fixes a bug in JRE1.5 (file handler does not decode "+" to spaces)
-                spec = spec.replaceAll( "\\+", "%20" );
+//                spec = spec.replaceAll( "\\+", "%20" );
 
                 URL rVal = new URL( baseDir.toURL(), spec );
                 // open a stream to see if this is a valid resource

@@ -25,7 +25,11 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb.ControlChangeListener;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.ResizeListener;
 
@@ -38,12 +42,13 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D.ResizeListener;
  *
  * @author nsimpson
  */
-public class HUDComponent2D extends HUDObject2D implements HUDComponent {
+public class HUDComponent2D extends HUDObject2D implements HUDComponent, ControlChangeListener {
 
     private static final Logger logger = Logger.getLogger(HUDComponent2D.class.getName());
     private Cell cell;
     protected JComponent component;
     protected Window2D window;
+    protected boolean managedWindow = true;
 
     public HUDComponent2D() {
         super();
@@ -78,6 +83,7 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
      */
     public HUDComponent2D(Window2D window) {
         this.window = window;
+        setHUDManagedWindow(false);
         setBounds(getX(), getY(), window.getWidth(), window.getHeight());
         window.addResizeListener(new ResizeListener() {
 
@@ -87,6 +93,13 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
                 setSize(newSize);
             }
         });
+
+        // track changes in control state of this window
+        App2D app = window.getApp();
+        ControlArb arbiter = app.getControlArb();
+        if (arbiter != null) {
+            arbiter.addListener(this);
+        }
     }
 
     /**
@@ -162,6 +175,28 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
     }
 
     /**
+     * Identifies this HUD component as having a window which should be
+     * managed by the HUD. Applications which manage their own window state
+     * should set this property to false.
+     *
+     * @param managedWindow true if this is a window managed by the HUD,
+     * false otherwise
+     */
+    public void setHUDManagedWindow(boolean managedWindow) {
+        this.managedWindow = managedWindow;
+    }
+
+    /**
+     * Gets whether this HUD component has a window which is managed by the
+     * HUD.
+     *
+     * @return true if the window is managed by the HUD, false otherwise
+     */
+    public boolean isHUDManagedWindow() {
+        return managedWindow;
+    }
+
+    /**
      * Associates a cell with this HUD component for in-world display
      * @param cell the cell to associate with this HUD component
      */
@@ -177,12 +212,36 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
         return cell;
     }
 
+    public void updateControl(ControlArb arbiter) {
+        notifyEventListeners(HUDEventType.CHANGED_CONTROL);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasControl() {
+        boolean control = false;
+
+        if (window != null) {
+            App2D app = window.getApp();
+            if (app != null) {
+                ControlArb arbiter = app.getControlArb();
+                if (arbiter != null) {
+                    control = arbiter.hasControl();
+                }
+            }
+        }
+
+        return control;
+    }
+
     @Override
     public String toString() {
-        return "HUDComponent2D: " +
-                "cell: " + cell + " " +
+        return getClass().getSimpleName() +
+                ", cell: " + cell + " " +
                 ((component != null) ? component.getClass().getName() : "") +
-                "window: " + window + " " +
+                ", window: " + window + " " +
                 super.toString();
     }
 }

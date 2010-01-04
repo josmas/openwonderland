@@ -22,6 +22,8 @@ import org.jdesktop.wonderland.common.wfs.WorldRootList;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.WonderlandContext;
 
@@ -33,7 +35,11 @@ import org.jdesktop.wonderland.server.WonderlandContext;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellImporterUtils {
-    
+
+    // The error logger
+    private static Logger LOGGER =
+            Logger.getLogger(CellImporterUtils.class.getName());
+
     /* The prefix to add to URLs for the WFS web service */
     private static final String WFS_PREFIX = "wonderland-web-wfs/wfs/";
     
@@ -51,6 +57,8 @@ public class CellImporterUtils {
             URL url = getURL(WFS_PREFIX + root + "/cells/?reload=" + Boolean.toString(reload));
             return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
+            LOGGER.log(Level.WARNING, "Error getting WFS cells, root=" + root +
+                    ", reload=" + reload, excp);
             return null;
         }
     }
@@ -78,7 +86,9 @@ public class CellImporterUtils {
             InputStreamReader isr = new InputStreamReader(url.openStream());
             return CellServerState.decode(isr, null);
         } catch (java.lang.Exception excp) {
-            System.out.println(excp.toString());
+            LOGGER.log(Level.WARNING, "Unable to fetch WFS Cell with root=" +
+                    root + ", relative path=" + relativePath + ", name=" +
+                    name, excp);
             return null;
         }
     }
@@ -92,7 +102,8 @@ public class CellImporterUtils {
             URL url = getURL(WFS_PREFIX + root + "/directory/");
             return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
-            System.err.println(excp);
+            LOGGER.log(Level.WARNING, "Unable to fetch children, root=" +
+                    root, excp);
             return null;
         }            
     }
@@ -110,6 +121,8 @@ public class CellImporterUtils {
             URL url = getURL(WFS_PREFIX + root + "/directory/" + canonicalName);
             return CellList.decode(canonicalName, url.openStream());
         } catch (java.lang.Exception excp) {
+            LOGGER.log(Level.WARNING, "Error getting WFS Children, root=" +
+                    root + "name=" + canonicalName, excp);
             return null;
         }        
     }
@@ -124,10 +137,9 @@ public class CellImporterUtils {
          */
         try {
             URL url = getURL(WFS_PREFIX + "roots");
-            CellImporter.getLogger().info("WFS: Loading roots at " + url.toExternalForm());
             return WorldRootList.decode(url.openStream());
         } catch (java.lang.Exception excp) {
-            CellImporter.getLogger().info("WFS: Error loading roots: " + excp.toString());
+            LOGGER.log(Level.WARNING, "Error loading WFS Root", excp);
             return null;
         }
     }

@@ -112,18 +112,4 @@ public interface HUDComponentManager extends HUDEventListener {
      * @return the stacking order of the component
      */
     public int getComponentZOrder(HUDComponent component);
-
-    /**
-     * Change the decoration state of a HUDComponent
-     * @param component the component to change
-     * @param decorate true to decorate the component, false to remove decorations
-     */
-    public void decorateComponent(HUDComponent component, boolean decorate);
-
-    /**
-     * Gets whether the specified HUDComponent is decorated
-     * @param component the component to check if it's decorated
-     * @return true if the component is decorated, false if not
-     */
-    public boolean isComponentDecorated(HUDComponent component);
 }

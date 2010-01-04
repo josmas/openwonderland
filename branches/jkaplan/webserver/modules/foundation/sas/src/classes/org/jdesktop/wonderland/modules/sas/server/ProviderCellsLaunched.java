@@ -27,6 +27,8 @@ import com.sun.sgs.app.AppContext;
 
 /**
  * Contains the cells launched by a provider.
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 public class ProviderCellsLaunched implements ManagedObject, Serializable {
@@ -50,5 +52,9 @@ public class ProviderCellsLaunched implements ManagedObject, Serializable {
     public void clear() {
         cellsLaunched.clear();
         AppContext.getDataManager().markForUpdate(this);
+    }
+
+    public int size() {
+        return cellsLaunched.size();
     }
 }

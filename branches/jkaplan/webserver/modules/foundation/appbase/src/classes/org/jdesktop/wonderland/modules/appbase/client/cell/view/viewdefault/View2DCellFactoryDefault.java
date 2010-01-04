@@ -22,7 +22,17 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 
+/**
+ * Implements a factory which creates new instances of <code>View2DCell</code>.
+ *
+ * @author deronj
+ */
+
 public class View2DCellFactoryDefault implements View2DCellFactory {
+
+    public void initialize () {
+        FrameHeaderSwing.staticInitialize();
+    }
 
     public App2DCellRenderer createCellRenderer (App2DCell cell) {
         return new App2DCellRendererJME(cell);

@@ -86,6 +86,8 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	    listing.getExternalCallID());
     }
 
+    private boolean ended;
+
     public void callStatusChanged(CallStatus status) {    
 	logger.finer("got status " + status);
 
@@ -142,6 +144,12 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
             break;
 
         case CallStatus.ENDED: 
+	    if (ended) {
+		return;
+	    }
+
+	    ended = true;
+	
 	    vm.removeCallStatusListener(this);
 
             //Stop the ringing

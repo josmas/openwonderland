@@ -30,10 +30,12 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CameraComponent;
@@ -45,6 +47,8 @@ import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsManager;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.assetmgr.AssetDB;
+import org.jdesktop.wonderland.client.assetmgr.AssetDBException;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.common.ThreadManager;
@@ -69,7 +73,7 @@ public class JmeClientMain {
     private static final Logger LOGGER =
             Logger.getLogger(JmeClientMain.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/client/jme/resources/bundle");
+            "org/jdesktop/wonderland/client/jme/resources/Bundle");
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
     // standard properties
@@ -95,17 +99,33 @@ public class JmeClientMain {
     // keep tack of whether we are currently logging out
     private boolean loggingOut;
 
+    private enum OS {
+
+        Linux, Windows, OSX, Other
+    }
+    private OS os;
+
     /**
      * creates a new JmeClientMain
      * @param args the command line arguments
      */
     public JmeClientMain(String[] args) {
+        detectOS();
+
+        checkVmVersion();
+
         // process command line arguments
         processArgs(args);
 
         // load properties in a properties file
         URL propsURL = getPropsURL();
         loadProperties(propsURL);
+
+        // Check whether there is another JVM processing running that is
+        // attached to the database. Note we need to do this check AFTER the
+        // client properties are loaded, otherwise, the wrong user directory
+        // is used.
+        checkDBException();
 
         // set up the context
         ClientContextJME.setClientMain(this);
@@ -258,8 +278,8 @@ public class JmeClientMain {
      * direction
      * @throws IOException if there is an error going to the new location
      */
-    public void gotoLocation(String serverURL, Vector3f translation,
-            Quaternion look)
+    public void gotoLocation(String serverURL, final Vector3f translation,
+            final Quaternion look)
             throws IOException {
         if (serverURL == null) {
             // get the server from the current session
@@ -271,8 +291,8 @@ public class JmeClientMain {
         }
 
         // see if we need to change servers
-        if (curSession != null &&
-                serverURL.equals(
+        // issue #859 - compare URLs as URLs
+        if (curSession != null && urlEquals(serverURL,
                 curSession.getSessionManager().getServerURL())) {
             // no need to change - make a local move request
             ViewCell vc = curSession.getLocalAvatar().getViewCell();
@@ -281,7 +301,23 @@ public class JmeClientMain {
             }
 
         } else {
-            loadServer(serverURL, translation, look);
+            // issue #859 - load the server in a separate thread to
+            // guarantee it won't get loaded in the awt event thread
+            ServerLoader sl = new ServerLoader(serverURL, translation, look);
+            Thread t = new Thread(sl);
+            t.start();
+
+            // wait for the thread to finish
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.WARNING, "Join interrupted", ex);
+            }
+
+            // see if there was an exception
+            if (sl.getException() != null) {
+                throw sl.getException();
+            }
         }
     }
 
@@ -403,7 +439,7 @@ public class JmeClientMain {
      * logs out
      */
     protected void logout() {
-        LOGGER.warning("[JMEClientMain] log out");
+        LOGGER.info("[JMEClientMain] log out");
 
         // disconnect from the current session
         if (curSession != null) {
@@ -421,6 +457,28 @@ public class JmeClientMain {
 
             // notify listeners that there is no longer a primary server
             LoginManager.setPrimary(null);
+        }
+    }
+
+    /**
+     * Compare two Strings as URLs.
+     * @param url1 the first URL to compare
+     * @param url2 the second URL to compare
+     * @return true if the URLs match
+     */
+    private boolean urlEquals(String url1, String url2) {
+        try {
+            URL u1 = new URL(url1);
+            URL u2 = new URL(url2);
+
+            System.out.println("Compare " + url1 + " to " + url2 + ": " +
+                    u1.equals(u2));
+
+            return u1.equals(u2);
+        } catch (MalformedURLException mue) {
+            LOGGER.log(Level.WARNING, "Comparing non URL: " + url1 + ", " +
+                    url2, mue);
+            return url1.equalsIgnoreCase(url2);
         }
     }
 
@@ -458,6 +516,14 @@ public class JmeClientMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        // Check for the -b benchmark/test harness arg and process.
+        // This need to happen very early because it sets the user dir
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-b ")) {
+                TestHarnessSupport.processCommandLineArgs(args[i]);
+            }
+        }
+
         if (Webstart.isWebstart()) {
             Webstart.webstartSetup();
         }
@@ -475,9 +541,7 @@ public class JmeClientMain {
                 desiredFrameRate = Integer.parseInt(args[i + 1]);
                 System.out.println("DesiredFrameRate: " + desiredFrameRate);
                 i++;
-            }
-
-            if (args[i].equals("-p")) {
+            } else if (args[i].equals("-p")) {
                 System.setProperty(PROPS_URL_PROP, "file:" + args[i + 1]);
                 i++;
             }
@@ -502,6 +566,7 @@ public class JmeClientMain {
 
         // This call will block until the render buffer is ready, for it to
         // become ready the canvas3D must be visible
+        // Note: this disables focus traversal keys for the canvas it creates.
         ViewManager viewManager = ViewManager.getViewManager();
         viewManager.attachViewCanvas(canvas3D);
 
@@ -586,6 +651,98 @@ public class JmeClientMain {
                 LOGGER.log(Level.WARNING, "Error reading properties from " +
                         propsURL, ioe);
             }
+        }
+    }
+
+    private void detectOS() {
+        String osName = System.getProperty("os.name");
+        if (osName.startsWith("Mac OS X")) {
+            os = OS.OSX;
+        } else if (osName.startsWith("Windows")) {
+            os = OS.Windows;
+        } else if (osName.startsWith("Linux")) {
+            os = OS.Linux;
+        } else {
+            os = OS.Other;
+        }
+    }
+
+    /**
+     * Check we are running in a supported VM.
+     */
+    private void checkVmVersion() {
+        String version = System.getProperty("java.version");
+        String[] tokens = version.split("\\.");
+        if (tokens.length > 2) {
+            if (Integer.parseInt(tokens[1]) < 6) {
+                LOGGER.severe("Java Version is older than 6");
+                String errorMessage = BUNDLE.getString("JAVA_VERSION_ERROR") +
+                        "\n\n" + BUNDLE.getString(os == OS.OSX
+                        ? "JAVA_VERSION_ERROR_OSX"
+                        : "JAVA_VERSION_ERROR_OTHER");
+                JOptionPane.showMessageDialog(null, errorMessage,
+                        BUNDLE.getString("JAVA_VERSION_ERROR_TITLE"),
+                        JOptionPane.ERROR_MESSAGE);
+                System.exit(1);
+            }
+        } else {
+            LOGGER.warning("could not parse java version \"" + version + '\"');
+        }
+    }
+
+    /**
+     * Check if another JVM process has the database opened. If so, then post
+     * a message and exit.
+     */
+    private void checkDBException() {
+        // Create an AssetDB object, which will attempt to open the DB. Upon
+        // exception, launch a message dialog. Upon success, just close the
+        // DB
+        AssetDB assetDB = null;
+        try {
+            assetDB = new AssetDB();
+        } catch (AssetDBException excp) {
+            LOGGER.log(Level.SEVERE,
+                    "Unable to connect DB, another JVM running", excp);
+            String errorMessage = BUNDLE.getString("DB_ERROR");
+            if (os == OS.Windows) {
+                errorMessage += "\n" + BUNDLE.getString("DB_ERROR_WINDOWS");
+            }
+            JOptionPane.showMessageDialog(null,
+                    errorMessage,
+                    BUNDLE.getString("DB_ERROR_TITLE"),
+                    JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
+        assetDB.disconnect();
+    }
+
+    /** runnable for loading the server and remembering the exception */
+    class ServerLoader implements Runnable {
+
+        private String serverURL;
+        private Vector3f translation;
+        private Quaternion look;
+        private IOException ioe;
+
+        public ServerLoader(String serverURL, Vector3f translation,
+                Quaternion look) {
+            this.serverURL = serverURL;
+            this.translation = translation;
+            this.look = look;
+        }
+
+        public void run() {
+            try {
+                loadServer(serverURL, translation, look);
+            } catch (IOException ioe) {
+                // remember the exception
+                this.ioe = ioe;
+            }
+        }
+
+        public IOException getException() {
+            return ioe;
         }
     }
 }

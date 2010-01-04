@@ -34,13 +34,15 @@ public class ControlArbSingle extends ControlArbAppFocus {
     /** {@inheritDoc} */
     @Override
     public void cleanup () {
+        super.cleanup();
         controller = null;
     }
 
     /**
      * Specifies the current controlling user. Typically called by a subclass.
+     * THREAD USAGE NOTE: Called on the EDT.
      */
-    public synchronized void setController(String controller) {
+    public void setController(String controller) {
         String oldController = this.controller;
         this.controller = controller;
         if (controller == null) {

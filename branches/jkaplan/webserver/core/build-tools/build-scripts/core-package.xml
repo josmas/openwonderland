@@ -27,6 +27,7 @@
             <zipfileset dir="${core.common.dir}" prefix="core/lib/common">
                 <include name="scannotation-1.0.2.jar"/>
                 <include name="javassist.jar"/>
+                <include name="vecmath.jar"/>
             </zipfileset>
 
             <!-- include ant files -->

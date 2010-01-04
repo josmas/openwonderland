@@ -54,6 +54,8 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import java.util.logging.Logger;
 
 /**
  * The generic 2D application superclass. Displays the windows of a single 2D
@@ -115,6 +117,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         synchronized (appCells) {
             appCells.add(this);
         }
+
+        // TODO: Instrumentation for debugging 670: Part 1 of 3: Register a transform change listener
+        // Part 2 is at the end of this file.
+        // Part 3 is in the client logging.properties.
+        addTransformChangeListener(new MyTransformChangeListener());
     }
 
     /**
@@ -136,11 +143,29 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /**
-     * Destroy the app cell.
+     * Destroy the visual representation of this application.  This will
+     * cause the client to unload all local data associated with this
+     * app.
+     *
+     * THREAD USAGE NOTE: This is sometimes called on the EDT (e.g.HeaderPanel close button)
+     * and sometimes called off the EDT (e.g. App2DCell.setStatus). Do not call this while
+     * holding any app base locks.
+     */
+    protected void destroyClientVisual() {
+        if (app != null) {
+            app.cleanup();
+        }
+        cleanup();
+    }
+
+    /**
+     * Destroy the app cell.  This will remove all visuals associated with
+     * the cell (by calling <code>destroyClientVisual()</code>, and also remove
+     * the cell from the server.
      */
     public void destroy() {
-        app.cleanup();
-        cleanup();
+        // remove the client visuals for the cell
+        destroyClientVisual();
 
         // Tell the server to remove the cell from the world
         CellUtils.deleteCell(this);
@@ -185,6 +210,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         }
 
         this.app = app;
+        setName(app.getName());
 
         if (App2D.doAppInitialPlacement) {
             logger.info("Cell transferring fvi to app, fvi = " + fvi);
@@ -292,6 +318,14 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                         cmm.removeContextMenuListener(menuListener);
                         menuListener = null;
                     }
+
+                    // issue #968: clean up the local visuals for this app cell,
+                    // but don't remove it from the server
+                    App2D.invokeLater(new Runnable() {
+                        public void run () {
+                            destroyClientVisual();
+                        }
+                    });
                 }
                 break;
         }
@@ -330,28 +364,38 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Return the app-specific window menu items for the case where the app
      * doesn't have control.
      */
-    private ContextMenuItem[] windowMenuItemsForNoControl(
-            ContextMenuComponent contextMenuComp) {
+    private ContextMenuItem[] windowMenuItemsForNoControl(ContextMenuComponent contextMenuComp) {
         contextMenuComp.setShowStandardMenuItems(true);
 
-        return new ContextMenuItem[]{
-                    new SimpleContextMenuItem(BUNDLE.getString("Take_Control"),
-                    new ContextMenuActionListener() {
+        ContextMenuItem[] menuItems = new ContextMenuItem[2];
 
-                        public void actionPerformed(
-                                ContextMenuItemEvent event) {
-                            app.getControlArb().takeControl();
-                        }
-                    }),
-                    new SimpleContextMenuItem(BUNDLE.getString("Show_in_HUD"),
-                    new ContextMenuActionListener() {
+        menuItems[0] = new SimpleContextMenuItem(
+                               BUNDLE.getString("Take_Control"),
+                               new ContextMenuActionListener() {
+                                   public void actionPerformed(ContextMenuItemEvent event) {
+                                       app.getControlArb().takeControl();
+                                   }
+                               });
 
-                        public void actionPerformed(
-                                ContextMenuItemEvent event) {
-                            app.setShowInHUD(true);
-                        }
-                    })
-                };
+        if (app.isShownInHUD()) {
+            menuItems[1] = new SimpleContextMenuItem(
+                               BUNDLE.getString("Remove_from_HUD"),
+                               new ContextMenuActionListener() {
+                                   public void actionPerformed(ContextMenuItemEvent event) {
+                                       app.setShowInHUD(false);
+                                   }
+                               });
+        } else {
+            menuItems[1] = new SimpleContextMenuItem(
+                               BUNDLE.getString("Show_in_HUD"),
+                               new ContextMenuActionListener() {
+                                   public void actionPerformed(ContextMenuItemEvent event) {
+                                       app.setShowInHUD(true);
+                                   }
+                               });
+        }
+
+        return menuItems;
     }
 
     /**
@@ -503,6 +547,22 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
             default:
                 throw new RuntimeException(
                         "Unsupported cell renderer type: " + rendererType);
+        }
+    }
+
+    // TODO: Instrumentation for debugging 670: Part 2 of 3: Print out all app cell transform sets.
+    // Part 1 is in the constructor.
+    // Part 3 is in the client logging.properties.
+    private static class MyTransformChangeListener implements TransformChangeListener {
+
+        private static final Logger logger = 
+            Logger.getLogger("org.jdesktop.wonderland.modules.appbase.client.cell.App2D.CellTransform");
+        
+        public void transformChanged(Cell cell, ChangeSource source) {
+            logger.info("cell = " + cell.getName() + "(" + cell.getCellID() + ")");
+            logger.info("source = " + source);
+            CellTransform localTransform = cell.getLocalTransform();
+            logger.info("localTransform = " + localTransform);
         }
     }
 }

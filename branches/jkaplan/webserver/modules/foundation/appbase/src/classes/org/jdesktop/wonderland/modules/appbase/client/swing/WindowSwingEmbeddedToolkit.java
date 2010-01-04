@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * The main interface to Embedded Swing. This singleton provides access to the three basic capabilities
@@ -56,6 +57,7 @@ class WindowSwingEmbeddedToolkit
     private static final Logger logger = Logger.getLogger(WindowSwingEmbeddedToolkit.class.getName());
     private static final WindowSwingEmbeddedToolkit embeddedToolkit = new WindowSwingEmbeddedToolkit();
     private Point lastPressPointScreen;
+    private WindowSwing.EventHook lastPressEventHook;
 
     public static WindowSwingEmbeddedToolkit getWindowSwingEmbeddedToolkit() {
         return embeddedToolkit;
@@ -99,6 +101,13 @@ class WindowSwingEmbeddedToolkit
 
         if (e.getID() == MouseEvent.MOUSE_PRESSED) {
             lastPressPointScreen = new Point(e.getX(), e.getY());
+
+            lastPressEventHook = windowSwing.getEventHook();
+            if (lastPressEventHook != null) {
+                WindowSwing.EventHookInfo hookInfo = new WindowSwing.EventHookInfo(intersectionPointWorld, 
+                                                                                   e.getX(), e.getY());
+                lastPressEventHook.specifyHookInfoForEvent(e, hookInfo);
+            }
         }
 
         final EmbeddedPeer targetEmbeddedPeer = windowSwing.getEmbeddedPeer();
@@ -111,8 +120,8 @@ class WindowSwingEmbeddedToolkit
             // Note: event is in frame coordinates
             public Point2D transform(Point2D src, Point2D dst, MouseEvent event) {
 
-                logger.fine("src = " + src);
                 logger.fine("event = " + event);
+                logger.fine("src = " + src);
 
                 Point pt;
                 if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
@@ -125,6 +134,13 @@ class WindowSwingEmbeddedToolkit
                     int canvasX = event.getX() + canvasPoint.x - framePoint.x;
                     int canvasY = event.getY() + canvasPoint.y - framePoint.y;
                     pt = view.calcIntersectionPixelOfEyeRay(canvasX, canvasY);
+
+                    if (lastPressEventHook != null) {
+                        WindowSwing.EventHookInfo hookInfo = 
+                            new WindowSwing.EventHookInfo(intersectionPointWorld, canvasX, canvasY);
+                        lastPressEventHook.specifyHookInfoForEvent(event, hookInfo);
+                    }
+
                 } else {
                     pt = view.calcPositionInPixelCoordinates(intersectionPointWorld, true);
                 }
@@ -177,12 +193,20 @@ class WindowSwingEmbeddedToolkit
 
             @Override
             public void show() {
-                popup.setVisibleApp(true);
+                App2D.invokeLater(new Runnable() {
+                    public void run () {
+                        popup.setVisibleApp(true);
+                    }
+                });
             }
 
             @Override
             public void hide() {
-                popup.setVisibleApp(false);
+                App2D.invokeLater(new Runnable() {
+                    public void run () {
+                        popup.setVisibleApp(false);
+                    }
+                });
             }
         };
     }
@@ -243,6 +267,7 @@ class WindowSwingEmbeddedToolkit
             return toolkit;
         }
 
+        // Note: called on EDT
         @Override
         protected void sizeChanged(Dimension oldSize, Dimension newSize) {
             synchronized (this) {
@@ -257,6 +282,7 @@ class WindowSwingEmbeddedToolkit
             windowSwing.setWindowSize(newSize.width, newSize.height);
         }
 
+        // Note: called on EDT
         private void paintOnWindow(final WindowSwing window,
                 final int x, final int y, final int width, final int height) {
 

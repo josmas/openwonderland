@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer;
 import com.sun.embeddedswing.EmbeddedPeer;
 import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -40,10 +41,13 @@ import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImag
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.awt.event.MouseEvent;
+import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import javax.swing.SwingUtilities;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -115,6 +119,34 @@ public class WindowSwing extends Window2D {
         View2D getView() {
             return view;
         }
+    }
+
+    /**
+     * The structure passed to EventHook.specifyHookInfoForEvent.
+     */
+    @InternalAPI
+    public static class EventHookInfo {
+        public Vector3f pointWorld;
+        public int eventX, eventY;
+        public EventHookInfo (Vector3f pointWorld, int eventX, int eventY) {
+            this.pointWorld = pointWorld;
+            this.eventX = eventX;
+            this.eventY = eventY;
+        }
+        public String toString () {
+            return "pointWorld=" + pointWorld +
+                ", eventXY = " + eventX + "," + eventY;
+        }
+    }
+
+    /**
+     * This is used to pass event world coordinates to the Swing mouse event listeners.
+     * This is useful for correct dragging of WindowSwings in the world.
+     */
+    @InternalAPI
+    public interface EventHook {
+        /** Specify various info for the given AWT mouse event. */
+        public void specifyHookInfoForEvent(MouseEvent e, EventHookInfo hookInfo);
     }
 
     /**
@@ -215,6 +247,10 @@ public class WindowSwing extends Window2D {
     public void cleanup () {
         cleanupViews();
         super.cleanup();
+        if (embeddedPeer != null) {
+            embeddedPeer.dispose();
+            embeddedPeer = null;
+        }
     }
 
     /** Initialize all existing views. */
@@ -419,7 +455,8 @@ public class WindowSwing extends Window2D {
         }
 
         public EventAction consumesEvent (MouseEvent3D me3d) {
-            
+            if (app == null) return EventAction.DISCARD;
+
             MouseEvent awtEvent = (MouseEvent) me3d.getAwtEvent();
             logger.fine("WS.consumesEvent: " + awtEvent);
             if (Gui2D.isChangeControlEvent(awtEvent)) {
@@ -427,18 +464,20 @@ public class WindowSwing extends Window2D {
 
                 // Perform the control toggle immediately
                 ControlArb controlArb = app.getControlArb();
-                if (controlArb.hasControl()) {
-                    controlArb.releaseControl();
-                } else {
-                    controlArb.takeControl();
+                if (controlArb != null) {
+                    if (controlArb.hasControl()) {
+                        controlArb.releaseControl();
+                    } else {
+                        controlArb.takeControl();
+                    }
                 }
-
                 return EventAction.DISCARD;
             }
             logger.fine("Isn't change control event " + awtEvent);
 
             // If app doesn't have control, ignore the event
-            if (!app.getControlArb().hasControl()) {
+
+            if (app.getControlArb() == null || !app.getControlArb().hasControl()) {
                 logger.fine("Doesn't have control");
                 return EventAction.DISCARD;
             }
@@ -482,5 +521,11 @@ public class WindowSwing extends Window2D {
         view.removeEntityComponent(InputManager.WindowSwingViewMarker.class);
         view.removeEntityComponent(WindowSwingViewReference.class);
         view.removeEntityComponent(InputManager.WindowSwingEventConsumer.class); 
+    }
+
+    /** Return the world coordinate event hook for this WindowSwing. */
+    @InternalAPI
+    public EventHook getEventHook() {
+        return null;
     }
 }

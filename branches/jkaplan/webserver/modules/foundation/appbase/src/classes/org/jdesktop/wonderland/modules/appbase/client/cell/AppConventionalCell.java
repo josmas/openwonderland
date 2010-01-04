@@ -153,35 +153,33 @@ public abstract class AppConventionalCell extends App2DCell {
      * @param message the exited message
      */
     void handleAppExitted(final AppConventionalCellAppExittedMessage message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-
-                try {
-                    JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(),
-                                        "App " + message.getAppName() +
-                                        " exitted with exit value = " +
-                                        message.getExitValue());
-                } catch (Exception ex) {}
-            }
-        });
+        try {
+            JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(),
+                                          "App " + message.getAppName() +
+                                          " exitted with exit value = " +
+                                          message.getExitValue());
+        } catch (Exception ex) {}
     }
 
     /**
      * This is called when the server sends the connection info.
      */
     synchronized void setConnectionInfo (String connInfo) {
-
-        // If we already know the connection info then we can skip this.
-        // Note: this will happen if we are the master, or if this cell was created after
-        // the server learned of the connection info.
-        if (connectionInfo != null) {
-            return;
+        
+        // Has the connection info changed? If not, just return
+        if (connectionInfo == null) {
+            if (connInfo == null) {
+                return;
+            } 
+        } else {
+            if (connectionInfo.equals(connInfo)) {
+                return;
+            }
         }
-
-        // Slave: If this message arrives after we are already connected, just ignore it.
-        if (slaveStarted) return;
-
+        
         connectionInfo = connInfo;
+
+        // The connection info has changed. Start the app.
         startSlaveIfReady();
     }
 
@@ -270,5 +268,6 @@ public abstract class AppConventionalCell extends App2DCell {
         }
 
         this.app = app;
+        setName(app.getName());
     }
 }

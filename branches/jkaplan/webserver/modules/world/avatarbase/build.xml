@@ -24,6 +24,9 @@
         <copy todir="${build.classes.dir}/${module.src}/client/resources">
             <fileset dir="${current.dir}/src/classes/${module.src}/client/resources"/>
         </copy>
+        <copy todir="${build.classes.dir}/${module.src}/client/jme/cellrenderer/resources">
+            <fileset dir="${current.dir}/src/classes/${module.src}/client/jme/cellrenderer/resources"/>
+        </copy>
         <copy todir="${build.classes.dir}/${module.src}/client/imi/resources">
             <fileset dir="${current.dir}/src/classes/${module.src}/client/imi/resources"/>
         </copy>
@@ -45,7 +48,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="avatarbase" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/avatarbase.jar"
-                moduleDescription="Base for high quality avatar rendering" builddir="${build.dir}">
+                moduleDescription="Avatar API and library" builddir="${build.dir}">
 
             <requires name="content-repository" version="1"/>
 

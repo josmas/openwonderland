@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.client;
 
+import java.util.Map;
+import java.util.TreeMap;
 import org.jdesktop.wonderland.common.StableAPI;
 
 /*
@@ -842,13 +844,23 @@ class UnicodeToKeysym {
         { 0x0ef9, 0x11f0 }, /* ? HANGUL JONGSEONG YESIEUNG */
         { 0x0efa, 0x11f9 }, /* ? HANGUL JONGSEONG YEORINHIEUH */
         { 0x0eff, 0x20a9 }, /* ? WON SIGN */
-        { 0x13a4, 0x20ac }, /* ? EURO SIGN */
+        //{ 0x13a4, 0x20ac }, /* ? EURO SIGN */
         { 0x13bc, 0x0152 }, /* ? LATIN CAPITAL LIGATURE OE */
         { 0x13bd, 0x0153 }, /* ? LATIN SMALL LIGATURE OE */
         { 0x13be, 0x0178 }, /* ? LATIN CAPITAL LETTER Y WITH DIAERESIS */
         { 0x20ac, 0x20ac }, /* ? EURO SIGN */
     };
     
+    /** a map from unicode values to equivalent X keysyms */
+    private static final Map<Short, Short> keysymMap =
+            new TreeMap<Short, Short>();
+    static {
+        // populate the table from the map above
+        for (short[] mapping : map) {
+            keysymMap.put(mapping[1], mapping[0]);
+        }
+    }
+
     /**
      * Gets an X11 keysym that matches the unicode.  If no
      * matches are found, returns a -1.
@@ -864,11 +876,11 @@ class UnicodeToKeysym {
             || (unicode >= 0xa0 && unicode <= 0xff)) {
             return unicode;
         }
-        
-        for (int i = 0; i < (map.length - 1); i++) {
-            if (map[i][1] == unicode) {
-                return map[i][0];
-            }
+
+        // search our map
+        Short out = keysymMap.get((short) unicode);
+        if (out != null) {
+            return out.shortValue();
         }
 
         return -1;

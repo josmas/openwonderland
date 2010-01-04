@@ -161,6 +161,10 @@ public class AuthenticationManager {
             logger.fine("NoAuthLogin Response: " + uc.getResponseCode() +
                         " : " + uc.getResponseMessage());
 
+            if (uc.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+                throw new AuthenticationException("Invalid username or password");
+            }
+
             BufferedReader br = new BufferedReader(
                                     new InputStreamReader(uc.getInputStream()));
             String line;

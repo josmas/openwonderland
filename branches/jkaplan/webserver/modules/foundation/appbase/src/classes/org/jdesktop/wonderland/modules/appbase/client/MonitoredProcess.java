@@ -205,7 +205,7 @@ public class MonitoredProcess {
     /**
      * Forcibly kill the process and clean up resources.
      */
-    public void cleanup() {
+    public synchronized void cleanup() {
         logger.warning("Shutting down process  " + processName);
 
         if (process != null) {

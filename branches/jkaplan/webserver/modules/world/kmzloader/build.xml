@@ -25,7 +25,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="kmzloader" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Google Earth (kmz) loader library" builddir="${build.dir}">
                     
            <client>
                 <clientjar name="kmzloader-client" basedir="${build.classes.dir}">

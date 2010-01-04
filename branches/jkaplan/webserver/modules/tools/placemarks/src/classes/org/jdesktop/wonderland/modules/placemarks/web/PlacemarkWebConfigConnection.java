@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.placemarks.web;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkConfigConnectionType;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkNewMessage;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkRemoveMessage;

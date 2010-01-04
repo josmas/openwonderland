@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * @author Paul Byrne
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@PropertiesFactory(CellPhysicsPropertiesComponentServerState.class)
+//@PropertiesFactory(CellPhysicsPropertiesComponentServerState.class)
 public class CellPhysicsPropertiesComponentProperties
         extends JPanel implements PropertiesFactorySPI {
 
@@ -112,9 +112,6 @@ public class CellPhysicsPropertiesComponentProperties
             state.addPhysicsProperties(
                     CellPhysicsPropertiesComponentServerState.DEFAULT_NAME, p);
         }
-
-        System.err.println("getCellServerState " + state.getPhyiscsProperties(
-                CellPhysicsPropertiesComponentServerState.DEFAULT_NAME));
 
         p.setMass(((Float) massSpinner.getModel().getValue()).floatValue());
         cellServerState.addComponentServerState(state);

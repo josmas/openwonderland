@@ -27,6 +27,7 @@ import java.net.URL;
  */
 public class ImportSettings {
     private final URL modelURL;
+    private boolean lightingEnabled = true;
 
     public ImportSettings(URL modelURL) {
         this.modelURL = modelURL;
@@ -34,5 +35,19 @@ public class ImportSettings {
 
     public URL getModelURL() {
         return modelURL;
+    }
+
+    /**
+     * @return the lightingEnabled
+     */
+    public boolean isLightingEnabled() {
+        return lightingEnabled;
+    }
+
+    /**
+     * @param lightingEnabled the lightingEnabled to set
+     */
+    public void setLightingEnabled(boolean lightingEnabled) {
+        this.lightingEnabled = lightingEnabled;
     }
 }

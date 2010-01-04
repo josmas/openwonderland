@@ -17,61 +17,78 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
-import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
-
 import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 
 /**
  *
  * @author  jp
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class OrbDialog extends javax.swing.JDialog {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/orb/client/cell/Bundle");
+    private static final String BYSTANDERS = BUNDLE.getString("Bystanders");
+    private static final String ATTACH = BUNDLE.getString("Attach");
+    private static final String DETACH = BUNDLE.getString("Detach");
+    private static final String MUTE = BUNDLE.getString("Mute");
+    private static final String UNMUTE = BUNDLE.getString("Unmute");
     private OrbCell orbCell;
     private ChannelComponent channelComp;
     private CellID avatarCellID;
     private PresenceManager pm;
-
     private String username;
+    private BystandersDialog bystandersDialog;
+
+    private VolumeConverter volumeConverter;
 
     /** Creates new form OrbDialog */
     public OrbDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+
+	volumeConverter = new VolumeConverter(volumeSlider.getMinimum(),
+	    volumeSlider.getMaximum());
     }
 
-    public OrbDialog(OrbCell orbCell, ChannelComponent channelComp, CellID avatarCellID,
-	    PresenceManager pm) {
+    public OrbDialog(OrbCell orbCell, ChannelComponent channelComp,
+            CellID avatarCellID, PresenceManager pm) {
 
-	this.orbCell = orbCell;
-	this.channelComp = channelComp;
-	this.avatarCellID = avatarCellID;
-	this.pm = pm;
+        this.orbCell = orbCell;
+        this.channelComp = channelComp;
+        this.avatarCellID = avatarCellID;
+        this.pm = pm;
 
-	username = orbCell.getUsername();
-	
-	initComponents();
+        username = orbCell.getUsername();
 
-	if (orbCell.getPlayerWithVpCallID() != null) {
-	    //attachButton.setEnabled(false);
-	    attachButton.setText("Bystanders");
-	    endCallButton.setEnabled(false);
-	    muteButton.setEnabled(false);
-	    nameTextField.setEnabled(false);
-	}
+        initComponents();
 
-	setTitle(username);
-	setVisible(true);
+	volumeConverter = new VolumeConverter(volumeSlider.getMinimum(),
+	    volumeSlider.getMaximum());
+
+        if (orbCell.getPlayerWithVpCallID() != null) {
+            //attachButton.setEnabled(false);
+            attachButton.setText(BYSTANDERS);
+            endCallButton.setEnabled(false);
+            muteButton.setEnabled(false);
+            nameTextField.setEnabled(false);
+        }
+
+        setTitle(username);
+        setVisible(true);
+    }
+
+    public void orbDetached() {
+        attachButton.setText(ATTACH);
     }
 
     /** This method is called from within the constructor to
@@ -83,57 +100,19 @@ public class OrbDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        endCallButton = new javax.swing.JButton();
-        okButton = new javax.swing.JButton();
-        volumeSlider = new javax.swing.JSlider();
-        attachButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        muteButton = new javax.swing.JButton();
+        nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        volumeLabel = new javax.swing.JLabel();
+        volumeSlider = new javax.swing.JSlider();
+        endCallButton = new javax.swing.JButton();
+        muteButton = new javax.swing.JButton();
+        attachButton = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        endCallButton.setText("End Call");
-        endCallButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                endCallButtonActionPerformed(evt);
-            }
-        });
-
-        okButton.setText("OK");
-        okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
-            }
-        });
-
-        volumeSlider.setMajorTickSpacing(1);
-        volumeSlider.setMaximum(10);
-        volumeSlider.setPaintLabels(true);
-        volumeSlider.setPaintTicks(true);
-        volumeSlider.setValue(5);
-        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                volumeSliderStateChanged(evt);
-            }
-        });
-
-        attachButton.setText("Attach");
-        attachButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                attachButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setText("Volume:");
-
-        muteButton.setText("Mute");
-        muteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                muteButtonActionPerformed(evt);
-            }
-        });
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/orb/client/cell/Bundle"); // NOI18N
+        nameLabel.setText(bundle.getString("OrbDialog.nameLabel.text")); // NOI18N
 
         nameTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -141,54 +120,93 @@ public class OrbDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel2.setText("Name:");
+        volumeLabel.setText(bundle.getString("OrbDialog.volumeLabel.text")); // NOI18N
+
+        volumeSlider.setMinorTickSpacing(10);
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setPreferredSize(new java.awt.Dimension(200, 29));
+        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                volumeSliderStateChanged(evt);
+            }
+        });
+
+        endCallButton.setText(bundle.getString("OrbDialog.endCallButton.text")); // NOI18N
+        endCallButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                endCallButtonActionPerformed(evt);
+            }
+        });
+
+        muteButton.setText(bundle.getString("OrbDialog.muteButton.text")); // NOI18N
+        muteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                muteButtonActionPerformed(evt);
+            }
+        });
+
+        attachButton.setText(bundle.getString("OrbDialog.attachButton.text")); // NOI18N
+        attachButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                attachButtonActionPerformed(evt);
+            }
+        });
+
+        okButton.setText(bundle.getString("OrbDialog.okButton.text")); // NOI18N
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(endCallButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(muteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(attachButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(12, 12, 12)
-                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 94, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(jLabel2))
+                            .add(nameLabel)
+                            .add(volumeLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                            .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(nameTextField)
+                            .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(91, 91, 91))
+                    .add(layout.createSequentialGroup()
+                        .add(6, 6, 6)
+                        .add(endCallButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(muteButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(attachButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(okButton)))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {nameLabel, volumeLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(42, 42, 42)
-                        .add(jLabel1))
-                    .add(layout.createSequentialGroup()
-                        .add(23, 23, 23)
-                        .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(18, 18, 18)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
+                    .add(nameLabel)
                     .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(23, 23, 23)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(volumeLabel)
+                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(endCallButton)
-                    .add(okButton)
                     .add(muteButton)
-                    .add(attachButton))
-                .addContainerGap(23, Short.MAX_VALUE))
+                    .add(attachButton)
+                    .add(okButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -200,82 +218,74 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     setVisible(false);
 }//GEN-LAST:event_endCallButtonActionPerformed
 
-private BystandersDialog bystandersDialog;
-
 private void attachButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachButtonActionPerformed
-    if (attachButton.getText().equals("Bystanders")) {
-	if (bystandersDialog == null) {
-	    bystandersDialog = new BystandersDialog(orbCell, pm);
-	}
+    String text = attachButton.getText();
+    if (BYSTANDERS.equals(text)) {
+        if (bystandersDialog == null) {
+            bystandersDialog = new BystandersDialog(orbCell, pm);
+        }
 
-	bystandersDialog.setVisible(true);
-	return;
+        bystandersDialog.setVisible(true);
+        return;
     }
 
-    if (attachButton.getText().equals("Attach")) {
-	attachButton.setText("Detach");
-        channelComp.send(new OrbAttachMessage(orbCell.getCellID(), avatarCellID, true));
+    CellID cellID = orbCell.getCellID();
+    if (ATTACH.equals(text)) {
+        attachButton.setText(DETACH);
+        channelComp.send(new OrbAttachMessage(cellID, avatarCellID, true));
     } else {
-	attachButton.setText("Attach");
-        channelComp.send(new OrbAttachMessage(orbCell.getCellID(), avatarCellID, false));
+        attachButton.setText(ATTACH);
+        channelComp.send(new OrbAttachMessage(cellID, avatarCellID, false));
     }
 }//GEN-LAST:event_attachButtonActionPerformed
-
-public void orbDetached() {
-    attachButton.setText("Attach");
-}
 
 private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     setVisible(false);
     orbCell.removeMouseListener();
 }//GEN-LAST:event_okButtonActionPerformed
 
-private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
-    //if (volumeSlider.getValueIsAdjusting()) {
-    //    return;
-    //}
-    
-    int volume = volumeSlider.getValue();
-    
-    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-    channelComp.send(new OrbSetVolumeMessage(orbCell.getCellID(), sc.getCallID(), volume));
-}//GEN-LAST:event_volumeSliderStateChanged
-
 private void muteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteButtonActionPerformed
-    boolean mute;
-
-    if (muteButton.getText().equals("Mute")) {
-	muteButton.setText("Unmute");
-	mute = true;
+    CellID cellID = orbCell.getCellID();
+    if (MUTE.equals(muteButton.getText())) {
+        muteButton.setText(UNMUTE);
+        channelComp.send(new OrbMuteCallMessage(cellID, true));
     } else {
-	muteButton.setText("Mute");
-	mute = false;
+        muteButton.setText(MUTE);
+        channelComp.send(new OrbMuteCallMessage(cellID, false));
     }
-
-    channelComp.send(new OrbMuteCallMessage(orbCell.getCellID(), mute));
 }//GEN-LAST:event_muteButtonActionPerformed
 
 private void nameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameTextFieldActionPerformed
     String name = nameTextField.getText();
 
     if (name.length() > 0) {
-	username = name;
+        username = name;
 
-	setTitle(name);
+        setTitle(name);
 
         channelComp.send(new OrbChangeNameMessage(orbCell.getCellID(), name));
     }
 }//GEN-LAST:event_nameTextFieldActionPerformed
 
+private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
+    float volume = volumeConverter.getVolume(volumeSlider.getValue());
+
+    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+    channelComp.send(new OrbSetVolumeMessage(orbCell.getCellID(), sc.getCallID(), volume));
+}//GEN-LAST:event_volumeSliderStateChanged
+
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 OrbDialog dialog = new OrbDialog(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+
+                    @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
                         System.exit(0);
                     }
@@ -284,16 +294,14 @@ private void nameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             }
         });
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton attachButton;
     private javax.swing.JButton endCallButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JButton muteButton;
+    private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton okButton;
+    private javax.swing.JLabel volumeLabel;
     private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables
-
 }

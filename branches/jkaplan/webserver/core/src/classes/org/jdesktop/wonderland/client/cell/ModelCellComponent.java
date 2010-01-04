@@ -47,6 +47,7 @@ public class ModelCellComponent extends CellComponent {
     private boolean collidable = true;
     private boolean pickable = true;
     private boolean lightingEnabled = true;
+    private boolean backfaceCullingEnabled = true;
 
     public ModelCellComponent(Cell cell) {
         super(cell);
@@ -68,6 +69,7 @@ public class ModelCellComponent extends CellComponent {
                 renderer.setCollisionEnabled(collidable);
                 renderer.setPickingEnabled(pickable);
                 renderer.setLightingEnabled(lightingEnabled);
+                renderer.setBackfaceCullingEnabled(backfaceCullingEnabled);
             }
             return renderer;
         }
@@ -117,11 +119,13 @@ public class ModelCellComponent extends CellComponent {
         collidable = state.isCollisionEnabled();
         pickable = state.isPickingEnabled();
         lightingEnabled = state.isLightingEnabled();
+        backfaceCullingEnabled = state.isBackfaceCullingEnabled();
 
         if (renderer!=null) {
             renderer.setCollisionEnabled(collidable);
             renderer.setPickingEnabled(pickable);
             renderer.setLightingEnabled(lightingEnabled);
+            renderer.setBackfaceCullingEnabled(backfaceCullingEnabled);
         }
      }
 

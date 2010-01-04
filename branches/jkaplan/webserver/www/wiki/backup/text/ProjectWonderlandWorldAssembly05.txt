@@ -1,0 +1,133 @@
+%WEBTOPICLIST%   <!-- This creates the navigation links to :  Home | Help | Index | etc.  -->
+
+
+---++ !!Project Wonderland (v0.5): Assembling Worlds
+by Jordan Slott (<a href="mailto:jslott@dev.java.net">jslott@dev.java.net</a>)
+
+---+++ %BLUE%Introduction%ENDCOLOR%
+
+In Project Wonderland v0.5, you may use tools available in the Project Wonderland client to create instances of Cells (called "Objects" in the GUI) in the world, and use visual tools to move, rotate, and scale the object. This tutorial describes how to accomplish these tasks.
+
+%TOC%
+
+---+++ %BLUE%Naming Conventions of Cells in the GUI%ENDCOLOR%
+
+One potentially confusing aspect of assembling worlds is the differing terminology used by developers and that which appears in the graphical user interface (GUI) in the Project Wonderland client. Developers are familiar with the concept of *Cells*, which represent 3D volumes in the world. In the GUI, Cells are called *Objects*. These Objects deliver new functionality to Project Wonderland.
+
+---+++ %BLUE%Using the Insert -> Object dialog%ENDCOLOR%
+
+To create a new instance of an Object in the world, you may using the Object Palette, accessible via the Insert -> Object main menu item. Developers bundle Objects (which they refer to as Cells) into modules; these Objects register themselves with the system and automatically appear in the Object Palette.
+
+   1 Launch your Wonderland client
+   1 Select Insert -> Object from the main menu
+
+Your Object Palette window should look something like the following. On the left is a list of names of Object types, each with an (optional) image preview on the right. The exact kinds of Objects that appear depend upon which modules you have installed.
+
+*Figure 1: The Object Palette*
+
+<img src="http://wonderland.dev.java.net/wiki/assembly/cell-palette.png"/>
+
+To insert a new instance of an Object in the world:
+
+   1 Select a desired type of Object
+   1 Click Create
+
+An instance of your new Object should appear directly in front of your avatar. For example, the following is what appears after you create an instance of the Audio Recorder Object in the world. Note that you may create more than one instance of an Object, and each will appear in front of your avatar, in whatever direction you are facing.
+
+*Figure 2: A new instance of an audio record in the world (Click on the image to view a full-sized version)*
+
+<a href="http://wonderland.dev.java.net/wiki/assembly/audio-recorder.png"><img src="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-thumbnail.png"></a>
+
+---+++ %BLUE%Using the Shortcuts window%ENDCOLOR%
+
+The Shortcuts windows appears on the HUD (heads-up display) and presents small preview icons for each kind of Object. You may drag-and-drop the icons into the world to create an instance of the Object in the world.
+
+   1 Select Window -> Shortcuts from the main menu
+   1 Scroll to the desired Object
+   1 Click and drag and Object preview image into the Project Wonderland client window
+   1 A new instance of the Object is created in the world in front of your avatar
+
+The following shows the Shortcuts HUD visible in the Project Wonderland client:
+
+*Figure 3: The Shortcuts HUD (Click on the image to view a full-sized version)*
+
+<a href="http://wonderland.dev.java.net/wiki/assembly/shortcuts.png"><img src="http://wonderland.dev.java.net/wiki/assembly/shortcuts-thumbnail.png"></a>
+
+---+++ %BLUE%Move, rotate, and scale an Object using the visual affordances%ENDCOLOR%
+
+Once you create a new instance of an Object in the world (whether from the Object Palette or the Shortcuts HUD), you can position it in the world and change its appearance through a set of visual affordances (or manipulators). Specifically, you can move it, resize it, and rotate it.
+
+   1 Position your mouse over the Object you wish to edit, and right-click. A context menu should appear.
+   1 Select Edit... from the context menu
+
+Your Object should now be adorned with three arrows along the x, y, and z axes. Each should be colored to indicate along which axis it lies (red for the x-axis, green for the y-axis, and blue for the z-axis). You may click and drag on either one of these arrows and reposition the Object along each axis. These changes take effect immediately, so any other client in-world seeing the new Object should see it move too.
+
+When you select Edit... from the context menu, a HUD frame appears. This frame has three toggle buttons, one to toggle the display of the translate affordances, one to toggle the display of the rotate affordances, and third to toggle the display of the resize affordance (from left-to-right in that order). There is also a Details... button that displays a separate frame showing the numerical values of the position, rotation, and scale. The affordance HUD frame with a translate affordance visible appears as:
+
+*Figure 4: The affordance HUD with the translate affordances visible (click on the image to view a full-sized version)*
+
+<a href="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-translated.png"><img src="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-translated-thumbnail.png"></a>
+
+You may make each individual affordance appear or disappear by clicking on the toggle button. You may have all three affordances be visible at once.
+
+The affordance to rotate your Object consists of three discs aligned along each axis. The color of the disc denotes about which axis the rotation will take place (the red disc will rotate about the x-axis, the green disc will rotate about the y-axis, and the blue disc will rotate about the z-axis). To rotate the Object, click on the desired colored disc and drag in the direction you which to rotate the Object. An example of rotating the Object should appear something like this:
+
+*Figure 5: The affordance HUD with the translate and rotate affordances visible (click on the image to view a full-sized version)*
+
+<a href="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-rotated.png"><img src="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-rotated-thumbnail.png"></a>
+
+The semi-transparent black sphere is used to resize your Object. You may only resize the Object in equal dimensions in the x, y, and z axes. To resize, click on the sphere and drag your mouse either towards (to shrink) or away (to grow) from the center of your Object. An example of resizing the Object should appear something like this:
+
+*Figure 6: The affordance HUD with the translate, rotate and resize affordances visible (click on the image to view a full-sized version)*
+
+<a href="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-resized.png"><img src="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-resized-thumbnail.png"></a>
+
+You may also change the size of each of these affordances using the slider bar on the frame labelled Affordance Size. This will increase the length of the move arrows, and increase the radius of the rotate discs and the resize sphere. You may wish to play around with different affordance sizes. In some cases (e.g. for rotating and resizing), changing the affordance size will control the granularity at which you can make adjustments to the appearance of your Object.
+
+If you wish to edit the numerical values for the translation, rotation, and scale, click the Details... button on the affordances HUD. This displays a sister HUD window; you may edit the values in this HUD window directly.
+
+*Figure 7: The details HUD visible (click on the image to view a full-sized version)*
+
+<a href="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-details.png"><img src="http://wonderland.dev.java.net/wiki/assembly/audio-recorder-details-thumbnail.png"></a>
+
+You may also have affordances visible for more than one Object at a time. To control whether the affordances are visible for another Object, you may right-click on the Object and select Edit, or if the HUD frame is visible:
+
+   1 Left-click on the desired Object. The name of the Object should now appear in the HUD frame and the state of the toggle buttons and resize slider should automatically update themselves to reflect the settings for the newly selected Object
+   1 Click the desired toggle buttons to show or hide the affordances
+
+To dismiss the affordances, you may either click the toggle button or (a better way) you may close the HUD frame and all of the visible affordances on your client will disappear.
+
+---+++ %BLUE%Duplicating and deleting Objects%ENDCOLOR%
+
+You may also duplicate an existing Object or delete an existing Object using menu items found on the context menu. To duplicate an existing Object in the world:
+
+   1Right-click on the desired Object
+   1 Select Duplicate from the context menu
+
+To delete an Object from the world:
+
+   1 Right-click on the desired Object
+   1 Click Yes on the confirmation dialog
+
+Note that these changes take effect immediately and are visible on all clients.
+
+---+++ %BLUE%Moving, rotating, and scaling an Object using the Object Editor%ENDCOLOR%
+
+In addition to the visual affordances, you may edit properties of an Object (including its position, rotation, and scaling) using the Object Editor dialog. To display the dialog:
+
+   1 Right-click on the desired Object
+   1 Select Properties... from the context menu
+
+You should see a frame appear outside of the Project Wonderland client window. It should look something like this:
+
+*Figure 8: The Object Editor window (click on the image to view a full-sized version)*
+
+<a href="http://wonderland.dev.java.net/wiki/assembly/cell-editor.png"><img src="http://wonderland.dev.java.net/wiki/assembly/cell-editor-thumbnail.png"></a>
+
+The dialog consists of three panes: on the upper-left is a tree view of all of the Objects in your world. In the lower-right is a list of *Capabilities* for the selected Object in the tree view. For the selected Capability, its properties are displayed on the right half of the window. To edit the translation, rotation, and scaling of an Object:
+
+   1 Select the Position category from the left hand-side Capabilities list
+   1 Change the desired values for the origin, rotation, and scaling for each individual axis.
+   1 The changes take effect immediately. In order for the changes to persist after you close the Object Editor window, click Apply. If you wish to revert to the original values when you opened the window, click Revert.
+
+Note that this dialog box cooperates with the visual affordances: if you update the translation, rotation, or scaling of an Object using the visual affordances, the new values automatically appear in the Object Editor dialog.

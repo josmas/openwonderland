@@ -236,14 +236,14 @@ public class FrameSide extends FrameComponent {
     }
 
     /**
-     * Returns the width of this component. 
+     * Returns the width of this component in local coordinates. 
      */
     public float getWidth() {
         return rect.width;
     }
 
     /**
-     * Returns the height of this component. 
+     * Returns the height of this component in local coordinates. 
      */
     public float getHeight() {
         return rect.height;

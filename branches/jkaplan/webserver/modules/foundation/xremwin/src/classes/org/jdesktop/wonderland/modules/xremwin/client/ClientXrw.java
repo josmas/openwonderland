@@ -42,6 +42,8 @@ import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import javax.swing.SwingUtilities;
+import java.io.EOFException;
 
 // TODO: 0.4 protocol: temporarily insert
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -209,12 +211,6 @@ public abstract class ClientXrw implements Runnable {
             reporter = null;
         }
 
-        if (controlArb != null) {
-            controlArb.releaseControl();
-            controlArb.cleanup();
-            controlArb = null;
-        }
-
         app = null;
 
         if (serverProxy != null) {
@@ -259,40 +255,59 @@ public abstract class ClientXrw implements Runnable {
 
         while (serverConnected && !stop && serverProxy != null) {
 
-            // Read message type from the server.
-            ServerMessageType msgType = serverProxy.getMessageType();
-            AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType);
+            try {
 
-            /* TODO
-            if (ENABLE_XREMWIN_STATS) {
-            synchronized (this) {
-            numRequests++;
-            }
-            }
-             */
+                // Read message type from the server.
+                ServerMessageType msgType = serverProxy.getMessageType();
+                //if (msgType != Proto.ServerMessageType.DISPLAY_PIXELS){
+                AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType);
+                //}
 
-            // Get the full message
-            MessageArgs msgArgs = readMessageArgs(msgType);
-            if (msgArgs != null) {
-                AppXrw.logger.info("msgArgs: " + msgArgs);
-
-                /* For debug: an example of how to ignore the firefox heartbeat which occurs on igoogle
-                if (msgType == ServerMessageType.DISPLAY_PIXELS) {
-                    if (displayPixelsMsgArgs.x == 1261 &&
-                        displayPixelsMsgArgs.y == 3 &&
-                        displayPixelsMsgArgs.w == 17 &&
-                        displayPixelsMsgArgs.h == 17) {
-                    } else {
-                        AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
-                    }
-                } else {
-                    AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
-                }
+                /* TODO
+                   if (ENABLE_XREMWIN_STATS) {
+                   synchronized (this) {
+                   numRequests++;
+                   }
+                   }
                 */
-            }
 
-            // Process the message
-            processMessage(msgType);
+                // Get the full message
+                MessageArgs msgArgs = readMessageArgs(msgType);
+                if (msgArgs != null) {
+                    //if (msgType != Proto.ServerMessageType.DISPLAY_PIXELS){
+                    AppXrw.logger.info("msgArgs: " + msgArgs);
+                    //}
+
+                    /* For debug: an example of how to ignore the firefox heartbeat which occurs on igoogle
+                       if (msgType == ServerMessageType.DISPLAY_PIXELS) {
+                       if (displayPixelsMsgArgs.x == 1261 &&
+                       displayPixelsMsgArgs.y == 3 &&
+                       displayPixelsMsgArgs.w == 17 &&
+                       displayPixelsMsgArgs.h == 17) {
+                       } else {
+                       AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
+                       }
+                       } else {
+                       AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
+                       }
+                    */
+                }
+
+                // Process the message
+                processMessage(msgType);
+
+            } catch (Throwable throwable) {
+                if (serverProxy != null) {
+                    throwable.printStackTrace();
+                    stop = true;
+                    cleanup();
+
+                    if (app.isInSas()) {
+                        System.err.println("SAS provider aborted.");
+                        System.exit(1);
+                    }
+                }
+            }
         }
     }
 
@@ -301,8 +316,13 @@ public abstract class ClientXrw implements Runnable {
      *
      * @param msgType The message type.
      */
-    protected MessageArgs readMessageArgs(ServerMessageType msgType) {
+    protected MessageArgs readMessageArgs(ServerMessageType msgType) throws EOFException {
+        if (serverProxy == null) return null;
+
         switch (msgType) {
+
+            case SERVER_DISCONNECT:
+                return null;
 
             case CREATE_WINDOW:
                 serverProxy.getData(createWinMsgArgs);
@@ -385,7 +405,7 @@ public abstract class ClientXrw implements Runnable {
      *
      * @param msgType The message type.
      */
-    protected void processMessage(ServerMessageType msgType) {
+    protected void processMessage(ServerMessageType msgType) throws EOFException {
         WindowXrw win;
 
         switch (msgType) {
@@ -578,23 +598,39 @@ public abstract class ClientXrw implements Runnable {
             case REFUSED:
                 // We only care about our attempts that are refused
                 if (msgArgs.clientId == clientId) {
-                    ((ControlArbXrw)controlArb).controlRefused();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).controlRefused();
+                        }
+                    });
                 }
                 break;
 
             case GAINED:
                 // We only care about our attempts that succeed
                 if (msgArgs.clientId == clientId) {
-                    ((ControlArbXrw)controlArb).controlGained();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).controlGained();
+                        }
+                    });
                 }
                 break;
 
             case LOST:
                 if (msgArgs.clientId == clientId) {
-                    ((ControlArbXrw)controlArb).controlLost();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).controlLost();
+                        }
+                    });
                 } else {
                     // Update control highlighting for other clients besides control loser
-                    ((ControlArbXrw)controlArb).setController(null);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            ((ControlArbXrw)controlArb).setController(null);
+                        }
+                    });
                 }
                 break;
         }
@@ -606,9 +642,11 @@ public abstract class ClientXrw implements Runnable {
      * @param wid The X11 window ID.
      */
     protected WindowXrw lookupWindow(int wid) {
-        synchronized (((AppXrw)app).widToWindow) {
-            return ((AppXrw)app).widToWindow.get(wid);
-        }
+        if (app == null) return null;
+        WindowXrw win = ((AppXrw)app).getWindowForWid(wid);
+        if (win == null) return null;
+        if (win.isZombie()) return null;
+        return win;
     }
 
     /**
@@ -618,9 +656,7 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to associate with the wid.
      */
     protected void addWindow(int wid, WindowXrw window) {
-        synchronized (((AppXrw)app).widToWindow) {
-            ((AppXrw)app).widToWindow.put(wid, window);
-        }
+        ((AppXrw)app).addWindow(wid, window);
     }
 
     /**
@@ -629,9 +665,7 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to disassociate from the wid.
      */
     protected void removeWindow(WindowXrw win) {
-        synchronized (((AppXrw)app).widToWindow) {
-            ((AppXrw)app).widToWindow.remove(win.getWid());
-        }
+        ((AppXrw)app).removeWindow(win.getWid());
     }
 
     /**
@@ -705,7 +739,9 @@ public abstract class ClientXrw implements Runnable {
      * @param win The window in which to display pixels.
      * @param displayPixelsMsgArgs The message arguments which have been read for the message.
      */
-    private void processDisplayPixels(WindowXrw win, DisplayPixelsMsgArgs displayPixelsMsgArgs) {
+    private void processDisplayPixels(WindowXrw win, DisplayPixelsMsgArgs displayPixelsMsgArgs) 
+        throws EOFException
+    {
         switch (displayPixelsMsgArgs.encoding) {
 
             case UNCODED:
@@ -791,7 +827,7 @@ public abstract class ClientXrw implements Runnable {
      * @param win The window in which to display pixels.
      * @param dpMsgArgs The message arguments which have been read for the message.
      */
-    private void displayRectRle24(WindowXrw win, DisplayPixelsMsgArgs dpMsgArgs) {
+    private void displayRectRle24(WindowXrw win, DisplayPixelsMsgArgs dpMsgArgs) throws EOFException {
 
         synchronized (this) {
             displayPixelsNumBytes += dpMsgArgs.w * dpMsgArgs.h * 4;
@@ -965,6 +1001,13 @@ public abstract class ClientXrw implements Runnable {
      * @param win The window to close.
      */
     public abstract void windowCloseUser(WindowXrw win);
+
+    /**
+     * Returns whether the client is connected to the server. 
+     */
+    public boolean isConnected () {
+        return serverConnected;
+    }
 
     /*
      ** For Debug: Print pixel run lengths

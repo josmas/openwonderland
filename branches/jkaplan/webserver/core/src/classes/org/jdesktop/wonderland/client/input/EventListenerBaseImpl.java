@@ -289,14 +289,12 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /** Remove the given processor component from the given entity. */
     private static void removeProcessorCompFromEntity (ProcessorComponent pc, Entity entity) {
-	/* TODO: doug must impl pcc.remove
 	ProcessorCollectionComponent pcc = (ProcessorCollectionComponent) entity.getComponent(ProcessorCollectionComponent.class);
 	if (pcc == null) return;
-	pcc.remove(pc);
+	pcc.removeProcessor(pc);
 	ProcessorComponent[] pcAry = pcc.getProcessors();
 	if (pcAry == null || pcAry.length <= 0) {
-	    ProcessorCollectionComponent pcc = entity.removeComponent(ProcessorCollectionComponent.class);
+	    entity.removeComponent(ProcessorCollectionComponent.class);
 	}
-	*/
     }
 }

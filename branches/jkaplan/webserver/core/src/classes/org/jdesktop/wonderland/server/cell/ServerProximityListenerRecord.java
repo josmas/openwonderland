@@ -23,6 +23,7 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.util.ScalableHashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -178,7 +179,12 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
 
         Map<CellID, Integer> getIndexMap() {
             DataManager dm = AppContext.getDataManager();
-            return (Map<CellID, Integer>) dm.getBinding(BINDING_NAME + id);
+            try {
+                return (Map<CellID, Integer>) dm.getBinding(BINDING_NAME + id);
+            } catch (NameNotBoundException nnbe) {
+                logger.warning("No binding for " + id);
+                return Collections.emptyMap();
+            }
         }
 
         @Override
@@ -186,7 +192,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             if (!(o instanceof ServerProximityListenerWrapper))
                 return false;
 
-            return (((ServerProximityListenerWrapper)o).listener == listener);
+            return (((ServerProximityListenerWrapper)o).listener.equals(listener));
         }
 
         @Override

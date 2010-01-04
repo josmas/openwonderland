@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactor
 /**
  * An object which is created during the user client login process in order to initialize the 
  * app base for that user client.
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 @Plugin
@@ -83,6 +85,7 @@ public class AppClientPlugin extends BaseClientPlugin {
             logger.severe("Error instantiating app base 2D cell view factory " + 
                           VIEW2DCELL_FACTORY_CLASS_DEFAULT + ", Exception = " + e);
         }
+        view2DCellFactory.initialize();
 
         if (view2DCellFactory == null) {
             logger.severe("Error instantiating app base 2D view cell factory " + 

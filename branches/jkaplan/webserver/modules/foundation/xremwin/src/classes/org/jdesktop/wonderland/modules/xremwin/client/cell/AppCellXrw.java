@@ -33,6 +33,9 @@ import org.jdesktop.wonderland.modules.xremwin.client.AppXrwConnectionInfo;
 import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwClientState;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
+import org.jdesktop.wonderland.modules.xremwin.client.BadConnectionInfoException;
+import javax.swing.JOptionPane;
+import java.util.logging.Level;
 
 /**
  * An Xremwin client-side app cell.
@@ -106,11 +109,31 @@ public class AppCellXrw extends AppConventionalCell {
         App2D theApp = null;
         try {
             theApp = new AppXrwSlave(appName, pixelScale,
-                                  ProcessReporterFactory.getFactory().create(appName),
-                                  new AppXrwConnectionInfo(connectionInfo, secret), session, 
-                                  this, fvi);
+                                     ProcessReporterFactory.getFactory().create(appName),
+                                     new AppXrwConnectionInfo(connectionInfo, secret), session, 
+                                     this, fvi);
+        } catch (BadConnectionInfoException ex) {
+            // This is not a hard fail. It can happen in the normal course of a SAS warm start.
+            // Sometimes connection infos can be stale (i.e. can be from a previous run of the 
+            // SAS. In this case we just return null. The caller will then expect to get a valid
+            // connection info in the future.
+            logger.info("Bad Connection Info. Waiting for good one: " + connectionInfo);
+            this.connectionInfo = null;
+            return null;
         } catch (InstantiationException ex) {
-            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Cannot create Xremwin protocol client for " + appName, 
+                                          "Error", JOptionPane.ERROR_MESSAGE);
+            cleanup();
+            return null;
+        }
+
+        if (!((AppXrwSlave)theApp).isConnected()) {
+            // There is a case when the connection info is stale that the socket gets created above
+            // but the first read causes an EOF. This code infers from the EOF that the connection 
+            // info is stale. Even if the connection info isn't stale, the app has died and the cell
+            // is shortly about to go away anyway.
+            logger.info("Bad connection info because of EOF: " + connectionInfo);
+            this.connectionInfo = null;
             return null;
         }
 

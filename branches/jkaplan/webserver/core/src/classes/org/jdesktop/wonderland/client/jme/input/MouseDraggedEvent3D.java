@@ -145,11 +145,12 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * @return The argument ret is returned. If it was null a new vector is returned.
      */
     public Vector3f getDragVectorWorld (Vector3f dragStartWorld, Point dragStartScreen, Vector3f ret) {
-	return getDragVectorWorld((MouseEvent)awtEvent, dragStartWorld, dragStartScreen, ret);
+        MouseEvent me = (MouseEvent) awtEvent;
+	return getDragVectorWorld(me.getX(), me.getY(), dragStartWorld, dragStartScreen, ret);
     }
 
-    private static Vector3f getDragVectorWorld (MouseEvent awtEvent, Vector3f dragStartWorld, 
-						Point dragStartScreen, Vector3f ret) {
+    public static Vector3f getDragVectorWorld (int eventX, int eventY, Vector3f dragStartWorld, 
+                                               Point dragStartScreen, Vector3f ret) {
 	
 	logger.fine("dragStartWorld rel = " + dragStartWorld);
 	if (ret == null) {
@@ -161,16 +162,15 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
 	logger.fine("eyeWorld = " + eyeWorld);
 
 	// The float movement vector in screen space
-	Vector2f scrPos = new Vector2f(
-				     (float)(awtEvent.getX() - dragStartScreen.x),
-                                     (float)(awtEvent.getY() - dragStartScreen.y));
+	Vector2f scrPos = new Vector2f((float)(eventX - dragStartScreen.x),
+                                       (float)(eventY - dragStartScreen.y));
 	logger.fine("scrPos = " + scrPos);
 
 	Vector2f pressXY = new Vector2f((float)dragStartScreen.x, (float)dragStartScreen.y);
 	Vector3f pressWorld = ((InputManager3D)InputManager3D.getInputManager()).
 	    getCamera().getWorldCoordinates(pressXY, 0f);
 
-	Vector2f dragXY = new Vector2f((float)awtEvent.getX(), (float)awtEvent.getY());
+	Vector2f dragXY = new Vector2f((float)eventX, (float)eventY);
 	Vector3f dragWorld = ((InputManager3D)InputManager3D.getInputManager()).
 	    getCamera().getWorldCoordinates(dragXY, 0f);
 

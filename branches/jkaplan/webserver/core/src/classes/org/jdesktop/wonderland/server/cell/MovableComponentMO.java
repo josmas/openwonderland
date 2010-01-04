@@ -50,6 +50,8 @@ public class MovableComponentMO extends CellComponentMO {
     
     @Override
     public void setLive(boolean live) {
+        super.setLive(live);
+
         if (live) {
             channelComponentRef.getForUpdate().addMessageReceiver(getMessageClass(), new ComponentMessageReceiverImpl(this));
         } else {

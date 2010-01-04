@@ -21,6 +21,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -55,7 +57,8 @@ public class ModuleInfoList {
         try {
             context = JAXBContext.newInstance(ModuleInfoList.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            Logger.getLogger(ModuleInfoList.class.getName()).log(Level.WARNING,
+                    "Unable to get JAXBContext", excp);
         }
     }
         

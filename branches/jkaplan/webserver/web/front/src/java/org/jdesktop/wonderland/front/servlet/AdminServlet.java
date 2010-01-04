@@ -150,13 +150,17 @@ public class AdminServlet extends HttpServlet implements ServletContextListener 
         
         // add other built-in registrations
         AdminRegistration runner = new AdminRegistration("runner",
-                "Server Status", "/wonderland-web-runner");
+                "Manage Server", "/wonderland-web-runner");
         runner.setFilter(AdminRegistration.ADMIN_FILTER);
         runner.setPosition(1);
         registry.add(runner);
 
+        // Register the module management page. This needs to happen here because
+        // there is no forced order of installation for things in web/, and
+        // front/ needs to be installed before modules/ and that currently
+        // cannot be guaranteed.
         AdminRegistration modules = new AdminRegistration("modules",
-                "Manage Modules", "/wonderland-web-modules");
+                "Manage Modules", "/wonderland-web-modules/editor");
         modules.setFilter(AdminRegistration.ADMIN_FILTER);
         registry.add(modules);
        

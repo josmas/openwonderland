@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.affordances.client;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -71,7 +70,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
         // create HUD control
         affordanceHUD = mainHUD.createComponent(affordanceHUDPanel);
         affordanceHUDPanel.setHUDComponent(affordanceHUD);
-        affordanceHUD.setName(BUNDLE.getString("Edit_Component_None_Selected"));
+        affordanceHUD.setName(BUNDLE.getString("Edit_Object_None_Selected"));
         affordanceHUD.setPreferredLocation(Layout.SOUTH);
         affordanceHUD.addEventListener(new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent event) {
@@ -158,7 +157,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
             if (affordanceHUD == null) {
                 createHUD();
             }
-            String name = BUNDLE.getString("Edit_Component");
+            String name = BUNDLE.getString("Edit_Object");
             name = MessageFormat.format(name, event.getCell().getName());
             affordanceHUD.setName(name);
             affordanceHUD.setVisible(true);

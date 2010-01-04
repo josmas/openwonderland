@@ -136,7 +136,7 @@ public class ContextMenuManager {
      */
     public void removeContextMenuListener(ContextMenuListener listener) {
         synchronized (listeners) {
-            listeners.remove(listeners);
+            listeners.remove(listener);
         }
     }
 

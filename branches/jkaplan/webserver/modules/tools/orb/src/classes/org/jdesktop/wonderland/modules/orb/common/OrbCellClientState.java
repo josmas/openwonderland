@@ -17,19 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.orb.common;
 
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import java.io.Serializable;
-
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
-
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.common.cell.view.ViewCellClientState;
 
 /**
  * The OrbCellSetup class is the cell that renders an orb cell in
@@ -37,9 +26,8 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * 
  * @author jprovino
  */
-public class OrbCellClientState extends CellClientState {
+public class OrbCellClientState extends ViewCellClientState {
 
-    private String username;
     private String usernameAlias;
     private String callID;
     private String playerWithVpCallID;
@@ -48,35 +36,31 @@ public class OrbCellClientState extends CellClientState {
     /** Default constructor */
     public OrbCellClientState() {
     }
-    
-    public OrbCellClientState(String username, String usernameAlias, String callID, 
-	    String  playerWithVpCallID, String[] bystanders) {
 
-	this.username = username;
-	this.usernameAlias = usernameAlias;
-	this.callID = callID;
-	this.playerWithVpCallID = playerWithVpCallID;
-	this.bystanders = bystanders;
-    }
+    public OrbCellClientState(WonderlandIdentity identity, String usernameAlias,
+            String callID, String playerWithVpCallID,
+            String[] bystanders) {
+        super(identity);
 
-    public String getUsername() {
-	return username;
+        this.usernameAlias = usernameAlias;
+        this.callID = callID;
+        this.playerWithVpCallID = playerWithVpCallID;
+        this.bystanders = bystanders;
     }
 
     public String getUsernameAlias() {
-	return usernameAlias;
+        return usernameAlias;
     }
 
     public String getCallID() {
-	return callID;
+        return callID;
     }
 
     public String getPlayerWithVpCallID() {
-	return playerWithVpCallID;
+        return playerWithVpCallID;
     }
 
     public String[] getBystanders() {
-	return bystanders;
+        return bystanders;
     }
-
 }

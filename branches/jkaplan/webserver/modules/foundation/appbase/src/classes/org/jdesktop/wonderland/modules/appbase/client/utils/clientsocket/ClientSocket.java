@@ -26,10 +26,13 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsReporter;
 
 /**
  * Code which is shared between the master and slaves.
+ *
+ * @author deronj, Krishna Gadepalli
  */
 public class ClientSocket {
 
@@ -251,7 +254,7 @@ public class ClientSocket {
         //For Debug: int pktNum = dis.readInt();
         int len = dis.readInt();
         byte[] buf = new byte[len];
-
+        
         dis.readFully(buf, 0, len);
 
         if (DEBUG_IO) {
@@ -407,7 +410,7 @@ public class ClientSocket {
                 break;
 
             } catch (Exception e) {
-                logger.info("Exception occurred during reading. Exception = " + e);
+                logger.log(Level.WARNING, "Exception occurred during reading. Exception = " + e, e);
                 close();
                 break;
             }

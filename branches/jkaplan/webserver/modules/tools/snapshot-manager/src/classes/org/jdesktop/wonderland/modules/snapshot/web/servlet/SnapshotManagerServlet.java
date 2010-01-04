@@ -35,11 +35,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
+import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
-import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
 import org.jdesktop.wonderland.runner.Runner.Status;
 import org.jdesktop.wonderland.runner.RunnerException;
 import org.jdesktop.wonderland.runner.StatusWaiter;
@@ -173,6 +173,9 @@ public class SnapshotManagerServlet extends HttpServlet
                                       "/edit.jsp");
         }
 
+        logger.info("User " + getUsername(request) + " updated snapshot " +
+                    snapshot.getRootPath());
+
         String name = request.getParameter("name");
         if (name == null) {
             name = "";
@@ -211,6 +214,9 @@ public class SnapshotManagerServlet extends HttpServlet
                                       null);
         }
 
+        logger.info("User " + getUsername(request) + " removed snapshot " +
+                    snapshot.getRootPath());
+
         WFSManager.getWFSManager().removeWFSSnapshot(snapshot.getName());
         return null;
     }
@@ -226,6 +232,9 @@ public class SnapshotManagerServlet extends HttpServlet
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SS");
             name = df.format(new Date());
         }
+
+        logger.info("User " + getUsername(request) + " created snapshot " +
+                    name);
 
         DarkstarRunner runner = getRunner();
 
@@ -250,6 +259,9 @@ public class SnapshotManagerServlet extends HttpServlet
                              WFSRoot root)
         throws ServletException, IOException
     {
+        logger.info("User " + getUsername(request) + " set current snapshot " +
+                    "to " + root.getRootPath());
+
         DarkstarRunner runner = getRunner();
 
         // make sure the runner is stopped
@@ -272,6 +284,9 @@ public class SnapshotManagerServlet extends HttpServlet
                              WFSRoot root)
         throws ServletException, IOException
     {
+        logger.info("User " + getUsername(request) + " restored snapshot " +
+                    root.getRootPath());
+
         DarkstarRunner runner = getRunner();
 
         // make sure the runner is stopped
@@ -486,6 +501,18 @@ public class SnapshotManagerServlet extends HttpServlet
         }
     }
 
+    /**
+     * Get the name of the current user, or "unknown" for an unauthenticated user
+     * @return the username, or "unknown"
+     */
+    public String getUsername(HttpServletRequest req) {
+        if (req.getUserPrincipal() == null) {
+            return "unknown";
+        }
+
+        return req.getUserPrincipal().getName();
+    }
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 
      * Handles the HTTP <code>GET</code> method.
@@ -524,7 +551,7 @@ public class SnapshotManagerServlet extends HttpServlet
 
     public void contextInitialized(ServletContextEvent sce) {
         // register with web admin
-        reg = new AdminRegistration("Manage Snapshots",
+        reg = new AdminRegistration("Manage Worlds",
                                     "/snapshot-manager/snapshot/SnapshotManager");
         reg.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(reg, sce.getServletContext());

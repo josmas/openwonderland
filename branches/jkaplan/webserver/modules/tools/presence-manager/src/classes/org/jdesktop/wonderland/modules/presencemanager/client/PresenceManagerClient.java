@@ -17,6 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.client;
 
+import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -36,17 +40,19 @@ import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientCon
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellManager;
-
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 import java.util.ArrayList;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedAliasMessage;
 
 /**
  *
@@ -62,6 +68,7 @@ public class PresenceManagerClient extends BaseConnection implements
     private PresenceManagerImpl pm;
     private PresenceInfo presenceInfo;
     private static PresenceManagerClient client;
+    private boolean connectionComplete = false;
 
     public static PresenceManagerClient getInstance() {
 	return client;
@@ -104,16 +111,14 @@ public class PresenceManagerClient extends BaseConnection implements
 
     @Override
     public void disconnect() {
-        // send a message if we aren't already disconnected
-        if (session.getStatus() != WonderlandSession.Status.DISCONNECTED) {
-            pm.removePresenceInfo(presenceInfo);
-        }
-
         // LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
 
 	PresenceManagerFactory.reset();
+
+        // connection information is no longer valid
+        setConnectionComplete(false);
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
@@ -126,14 +131,45 @@ public class PresenceManagerClient extends BaseConnection implements
 
             SoftphoneControlImpl.getInstance().setCallID(callID);
 
-            presenceInfo = new PresenceInfo(cellID, session.getID(), session.getUserID(), callID);
+            // get the list of all presence information
+            ResponseMessage rm;
+            try {
+                rm = sendAndWait(new ClientConnectMessage(cellID));
+                
+                if (rm instanceof ClientConnectResponseMessage) {
+                    handleMessage(rm);
+                } else if (rm instanceof ErrorMessage) {
+                    ErrorMessage em = (ErrorMessage) rm;
+                    logger.log(Level.WARNING, "Error getting presence info " +
+                               em.getErrorMessage(), em.getErrorCause());
+                }
+            } catch (InterruptedException ie) {
+                logger.log(Level.WARNING, "Error reading presence info", ie);
+            }
 
-            pm.addPresenceInfo(presenceInfo);
 
-            session.send(this, new ClientConnectMessage());
 
             logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
         }
+    }
+
+    public Vector3f getCellPosition(CellID cellID) {
+        Message request = new CellLocationRequestMessage(cellID);
+
+        try {
+            ResponseMessage rm = sendAndWait(request);
+            if (rm instanceof CellLocationResponseMessage) {
+                return ((CellLocationResponseMessage) rm).getLocation();
+            } else if (rm instanceof ErrorMessage) {
+                logger.log(Level.WARNING, "Error getting location of " +
+                        cellID + ": " + ((ErrorMessage) rm).getErrorMessage());
+            }
+        } catch (InterruptedException ie) {
+            // ignore
+        }
+
+        // if we get here, there was an error getting the value
+        return null;
     }
 
     @Override
@@ -142,6 +178,13 @@ public class PresenceManagerClient extends BaseConnection implements
 
 	if (message instanceof ClientConnectResponseMessage) {
 	    ClientConnectResponseMessage msg = (ClientConnectResponseMessage) message;
+
+	    CellCache cellCache = ClientContext.getCellCache(session);
+
+	    if (cellCache == null) {
+		logger.warning("Can't find cellCache for session " + session);
+		return;
+	    }
 
 	    ArrayList<String> nameTagList = new ArrayList();
 
@@ -155,28 +198,50 @@ public class PresenceManagerClient extends BaseConnection implements
 		logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
 		pm.presenceInfoAdded(presenceInfo);
 
-		String username = presenceInfo.userID.getUsername();
+		String username = presenceInfo.getUserID().getUsername();
 
-		NameTagNode nameTag = NameTagNode.getNameTagNode(username);
+		if (presenceInfo.getCellID() == null) {
+		    logger.warning("CellID is null for " + presenceInfo);
+		    continue;
+		}
 
-		if (presenceInfo.usernameAlias.equals(username) == false) {
- 		    pm.changeUsernameAlias(presenceInfo);
+		Cell cell = cellCache.getCell(presenceInfo.getCellID());
+
+		if (cell == null) {
+		    logger.warning("Unable to find cell for " + presenceInfo.getCellID());
+		    continue;
+		}
+
+		NameTagComponent nameTag = cell.getComponent(NameTagComponent.class);
+
+		if (presenceInfo.getUsernameAlias().equals(username) == false) {
+ 		    pm.changeUsernameAlias(presenceInfo, presenceInfo.getUsernameAlias());
  		}
 
 		if (nameTag == null) {
-		    nameTagList.add(username);
-		} else {
-		    nameTag.updateLabel(presenceInfo.usernameAlias, presenceInfo.inConeOfSilence,
-		        presenceInfo.isSpeaking, presenceInfo.isMuted);
-	        }
+		    continue;
+		}
+
+		nameTag.updateLabel(presenceInfo.getUsernameAlias(),
+                                    presenceInfo.isInConeOfSilence(),
+                                    presenceInfo.isSpeaking(),
+                                    presenceInfo.isMuted());
 	    }
 
-	    if (nameTagList.size() > 0) {
-		new NameTagUpdater(nameTagList);
-	    } 
+//	    if (nameTagList.size() > 0) {
+//		new NameTagUpdater(nameTagList);
+//	    }
+
+            // connection is complete
+            setConnectionComplete(true);
 
 	    return;
 	}
+
+        // Issue #1113: if the connection is not complete, ignore messages
+        if (!isConnectionComplete()) {
+            return;
+        }
 
         if (message instanceof PlayerInRangeMessage) {
 	    PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
@@ -184,7 +249,7 @@ public class PresenceManagerClient extends BaseConnection implements
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		logger.info("no presence info for callID " + msg.getCallID());
+		logger.fine("no presence info for callID " + msg.getCallID());
 		return;
 	    }
 
@@ -203,21 +268,65 @@ public class PresenceManagerClient extends BaseConnection implements
 
         if (message instanceof PresenceInfoRemovedMessage) {
             PresenceInfoRemovedMessage m = (PresenceInfoRemovedMessage) message;
+            PresenceInfo pi = pm.getPresenceInfo(m.getCellID());
+            if (pi == null) {
+                logger.warning("No presence info found for " + m.getCellID());
+                return;
+            }
 
-            logger.fine("GOT PresenceInfoRemovedMessage for " + m.getPresenceInfo());
-            pm.presenceInfoRemoved(m.getPresenceInfo());
+            logger.fine("GOT PresenceInfoRemovedMessage for " + pi);
+            pm.presenceInfoRemoved(pi);
             return;
         }
 
-        if (message instanceof PresenceInfoChangeMessage) {
-            PresenceInfoChangeMessage m = (PresenceInfoChangeMessage) message;
+        if (message instanceof PresenceInfoChangedMessage) {
+            PresenceInfoChangedMessage m = (PresenceInfoChangedMessage) message;
+            PresenceInfo pi = pm.getPresenceInfo(m.getCellID());
+            if (pi == null) {
+                logger.warning("No presence info found for " + m.getCellID());
+                return;
+            }
 
-            logger.fine("GOT PresenceInfoChangeMessage for " + m.getPresenceInfo());
-	    pm.presenceInfoChanged(m.getPresenceInfo());
+            logger.fine("GOT PresenceInfoChangeMessage for " + pi);
+	    
+            switch (m.getChange()) {
+                case SPEAKING:
+                    pm.setSpeaking(pi, m.getValue());
+                    break;
+                case MUTED:
+                    pm.setMute(pi, m.getValue());
+                    break;
+                case SECRET_CHAT:
+                    pm.setInSecretChat(pi, m.getValue());
+                    break;
+                case CONE_OF_SILENCE:
+                    pm.setEnteredConeOfSilence(pi, m.getValue());
+                    break;
+            }
+            return;
+        }
+
+        if (message instanceof PresenceInfoChangedAliasMessage) {
+            PresenceInfoChangedAliasMessage m = (PresenceInfoChangedAliasMessage) message;
+            PresenceInfo pi = pm.getPresenceInfo(m.getCellID());
+            if (pi == null) {
+                logger.warning("No presence info found for " + m.getCellID());
+                return;
+            }
+
+            pm.changeUsernameAlias(pi, m.getAlias());
             return;
         }
 
         throw new UnsupportedOperationException("Unknown message:  " + message);
+    }
+
+    private synchronized boolean isConnectionComplete() {
+        return connectionComplete;
+    }
+
+    private synchronized void setConnectionComplete(boolean connectionComplete) {
+        this.connectionComplete = connectionComplete;
     }
 
     /*
@@ -225,53 +334,58 @@ public class PresenceManagerClient extends BaseConnection implements
      * When we connect, if we can't update the names with mute and alias info
      * because a name tag doesn't yet exist, we shedule the update for later.
      */
-    class NameTagUpdater extends Thread {
-	
-	private ArrayList<String> nameTagList;
-
-	public NameTagUpdater(ArrayList<String> nameTagList) {
-	    this.nameTagList = nameTagList;
-
-	    start();
-	}
-
-	public void run() {
-	    while (true) {
-		String[] names = nameTagList.toArray(new String[0]);
-
-		for (int i = 0; i < names.length; i++) {
-		    String name = names[i];
-
-		    NameTagNode nameTag = NameTagNode.getNameTagNode(name);
-
-		    if (nameTag == null) {
-			continue;
-		    }
-
-		    nameTagList.remove(name);
-
-		    PresenceInfo info = pm.getUserPresenceInfo(name);
-
-		    if (info == null) {
-			logger.info("No presence info for " + name);
-			continue;
-		    }
-		
-		    nameTag.updateLabel(info.usernameAlias, info.inConeOfSilence,
-			info.isSpeaking, info.isMuted);
-		}
-
-		if (nameTagList.size() == 0) {
-		    break;
-		}
-
-	        try {
-		    Thread.sleep(200);
-		} catch (InterruptedException e) {
-		}
-	    }
- 	}
-    }
+//    class NameTagUpdater extends Thread {
+//
+//	private ArrayList<String> nameTagList;
+//
+//	public NameTagUpdater(ArrayList<String> nameTagList) {
+//	    this.nameTagList = nameTagList;
+//
+//	    start();
+//	}
+//
+//	public void run() {
+//	    while (true) {
+//		String[] names = nameTagList.toArray(new String[0]);
+//
+//		for (int i = 0; i < names.length; i++) {
+//		    String name = names[i];
+//
+//		    nameTagList.remove(name);
+//
+//		    PresenceInfo info = pm.getUserPresenceInfo(name);
+//
+//		    if (info == null) {
+//			logger.info("No presence info for " + name);
+//			continue;
+//		    }
+//
+//		    CellCache cellCache = ClientContext.getCellCache(session);
+//
+//		    Cell cell = cellCache.getCell(info.cellID);
+//
+//		    if (cell == null) {
+//		  	logger.warning("No cell for " + name);
+//			continue;
+//		    }
+//
+////		    NameTagComponent nameTag = new NameTagComponent(cell, name, (float) .17);
+//
+//		    nameTag.updateLabel(info.usernameAlias, info.inConeOfSilence,
+//			info.isSpeaking, info.isMuted);
+//		}
+//
+//		if (nameTagList.size() == 0) {
+//		    break;
+//		}
+//
+//	        try {
+//		    Thread.sleep(200);
+//		} catch (InterruptedException e) {
+//		}
+//	    }
+// 	}
+//    }
 
     public ConnectionType getConnectionType() {
         return PresenceManagerConnectionType.CONNECTION_TYPE;

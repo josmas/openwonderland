@@ -80,7 +80,8 @@ public class CellCreationParentRegistry {
      * @param spi the spi object
      */
     private void add(CellCreationParentSPI spi) {
-        spiList.add(spi);
+        // issue 783: add to the start of the list rather than the end
+        spiList.add(0, spi);
     }
 
     /**
