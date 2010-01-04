@@ -20,11 +20,11 @@ package org.jdesktop.wonderland.modules.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,10 +38,15 @@ import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
- *
+ * A servlet that accepts HTTP POST requests to upload and install modules.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModuleUploadServlet extends HttpServlet {
+
+    // The error logger
+    private static final Logger LOGGER =
+            Logger.getLogger(ModuleUploadServlet.class.getName());
 
     /** 
     * Handles the HTTP <code>GET</code> method.
@@ -49,7 +54,9 @@ public class ModuleUploadServlet extends HttpServlet {
     * @param response servlet response
     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
         throw new ServletException("Upload servlet only handles post");
     } 
 
@@ -59,21 +66,24 @@ public class ModuleUploadServlet extends HttpServlet {
     * @param response servlet response
     */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         /*
          * Create a factory for disk-base file items to handle the request. Also
          * place the file in add/.
          */
-        PrintWriter writer = response.getWriter();
+        String redirect = "/installFailed.jsp";
         ModuleManager manager = ModuleManager.getModuleManager();
-        Logger logger = ModuleManager.getLogger();
         
         /* Check that we have a file upload request */
         boolean isMultipart = ServletFileUpload.isMultipartContent(request);
         if (isMultipart == false) {
-            logger.warning("[MODULE] UPLOAD Bad request");
-            writer.println("Unable to recognize upload request. Press the ");
-            writer.println("Back button on your browser and try again.<br><br>");
+            LOGGER.warning("Failed to upload module, isMultipart=false");
+            String msg = "Unable to recognize upload request. Please try again.";
+            request.setAttribute("errorMessage", msg);
+            RequestDispatcher rd = request.getRequestDispatcher(redirect);
+            rd.forward(request, response);
             return;
         }
  
@@ -85,7 +95,6 @@ public class ModuleUploadServlet extends HttpServlet {
             FileItemIterator iter = upload.getItemIterator(request);
             while (iter.hasNext() == true) {
                 FileItemStream item = iter.next();
-                String name = item.getFieldName();
                 InputStream stream = item.openStream();
                 if (item.isFormField() == false) {
                     /*
@@ -95,14 +104,18 @@ public class ModuleUploadServlet extends HttpServlet {
                     String moduleJar = item.getName();
                     if (moduleJar.endsWith(".jar") == false) {
                         /* Log an error to the log and write an error message back */
-                        logger.warning("[MODULE] UPLOAD File is not a jar file " + moduleJar);
-                        writer.println("The file " + moduleJar + " needs to be a jar file. Press the ");
-                        writer.println("Back button on your browser and try again.<br><br>");
+                        LOGGER.warning("Upload is not a jar file " + moduleJar);
+                        String msg = "The file " + moduleJar + " needs to be" +
+                                " a jar file. Please try again.";
+                        request.setAttribute("errorMessage", msg);
+                        RequestDispatcher rd = request.getRequestDispatcher(redirect);
+                        rd.forward(request, response);
                         return;
                     }
                     String moduleName = moduleJar.substring(0, moduleJar.length() - 4);
 
-                    logger.info("[MODULE] UPLOAD Install module " + moduleName + " with file name " + moduleJar);
+                    LOGGER.info("Upload Install module " + moduleName +
+                            " with file name " + moduleJar);
                     
                     /*
                      * Write the file a temporary file
@@ -112,13 +125,13 @@ public class ModuleUploadServlet extends HttpServlet {
                         tmpFile = File.createTempFile(moduleName+"_tmp", ".jar");
                         tmpFile.deleteOnExit();
                         RunUtil.writeToFile(stream, tmpFile);
-                        logger.info("[MODULE] UPLOAD Wrote added module to " + tmpFile.getAbsolutePath());
                     } catch (java.lang.Exception excp) {
                         /* Log an error to the log and write an error message back */
-                        logger.log(Level.WARNING, "[MODULE] UPLOAD Failed to save file", excp);
-                        writer.println("Unable to save the file to the module directory. Press the ");
-                        writer.println("Back button on your browser and try again.<br><br>");
-                        writer.println(excp.toString());
+                        LOGGER.log(Level.WARNING, "Failed to save file", excp);
+                        String msg = "Internal error installing the module.";
+                        request.setAttribute("errorMessage", msg);
+                        RequestDispatcher rd = request.getRequestDispatcher(redirect);
+                        rd.forward(request, response);
                         return;
                     }
 
@@ -128,18 +141,22 @@ public class ModuleUploadServlet extends HttpServlet {
                     Collection<Module> result = manager.addToInstall(moduleFiles);
                     if (result.isEmpty() == true) {
                         /* Log an error to the log and write an error message back */
-                        logger.warning("[MODULE] UPLOAD Failed to install module " + moduleName);
-                        writer.println("Unable to install module for some reason. Press the ");
-                        writer.println("Back button on your browser and try again.<br><br>");
+                        LOGGER.warning("Failed to install module " + moduleName);
+                        String msg = "Internal error installing the module.";
+                        request.setAttribute("errorMessage", msg);
+                        RequestDispatcher rd = request.getRequestDispatcher(redirect);
+                        rd.forward(request, response);
                         return;
                     }
                 }
             }
         } catch (FileUploadException excp) {
             /* Log an error to the log and write an error message back */
-            logger.log(Level.WARNING, "[MODULE] UPLOAD Failed", excp);
-            writer.println("Unable to install module for some reason. Press the ");
-            writer.println("Back button on your browser and try again.<br><br>");
+            LOGGER.log(Level.WARNING, "File upload failed", excp);
+            String msg = "Failed to upload the file. Please try again.";
+            request.setAttribute("errorMessage", msg);
+            RequestDispatcher rd = request.getRequestDispatcher(redirect);
+            rd.forward(request, response);
             return;
         }
  
@@ -147,9 +164,9 @@ public class ModuleUploadServlet extends HttpServlet {
         manager.installAll();
         
         /* If we have reached here, then post a simple message */
-        logger.info("[MODULE] UPLOAD Added module successfully");
-        writer.print("Module added successfully. Press the ");
-        writer.print("Back button on your browser and refresh the page to see the updates.<br><br>");
+        LOGGER.info("Added module successfully");
+        RequestDispatcher rd = request.getRequestDispatcher("/installSuccess.jsp");
+        rd.forward(request, response);
     }
     
     /** 

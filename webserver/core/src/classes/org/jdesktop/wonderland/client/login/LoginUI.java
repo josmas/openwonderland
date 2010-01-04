@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.client.login;
 
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
 
 /**
  * An interface that the login system will call back to to request
@@ -47,12 +47,9 @@ public interface LoginUI {
 
     /**
      * Request that the user interface prompt the user for login credentials.
-     * This version corresponds to web authorization.  The control object
-     * gives the external URL that should be contacted with authentication
-     * information.  The user should be notified of the login in progress
-     * and given the option to cancel it, but any data collection happens
-     * in a separate web browser.
+     * This version corresponds to authentication either by no authorization
+     * (e.g. a guest) or by authentication, at the choice of the client.
      * @param control the login control
      */
-    public void requestLogin(WebURLLoginControl control);
+    public void requestLogin(EitherLoginControl control);
 }

@@ -55,12 +55,42 @@ import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImag
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
- * TODO
- * Each view has entity -> viewNode -> geometryNode -> Geometry
- * @author dj
+ * A view which is capable of displaying a window using an MTGame Entity and scene graph.
+ * At any one time the window contents can be displayed in the 3D world (<code>setOrtho(false)</code)
+ * or in the ortho plane (<code>setOrtho(true)</code). (The ortho plane usually corresponds to the 
+ * Wonderland main HUD, or "on the glass").
+ * <br><br>
+ * By default, the view is a quad, but this can be changed via the method <code>setGeometryNode</code>.
+ * <br><br>
+ * If the user resizable attribute is set to true via <code>setUserResizable</code> this view's dimensions
+ * can be dynamically controlled from elsewhere (often via a GUI element) by calling the methods 
+ * <code>userResizeStart</code>, <code>userResizeUpdate</code> and <code>userResizeFinish</code>.
+ * <br><br>
+ * A view also supports a number of window manipulation methods which relay actions to the view's window.
+ * Examples include windowCloseUser and windowRestackToTop.
+ * <br><br>
+ * Note: this class supports independent pixel scales for the 3D world and the ortho plane. The values
+ * set via <code>setPixelScale</code> are used for the 3D world and the values set via <code>setPixelScaleOrtho</code>
+ * are used for the ortho plane.
+ * <br><br>
+ * This view class also supports a set of positioning methods for when the view is in the ortho plane
+ * (e.g. <code>setLocationOrtho</code>) than when the view is in the 3D world (see the <code>View2D</code) class).
+ * <br><br>
+ * You can move this type of view in the local XY plane when it is in the 3D world by calling 
+ * <code>applyDeltaTranslationUser</code>. This post-multiplies a translation matrix into the view's 
+ * current world-to-local transform matrix. Certain utility routines exit (e.g. <code>userMovePlanarStart</code>, 
+ * <code>userMovePlanarUpdate</code>, and <code>userMovePlanarUpdate</code>) can be called instead in order to make this easier.
+ * (Only view's of type SECONDARY can be moved planar).
+ * <br><br>
+ * TODO: SOMEDAY: Implement move planar for primary views. Must update the cell when doing this.
+ * <br><br>
+ * @author deronj
  */
 @ExperimentalAPI
 public abstract class View2DEntity implements View2D {
+
+    // IMPLEMENTATION NOTE: The entity and scene graph of this type of view has the following structure
+    // Entity -> viewNode -> geometryNode -> Geometry
 
     private static final Logger logger = Logger.getLogger(View2DEntity.class.getName());
 
@@ -68,6 +98,10 @@ public abstract class View2DEntity implements View2D {
 
     private static enum AttachState { DETACHED, ATTACHED_TO_ENTITY, ATTACHED_TO_WORLD };
 
+    private static enum FrameChange { 
+        ATTACH_FRAME, DETACH_FRAME, REATTACH_FRAME, UPDATE_TITLE, UPDATE_USER_RESIZABLE
+    };
+            
     // Attribute changed flags 
     protected static final int CHANGED_TYPE             = 0x0001;
     protected static final int CHANGED_PARENT           = 0x0002;
@@ -133,7 +167,7 @@ public abstract class View2DEntity implements View2D {
     private boolean decorated;
 
     /** Whether this view's frame resize corner is enabled. */
-    private boolean userResizable = false;
+    protected boolean userResizable = false;
 
     /** The frame title. */
     private String title;
@@ -161,9 +195,6 @@ public abstract class View2DEntity implements View2D {
 
     /** The previous drag vector during an interactive planar move. */
     private Vector2f userMovePlanarDragVectorPrev;
-    
-    /** The current value of the window size during an interactive resize. */
-    private Dimension userResizeNewSize;
     
     /** The next delta translation to apply. */
     private Vector3f deltaTranslationToApply;
@@ -222,6 +253,16 @@ public abstract class View2DEntity implements View2D {
     private int pointerLastX;
     private int pointerLastY;
 
+    /** A list of frame changes to be performed outside the window lock. */
+    private LinkedList<FrameChange> frameChanges = new LinkedList<FrameChange>();
+
+    /** A flag which indicates that the cleanup method is being executed. */
+    private boolean inCleanup = false;
+
+    // TODO: HACK: Part 1 of 4: temporary workaround for 951
+    // Parts 2 and 3 are later in this file. Part 4 is in HUDView3D.
+    private float hackZEpsilon = 0f;
+
     /**
      * Create an instance of View2DEntity with default geometry node.
      * @param The entity in which the view is displayed.
@@ -265,6 +306,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void cleanup () {
+        inCleanup = true;
 
         changeMask = 0;
         disableGUI();
@@ -274,6 +316,7 @@ public abstract class View2DEntity implements View2D {
         setOrtho(false, false);
         setGeometryNode(null, false);
         update();
+        // Note: don't do an updateFrame here because a deadlock can result!
         children.clear();
 
         if (gui != null) {
@@ -308,6 +351,17 @@ public abstract class View2DEntity implements View2D {
         controlArb = null;
         window = null;
         app = null;
+
+        inCleanup = false;
+    }
+
+    /** 
+     * TODO: HACK: Part 2 of 4: temporary workaround for 951
+     * @deprecated
+     */
+    @InternalAPI
+    public void setHackZEpsilon (float epsilon) {
+        hackZEpsilon = epsilon;
     }
 
     /** {@inheritDoc} */
@@ -372,6 +426,9 @@ public abstract class View2DEntity implements View2D {
             // All new types are permitted
         } else if (this.type == Type.SECONDARY && type == Type.PRIMARY) {
             // A promotion of a secondary to a primary is permitted.
+        } else if (this.type == Type.PRIMARY && type == Type.SECONDARY) {
+            // A demotion of a primary to a secondary is permitted.
+            // AppXrw.selectPrimaryWindow sometimes does this.
         } else if (this.type == Type.SECONDARY && type == Type.POPUP) {
             // A change of a secondary to a popup is permitted.
         } else {
@@ -388,6 +445,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_TYPE;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -433,6 +493,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PARENT;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
 
         // Inherit ortho state of parent (must do this after self update)
@@ -460,7 +523,10 @@ public abstract class View2DEntity implements View2D {
         this.visibleApp = visibleApp;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
-             update();
+            update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -483,6 +549,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -492,9 +561,12 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Recalculates the visibility of this view. */
-    private synchronized void updateVisibility () {
+    private synchronized void updateVisibility (boolean inCleanupParent) {
         changeMask |= CHANGED_VISIBLE;
         update();
+        if (!inCleanup && !inCleanupParent) {
+            updateFrame();
+        }
     }
 
     /** {@inheritDoc} */
@@ -520,6 +592,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_DECORATED;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -539,6 +614,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_TITLE;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -561,6 +639,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_USER_RESIZABLE;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -576,6 +657,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_STACK;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -626,6 +710,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_GEOMETRY;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
     
@@ -655,6 +742,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_SIZE_APP;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -729,13 +819,20 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
     /** Return the pixel scale used when the view is displayed in cell mode. */
     public Vector2f getPixelScale () {
         if (pixelScaleCell == null) {
-            return window.getPixelScale();
+            if (window != null) {
+                return window.getPixelScale();
+            } else {
+                return new Vector2f(0.01f, 0.01f);
+            }
         } else {
             return pixelScaleCell.clone();
         }
@@ -760,6 +857,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -773,7 +873,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Returns the pixel scale vector for the current mode. */
-    private Vector2f getPixelScaleCurrent () {
+    public Vector2f getPixelScaleCurrent () {
         Vector2f pixelScale;
         if (ortho) {
             pixelScale = getPixelScaleOrtho();
@@ -788,6 +888,9 @@ public abstract class View2DEntity implements View2D {
      * The location is an offset relative to the origin of the displayer and is in
      * the coordinate system of the ortho plane. Update afterward.
      * This attribute is ignored for non-primary views.
+     *
+     * Note: setPixelOffset is the other part of the ortho offset translation. The two offsets are 
+     * added to produce the effective offset.
      *
      * Note: there is no corresponding attribute for cell mode because the cell itself automatically
      * controls the location of a primary view within the cell (usually centered) and the cell location
@@ -815,6 +918,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_LOCATION_ORTHO;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -839,6 +945,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -869,6 +978,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -888,6 +1000,9 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -942,47 +1057,17 @@ public abstract class View2DEntity implements View2D {
     /**
      * Called by the UI to indicate the start of an interactive resize.
      */
-    public synchronized void userResizeStart () {
-        //System.err.println("********* Resize start");
+    public void userResizeStart () {
     }
 
     /**
      * Called by the UI to indicate a drag vector update during interactive resize.
+     * This is called on the EDT.
      */
-    public synchronized void userResizeUpdate (Vector2f dragVector) {
-        //System.err.println("********* Resize update, dragVector = " + dragVector);
-        
-        // TODO: eventually support optional app-selected continuous window resize. For this 
-        // we call perform resize on each update. May look better for Swing windows.
-
-        userResizeNewSize = userResizeCalcWindowNewSize(dragVector);
-        if (userResizeNewSize == null) return;
-        //System.err.println("userResizeNewSize = " + userResizeNewSize);
-
-        Vector2f pixelScale = getPixelScale();
-        final float width = pixelScale.x * userResizeNewSize.width;
-        final float height = pixelScale.y * userResizeNewSize.height;
-
-        Image image = getWindow().getTexture().getImage();
-        final float widthRatio = (float)userResizeNewSize.width / image.getWidth();
-        final float heightRatio = (float)userResizeNewSize.height / image.getHeight();
-
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                geometryNode.setSize(width, height);
-                geometryNode.setTexCoords(widthRatio, heightRatio);
-                ClientContextJME.getWorldManager().addToUpdateList(viewNode);
-                
-                userResizeFrameUpdate(width, height, userResizeNewSize);
-            }
-        }, null, true);
+    public void userResizeUpdate (Vector2f dragVector) {
     }
 
-    public synchronized void userResizeFinish () {
-        //System.err.println("********* Resize Finish, final size = " + userResizeNewSize);
-        // TODO: for now, only support non-continuous resize. That is, only perform
-        // the actual window resize at the end of the drag operation.
-        window.userSetSize(userResizeNewSize.width, userResizeNewSize.height);
+    public void userResizeFinish () {
     }
 
     protected void userResizeFrameUpdate (float width3D, float height3D, Dimension newSize) {
@@ -1063,6 +1148,9 @@ public abstract class View2DEntity implements View2D {
 
         if (update) {
             update();
+            if (!inCleanup) {
+                updateFrame();
+            }
         }
     }
 
@@ -1188,7 +1276,6 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void update () {
-       
         // Only-Update-When-Visible Optimization
         // 1. Always perform any visibility or size changes immediately.
         if ((changeMask & (CHANGED_VISIBLE | CHANGED_SIZE_APP)) == 0) {
@@ -1202,9 +1289,15 @@ public abstract class View2DEntity implements View2D {
         // Note: all of the scene graph changes are queued up and executed at the end
         boolean windowNeedsValidate = false;
 
+        // For Debug - Part 1: Uncomment this to print info for HUD views only
+        //if (!("View2DCell".equals(this.getClass().getName()))) {
+
         logger.info("------------------ Processing changes for view " + this);
         logger.info("type " + type);
         logChangeMask(changeMask);
+
+        // For Debug - Part 2: Uncomment this to print info for HUD views only
+        //        }
 
         // React to topology related changes
         if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP | CHANGED_TYPE | CHANGED_PARENT | 
@@ -1216,16 +1309,6 @@ public abstract class View2DEntity implements View2D {
             case ATTACHED_TO_ENTITY:
                 if (parentEntity != null) {
                     logger.fine("Remove entity " + entity + " from parent entity " + parentEntity);
-
-                    /* TODO: 597: I thought this might fix it. But it breaks resize. The frame
-                       disappears after a resize
-                    if (hasFrame()) {
-                        logger.fine("Detach frame");
-                        detachFrame();
-                        changeMask |= CHANGED_DECORATED;
-                    }
-                    */
-
                     RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                     sgChangeAttachPointSetAddEntity(rc, null, null, null);
                     parentEntity.removeEntity(entity);
@@ -1349,48 +1432,49 @@ public abstract class View2DEntity implements View2D {
                 // Update visibility of children
                 logger.fine("Update children visibility for view " + this);
                 for (View2DEntity child : children) {
-                    child.updateVisibility();
+                    child.updateVisibility(inCleanup);
                 }
             }            
         } // End Topology Changes
 
-        // React to frame changes (must do before handling size changes)
-        if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_ORTHO | CHANGED_TYPE |
+        // Determine what frame changes need to be performed. But these aren't executed now;
+        // they are executed later by view.updateFrame, which must be invoked outside the window lock.
+        if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_TYPE |
                            CHANGED_PIXEL_SCALE | CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) { 
             logger.fine("Update frame for view " + this);
             logger.fine("decorated " + decorated);
 
-            if ((changeMask & (CHANGED_DECORATED | CHANGED_ORTHO | CHANGED_VISIBLE)) != 0) {
+            if ((changeMask & (CHANGED_DECORATED | CHANGED_VISIBLE)) != 0) {
                 // Some popups initiall are decorated and then are set to undecorated before
                 // the popup becomes visible. So to avoid wasting time, wait until the window
                 // becomes visible before attaching its frame.
-                if (decorated && !ortho && isActuallyVisible()) {
+                if (decorated && isActuallyVisible()) {
                     if (!hasFrame()) {
                         logger.fine("Attach frame");
-                        attachFrame();
+                        frameChanges.add(FrameChange.ATTACH_FRAME);
                     }
                 } else {
                     if (hasFrame()) {
                         logger.fine("Detach frame");
-                        detachFrame();
+                        frameChanges.add(FrameChange.DETACH_FRAME);
                     }
                 }
             }
             
             if ((changeMask & CHANGED_TITLE) != 0) {
-                if (decorated && !ortho && hasFrame()) {
-                    frameUpdateTitle();
+                if (decorated && hasFrame()) {
+                    frameChanges.add(FrameChange.UPDATE_TITLE);
                 }
             }
 
-            if ((changeMask & (CHANGED_TYPE | CHANGED_ORTHO)) != 0) {
-                if (decorated && !ortho) {
-                    reattachFrame();
+            if ((changeMask & CHANGED_TYPE) != 0) {
+                if (decorated) {
+                    frameChanges.add(FrameChange.REATTACH_FRAME);
                 }
             }
             if ((changeMask & (CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) {
-                if (decorated && !ortho) {
-                    frameUpdateUserResizable();
+                if (decorated) {
+                    frameChanges.add(FrameChange.UPDATE_USER_RESIZABLE);
                 }
             }
         }            
@@ -1528,10 +1612,6 @@ public abstract class View2DEntity implements View2D {
         }
 
         sgProcessChanges();
-        
-        if (!ortho) {
-            frameUpdate();
-        }
 
         /* For Debug 
         System.err.println("************* After View2DEntity.processChanges, viewNode = ");
@@ -1595,6 +1675,10 @@ public abstract class View2DEntity implements View2D {
         Vector3f stackTranslation = calcStackTranslation();
 
         offsetTranslation.addLocal(stackTranslation);
+
+        // TODO: HACK: Part 3 of 4 temporary workaround for 951
+        offsetTranslation.addLocal(new Vector3f(0f, 0f, hackZEpsilon));
+
         transform.setTranslation(offsetTranslation);
 
         return transform;
@@ -1614,36 +1698,60 @@ public abstract class View2DEntity implements View2D {
                 if (parent == null) return translation;
 
                 // Initialize to the first part of the offset (the local coordinate translation)
+                logger.fine("view = " + this);
+                logger.fine("parent = " + parent);
+                logger.fine("locationOrtho = " + locationOrtho);
+                logger.fine("offset = " + offset);
                 translation.x = locationOrtho.x + offset.x;
                 translation.y = locationOrtho.y + offset.y;
-
+                logger.fine("translation 1 = " + translation);
+                
                 // Convert pixel offset to local coords and add it in
                 Dimension parentSize = parent.getSizeApp();
-                translation.x += -parentSize.width / 2f;
-                translation.y += parentSize.height / 2f;
-                translation.x += sizeApp.width / 2f;
-                translation.y -= sizeApp.height / 2f;
-                translation.x += pixelOffset.x;
-                translation.y -= pixelOffset.y;
+                Vector2f pixelScaleOrtho = parent.getPixelScaleOrtho();
+                logger.fine("parentSize = " + parentSize);
+                translation.x += -parentSize.width * pixelScaleOrtho.x / 2f;
+                translation.y += parentSize.height * pixelScaleOrtho.y / 2f;
+                logger.fine("translation 2 = " + translation);
+                logger.fine("sizeApp = " + sizeApp);
+                pixelScaleOrtho = getPixelScaleOrtho();
+                translation.x += sizeApp.width * pixelScaleOrtho.x / 2f;
+                translation.y -= sizeApp.height * pixelScaleOrtho.y / 2f;
+                logger.fine("translation 3 = " + translation);
+                logger.fine("pixelOffset = " + pixelOffset);
+                translation.x += pixelOffset.x * pixelScaleOrtho.x;
+                translation.y -= pixelOffset.y * pixelScaleOrtho.y;
+                logger.fine("translation 4 = " + translation);
             }
         } else {    
 
             // Initialize to the first part of the offset (the local coordinate translation)
+            logger.fine("view = " + this);
+            logger.fine("parent = " + parent);
+            logger.fine("offset = " + offset);
             translation.x = offset.x;
             translation.y = offset.y;
+            logger.fine("translation 1 = " + translation);
 
             if (type != Type.PRIMARY && type != Type.UNKNOWN && parent != null) {
 
                 // Convert pixel offset to local coords and add it in
                 // TODO: does the width/height need to include the scroll bars?
-                Vector2f pixelScale = getPixelScaleCurrent();
+                Vector2f pixelScale = parent.getPixelScaleCurrent();
                 Dimension parentSize = parent.getSizeApp();
+                logger.fine("parentSize = " + parentSize);
                 translation.x += -parentSize.width * pixelScale.x / 2f;
                 translation.y += parentSize.height * pixelScale.y / 2f;
+                logger.fine("translation 2 = " + translation);
+                logger.fine("sizeApp = " + sizeApp);
+                pixelScale = getPixelScaleCurrent();
                 translation.x += sizeApp.width * pixelScale.x / 2f;
                 translation.y -= sizeApp.height * pixelScale.y / 2f;
+                logger.fine("translation 3 = " + translation);
+                logger.fine("pixelOffset = " + pixelOffset);
                 translation.x += pixelOffset.x * pixelScale.x;
                 translation.y -= pixelOffset.y * pixelScale.y;
+                logger.fine("translation 4 = " + translation);
             }
         }
 
@@ -2019,6 +2127,9 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public void deliverEvent(Window2D window, MouseEvent3D me3d) {
+
+        // NOTE: This is called on the EDT.
+
         /*
         System.err.println("********** me3d = " + me3d);
         System.err.println("********** awt event = " + me3d.getAwtEvent());
@@ -2178,7 +2289,9 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public void removeEntityComponent(Class clazz) {
-        entity.removeComponent(clazz);
+        if (entity != null) {
+            entity.removeComponent(clazz);
+        }
     }
 
     /**
@@ -2238,6 +2351,33 @@ public abstract class View2DEntity implements View2D {
         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
         CollisionComponent cc = collisionSystem.createCollisionComponent(rc.getSceneRoot());
         entity.addComponent(CollisionComponent.class, cc);
+    }
+
+
+    /** {@inheritDoc} */
+    public void updateFrame () {
+        for (FrameChange frameChg : frameChanges) {
+            switch (frameChg) {
+            case ATTACH_FRAME:
+                attachFrame();
+                break;
+            case DETACH_FRAME:
+                detachFrame();
+                break;
+            case REATTACH_FRAME:
+                reattachFrame();
+                break;
+            case UPDATE_TITLE:
+                frameUpdateTitle();
+                break;
+            case UPDATE_USER_RESIZABLE:
+                frameUpdateUserResizable();
+                break;
+            }
+        }
+        frameChanges.clear();
+
+        frameUpdate();
     }
 
     @Override

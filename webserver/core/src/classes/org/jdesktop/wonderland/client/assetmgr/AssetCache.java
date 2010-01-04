@@ -50,7 +50,7 @@ public class AssetCache {
     private File cacheDir = null;
 
     /** Default constructor */
-    public AssetCache(AssetFactory factory) {
+    public AssetCache(AssetFactory factory) throws AssetDBException {
         assetDB = new AssetDB();
         assetFactory = factory;
         cacheDir = new File(ClientContext.getUserDirectory(), "cache");

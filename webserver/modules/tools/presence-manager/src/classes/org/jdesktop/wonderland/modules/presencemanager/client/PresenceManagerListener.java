@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.modules.presencemanager.client;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-
 public interface PresenceManagerListener {
 
     public enum ChangeType {

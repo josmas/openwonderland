@@ -168,24 +168,28 @@ public class SharedStateComponentMO extends CellComponentMO {
     public void setLive(boolean live) {
         this.live = live;
 
-        if (live == false) {
-            return;
-        }
-        
-        // set the channel in the receiver
-        receiverRef.get().setChannel(channelRef.get());
+        if (live) {
+            // set the channel in the receiver
+            receiverRef.get().setChannel(channelRef.get());
 
-        // set the state
-        if (state != null) {
-            setServerState(state);
-            state = null;
-        }
+            // set the state
+            if (state != null) {
+                setServerState(state);
+                state = null;
+            }
 
-        // register for the messages we care about
-        channelRef.get().addMessageReceiver(MapRequestMessage.class, receiverRef.get());
-        channelRef.get().addMessageReceiver(GetRequestMessage.class, receiverRef.get());
-        channelRef.get().addMessageReceiver(PutRequestMessage.class, receiverRef.get());
-        channelRef.get().addMessageReceiver(RemoveRequestMessage.class, receiverRef.get());
+            // register for the messages we care about
+            channelRef.get().addMessageReceiver(MapRequestMessage.class, receiverRef.get());
+            channelRef.get().addMessageReceiver(GetRequestMessage.class, receiverRef.get());
+            channelRef.get().addMessageReceiver(PutRequestMessage.class, receiverRef.get());
+            channelRef.get().addMessageReceiver(RemoveRequestMessage.class, receiverRef.get());
+        } else {
+            // unregister message receivers
+            channelRef.get().removeMessageReceiver(MapRequestMessage.class);
+            channelRef.get().removeMessageReceiver(GetRequestMessage.class);
+            channelRef.get().removeMessageReceiver(PutRequestMessage.class);
+            channelRef.get().removeMessageReceiver(RemoveRequestMessage.class);
+        }
     }
 
     @Override

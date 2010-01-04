@@ -83,7 +83,6 @@ public class URIListDataFlavorHandler implements DataFlavorHandlerSPI {
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-        System.out.println("URI " + data);
         List<URI> uriList = uriStringToList(data);
 
         // Check to see if we have at least one URI, if not, log an error and

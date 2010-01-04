@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -82,7 +84,8 @@ public class ModuleInfo implements Serializable {
         try {
             jaxbContext = JAXBContext.newInstance(ModuleInfo.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
+            Logger.getLogger(ModuleInfo.class.getName()).log(Level.WARNING,
+                    "Unable to create JAXBContext", excp);
         }
     }
     
@@ -314,28 +317,5 @@ public class ModuleInfo implements Serializable {
         hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
         hash = 13 * hash + (this.version != null ? this.version.hashCode() : 0);
         return hash;
-    }
-    
-    /**
-     * Main method which writes a sample WFSVersion class to disk
-     */
-    public static void main(String args[]) {
-        try {
-            ModuleInfo info = new ModuleInfo();
-            info.setName("MPK20 Demo");
-            info.setMajor(5);
-            info.setMinor(3);
-            info.putAttribute("system-installed", "");
-            info.putAttribute("owner", "darkstar");
-            info.encode(new FileWriter(new File("/Users/jordanslott/module.xml")));
-            
-            info = ModuleInfo.decode(new FileReader(new File("/Users/jordanslott/module.xml")));
-            System.out.println(info.getName());
-            System.out.println(info.getMajor());
-            System.out.println(info.getMinor());
-            System.out.println(info.getAttributes());
-        } catch (java.lang.Exception excp) {
-            System.out.println(excp.toString());
-        }
     }
 }

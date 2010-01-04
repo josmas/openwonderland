@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.util.ScalableHashMap;
 
@@ -81,22 +82,27 @@ import java.math.BigInteger;
  * 
  * @author jprovino
  */
-public class AudioManagerConnectionHandler
-        implements ClientConnectionHandler, Serializable {
+public class AudioManagerConnectionHandler implements ClientConnectionHandler, 
+	ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
 
     private ManagedReference<ScalableHashMap<BigInteger, String>> sessionCallIDMapRef;
 
-    private static AudioManagerConnectionHandler handler;
+    private ManagedReference<ScalableHashMap<String, ManagedReference<AudioCallStatusListener>>> 
+	callIDListenerMapRef;
+
+    private static ManagedReference<AudioManagerConnectionHandler> handlerRef;
 
     public static AudioManagerConnectionHandler getInstance() {
-        if (handler == null) {
-            handler = new AudioManagerConnectionHandler();
+        if (handlerRef == null) {
+            AudioManagerConnectionHandler handler = new AudioManagerConnectionHandler();
+	    handlerRef = AppContext.getDataManager().createReference(handler);
+	    return handler;
         }
 
-        return handler;
+        return handlerRef.get();
     }
 
     private AudioManagerConnectionHandler() {
@@ -105,6 +111,10 @@ public class AudioManagerConnectionHandler
 	ScalableHashMap<BigInteger, String> sessionCallIDMap = new ScalableHashMap();
 
 	sessionCallIDMapRef = AppContext.getDataManager().createReference(sessionCallIDMap);
+
+	ScalableHashMap<String, ManagedReference<AudioCallStatusListener>> callIDListenerMap = new ScalableHashMap();
+
+	callIDListenerMapRef = AppContext.getDataManager().createReference(callIDListenerMap);
     }
 
     public ConnectionType getConnectionType() {
@@ -124,9 +134,9 @@ public class AudioManagerConnectionHandler
     public void messageReceived(WonderlandClientSender sender,
             WonderlandClientID clientID, Message message) {
 
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+        VoiceManager vm = AppContext.getManager(VoiceManager.class); 
 
-        if (message instanceof GetPlayersInRangeRequestMessage) {
+	if (message instanceof GetPlayersInRangeRequestMessage) {
 	    GetPlayersInRangeRequestMessage msg = (GetPlayersInRangeRequestMessage) message;
 
 	    Player player = vm.getPlayer(msg.getPlayerID());
@@ -153,6 +163,25 @@ public class AudioManagerConnectionHandler
 
         if (message instanceof GetVoiceBridgeRequestMessage) {
             logger.fine("Got GetVoiceBridgeMessage");
+
+	    String callID = ((GetVoiceBridgeRequestMessage) message).getCallID();
+
+	    if (callID != null) {
+		logger.info("Ending existing call " + callID);
+
+		Call call = vm.getCall(callID);
+
+		if (call != null) {
+		    try {
+		        call.end(false);
+		    } catch (IOException e) {
+			logger.info("Unable to end call " + call
+			   + " " + e.getMessage());
+		    }
+		} else {
+		    logger.info("Can't find call for " + callID);
+		}
+	    }
 
             BridgeInfo bridgeInfo;
 
@@ -207,7 +236,7 @@ public class AudioManagerConnectionHandler
             Call call = vm.getCall(callID);
 
             if (call == null) {
-                logger.fine("Unable to mute/unmute call " + callID);
+                logger.info("Unable to mute/unmute call " + callID);
                 return;
             }
 
@@ -224,7 +253,7 @@ public class AudioManagerConnectionHandler
         if (message instanceof TransferCallRequestMessage) {
             TransferCallRequestMessage msg = (TransferCallRequestMessage) message;
 
-            String callID = msg.getPresenceInfo().callID;
+            String callID = msg.getPresenceInfo().getCallID();
 
             Call call = vm.getCall(callID);
 
@@ -264,7 +293,7 @@ public class AudioManagerConnectionHandler
             }
 
             if (msg.getPhoneNumber().equals(cp.getPhoneNumber())) {
-		sender.send(clientID, new CallMigrateMessage(msg.getPresenceInfo().callID, true));
+		sender.send(clientID, new CallMigrateMessage(msg.getPresenceInfo().getCallID(), true));
                 return;
             }
 
@@ -318,10 +347,12 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Unknown message:  " + message);
     }
 
+    private static final String JOIN_SOUND = "joinBELL.au";
+
     private void placeCall(WonderlandClientID clientID, PlaceCallRequestMessage msg) {
         PresenceInfo info = msg.getPresenceInfo();
 
-        CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
+        CellMO cellMO = CellManagerMO.getCellManager().getCell(info.getCellID());
 
         AudioParticipantComponentMO audioParticipantComponentMO =
                 cellMO.getComponent(AudioParticipantComponentMO.class);
@@ -337,7 +368,7 @@ public class AudioManagerConnectionHandler
 
         setup.cp = cp;
 
-        String callID = info.callID;
+        String callID = info.getCallID();
 
         if (callID == null) {
             logger.fine("Can't place call to " + msg.getSipURL() + ".  No cell for " + callID);
@@ -346,14 +377,33 @@ public class AudioManagerConnectionHandler
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        new AudioCallStatusListener(clientID, callID);
+	Call call = vm.getCall(callID);
+
+	if (call != null) {
+	    call.getSetup().ended = true;  // make it look like it ended already
+	}
+	
+	ScalableHashMap<String, ManagedReference<AudioCallStatusListener>> callIDListenerMap = callIDListenerMapRef.get();
+
+	ManagedReference<AudioCallStatusListener> audioCallStatusListenerRef = callIDListenerMap.remove(callID);
+
+	if (audioCallStatusListenerRef != null) {
+	    audioCallStatusListenerRef.get().done();
+	}
+
+        AudioCallStatusListener audioCallStatusListener = new AudioCallStatusListener(clientID, callID);
+
+	audioCallStatusListenerRef = AppContext.getDataManager().createReference(audioCallStatusListener);
+
+	callIDListenerMap.put(callID, audioCallStatusListenerRef);
 
         cp.setCallId(callID);
-        cp.setName(info.userID.getUsername());
+        cp.setName(info.getUserID().getUsername());
         cp.setPhoneNumber(msg.getSipURL());
 
         setJoinConfirmation(cp);
 
+	cp.setCallEstablishedTreatment(JOIN_SOUND);
         cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
         cp.setVoiceDetection(true);
         cp.setDtmfDetection(true);

@@ -31,6 +31,7 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
@@ -48,21 +49,22 @@ import java.io.Serializable;
 /**
  * @author jprovino
  */
-public class AudioTreatmentProximityListener implements ProximityListenerSrv, Serializable {
+public class AudioTreatmentProximityListener implements ProximityListenerSrv, 
+	ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentProximityListener.class.getName());
 
     private CellID cellID;
     private String name;
-    private Treatment treatment;
+    private String treatmentId;
 
     private int numberInRange;
 
     public AudioTreatmentProximityListener(CellMO cellMO, Treatment treatment) {
 	cellID = cellMO.getCellID();
         name = cellMO.getName();
-	this.treatment = treatment;
+	treatmentId = treatment.getId();
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -87,6 +89,15 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
 	}
 
 	logger.fine("Restarting treatment...");
+
+	Treatment treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
+
+	if (treatment == null) {
+	    logger.warning("No treatment for " + treatmentId);
+	    return;
+	}
+
+	//System.out.println("Cell entered, restarting input treatment " + treatment);
 	treatment.restart(false);
     }
 
@@ -98,6 +109,15 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
 	}
 
 	logger.fine("Pausing treatment...");
+
+	Treatment treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
+
+	if (treatment == null) {
+	    logger.warning("No treatment for " + treatmentId);
+	    return;
+	}
+
+	//System.out.println("Cell exited , pausing input treatment " + treatment);
 	treatment.restart(true);
     }
 

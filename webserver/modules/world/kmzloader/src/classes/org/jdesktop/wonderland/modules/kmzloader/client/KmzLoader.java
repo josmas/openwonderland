@@ -162,8 +162,9 @@ class KmzLoader extends JmeColladaLoader {
         }
 
         importedModel.setModelLoader(this);
+        settings.setLightingEnabled(false);     // No lighting is the default for SketchUp
         importedModel.setImportSettings(settings);
-        
+
         return importedModel;
     }
     
@@ -242,7 +243,8 @@ class KmzLoader extends JmeColladaLoader {
             HashMap<String, String> deploymentMapping,
             ModelCellComponentServerState state) {
         URL modelURL = importedModel.getImportSettings().getModelURL();
-        
+
+        System.err.println("KMZ modelURL "+modelURL.toExternalForm());
 
         if (!modelURL.getProtocol().equalsIgnoreCase("file")) {
             final String modelURLStr = modelURL.toExternalForm();
@@ -260,12 +262,14 @@ class KmzLoader extends JmeColladaLoader {
         try {
             ZipFile zipFile = new ZipFile(new File(modelURL.toURI()));
             deployZipModels(zipFile, targetDir);
-            String kmzFilename = modelURL.toExternalForm();
+            String kmzFilename = modelURL.toURI().getPath();
             kmzFilename = kmzFilename.substring(kmzFilename.lastIndexOf('/')+1);
             deployedModel.setModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+((KmzImportedModel)importedModel).getPrimaryModel()+".gz");
             deployedModel.setLoaderDataURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".ldr");
+            deployedModel.setModelBounds(importedModel.getModelBG().getWorldBound());
             deployDeploymentData(targetDir, deployedModel, kmzFilename);
             state.setDeployedModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".dep");
+            state.setLightingEnabled(false);
         } catch (ZipException ex) {
             Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -384,8 +388,14 @@ class KmzLoader extends JmeColladaLoader {
 
             ZipEntry entry = zipFile.getEntry(resourceName);
             if (entry==null) {
-                logger.severe("Unable to locate texture "+resourceName);
-                return null;
+                // Sketchup 7.1 is putting the textures in the models dir
+                resourceName = "models/"+resourceName;
+                entry = zipFile.getEntry(resourceName);
+                if (entry==null) {
+                    logger.severe("Unable to locate texture "+resourceName);
+
+                    return null;
+                }
             }
             
             try {

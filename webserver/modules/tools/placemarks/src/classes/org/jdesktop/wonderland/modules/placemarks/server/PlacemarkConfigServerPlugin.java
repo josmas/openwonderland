@@ -17,10 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.placemarks.server;
 
+import java.io.Serializable;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkConfigConnectionType;
+import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkNewMessage;
+import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkRemoveMessage;
+import org.jdesktop.wonderland.modules.placemarks.api.server.PlacemarkRegistrySrv.PlacemarkListenerSrv;
+import org.jdesktop.wonderland.modules.placemarks.api.server.PlacemarkRegistrySrvFactory;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Server-side plugin for the Placemarks config channel.
@@ -34,5 +42,27 @@ public class PlacemarkConfigServerPlugin implements ServerPlugin {
         // Register a handler for x11 app config connections
         CommsManager cm = WonderlandContext.getCommsManager();
         cm.registerClientHandler(new PlacemarkConfigConnectionHandler());
+
+        // Register a listener that will be notifed of placemark changes
+        PlacemarkUpdateListener l = new PlacemarkUpdateListener();
+        PlacemarkRegistrySrvFactory.getInstance().addPlacemarkRegistryListener(l);
+    }
+
+    private static class PlacemarkUpdateListener
+            implements PlacemarkListenerSrv, Serializable
+    {
+
+        public void placemarkAdded(Placemark placemark) {
+            getConnection().send(new PlacemarkNewMessage(placemark));
+        }
+
+        public void placemarkRemoved(Placemark placemark) {
+            getConnection().send(new PlacemarkRemoveMessage(placemark));
+        }
+
+        protected WonderlandClientSender getConnection() {
+            CommsManager cm = WonderlandContext.getCommsManager();
+            return cm.getSender(PlacemarkConfigConnectionType.CONNECTION_TYPE);
+        }
     }
 }

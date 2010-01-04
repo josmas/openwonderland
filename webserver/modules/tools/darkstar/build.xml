@@ -26,7 +26,8 @@
         <path location="${core.dir}/build/lib/wonderland-client.jar"/>
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
-    </pathconvert>   
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
+    </pathconvert>
 
     <pathconvert property="module-web.classpath">
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
@@ -34,6 +35,7 @@
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         <path location="${web.dir}/wfs/dist/wonderland-wfs.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
     </pathconvert>
     
     <target name="build" depends="-module-init, -module-compile-server, -darkstar-compile-web"/>
@@ -55,6 +57,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
+                moduleDescription="Darkstar server"
                 builddir="${build.dir}">
 
             <!-- include core libraries -->
@@ -66,6 +69,10 @@
                 <jar name="darkstar-runner" basedir="${build.classes.dir}">
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
+                    <zipfileset dir="${javasrc.dir}">
+                        <include name="META-INF/**"/>
+                    </zipfileset>
+                    
                 </jar>
             </part>
 
@@ -91,7 +98,7 @@
                 </jar>
             </part>
         </module>
-    </target>                                  
+    </target>
 
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>

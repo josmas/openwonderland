@@ -149,10 +149,17 @@ public class UserManager implements ManagedObject, Serializable {
         DataManager dm = AppContext.getDataManager();
         dm.markForUpdate(this);
 
+        // issue 963: session could be null if client is in the process of
+        // logging out
+        if (clientID.getSession() == null) {
+            return;
+        }
+        String name = clientID.getSession().getName();
+
         // find the user object from the database, create it if necessary
-        UserMO user = getUserMO(clientID.getSession().getName());
+        UserMO user = getUserMO(name);
         if (user==null) {
-            user = createUserMO(clientID.getSession().getName());
+            user = createUserMO(name);
         }
         
         // user is now logged in

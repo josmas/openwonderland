@@ -22,18 +22,22 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * Message indicating a client has connected or disconnected
  * @author jprovino
  */
 @ExperimentalAPI
-public class ClientConnectResponseMessage extends Message {
+public class ClientConnectResponseMessage extends ResponseMessage {
 
     private PresenceInfo[] presenceInfoList;
 
-    public ClientConnectResponseMessage(PresenceInfo[] presenceInfoList) {
-	this.presenceInfoList = presenceInfoList;
+    public ClientConnectResponseMessage(MessageID source, PresenceInfo[] presenceInfoList) {
+	super (source);
+
+        this.presenceInfoList = presenceInfoList;
     }
 
     public PresenceInfo[] getPresenceInfoList() {

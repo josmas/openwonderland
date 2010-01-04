@@ -22,7 +22,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
-import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
@@ -50,7 +49,7 @@ public class AppXrwSlave extends AppXrw {
                        ProcessReporter reporter, AppXrwConnectionInfo connectionInfo, 
                        WonderlandSession session, View2DDisplayer displayer, 
                        FirstVisibleInitializer fvi) 
-        throws InstantiationException
+        throws InstantiationException, BadConnectionInfoException
     {
 
         super(appName, new ControlArbXrw(), pixelScale);
@@ -66,18 +65,12 @@ public class AppXrwSlave extends AppXrw {
         }
 
         // Create the Xremwin protocol client and start its interpreter loop running.
-        client = null;
-        try {
-            client = new ClientXrwSlave(this, (ControlArbXrw) controlArb, session, connectionInfo, reporter);
-        } catch (InstantiationException ex) {
-            JOptionPane.showMessageDialog(null, "Cannot create Xremwin protocol client for " + appName, 
-                                          "Error", JOptionPane.ERROR_MESSAGE);
-            cleanup();
-            throw new InstantiationException();
-        }
+        client = new ClientXrwSlave(this, (ControlArbXrw) controlArb, session, connectionInfo, reporter);
 
         // Finally, enable the client
-        client.enable();
+        if (client.isConnected()) {
+            client.enable();
+        }
     }
 
     /**
@@ -107,5 +100,13 @@ public class AppXrwSlave extends AppXrw {
     /** {@inheritDoc} */
     public boolean isMaster () {
         return false;
+    }
+
+    /**
+     * Returns whether the app slave is connected to the server. 
+     */
+    public boolean isConnected () {
+        if (client == null) return false;
+        return client.isConnected();
     }
 }

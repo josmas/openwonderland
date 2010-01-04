@@ -19,7 +19,7 @@
         <web-resource-collection>
             <web-resource-name>Access to user editor</web-resource-name>
             <description>Access to user editor requires admin login</description>
-            <url-pattern>/users</url-pattern>
+            <url-pattern>/SnapshotManager</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
             <http-method>HEAD</http-method>

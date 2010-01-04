@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
-import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.common.modules.ModuleRequires;
 import org.jdesktop.wonderland.utils.RunUtil;
 
@@ -267,6 +265,7 @@ public class ModuleManager {
         while (it.hasNext() == true) {
             String moduleName = it.next();
             Module module = installed.get(moduleName);
+            logger.warning("ADD TO UNINSTALL " + moduleName + " " + module);
             if (module != null) {
                 this.uninstallManager.add(moduleName, module.getInfo());
                 removed.add(moduleName);
@@ -395,6 +394,8 @@ public class ModuleManager {
             Map.Entry<String, ModuleInfo> entry = it.next();
             String moduleName = entry.getKey();
             Module module = installed.get(moduleName);
+            logger.warning("CAN UNINSTALL? " + moduleName + " " +
+                    deployManager.canUndeploy(module));
             if (this.deployManager.canUndeploy(module) == false) {
                 it.remove();
             }
@@ -476,14 +477,6 @@ public class ModuleManager {
             }
         }
         return keyed;
-    }
-    
-    /**
-     * Returns the module installation directory: the wonderland.module.dir
-     * property.
-     */
-    private static String getModuleDirectory() {
-        return SystemPropertyUtil.getProperty("wonderland.webserver.modules.root");
     }
     
     /**
@@ -684,60 +677,5 @@ public class ModuleManager {
         }
         
         return satisfied;
-    }
-    
-    public void test() {
-        File file1 = new File("/Users/jordanslott/sample-modules/mpk20.jar");
-        File file2 = new File("/Users/jordanslott/sample-modules/demo.jar");
-        File file3 = new File("/Users/jordanslott/sample-modules/medical.jar");
-        
-        Map<String, String> attr1 = new HashMap();
-        Map<String, String> attr3 = new HashMap();
-        
-        attr1.put("enabled", "false"); attr1.put("checksum", "AABBCC");
-        attr3.put("checksum", "BBBCCC");
-        
-        TaggedModule tm1 = new TaggedModule(file1, attr1);
-        TaggedModule tm2 = new TaggedModule(file2, null);
-        TaggedModule tm3 = new TaggedModule(file3, attr3);
-        
-        Collection<TaggedModule> modules = new LinkedList();
-        modules.add(tm1); modules.add(tm2); modules.add(tm3);
-        
-        Collection<Module> result = this.addTaggedToInstall(modules);
-        System.out.println("RESULT SIZE " + result.size());
-        Iterator<Module> it = result.iterator();
-        while (it.hasNext() == true) {
-            Module m = it.next();
-            System.out.println(m.getName() + " " + m.getFile().toString());
-        }
-    }
-    
-    public static void main(String args[]) throws MalformedURLException {
-        System.setProperty("wonderland.webserver.modules.root", "/Users/jordanslott/src/moduletest");
-        ModuleManager manager = ModuleManager.getModuleManager();
-        
-        /* Write out the installed modules */
-//        StringBuilder sb = new StringBuilder("Installed Modules\n");
-//        Iterator<String> it = mm.getModules(State.INSTALLED).iterator();
-//        while (it.hasNext() == true) {
-//            Module module = mm.getModule(it.next(), State.INSTALLED);
-//            sb.append(module.toString());
-//        }
-//        logger.info(sb.toString());
-        
-//        Collection<File> files = new LinkedList<File>();
-//        File file = new File("/Users/jordanslott/src/moduletest/tmp/example.jar");
-//        files.add(file);
-//        Collection<File> added = manager.addToInstall(files);
-//        System.out.println(added);
-//        manager.installAll();
-//        
-
-//        Collection<String> names = new LinkedList<String>();
-//        names.add("example");
-//        Collection<String> removed = manager.addToUninstall(names);
-//        System.out.println(removed);
-//        manager.uninstallAll();
     }
 }

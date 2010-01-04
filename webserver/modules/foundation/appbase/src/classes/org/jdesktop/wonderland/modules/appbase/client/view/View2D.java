@@ -27,6 +27,21 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
+/**
+ * A generic view class. A view is an object which can display the contents
+ * of a given window in some sort of display environment. The specific display 
+ * environment is determined by a developer-implemented subclass of <code>View2DDisplayer</code>. 
+ * Often a displayer-specific subclass of <code>View2D</code> will also need to be implemented.
+ * <br><br>
+ * A view has a set of attributes (such as parent, type, and visibility) which are 
+ * determined by the window displayed in the view. Generally, the window-level
+ * code transfers attributes like these into the view using the view set methods.
+ * For best performance in transferring a batch of window operations into the view,
+ * use an argument of update=false in the view set methods and then call view.update().
+ *
+ * @author deronj
+ */
+
 @ExperimentalAPI
 public interface View2D {
 
@@ -219,6 +234,8 @@ public interface View2D {
      *
      * NOTE: this part of the offset also applies to primary views. In this case the offset is from
      * the center of the cell to the center of the view.
+     *
+     * NOTE: this part of the offset only applies to views which are in the world.
      */
     public void setOffset(Vector2f offset);
 
@@ -226,6 +243,11 @@ public interface View2D {
      * Specify the first part view's offset translation in local coordinates from the center of the parent 
      * to the center of this view. Update if specified. Note: setPixelOffset is the other part of the 
      * offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: this part of the offset also applies to primary views. In this case the offset is from
+     * the center of the cell to the center of the view.
+     *
+     * NOTE: this part of the offset only applies to views which are in the world.
      */
     public void setOffset(Vector2f offset, boolean update);
 
@@ -269,11 +291,22 @@ public interface View2D {
      */
     public void applyDeltaTranslationUser (Vector3f deltaTranslation, boolean update);
 
-    /** Apply all pending updates. */
+    /** 
+     * Apply all pending updates to the view. 
+     * <br><br>
+     * NOTE: you must always follow a call to this method with a call to the <code>updateFrame</code> method.
+     */
     public void update ();
 
     /** 
+     * Apply all pending updates to the frame of the view. Must be called after the update method.
+     * In addition, it must always be called <b>outside</b> the window lock.
+     */
+    public void updateFrame ();
+
+    /** 
      * Converts the given 3D mouse event into a 2D event and forwards it along to the view's controlArb.
+     * NOTE: on the slave, this must be called on the EDT.
      *
      * @param window The window this view displays.
      * @param me3d The 3D mouse event to deliver.

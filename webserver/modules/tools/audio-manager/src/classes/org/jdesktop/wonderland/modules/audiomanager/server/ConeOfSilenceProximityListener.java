@@ -25,11 +25,12 @@ import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
@@ -41,16 +42,24 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import java.io.Serializable;
+
+import org.jdesktop.wonderland.common.cell.security.ViewAction;
+import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.server.cell.CellResourceManager;
+import org.jdesktop.wonderland.server.security.ActionMap;
+import org.jdesktop.wonderland.server.security.Resource;
+import org.jdesktop.wonderland.server.security.ResourceMap;
+import org.jdesktop.wonderland.server.security.SecureTask;
+import org.jdesktop.wonderland.server.security.SecurityManager;
 
 /**
  * A server cell that provides conference coneofsilence functionality
  * @author jprovino
  */
 public class ConeOfSilenceProximityListener implements ProximityListenerSrv, 
-	AudioGroupListener, Serializable {
+	AudioGroupListener, ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
@@ -74,6 +83,9 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
+	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID + " " + proximityVolume);
+
 	this.entered = entered;
 	this.callID = CallID.getCallID(viewCellID);
 
@@ -84,25 +96,65 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	}
     }
 
-    private void cellEntered(CellID softphoneCellID) {
-        cellEntered(CallID.getCallID(softphoneCellID));
+    public void cellEntered(CellID cellID) {
+        // get the security manager
+        SecurityManager security = AppContext.getManager(SecurityManager.class);
+        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+
+        // create a request
+        Action viewAction = new ViewAction();
+        Resource resource = crm.getCellResource(this.cellID);
+        if (resource != null) {
+            // there is security on this cell perform the enter notification
+            // securely
+            ActionMap am = new ActionMap(resource, new Action[] { viewAction });
+            ResourceMap request = new ResourceMap();
+            request.put(resource.getId(), am);
+
+            // perform the security check
+            security.doSecure(request, new CellEnteredTask(resource.getId(), cellID));
+        } else {
+            // no security, just make the call directly
+            cellEntered(CallID.getCallID(cellID));
+        }
     }
 
-    public void cellEntered(String callId) {
+    private class CellEnteredTask implements SecureTask, Serializable {
+        private String resourceID;
+        private CellID softphoneCellID;
+
+        public CellEnteredTask(String resourceID, CellID softphoneCellID) {
+            this.resourceID = resourceID;
+            this.softphoneCellID = softphoneCellID;
+        }
+
+        public void run(ResourceMap granted) {
+            ActionMap am = granted.get(resourceID);
+            if (am != null && !am.isEmpty()) {
+                // request was granted -- the user has permission to
+                // enter the COS
+                cellEntered(CallID.getCallID(softphoneCellID));
+            } else {
+                logger.warning("Access denied to enter Cone of Silence");
+            }
+        }
+    }
+
+    private void cellEntered(String callId) {
         /*
-         * The avatar has entered the ConeOfSilence cell.
-         * Set the public and incoming spatializers for the avatar to be
+         * A cell has entered the ConeOfSilence cell.
+         * Set the public and incoming spatializers for the cell to be
          * the zero volume spatializer.
          * Set a private spatializer for the given fullVolume radius
          * for all the other avatars in the cell.
-         * For each avatar already in the cell, set a private spatializer
-         * for this avatar.
+         * For each cell already in the cell, set a private spatializer
+         * for this cell.
          */
-        logger.info(callId + " entered cone " + name + " avatar cell ID " + callId);
-
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         Player player = vm.getPlayer(callId);
+
+        System.out.println(callId + " entered cone " + name + " player " + player);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
@@ -112,46 +164,78 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
         if (audioGroup == null) {
-            AudioGroupSetup ags = new AudioGroupSetup();
+	    AudioGroupSetup setup = new AudioGroupSetup();
 
-	    ags.audioGroupListener = this;
+	    setup.audioGroupListener = this;
 
-            ags.spatializer = new FullVolumeSpatializer();
+	    setup.spatializer = new FullVolumeSpatializer();
 
-            ags.spatializer.setAttenuator(
-                    DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+            setup.spatializer.setAttenuator(Spatializer.DEFAULT_MAXIMUM_VOLUME);
 
-            audioGroup = vm.createAudioGroup(name, ags);
+	    //System.out.println("Creating audio group for " + name);
+
+	    audioGroup = vm.createAudioGroup(name, setup);
         }
 
-        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-       	    AudioGroupPlayerInfo.ChatType.SECRET));
+	//System.out.println("CONE PROX Player:  " + player);
 
-	logger.fine("Attenuate other groups to " + outsideAudioVolume + " name " + name);
+	boolean isSpeaking = (inPrivateChat(audioGroup, player) == false);
+
+        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(isSpeaking,
+       	    AudioGroupPlayerInfo.ChatType.PRIVATE));
 
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	sender.send(new ConeOfSilenceEnterExitMessage(callId, true));
+	sender.send(new ConeOfSilenceEnterExitMessage(name, callId, true));
+    }
+
+    private boolean inPrivateChat(AudioGroup audioGroup, Player player) {
+	AudioGroup[] audioGroups = player.getAudioGroups();
+
+	for (int i = 0; i < audioGroups.length; i++) {
+	    AudioGroupPlayerInfo info = audioGroups[i].getPlayerInfo(player);
+
+	    if (info == null || info.chatType.equals(AudioGroupPlayerInfo.ChatType.PUBLIC) == false) {
+		return true;
+	    }
+	}
+	
+	return false;
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
+	//System.out.println("Player added:  " + player);
+
+	logger.fine("Attenuate other groups to " + outsideAudioVolume + " name " + name);
+
+	//System.out.println("Attenuate other groups to " + outsideAudioVolume + " name " + name);
+
+	Player p = AppContext.getManager(VoiceManager.class).getPlayer(player.getId());
+
+	if (player.toString().equals(p.toString()) == false) {
+	    System.out.println("WRONG player!");
+	    player = p;
+	}
+
 	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
     }
 
-    private void cellExited(CellID softphoneCellID) {
-        cellExited(CallID.getCallID(softphoneCellID));
+    public void cellExited(CellID cellID) {
+        cellExited(CallID.getCallID(cellID));
     }
 
-    public void cellExited(String callId) {
+    private void cellExited(String callId) {
         logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
+
+        System.out.println(callId + " exited cone " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
         if (audioGroup == null) {
-            logger.warning("Not a member of audio group " + name);
+            logger.warning("No audio group " + name);
             return;
         }
 
@@ -167,14 +251,10 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	sender.send(new ConeOfSilenceEnterExitMessage(callId, false));
+	sender.send(new ConeOfSilenceEnterExitMessage(name, callId, false));
     }
 
     public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        if (audioGroup.getNumberOfPlayers() == 0) {
-            AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
-        }
-
 	VoiceChatHandler.updateAttenuation(player);
 
 	if (entered) {
@@ -183,7 +263,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	    WonderlandClientSender sender =
                 WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	    sender.send(new ConeOfSilenceEnterExitMessage(callID, false));
+	    sender.send(new ConeOfSilenceEnterExitMessage(name, callID, false));
 	}
     }
 
@@ -191,6 +271,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
+
+	logger.warning("Remove " + audioGroup + " name " + name);
 
 	if (audioGroup == null) {
 	    return;

@@ -374,7 +374,7 @@ public class BrowserServlet extends HttpServlet
     public void contextInitialized(ServletContextEvent sce) {
         // register with the admininstration page
         ServletContext sc = sce.getServletContext();
-        ar = new AdminRegistration("Content Repository",
+        ar = new AdminRegistration("Manage Content",
                                    "/content-repository/wonderland-content-repository/browse");
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, sc);

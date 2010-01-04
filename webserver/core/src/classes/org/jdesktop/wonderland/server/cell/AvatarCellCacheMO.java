@@ -127,11 +127,14 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
 
         UniverseManagerFactory.getUniverseManager().viewLogin(view);
 
+        // issue 963: session could be null if client is in the process of
+        // logging out
+        String name = (clientID.getSession() == null)?"null":clientID.getSession().getName();
         logger.info("AvatarCellCacheMO.login() CELL CACHE LOGIN FOR USER "
-                    + clientID.getSession().getName() + " AS " + identity.getUsername());
+                    + name + " AS " + identity.getUsername());
 
         // set up the revalidate scheduler
-        scheduler = new ImmediateRevalidateScheduler(sender, clientID);
+        scheduler = new SharedListRevalidateScheduler(sender, 5);
     }
     
     /**
@@ -369,7 +372,13 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
         public void run() {
             // the cell is new -- add it and send a message
             CellMO cell = CellManagerMO.getCell(desc.getCellID());
-                          
+
+            // issue #950 -- make sure the cell is live before adding any
+            // clients
+            if (!cell.isLive()) {
+                return;
+            }
+
             //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
             CellSessionProperties prop = cell.addClient(clientID, capabilities);
             
@@ -506,9 +515,6 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
         // the sender to send to
         private WonderlandClientSender sender;
         
-        // a reference to the client session
-        private ManagedReference<ClientSession> sessionRef;
-        
         // the number of tasks to consume during each run
         private int count;
         
@@ -516,7 +522,6 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
         private ManagedReference<List<CellOp>> opsRef;
         
         public SharedListRevalidateScheduler(WonderlandClientSender sender,
-                                             ClientSession session,
                                              int count)
         {
             this.sender = sender;
@@ -526,7 +531,6 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
             DataManager dm = AppContext.getDataManager();
             List<CellOp> opsList = new ManagedLinkedList<CellOp>();
             opsRef = dm.createReference(opsList);
-            sessionRef = dm.createReference(session);
         }
         
         public void startRevalidate() {    

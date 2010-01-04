@@ -18,13 +18,12 @@
 
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/lib/webdavclient4j-core-0.92.jar"/>
-        <path location="${current.dir}/lib/commons-httpclient-3.0.1.jar"/>
         <path location="${current.dir}/../../foundation/content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
+        <path location="${core.dir}/ext/common/commons-httpclient-3.0.1.jar"/>
         <path location="${current.dir}/lib/webdavclient4j-core-0.92.jar"/>
-        <path location="${current.dir}/lib/commons-httpclient-3.0.1.jar"/>
         <path location="${current.dir}/../../foundation/content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 

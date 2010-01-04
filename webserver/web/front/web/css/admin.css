@@ -20,8 +20,18 @@ body {
 	float: right;
 	position: relative;
 	right: 28px;
-	top: 86px;
+	top: 50px;
 	visibility: visible;
+}
+
+#serverInfo {
+    font-size: 12px;
+    text-align: right;
+    line-height: 14px;
+    float: right;
+    position: absolute;
+    right: 28px;
+    top: 0px;
 }
 
 #moduleMenu {

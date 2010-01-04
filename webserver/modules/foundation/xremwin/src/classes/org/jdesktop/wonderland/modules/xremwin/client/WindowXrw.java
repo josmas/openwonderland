@@ -29,6 +29,8 @@ import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.common.InternalAPI;
+import javax.swing.SwingUtilities;
 
 /**
  * The Xremwin window class. 
@@ -76,7 +78,7 @@ public class WindowXrw extends WindowConventional {
         // TODO: not yet implemented
         int transientForWid = ((AppXrw)app).getTransientForWid(wid);
         if (transientForWid != 0) {
-            winTransientFor = ((AppXrw)app).widToWindow.get(transientForWid);
+            winTransientFor = ((AppXrw)app).getWindowForWid(transientForWid);
         }
 
         setScreenPosition(x, y);
@@ -166,13 +168,36 @@ public class WindowXrw extends WindowConventional {
      * {@inheritDoc}
      */
     @Override
-    public void closeUser() {
+    public void closeUser () {
+        closeUser(false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    @Override
+    public void closeUser (boolean forceClose) {
+        if (!forceClose) {
+            if (app == null || app.getControlArb() == null) return;
+
+            // User must have control in order to close the window
+            if (!app.getControlArb().hasControl()) {
+                // TODO: bring up swing option window: "You cannot close this window
+                // because you do not have control"
+                // Danger: can't do this in SAS!
+                AppXrw.logger.warning("You cannot close this window because you do not " +
+                               "have control");
+                return;
+            }
+        }
 
         // Notify the Xremwin server and other clients
+        if (app == null || ((AppXrw) app).getClient() == null) return;
         ((AppXrw) app).getClient().windowCloseUser(this);
 
         // now clean up the window.
-        super.closeUser();
+        super.closeUser(forceClose);
     }
 
     /**
@@ -193,38 +218,42 @@ public class WindowXrw extends WindowConventional {
      * @param winTransientFor If non-null, the window whose visibility is being changed
      * is a transient window for winTransientFor.
      */
-    public synchronized void setVisibleApp(boolean visible, boolean isPopup) {
-        if (isVisibleApp() == visible) {
-            return;
-        }
-
-        if (isPopup || !isDecorated()) {
-            setType(Type.POPUP);
-
-            // We assign the popup parent when the popup is first made visible
-            // TODO: This is a kludge. Eventually replace with winTransientFor
-            if (getParent() == null) {
-                setParent(determineParentForPopup());
+    public void setVisibleApp(boolean visible, boolean isPopup) {
+        synchronized (this) {
+            if (isVisibleApp() == visible) {
+                return;
             }
-        } else {
-            // If type hasn't been determined at this point, make window a secondary
-            if (visible && getType() == Type.UNKNOWN) {
-                setType(Type.SECONDARY);
+
+            if (isPopup || !isDecorated()) {
+                setType(Type.POPUP);
+
+                // We assign the popup parent when the popup is first made visible
+                // TODO: This is a kludge. Eventually replace with winTransientFor
+                if (getParent() == null) {
+                    setParent(determineParentForPopup());
             }
+            } else {
+                // If type hasn't been determined at this point, make window a secondary
+                if (visible && getType() == Type.UNKNOWN) {
+                    setType(Type.SECONDARY);
+                }
+            }
+
+            setVisibleAppPart1(visible);
+
+            performFirstVisibleInitialization();
+
+            ((AppXrw)app).trackWindowVisibility(this);
+
+            // If this is still a secondary assign a parent if necessary
+            if (getType() == Type.SECONDARY && getParent() == null) {
+                setParent(app.getPrimaryWindow());
+            }
+
+            setVisibleAppPart2();
         }
 
-        setVisibleAppPart1(visible);
-
-        performFirstVisibleInitialization();
-
-        ((AppXrw)app).trackWindowVisibility(this);
-
-        // If this is still a secondary assign a parent if necessary
-        if (getType() == Type.SECONDARY && getParent() == null) {
-            setParent(app.getPrimaryWindow());
-        }
-
-        setVisibleAppPart2();
+        updateFrames();
     }
 
     // TODO: This is a kludge. Eventually replace with winTransientFor
@@ -269,8 +298,12 @@ public class WindowXrw extends WindowConventional {
      *
      * @param userName The controlling user.
      */
-    public void setControllingUser(String userName) {
-        ((ControlArbXrw) app.getControlArb()).setController(userName);
+    public void setControllingUser(final String userName) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run () {
+                ((ControlArbXrw) app.getControlArb()).setController(userName);
+            } 
+        });
     }
 
     /**
@@ -318,14 +351,17 @@ public class WindowXrw extends WindowConventional {
      * @param changingView The view the user manipulated to change the transform.
      */
     @Override
-    public synchronized void notifyUserTransformCell (CellTransform transform, View2D changingView) {
+    public void notifyUserTransformCell (CellTransform transform, View2D changingView) {
+        synchronized (this) {
+            // TODO: someday: this is currently only used for planar moves of secondary windows.
+            // Since we cannot currently rotate secondaries, we can just extract the translation and
+            // use the client method windowSetUserDisplacement.
+            Vector3f userTranslation = transform.getTranslation(null);
+            ClientXrw client = ((AppXrw) app).getClient();
+            client.windowSetUserDisplacement(this, userTranslation);
+        }
 
-        // TODO: someday: this is currently only used for planar moves of secondary windows.
-        // Since we cannot currently rotate secondaries, we can just extract the translation and
-        // use the client method windowSetUserDisplacement.
-        Vector3f userTranslation = transform.getTranslation(null);
-        ClientXrw client = ((AppXrw) app).getClient();
-        client.windowSetUserDisplacement(this, userTranslation);
+        super.notifyUserTransformCell(transform, changingView);
     }
 
     /** {@inheritDoc} */

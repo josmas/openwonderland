@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetPopupParentMsgArg
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
+import javax.swing.SwingUtilities;
+import java.io.EOFException;
 
 /**
  * The slave version of the Xremwin protocol client. This communicates with an
@@ -57,7 +59,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      */
     public ClientXrwSlave(AppXrw app, ControlArbXrw controlArb, WonderlandSession session,
             AppXrwConnectionInfo connectionInfo, ProcessReporter reporter)
-            throws InstantiationException {
+            throws InstantiationException, BadConnectionInfoException {
         super(app, controlArb, reporter);
 
         // Connect to the Xremwin server
@@ -65,7 +67,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
         try {
             serverProxy.connect();
         } catch (IOException ex) {
-            throw new InstantiationException();
+            throw new BadConnectionInfoException(connectionInfo);
         }
         serverConnected = true;
 
@@ -79,7 +81,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      * @{inheritDoc}
      */
     @Override
-    protected MessageArgs readMessageArgs(ServerMessageType msgType) {
+    protected MessageArgs readMessageArgs(ServerMessageType msgType)  throws EOFException {
         switch (msgType) {
 
             case SET_WINDOW_TITLE:
@@ -107,7 +109,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      * @{inheritDoc}
      */
     @Override
-    protected void processMessage(ServerMessageType msgType) {
+    protected void processMessage(ServerMessageType msgType) throws EOFException {
         WindowXrw win;
 
         switch (msgType) {
@@ -137,7 +139,11 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
                 break;
 
             case CONTROLLING_USER_NAME:
-                ((ControlArbXrw)controlArb).setController(userNameMsgArgs.userName);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run () {
+                        ((ControlArbXrw)controlArb).setController(userNameMsgArgs.userName);
+                        }
+                    });
                 break;
 
             case SLAVE_CLOSE_WINDOW:
@@ -177,7 +183,8 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      * Called when the slave disconnects from the master.
      */
     public void disconnected() {
-        AppXrw.logger.severe("ClientXrwSlave disconnected");
+        AppXrw.logger.info("ClientXrwSlave disconnected");
+        serverConnected = false;
         // We no longer control the remote app group
         if (controlArb != null && controlArb.hasControl()) {
             ((ControlArbXrw)controlArb).controlLost();

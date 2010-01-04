@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeConverter;
 
 /**
  *
@@ -25,30 +25,26 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class VolumeControlJFrame extends javax.swing.JFrame {
 
-    private CellID cellID;
     private VolumeChangeListener listener;
     private String name;
-    private String otherCallID;
 
-    /** Creates new form VolumeControlJFrame */
-    public VolumeControlJFrame() {
-        initComponents();
-    }
+    private VolumeConverter volumeConverter;
 
-    public VolumeControlJFrame(CellID cellID, VolumeChangeListener listener, String name, String otherCallID,
-	    int volume) {
+    public VolumeControlJFrame(VolumeChangeListener listener, String name) {
+	this();
 
-	this.cellID = cellID;
 	this.listener = listener;
-	this.otherCallID = otherCallID;
-
-        initComponents();
-
-	volumeControlSlider.setValue(volume);
 
 	setTitle(name);
 
 	setVisible(true);
+    }
+
+    /** Creates new form VolumeControlJFrame */
+    public VolumeControlJFrame() {
+        initComponents();
+
+	volumeConverter = new VolumeConverter(volumeSlider.getMaximum());
     }
 
     /** This method is called from within the constructor to
@@ -60,20 +56,19 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        volumeControlSlider = new javax.swing.JSlider();
+        jLabel1 = new javax.swing.JLabel();
+        volumeSlider = new javax.swing.JSlider();
 
         setTitle("Volume Control");
 
-        volumeControlSlider.setMajorTickSpacing(1);
-        volumeControlSlider.setMaximum(10);
-        volumeControlSlider.setMinorTickSpacing(1);
-        volumeControlSlider.setPaintLabels(true);
-        volumeControlSlider.setPaintTicks(true);
-        volumeControlSlider.setSnapToTicks(true);
-        volumeControlSlider.setValue(5);
-        volumeControlSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+        jLabel1.setText("Volume:");
+
+        volumeSlider.setMinorTickSpacing(10);
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setPreferredSize(new java.awt.Dimension(200, 38));
+        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                volumeControlSliderStateChanged(evt);
+                volumeSliderStateChanged(evt);
             }
         });
 
@@ -81,30 +76,29 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(volumeControlSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 183, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(volumeControlSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-private void volumeControlSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeControlSliderStateChanged
-
-    javax.swing.JSlider source = (javax.swing.JSlider) evt.getSource();
-
-    int volume = source.getValue();
-
-    listener.volumeChanged(cellID, otherCallID, volume);
-}//GEN-LAST:event_volumeControlSliderStateChanged
+    private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
+        listener.volumeChanged(volumeConverter.getVolume(volumeSlider.getValue()));
+    }//GEN-LAST:event_volumeSliderStateChanged
 
     /**
     * @param args the command line arguments
@@ -118,7 +112,8 @@ private void volumeControlSliderStateChanged(javax.swing.event.ChangeEvent evt) 
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JSlider volumeControlSlider;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables
 
 }

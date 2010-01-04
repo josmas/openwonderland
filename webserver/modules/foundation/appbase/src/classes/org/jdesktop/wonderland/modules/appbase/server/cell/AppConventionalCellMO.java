@@ -42,18 +42,11 @@ import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
- * TODO: rework
  * The server-side cell for an 2D conventional application.
- *
- * This cell can be created in two different ways:
+ * When the cell system creates the cell it uses the default constructor and
+ * calls <code>setServerState</code> to transfer the setup information into the cell.
  * <br><br>
- * 1. World-launched App
- * <br><br>
- * When WFS launches the app it uses the default constructor and
- * calls <code>setServerState</code> to transfer the information from the wlc file
- * into the cell. 
- * <br><br>
- * In this case the wlc <code>setServerState</code> must specify:
+ * In this case the <code>setServerState</code> must specify:
  * <ol>
  * + command: The command to execute. This must not be a non-empty string.         
  * </ol>
@@ -61,21 +54,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * <ol>
  * + <code>appName</code>: The name of the application (Default: "NoName").
  * </ol>
- * <ol>
- * + <code>pixelScaleX</code>: The number of world units per pixel in the cell local X direction (Default: 0.01).
- * </ol>
- * <ol>
- * + <code>pixelScaleY</code> The number of world units per pixel in the cell local Y direction (Default: 0.01).
- * </ol>
- * In this case <code>userLaunched</code> is set to false.
- *<br><br>
- * 2. User-launched App
- *<br><br> 
- * When the user launches an app it sends a command to the server. The handler for
- * this command uses the non-default constructor of this class to provide the
- * necessary information to the client
- *<br><br>
- * In this case <code>userLaunched</code> is set to true.
  *
  * @author deronj
  */
@@ -160,6 +138,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
             logger.severe(msg);
             throw new RuntimeException(msg);
         }
+
+        // NOTE: launchLocation user is obsolete.
 
         String launchLocation = serverState.getLaunchLocation();
         if (!"user".equalsIgnoreCase(launchLocation) &&

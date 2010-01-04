@@ -216,6 +216,29 @@ public interface MainFrame {
     public void removeFromWindowMenu(JMenuItem menuItem);
 
     /**
+     * Add the specified menu item to the end of the Help menu
+     *
+     * @param menuItem
+     */
+    public void addToHelpMenu(JMenuItem menuItem);
+
+    /**
+     * Add a menu item to the Help menu at the specified index, where -1 adds
+     * the menu item to the end of the menu
+     *
+     * @param menuItem
+     * @param index the position in the menu
+     */
+    public void addToHelpMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Remove the specified menu item from the Help menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromHelpMenu(JMenuItem menuItem);
+
+    /**
      * Set the server URL in the location field
      * @param serverURL the server URL to set
      */

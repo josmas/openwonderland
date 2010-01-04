@@ -19,15 +19,24 @@ package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Geometry;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.TextureState;
 import java.net.URL;
 import java.util.Map;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ModelCellComponent;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 
 /**
  *
@@ -48,13 +57,17 @@ public class ModelRenderer extends BasicRenderer {
     }
 
     public ModelRenderer(Cell cell, ModelCellComponent modelComponent) {
-        super(cell);
-        this.modelComponent = modelComponent;
+        this(cell, null, modelComponent);
     }
 
     public ModelRenderer(Cell cell, DeployedModel deployedModel) {
+        this(cell, deployedModel, null);
+    }
+
+    public ModelRenderer(Cell cell, DeployedModel deployedModel, ModelCellComponent modelComponent) {
         super(cell);
         this.deployedModel = deployedModel;
+        this.modelComponent = modelComponent;
     }
 
     public ModelRenderer(Cell cell,
@@ -95,8 +108,53 @@ public class ModelRenderer extends BasicRenderer {
         deployedModel.setModelTranslation(modelTranslation);
         deployedModel.setModelRotation(modelRotation);
         deployedModel.setModelScale(modelScale);
+        System.err.println("ModelRenderer modelRotation "+modelRotation);
 
         return loader.loadDeployedModel(deployedModel, entity);
+    }
+
+    /**
+     * For the renderer to reload the scene graph. This is required if the user
+     * changes properties of the graph, such as optimization levels. The detach of
+     * the current graph and loading of the new graph are done asynchronously, this
+     * method returns immediately.
+     */
+    public void reload() {
+        if (sceneRoot!=null) {
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+                public void update(Object arg0) {
+                    ((Node)arg0).removeFromParent();
+                    sceneRoot = createSceneGraph(entity);
+                    rootNode.attachChild(sceneRoot);
+                }
+            }, sceneRoot);
+        }
+    }
+
+    @Override
+    protected void cleanupSceneGraph(Entity entity) {
+        RenderComponent rc = entity.getComponent(RenderComponent.class);
+        if (rc!=null) {
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                public void update(Object arg0) {
+                    TreeScan.findNode((Spatial) arg0, new ProcessNodeInterface() {
+                        public boolean processNode(Spatial node) {
+                            if (node instanceof Geometry) {
+                                ((Geometry)node).clearBuffers();
+                                TextureState ts = (TextureState) node.getRenderState(RenderState.RS_TEXTURE);
+                                // deleteAll is too aggressive, it deletes other copies of the same texture
+//                                if (ts!=null)
+//                                    ts.deleteAll(false);
+                            }
+                            return true;
+                        }
+                    });
+                }
+            }, rc.getSceneRoot());
+        }
+
+        deployedModel = null;
     }
 
 }

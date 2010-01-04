@@ -407,7 +407,7 @@ public abstract class InputManager
                 if (mainWindowHasFocus || !mainWindowHasCursor) return;
                 Canvas canvas = JmeClientMain.getFrame().getCanvas();
                 if (!canvas.requestFocusInWindow()) {
-                    logger.warning("Focus request for main canvas rejected.");
+                    logger.info("Focus request for main canvas rejected.");
                 }
             }
         });

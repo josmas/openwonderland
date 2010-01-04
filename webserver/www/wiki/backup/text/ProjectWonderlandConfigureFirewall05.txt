@@ -1,0 +1,136 @@
+%WEBTOPICLIST%   <!-- This creates the navigation links to :  Home | Help | Index | etc.  -->
+
+---++ Project Wonderland v0.5: Setting up a Project Wonderland Server Behind a NAT or Firewall
+
+*NOTE:* _December 23, 2009_: The images are slightly out of date, and configuration for X11 shared apps need writing.
+
+This article describes how to set up the Project Wonderland server to run behind a firewall or NAT system. The Wonderland server requires a fixed public address, as well as a number of TCP and UDP ports to operate properly.  If you are trying to run the Wonderland server behind NAT or a firewall, you will need to configure your NAT or firewall so these ports are mapped to your Wonderland server. You will also need to configure the Wonderland server to use a fixed range of ports for its various operations.
+
+---+++ %BLUE%Prerequisities%ENDCOLOR%
+
+This article assumes you have already installed a copy of [[http://wonderland.dev.java.net/index2.html][Wonderland v0.5]] as described [[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDownloadBuildSourcePoint5][here]], and have a basic working knowledge of networking and Wonderland. You should also be familiar with the [[ProjectWonderlandServerAdministration][Project Wonderland Web-Based Administration UI]].
+
+To run a Wonderland server, you must have a fixed, public IP address to which clients connect. This means that the Wonderland server will not work properly on a machine with a dynamic IP address. If you do not have a fixed IP address, you may look into a number of [[http://en.wikipedia.org/wiki/Dynamic_DNS][Dynamic DNS]] services to provide name resolution for your machine.
+
+Once you have a fixed IP, you will likely setup a firewall or NAT. If you are behind a firewall, the process will involve opening up the key ports to the Wonderland server. If you have a [[http://en.wikipedia.org/wiki/Network_address_translation][NAT]] system, you will also need to map your public IP address to the machine behind the NAT which is running the Wonderland server.
+
+<table border="0">
+  <caption align="bottom"><b>Figure 1. Communications in Wonderland</b></caption>
+  <tr><td>
+    <img src="https://lg3d.dev.java.net/wonderland/tutorial/firewall/wonderland-comms.png">
+  </td></tr>
+</table>
+<br>
+  
+Project Wonderland uses a number of different communication mechanisms and protocols (Figure 1):
+
+   1. Darkstar communication is used for the majority of updates such as login, positioning your avatar, etc.
+   1. jVoiceBridge uses the standard SIP and RTP protocols for sending the voice data from the server to the client
+   1. Wonderland uses a peer-to-peer protocol for X11 Application Sharing (Note: X11 Application Sharing is not yet available in the v0.5 developer releases).
+
+Each protocol requires different firewall and NAT strategies, so we will discuss each in turn below.
+
+---+++ %BLUE%Getting started%ENDCOLOR%
+
+To set up a Wonderland server behind a NAT or firewall, you will need to do two basic things. 
+
+   1. First, you will need to configure your NAT router or firewall so that when a request is made to one of the ports that Wonderland uses, it is redirected to the Wonderland server.
+   1. Second, you will need to configure the Wonderland server so that it knows about your NAT or firewall settings, and uses a appropriate public addresses and port ranges.
+
+Below, we will describe what port ranges need to be mapped on your router or firewall. Please consult your router or firewall documentation for the specifics of how to map ports on your device.
+
+---+++ %BLUE%Darkstar Server Communication%ENDCOLOR%
+
+The main communication protocol for Wonderland is the one used by the Darkstar gaming middleware layer. This is a proprietary, TCP/IP-based protocol that uses a single port, which by default is:
+<verbatim>
+   TCP port 1139
+</verbatim>
+Forwarding this port should be pretty simple: for a firewall, simply open up TCP port 1139 for incoming connections;  for a NAT, map the public IP address port 1139 to the internal machine's port 1139.
+
+You can also change the port that the Wonderland server uses by default in the [[ProjectWonderlandServerAdministration][Project Wonderland Web-Based Administration UI]], as follows:
+
+   1. Run your Project Wonderland server using the *ant run-server* command.
+   1. In a web browser, launch the Wonderland Web-based Administration UI by visiting *http://&lt;host name&gt;:&lt;port&gt;/wonderland-web-front/admin* where &lt;host name&gt; is the host and domain name of your server machine (e.g. localhost) and &lt;port&gt; is the port on which the server is registered, most often port 8080.
+   1. Click on the *Server Status* link on the left-hand side of the UI.
+   1. On the _Darkstar Server_ row, under the _Actions_ header, click the *edit* link.
+   1. Replace _1139_ with _12345_ in the property line with name _sgs.port_ in the left-hand column.
+   1. Click the *Save* button.
+   1. Click the *restart* link on the _Darkstar Server_ row under the _Actions_ header to restart the Darkstar server with the new port.
+
+This changes the TCP/IP port upon which the Darkstar server communicates to _12345_. While editing the property, your window should look like the following (click on the image to see a full-sized version):
+
+<table border="0">
+  <caption align="bottom"><b>Figure 2. Configuring the Darkstar TCP/IP Port</b></caption>
+  <tr><td>
+    <a href="http://wonderland.dev.java.net/wiki/firewall/darkstar_port.png"><img src="http://wonderland.dev.java.net/wiki/firewall/darkstar_port_thumbnail.png"></a>
+  </td></tr>
+</table>
+<br>
+
+---+++ %BLUE%The Voice Bridge (jVoiceBridge)%ENDCOLOR%
+
+jVoiceBridge uses the standard SIP and RTP protocols to transmit voice data from the Wonderland server to the various clients.  jVoiceBridge uses UDP for communications, which can make it more complicated to pass through firewalls.  jVoiceBridge uses a single UDP port for all control data, and an additional two UDP ports per call connected.  
+
+The UDP control port is used by SIP, and by default is:
+<verbatim>
+    UDP port 5060
+</verbatim>
+
+jVoicebridge sends both SIP and STUN messages on this port. Some firewalls may be configured to detect and block non-SIP Traffic to this port. If this presents a problem, you may configure the jVoiceBridge to use a different UDP control port, as follows:
+
+   1. Run your Project Wonderland server using the *ant run-server* command.
+   1. In a web browser, launch the Wonderland Web-based Administration UI by visiting *http://&lt;host name&gt;:&lt;port&gt;/wonderland-web-front/admin* where &lt;host name&gt; is the host and domain name of your server machine (e.g. localhost) and &lt;port&gt; is the port on which the server is registered, most often port 8080.
+   1. Click on the *Server Status* link on the left-hand side of the UI.
+   1. On the _Voice Bridge_ row, under the _Actions_ header, click the *edit* link.
+   1. Replace _5060_ with your new SIP UDP control port in the property line with name _voicebridge.sip.port_ in the left-hand column.
+   1. Click the *Save* button.
+   1. Click the *restart* link on the _Voice Bridge_ row under the _Actions_ header to restart the Voice bridge with the new port.
+
+In addition, jVoiceBridge uses two consecutive UDP ports per call. So to support 100 calls, you will need to open 200 ports on your firewall or NAT. You can control the UDP port range used by jVoiceBridge by editing the properties as follows:
+
+   1. Run your Project Wonderland server using the *ant run-server* command.
+   1. In a web browser, launch the Wonderland Web-based Administration UI by visiting *http://&lt;host name&gt;:&lt;port&gt;/wonderland-web-front/admin* where &lt;host name&gt; is the host and domain name of your server machine (e.g. localhost) and &lt;port&gt; is the port on which the server is registered, most often port 8080.
+   1. Click on the *Server Status* link on the left-hand side of the UI.
+   1. On the _Voice Bridge_ row, under the _Actions_ header, click the *edit* link.
+   1. On the last blank line, enter *voicebridge.first.rtp.port* in the left-hand column and *10000* in the right-hand column.
+   1. Click the *Add Property* button.
+   1. On the (new) last blank line, enter *voicebridge.last.rtp.port* in the left-hand column and *10200* in the right-hand column.
+   1. Click the *Add Property* button.
+   1. Click the *Save* button.
+   1. Click the *restart* link on the _Voice Bridge_ row under the _Actions_ header to restart the Voice bridge with the new port.
+
+This will restrict the voice bridge to use the UDP ports from 10000 - 10200 for voice traffic. While editing the property, your window should look like the following (click on the image to see a full-sized version). Note that after you click on the *Add Property* button, your new property entry gets sorted into the list.
+
+<table border="0">
+  <caption align="bottom"><b>Figure 3. Configuring jVoiceBridge Properties</b></caption>
+  <tr><td>
+    <a href="http://wonderland.dev.java.net/wiki/firewall/voicebridge_ports.png"><img src="http://wonderland.dev.java.net/wiki/firewall/voicebridge_ports_thumbnail.png"></a>
+  </td></tr>
+</table>
+<br>
+
+Configuring jVoiceBridge for a NAT requires one more piece of information: the public address of the NAT router. To work through a NAT you will need to map the public address and SIP port to port 5060 on the jVoiceBridge server (Figure 4). You will also need to map a range of UDP ports to the UDP port range you selected above. Note that the public port numbers do not need to match the internal ports, but there must be a 1-to-1 mapping between the number of public ports and the number of internal ports.
+
+<table border="0">
+  <caption align="bottom"><b>Figure 4. Running jVoiceBridge through NAT</b></caption>
+  <tr><td>
+    <img src="https://lg3d.dev.java.net/wonderland/tutorial/firewall/jVoiceBridge-comms.png">
+  </td></tr>
+</table>
+<br>
+
+Once you have configured the external address, edit the jVoiceBridge properties (as done above) to set the following:
+
+%TABLE{  tablewidth="50%" headerbg="#6b7f93" headercolor="#ffffff" tableborder="1" cellpadding="5" cellspacing="5" cellborder="0"  }%
+|*Property Name*|*Value*|
+|wonderland.local.hostAddress|=my.host.private=|
+|voicebridge.server.public.address|=my.host.public=|
+|voicebridge.server.public.sip.port|5060|
+</verbatim>
+
+Where =my.host.private= is the private (internal) IP address of the Wonderland server and =my.host.public= is its public (external) IP address.
+
+
+---+++ %BLUE%Application Sharing%ENDCOLOR%
+
+TBD

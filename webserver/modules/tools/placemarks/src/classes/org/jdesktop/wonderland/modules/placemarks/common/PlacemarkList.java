@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.placemarks.common;
 
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;

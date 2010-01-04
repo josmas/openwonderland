@@ -2,10 +2,10 @@
 <project name="wonderland-web" default="build" basedir=".">    
     <target name="build">
        <ant dir="utils"    target="jar"  inheritall="false"/>
-       <ant dir="modules"  target="dist" inheritall="false"/>
-       <ant dir="wfs"      target="dist" inheritall="false"/>
        <ant dir="webstart" target="dist" inheritall="false"/>
        <ant dir="front"    target="dist" inheritall="false"/>
+       <ant dir="modules"  target="dist" inheritall="false"/>
+       <ant dir="wfs"      target="dist" inheritall="false"/>
        <ant dir="asset"    target="dist" inheritall="false"/>
        <ant dir="checksums" target="dist" inheritall="false"/>
        <ant dir="runner"   target="dist" inheritall="false"/>
@@ -36,11 +36,11 @@
        <ant dir="asset"    target="clean" inheritall="false"/>
        <ant dir="checksums" target="clean" inheritall="false"/>
        <ant dir="utils"    target="clean" inheritall="false"/>
-       <ant dir="modules"  target="clean" inheritall="false"/>
-       <ant dir="wfs"      target="clean" inheritall="false"/>
        <ant dir="runner"   target="clean" inheritall="false"/>
        <ant dir="webstart" target="clean" inheritall="false"/>
        <ant dir="front"    target="clean" inheritall="false"/>
+       <ant dir="modules"  target="clean" inheritall="false"/>
+       <ant dir="wfs"      target="clean" inheritall="false"/>
        <ant dir="help"     target="clean" inheritall="false"/>
        <ant dir="server"   target="clean" inheritall="false"/>
     </target>

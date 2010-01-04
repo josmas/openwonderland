@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.placemarks.common;
 
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**

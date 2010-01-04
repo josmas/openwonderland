@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
@@ -55,19 +54,11 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
-
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
-
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -75,18 +66,10 @@ import javax.swing.SwingUtilities;
 
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
-
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.SceneWorker;
-
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
-
 import com.jme.math.Vector3f;
-
-import java.awt.Color;
-import java.awt.Font;
-
 import com.jme.scene.Node;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
 /**
  *
@@ -113,7 +96,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     private String username;
     private String usernameAlias;
 
-    private NameTagNode nameTag;
+    private Node nameTag;
+    private NameTagComponent nameTagComp;
 
     private PresenceManager pm;
 
@@ -176,14 +160,14 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	PresenceInfo pi = pm.getUserPresenceInfo(orbCell.getUsername());
 
 	if (pi != null) {
-	    usernameAlias = pi.usernameAlias;
+	    usernameAlias = pi.getUsernameAlias();
 	}
 
 	WonderlandIdentity userID = new WonderlandIdentity(username, usernameAlias, null);
 
 	presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, orbCell.getCallID());
 
-	presenceInfo.usernameAlias = usernameAlias;
+	presenceInfo.setUsernameAlias(usernameAlias);
 
   	pm.addPresenceManagerListener(this);
 
@@ -191,15 +175,16 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    /*
 	     * It's a real call.  Use the actual callID and userID.
 	     */
-	    pm.addPresenceInfo(presenceInfo);
+	    pm.addLocalPresenceInfo(presenceInfo);
 	    presenceInfoAdded = true;
 	} 
 
-        NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
-	    orbCell.addComponent(comp);
-	nameTag = comp.getNameTagNode();
+        nameTagComp = new NameTagComponent(orbCell, 0.15f);
+        // SIZE should be 0.17
+        orbCell.addComponent(nameTagComp);
+        nameTag = nameTagComp.getRenderer(Cell.RendererType.RENDERER_JME);
 
-        nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+        nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 
 	setBystanders(bystanders);
 
@@ -216,7 +201,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    logger.info("Attach orb " + orbCell.getCellID() 
 		+ " player with " + playerWithVpCallID + " to " + info);
 
-            channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
+            channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.getCellID(), true));
 	} else {
 	    /*
 	     * Ask the server to tell us if the orb is attached.
@@ -274,12 +259,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
         channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 
-	nameTag.done();
-
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
 	if (presenceInfoAdded) {
-	    pm.removePresenceInfo(presenceInfo);
+	    pm.removeLocalPresenceInfo(presenceInfo);
 	}
     }
 
@@ -311,9 +294,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private void setBystanders(String[] bystanders) {
 	if ((bystanders == null) || (bystanders.length == 0)) {
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+	    nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	} else {
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + " 
+	    nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + "
 		+ bystanders.length);
 	}
 
@@ -357,9 +340,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    }
 
 	    if (msg.isSpeaking()) {
-	        nameTag.setNameTag(EventType.STARTED_SPEAKING, username, alias);
+	        nameTagComp.setNameTag(EventType.STARTED_SPEAKING, username, alias);
 	    } else {
-	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, username, alias);
+	        nameTagComp.setNameTag(EventType.STOPPED_SPEAKING, username, alias);
 	    }
 
 	    return;
@@ -373,9 +356,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    }
 
 	    if (msg.isMuted()) {
-                nameTag.setNameTag(EventType.MUTE, username, alias);
+                nameTagComp.setNameTag(EventType.MUTE, username, alias);
 	    } else {
-                nameTag.setNameTag(EventType.UNMUTE, username, alias);
+                nameTagComp.setNameTag(EventType.UNMUTE, username, alias);
 	    }
 
 	    return;
@@ -393,11 +376,11 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    usernameAlias = msg.getName();
 
 	    if (presenceInfoAdded) {
-		presenceInfo.usernameAlias = usernameAlias;
-	        pm.changeUsernameAlias(presenceInfo);
+		presenceInfo.setUsernameAlias(usernameAlias);
+	        pm.requestChangeUsernameAlias(presenceInfo.getUsernameAlias());
 	    }
 
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+	    nameTagComp.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	    return;
 	}
 
@@ -419,7 +402,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		return;
 	    }
 
-	    attachOrb(info.cellID, true);
+	    attachOrb(info.getCellID(), true);
 	    return;
  	}
     }
@@ -591,19 +574,19 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
-	String username = this.presenceInfo.userID.getUsername().trim();
+	String username = this.presenceInfo.getUserID().getUsername().trim();
 
-	if (presenceInfo.userID.getUsername().equals(username) == false ||
+	if (presenceInfo.getUserID().getUsername().equals(username) == false ||
 		type.equals(ChangeType.UPDATED) == false) {
 
 	    return;
 	}
 
-	usernameAlias = presenceInfo.usernameAlias;
+	usernameAlias = presenceInfo.getUsernameAlias();
 
-	this.presenceInfo.usernameAlias = usernameAlias;
+	this.presenceInfo.setUsernameAlias(usernameAlias);
 
-	nameTag.setNameTag(EventType.CHANGE_NAME, presenceInfo.userID.getUsername(), usernameAlias);
+	nameTagComp.setNameTag(EventType.CHANGE_NAME, presenceInfo.getUserID().getUsername(), usernameAlias);
     }
 
 }

@@ -23,17 +23,26 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.modules.placemarks.api.server.PlacemarkRegistrySrvFactory;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkConfigConnectionType;
+import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkNewMessage;
+import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkRemoveMessage;
+import org.jdesktop.wonderland.modules.placemarks.common.PlacemarksMessage;
+import org.jdesktop.wonderland.modules.security.server.service.GroupMemberResource;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.security.Resource;
 
 /**
  * Handles Placemark config messages from the client.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-class PlacemarkConfigConnectionHandler implements ClientConnectionHandler, Serializable {
+class PlacemarkConfigConnectionHandler implements SecureClientConnectionHandler, Serializable {
 
     private static Logger logger = Logger.getLogger(PlacemarkConfigConnectionHandler.class.getName());
 
@@ -45,9 +54,22 @@ class PlacemarkConfigConnectionHandler implements ClientConnectionHandler, Seria
         // ignore
     }
 
+    public Resource checkConnect(WonderlandClientID clientID, Properties properties) {
+        // anyone can connect
+        return null;
+    }
+
     public void clientConnected(WonderlandClientSender sender,
-            WonderlandClientID clientID, Properties properties) {
-        // ignore
+            WonderlandClientID clientID, Properties properties)
+    {
+        // send the client the current set of server-registered placemarks
+        Set<Placemark> placemarks = PlacemarkRegistrySrvFactory.getInstance().getAllPlacemarks();
+        sender.send(clientID, new PlacemarksMessage(placemarks));
+    }
+
+    public void connectionRejected(WonderlandClientID clientID) {
+        // this will never happen
+        throw new UnsupportedOperationException("Not supported.");
     }
 
     public void clientDisconnected(WonderlandClientSender sender,
@@ -55,12 +77,32 @@ class PlacemarkConfigConnectionHandler implements ClientConnectionHandler, Seria
         // ignore
     }
 
-    public void messageReceived(WonderlandClientSender sender,
-            WonderlandClientID clientID, Message message) {
+    public Resource checkMessage(WonderlandClientID clientID, Message message) {
+        // only allow messages from administrators
+        return new GroupMemberResource("admin");
+    }
 
-        // Simply relay the message to all clients
-        Set<WonderlandClientID> clientIDs = sender.getClients();
-        clientIDs.remove(clientID);
-        sender.send(clientIDs, message);
+    public void messageReceived(WonderlandClientSender sender,
+            WonderlandClientID clientID, Message message)
+    {
+        // handle messages from the web server
+        if (message instanceof PlacemarkNewMessage ||
+                message instanceof PlacemarkRemoveMessage)
+        {
+            sender.send(message);
+        } else {
+            // unexepected message type
+            throw new IllegalArgumentException("Unexpected message of type " +
+                                               message.getClass().getSimpleName());
+        }
+    }
+
+    public boolean messageRejected(WonderlandClientSender sender,
+                                   WonderlandClientID clientID,
+                                   Message message, Set<Action> requested,
+                                   Set<Action> granted)
+    {
+        // let the system send an error message
+        return true;
     }
 }

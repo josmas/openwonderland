@@ -28,18 +28,24 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 public class VoiceChatLeaveMessage extends VoiceChatMessage {
     
     private PresenceInfo callee;
+    private String COSName;
 
     /*
      * Leave group
      */
-    public VoiceChatLeaveMessage(String group, PresenceInfo callee) {
+    public VoiceChatLeaveMessage(String group, PresenceInfo callee, String COSName) {
 	super(group);
 
 	this.callee = callee;
+	this.COSName = COSName;
     }
 	 
     public PresenceInfo getCallee() {
 	return callee;
+    }
+
+    public String getCOSName() {
+	return COSName;
     }
 
 }

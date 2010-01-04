@@ -117,7 +117,7 @@ public class PhoneCell extends Cell {
         if (rendererType == RendererType.RENDERER_JME) {
             try {
                 DeployedModel m =
-                       LoaderManager.getLoaderManager().getLoaderFromDeployment(AssetUtils.getAssetURL("wla://phone/conference_phone.dae/conference_phone.dae.gz.dep"));
+                       LoaderManager.getLoaderManager().getLoaderFromDeployment(AssetUtils.getAssetURL("wla://phone/pwl_3d_conferencephone_001.dae/pwl_3d_conferencephone_001.dae.gz.dep"));
 
                 return new PhoneCellRenderer(this, m);
             } catch (MalformedURLException ex) {

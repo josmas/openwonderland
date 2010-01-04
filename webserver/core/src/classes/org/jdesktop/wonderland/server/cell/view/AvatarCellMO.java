@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell.view;
 
+import org.jdesktop.wonderland.common.cell.state.AvatarCellServerState;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
@@ -28,8 +29,10 @@ import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.view.ViewCellClientState;
 import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.cell.annotation.NoSnapshot;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -38,6 +41,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author paulby
  */
 @ExperimentalAPI
+@NoSnapshot
 public class AvatarCellMO extends ViewCellMO {
     private ManagedReference<AvatarCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
@@ -119,5 +123,13 @@ public class AvatarCellMO extends ViewCellMO {
             }
             addComponent(new MovableAvatarComponentMO(this));
         }
+    }
+
+    @Override
+    public CellServerState getServerState(CellServerState cellServerState) {
+        if (cellServerState == null) {
+            cellServerState = new AvatarCellServerState(userRef.get().getUsername());
+        }
+        return super.getServerState(cellServerState);
     }
 }

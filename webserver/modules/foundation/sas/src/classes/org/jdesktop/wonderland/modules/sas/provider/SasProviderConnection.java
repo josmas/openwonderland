@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage
 import org.jdesktop.wonderland.modules.sas.common.SasProviderAppStopMessage;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderAppExittedMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderReadyMessage;
 
 /**
  * The SAS provider client.
@@ -113,6 +114,14 @@ public class SasProviderConnection extends BaseConnection {
         listener = null;
     }
     
+    /**
+     * Notify the connection handler that this provider is ready to receive
+     * messages.
+     */
+    public void notifyProviderReady() {
+        send(new SasProviderReadyMessage());
+    }
+
     /**
      * Respond to a launch request message.
      */

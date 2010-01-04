@@ -166,8 +166,6 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextPanel.add(titlePanel);
         contextPanel.invalidate();
         
-        
-
         // Fetch the manager of the context menu
         ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
         

@@ -15,25 +15,27 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * NamePropertiesHUDPanel.java
- *
- * Created on Jun 16, 2009, 3:30:01 PM
- */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
 import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.SpinnerListModel;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
 import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
+
+import org.jdesktop.wonderland.client.ClientContext;
+
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
+
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
 /**
  * A panel for selecting display properties for avatar name tags.
@@ -44,21 +46,26 @@ import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
  */
 public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
+    private static final Logger LOGGER =  Logger.getLogger(NamePropertiesHUDPanel.class.getName());
+
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private final static String SMALL_STRING = BUNDLE.getString("Small");
     private final static String REGULAR_STRING = BUNDLE.getString("Regular");
     private final static String LARGE_STRING = BUNDLE.getString("Large");
-    private PresenceInfo presenceInfo;
     private PropertyChangeSupport listeners;
 
-    private enum NameTagAttribute {
+    private PresenceManager pm;
+    private PresenceInfo presenceInfo;
+    private WonderlandSession session;
 
+    private enum NameTagAttribute {
         HIDE,
         SMALL_FONT,
         REGULAR_FONT,
         LARGE_FONT
     };
+
     private NameTagAttribute originalMyNameTagAttribute =
             NameTagAttribute.REGULAR_FONT;
     private NameTagAttribute myNameTagAttribute =
@@ -82,8 +89,13 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
                 setEditable(false);
     }
 
-    public NamePropertiesHUDPanel(PresenceInfo presenceInfo) {
+    public NamePropertiesHUDPanel(PresenceManager pm, WonderlandSession session,
+	    PresenceInfo presenceInfo) {
+
         this();
+
+	this.pm = pm;
+	this.session = session;
         this.presenceInfo = presenceInfo;
     }
 
@@ -113,34 +125,24 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
     }
 
     private void applyChanges() {
-        AvatarNameEvent avatarNameEvent;
-
         if (myNameTagAttribute != originalMyNameTagAttribute) {
             originalMyNameTagAttribute = myNameTagAttribute;
 
             switch (myNameTagAttribute) {
                 case HIDE:
-                    NameTagNode.setMyNameTag(EventType.HIDE,
-                            presenceInfo.userID.getUsername(),
-                            presenceInfo.usernameAlias);
+                    setMyNameTag(EventType.HIDE);
                     break;
 
                 case SMALL_FONT:
-                    NameTagNode.setMyNameTag(EventType.SMALL_FONT,
-                            presenceInfo.userID.getUsername(),
-                            presenceInfo.usernameAlias);
+                    setMyNameTag(EventType.SMALL_FONT);
                     break;
 
                 case REGULAR_FONT:
-                    NameTagNode.setMyNameTag(EventType.REGULAR_FONT,
-                            presenceInfo.userID.getUsername(),
-                            presenceInfo.usernameAlias);
+                    setMyNameTag(EventType.REGULAR_FONT);
                     break;
 
                 case LARGE_FONT:
-                    NameTagNode.setMyNameTag(EventType.LARGE_FONT,
-                            presenceInfo.userID.getUsername(),
-                            presenceInfo.usernameAlias);
+                    setMyNameTag(EventType.LARGE_FONT);
                     break;
             }
         }
@@ -153,34 +155,72 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
         switch (otherNameTagAttributes) {
             case HIDE:
-                NameTagNode.setOtherNameTags(EventType.HIDE,
-                        presenceInfo.userID.getUsername(),
-                        presenceInfo.usernameAlias);
+                setOtherNameTags(EventType.HIDE);
                 OrbCell.makeOrbsVisible(false);
                 break;
 
             case SMALL_FONT:
-                NameTagNode.setOtherNameTags(EventType.SMALL_FONT,
-                        presenceInfo.userID.getUsername(),
-                        presenceInfo.usernameAlias);
+                setOtherNameTags(EventType.SMALL_FONT);
                 OrbCell.makeOrbsVisible(true);
                 break;
 
             case REGULAR_FONT:
-                NameTagNode.setOtherNameTags(EventType.REGULAR_FONT,
-                        presenceInfo.userID.getUsername(),
-                        presenceInfo.usernameAlias);
+                setOtherNameTags(EventType.REGULAR_FONT);
                 OrbCell.makeOrbsVisible(true);
                 break;
 
             case LARGE_FONT:
-                NameTagNode.setOtherNameTags(EventType.LARGE_FONT,
-                        presenceInfo.userID.getUsername(),
-                        presenceInfo.usernameAlias);
+                setOtherNameTags(EventType.LARGE_FONT);
                 OrbCell.makeOrbsVisible(true);
                 break;
         }
     }
+
+    private void setMyNameTag(EventType eventType) {
+	CellCache cellCache = ClientContext.getCellCache(session);
+
+	Cell cell = cellCache.getCell(presenceInfo.getCellID());
+
+        NameTagComponent comp = (NameTagComponent) cell.getComponent(NameTagComponent.class);
+
+	comp.setNameTag(eventType, presenceInfo.getUserID().getUsername(),
+	    presenceInfo.getUsernameAlias());
+    }
+
+    private void setOtherNameTags(EventType eventType) {
+	String myUsername = presenceInfo.getUserID().getUsername();
+
+	PresenceInfo[] users = pm.getAllUsers();
+
+	CellCache cellCache = ClientContext.getCellCache(session);
+
+        for (int i = 0; i < users.length; i++) {
+	    String username = users[i].getUserID().getUsername();
+
+            if (username.equals(myUsername)) {
+                continue;
+            }
+
+	    if (users[i].getCellID() == null) {
+		LOGGER.warning("No cellID for " + username);
+		continue;
+	    }
+
+	    Cell cell = cellCache.getCell(users[i].getCellID());
+
+	    if (cell == null) {
+		LOGGER.warning("No cell for " + username);
+		continue;
+	    }
+
+            NameTagComponent comp = (NameTagComponent) cell.getComponent(NameTagComponent.class);
+
+            LOGGER.fine("set other name tags: " + eventType + users[i]);
+
+            comp.setNameTag(eventType, username, users[i].getUsernameAlias());
+        }
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.

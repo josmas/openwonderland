@@ -17,18 +17,32 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
+import com.jme.scene.Node;
+import com.jme.scene.Spatial;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 
 /**
+ *
+ * Properties editor for the ModelCellComponent.
+ *
+ * Note the GraphOptimizerEnabled option is a first pass, eventually this
+ * will need expanding so users can express what transforms (and other nodes) they
+ * need in a loaded model and then the optimizer can optimize everything while
+ * preserving the required structures.
  *
  * @author paulby
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
@@ -56,7 +70,7 @@ public class ModelCellComponentProperties
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Model Component";
+        return BUNDLE.getString("Model_Component");
     }
 
     /**
@@ -88,6 +102,8 @@ public class ModelCellComponentProperties
             collisionEnabledCB.setSelected(mState.isCollisionEnabled());
             pickingEnabledCB.setSelected(mState.isPickingEnabled());
             lightingEnabledCB.setSelected(mState.isLightingEnabled());
+            backfaceCullingEnabledCB.setSelected(mState.isBackfactCullingEnabled());
+            graphOptimizationEnabledCB.setSelected(mState.isGraphOptimizationEnabled());
 
             checkDirty();
         }
@@ -106,11 +122,14 @@ public class ModelCellComponentProperties
     public void apply() {
         // Fetch the latest from the info text field and set it.
         CellServerState state = editor.getCellServerState();
-        ModelCellComponentServerState compState = (ModelCellComponentServerState) state.getComponentServerState(
+        ModelCellComponentServerState compState =
+                (ModelCellComponentServerState) state.getComponentServerState(
                 ModelCellComponentServerState.class);
         compState.setCollisionEnabled(collisionEnabledCB.isSelected());
         compState.setPickingEnable(pickingEnabledCB.isSelected());
         compState.setLightingEnabled(lightingEnabledCB.isSelected());
+        compState.setBackfaceCullingEnabled(backfaceCullingEnabledCB.isSelected());
+        compState.setGraphOptimizationEnabled(graphOptimizationEnabledCB.isSelected());
         editor.addToUpdateList(compState);
     }
 
@@ -123,6 +142,8 @@ public class ModelCellComponentProperties
         collisionEnabledCB.setSelected(origState.isCollisionEnabled());
         pickingEnabledCB.setSelected(origState.isPickingEnabled());
         lightingEnabledCB.setSelected(origState.isLightingEnabled());
+        backfaceCullingEnabledCB.setSelected(origState.isBackfactCullingEnabled());
+        graphOptimizationEnabledCB.setSelected(origState.isGraphOptimizationEnabled());
 
         checkDirty();
     }
@@ -158,6 +179,8 @@ public class ModelCellComponentProperties
         dirty |= (collisionEnabledCB.isSelected() != origState.isCollisionEnabled());
         dirty |= (pickingEnabledCB.isSelected() != origState.isPickingEnabled());
         dirty |= (lightingEnabledCB.isSelected() != origState.isLightingEnabled());
+        dirty |= (backfaceCullingEnabledCB.isSelected() != origState.isBackfactCullingEnabled());
+        dirty |= (graphOptimizationEnabledCB.isSelected() != origState.isGraphOptimizationEnabled());
 
         editor.setPanelDirty(ModelCellComponentProperties.class, dirty);
     }
@@ -176,29 +199,55 @@ public class ModelCellComponentProperties
         collisionEnabledCB = new javax.swing.JCheckBox();
         pickingEnabledCB = new javax.swing.JCheckBox();
         lightingEnabledCB = new javax.swing.JCheckBox();
+        backfaceCullingEnabledCB = new javax.swing.JCheckBox();
+        graphOptimizationEnabledCB = new javax.swing.JCheckBox();
+        printSceneGraphB = new javax.swing.JButton();
 
-        jLabel1.setText("Deployed Model URL");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("ModelCellComponentProperties.jLabel1.text")); // NOI18N
 
         deployedModelURLTF.setEditable(false);
 
-        collisionEnabledCB.setText("Collision Enabled");
+        collisionEnabledCB.setText(bundle.getString("ModelCellComponentProperties.collisionEnabledCB.text")); // NOI18N
         collisionEnabledCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 collisionEnabledCBActionPerformed(evt);
             }
         });
 
-        pickingEnabledCB.setText("Picking Enabled");
+        pickingEnabledCB.setText(bundle.getString("ModelCellComponentProperties.pickingEnabledCB.text")); // NOI18N
         pickingEnabledCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 pickingEnabledCBActionPerformed(evt);
             }
         });
 
-        lightingEnabledCB.setText("Lighting Enabled");
+        lightingEnabledCB.setText(bundle.getString("ModelCellComponentProperties.lightingEnabledCB.text")); // NOI18N
         lightingEnabledCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 lightingEnabledCBActionPerformed(evt);
+            }
+        });
+
+        backfaceCullingEnabledCB.setText(bundle.getString("ModelCellComponentProperties.backfaceCullingEnabledCB.text")); // NOI18N
+        backfaceCullingEnabledCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backfaceCullingEnabledCBActionPerformed(evt);
+            }
+        });
+
+        graphOptimizationEnabledCB.setText(bundle.getString("ModelCellComponentProperties.graphOptimizationEnabledCB.text")); // NOI18N
+        graphOptimizationEnabledCB.setToolTipText(bundle.getString("ModelCellComponentProperties.graphOptimizationEnabledCB.toolTipText")); // NOI18N
+        graphOptimizationEnabledCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                graphOptimizationEnabledCBActionPerformed(evt);
+            }
+        });
+
+        printSceneGraphB.setText(bundle.getString("ModelCellComponentProperties.printSceneGraphB.text")); // NOI18N
+        printSceneGraphB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printSceneGraphBActionPerformed(evt);
             }
         });
 
@@ -207,15 +256,24 @@ public class ModelCellComponentProperties
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deployedModelURLTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
-                    .add(collisionEnabledCB)
-                    .add(pickingEnabledCB)
-                    .add(lightingEnabledCB))
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel1)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(deployedModelURLTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
+                            .add(collisionEnabledCB)
+                            .add(pickingEnabledCB)
+                            .add(lightingEnabledCB)))
+                    .add(printSceneGraphB)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(backfaceCullingEnabledCB))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(graphOptimizationEnabledCB)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -231,7 +289,13 @@ public class ModelCellComponentProperties
                 .add(pickingEnabledCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lightingEnabledCB)
-                .addContainerGap(159, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(backfaceCullingEnabledCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(graphOptimizationEnabledCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 66, Short.MAX_VALUE)
+                .add(printSceneGraphB)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -247,11 +311,50 @@ public class ModelCellComponentProperties
         checkDirty();
     }//GEN-LAST:event_lightingEnabledCBActionPerformed
 
+    private void printSceneGraphBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printSceneGraphBActionPerformed
+        Entity entity = ((CellRendererJME)editor.getCell().getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+        RenderComponent rc = entity.getComponent(RenderComponent.class);
+        Node root = rc.getSceneRoot();
+        print(root, 0);
+//        TreeScan.findNode(root, new ProcessNodeInterface() {
+//
+//            public boolean processNode(Spatial node) {
+//                System.err.println(node+"  "+node.getLocalScale());
+//                return true;
+//            }
+//        });
+    }//GEN-LAST:event_printSceneGraphBActionPerformed
+
+    private void backfaceCullingEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backfaceCullingEnabledCBActionPerformed
+        checkDirty();
+    }//GEN-LAST:event_backfaceCullingEnabledCBActionPerformed
+
+    private void graphOptimizationEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_graphOptimizationEnabledCBActionPerformed
+        checkDirty();
+    }//GEN-LAST:event_graphOptimizationEnabledCBActionPerformed
+
+    private void print(Spatial node, int level) {
+        for(int i=0; i<level; i++)
+            System.err.print(" ");
+        System.err.println(node+"  "+node.getLocalRotation());
+
+        if (node instanceof Node) {
+            List<Spatial> children = ((Node)node).getChildren();
+            if (children!=null)
+                for(Spatial sp : children) {
+                    print(sp, level+1);
+                }
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox backfaceCullingEnabledCB;
     private javax.swing.JCheckBox collisionEnabledCB;
     private javax.swing.JTextField deployedModelURLTF;
+    private javax.swing.JCheckBox graphOptimizationEnabledCB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox lightingEnabledCB;
     private javax.swing.JCheckBox pickingEnabledCB;
+    private javax.swing.JButton printSceneGraphB;
     // End of variables declaration//GEN-END:variables
 }

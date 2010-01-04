@@ -516,7 +516,7 @@ public class GraphicsUtils {
     public static void printGraphBounds(Node root) {
         TreeScan.findNode(root, new ProcessNodeInterface() {
             public boolean processNode(Spatial node) {
-                System.err.println(node+"  "+node.getWorldBound());
+                System.err.println(node+"  "+node.getWorldBound()+"  "+node.getWorldScale());
                 return true;
             }
 

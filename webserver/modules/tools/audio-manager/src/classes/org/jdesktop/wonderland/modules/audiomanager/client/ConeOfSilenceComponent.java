@@ -39,36 +39,9 @@ import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 public class ConeOfSilenceComponent extends CellComponent {
 
     private static Logger logger = Logger.getLogger(ConeOfSilenceComponent.class.getName());
-    private ChannelComponent channelComp;
-    private ChannelComponent.ComponentMessageReceiver msgReceiver;
 
     public ConeOfSilenceComponent(Cell cell) {
         super(cell);
-    }
-
-    @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
-        switch (status) {
-            case DISK:
-                if (msgReceiver != null) {
-                    channelComp.removeMessageReceiver(CellServerComponentMessage.class);
-                    msgReceiver = null;
-                }
-                break;
-
-            case ACTIVE:
-                if (increasing && msgReceiver == null) {
-                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-
-                        public void messageReceived(CellMessage message) {
-                        }
-                    };
-
-                    channelComp = cell.getComponent(ChannelComponent.class);
-                    channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
-                }
-                break;
-        }
     }
 
     @Override

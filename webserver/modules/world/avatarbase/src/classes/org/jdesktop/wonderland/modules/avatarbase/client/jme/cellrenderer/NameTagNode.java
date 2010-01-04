@@ -32,12 +32,10 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import java.awt.Color;
 import java.awt.Font;
 
-import java.util.HashMap;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 
 /**
- * TODO make this a component
- *
  * @author jprovino
  * @author nsimpson
  */
@@ -45,25 +43,10 @@ public class NameTagNode extends Node {
 
     private static final Logger logger = Logger.getLogger(NameTagNode.class.getName());
 
-    public enum EventType {
-
-        STARTED_SPEAKING,
-        STOPPED_SPEAKING,
-        MUTE,
-        UNMUTE,
-        CHANGE_NAME,
-        ENTERED_CONE_OF_SILENCE,
-        EXITED_CONE_OF_SILENCE,
-        HIDE,
-        SMALL_FONT,
-        REGULAR_FONT,
-        LARGE_FONT
-    }
-
     // colors
     public static final Color SPEAKING_COLOR = Color.RED;
     public static final Color NOT_SPEAKING_COLOR = Color.WHITE;
-    public static final Color CONE_OF_SILENCE_COLOR = Color.BLACK;
+    public static final Color CONE_OF_SILENCE_COLOR = Color.LIGHT_GRAY;
 
     private Color foregroundColor = NOT_SPEAKING_COLOR;
     private Color backgroundColor = new Color(0f, 0f, 0f);
@@ -73,7 +56,7 @@ public class NameTagNode extends Node {
     public static final String DEFAULT_FONT_NAME_TYPE = "PLAIN";
     public static final String DEFAULT_FONT_ALIAS_TYPE = "ITALIC";
 
-    public static final int DEFAULT_FONT_SIZE = 32;
+    public static final int DEFAULT_FONT_SIZE = 20;
 
     public static final Font REAL_NAME_FONT =
             fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, DEFAULT_FONT_SIZE);
@@ -109,26 +92,22 @@ public class NameTagNode extends Node {
     private Spatial q;
     private String usernameAlias;
     private boolean visible;
-    private static HashMap<String, NameTagNode> nameTagMap = new HashMap();
 
     private static Font fontDecode(String fontName, String fontType, int fontSize) {
         return Font.decode(fontName + " " + fontType + " " + fontSize);
     }
 
-    public NameTagNode(String name, float heightAbove) {
+    public NameTagNode(String name, float heightAbove, boolean inConeOfSilence, boolean isSpeaking,
+	    boolean isMuted) {
         this.name = name;
+        this.usernameAlias = name;
         this.heightAbove = heightAbove;
+        this.inConeOfSilence = inConeOfSilence;
+        this.isSpeaking = isSpeaking;
+        this.isMuted = isMuted;
         visible = true;
 
-        nameTagMap.put(name, this);
-
-	usernameAlias = name;
-
 	setNameTag(EventType.REGULAR_FONT, name, usernameAlias);
-    }
-
-    public static NameTagNode getNameTagNode(String name) {
-	return nameTagMap.get(name);
     }
 
     public void done() {
@@ -137,8 +116,6 @@ public class NameTagNode extends Node {
         }
 
         done = true;
-
-        nameTagMap.remove(name);
 
         detachChild(q);
     }
@@ -179,38 +156,8 @@ public class NameTagNode extends Node {
         return visible;
     }
 
-    public static void setMyNameTag(EventType eventType, String username,
-            String usernameAlias) {
-
-        NameTagNode nameTag = nameTagMap.get(username);
-
-        if (nameTag == null) {
-            logger.warning("can't find name tag for " + username);
-            return;
-        }
-
-        nameTag.setNameTag(eventType, username, usernameAlias);
-    }
-
-    public static void setOtherNameTags(EventType eventType, String username, String usernameAlias) {
-        String[] keys = nameTagMap.keySet().toArray(new String[0]);
-
-        for (int i = 0; i < keys.length; i++) {
-            if (keys[i].equals(username)) {
-                continue;
-            }
-
-            NameTagNode nameTag = nameTagMap.get(keys[i]);
-
-            logger.fine("set other name tags: " + eventType + ", username: " 
-		+ username + ", usernameAlias: " + usernameAlias);
-
-            nameTag.setNameTag(eventType, username, usernameAlias);
-        }
-    }
-
     public void setNameTag(EventType eventType, String username, String alias) {
-        logger.fine("set name tag: " + eventType + ", username: " + username 
+        logger.info("set name tag: " + eventType + ", username: " + username
 	    + ", alias: " + alias); 
 
         switch (eventType) {
@@ -252,7 +199,7 @@ public class NameTagNode extends Node {
             case MUTE:
                 isMuted = true;
 		isSpeaking = false;
-                removeLabel();
+//                removeLabel();
                 break;
 
             case UNMUTE:
@@ -260,7 +207,7 @@ public class NameTagNode extends Node {
                 break;
 
             case CHANGE_NAME:
-                removeLabel();
+//                removeLabel();
                 usernameAlias = alias;
                 break;
 
@@ -293,13 +240,15 @@ public class NameTagNode extends Node {
     }
 
     private void updateLabel() {
-	removeLabel();
+        if (name==null)
+            return;
 
         if (labelHidden) {
+            removeLabel();
             return;
         }
 
-	if (name.equals(usernameAlias) == false) {
+	if (usernameAlias!=null && name.equals(usernameAlias) == false) {
             font = ALIAS_NAME_FONT;
 	} else {
             font = REAL_NAME_FONT;
@@ -332,6 +281,8 @@ public class NameTagNode extends Node {
 
                         attachChild(label);
                     } else {
+                        label.setFont(font);
+                        label.setHeight(height);
                         label.setText(displayName, foregroundColor, backgroundColor);
                     }
                     ClientContextJME.getWorldManager().addToUpdateList(NameTagNode.this);

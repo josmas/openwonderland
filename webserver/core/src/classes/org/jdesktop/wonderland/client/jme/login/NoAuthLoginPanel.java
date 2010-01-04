@@ -191,64 +191,75 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         naUsernameField = new javax.swing.JTextField();
         naFullNameField = new javax.swing.JTextField();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
+        setMinimumSize(new java.awt.Dimension(360, 114));
         setOpaque(false);
+        setPreferredSize(new java.awt.Dimension(360, 114));
 
-        naServerLabel.setFont(naServerLabel.getFont().deriveFont(naServerLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        naServerLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naServerLabel.setForeground(new java.awt.Color(87, 101, 115));
+        naServerLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         naServerLabel.setText(bundle.getString("NoAuthLoginPanel.naServerLabel.text")); // NOI18N
 
-        naFullNameLabel.setFont(naFullNameLabel.getFont().deriveFont(naFullNameLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        naFullNameLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naFullNameLabel.setForeground(new java.awt.Color(87, 101, 115));
+        naFullNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         naFullNameLabel.setText(bundle.getString("NoAuthLoginPanel.naFullNameLabel.text")); // NOI18N
 
-        naUsernameLabel.setFont(naUsernameLabel.getFont().deriveFont(naUsernameLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        naUsernameLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naUsernameLabel.setForeground(new java.awt.Color(87, 101, 115));
+        naUsernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         naUsernameLabel.setText(bundle.getString("NoAuthLoginPanel.naUsernameLabel.text")); // NOI18N
 
         naServerField.setEditable(false);
-        naServerField.setMinimumSize(new java.awt.Dimension(98, 22));
+        naServerField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
 
-        naUsernameField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
-        naUsernameField.setMinimumSize(new java.awt.Dimension(98, 22));
+        naUsernameField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         naUsernameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 naUsernameFieldKeyReleased(evt);
             }
         });
 
-        naFullNameField.setMinimumSize(new java.awt.Dimension(98, 22));
+        naFullNameField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(naFullNameLabel)
-                    .add(naUsernameLabel)
-                    .add(naServerLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(naServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(naFullNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
-                .addContainerGap(14, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, naUsernameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, naFullNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, naServerLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(naServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                    .add(naFullNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
+                .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {naFullNameLabel, naServerLabel, naUsernameLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(naUsernameLabel)
-                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(naUsernameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(naUsernameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(naFullNameLabel)
-                    .add(naFullNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(naFullNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(naFullNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(naServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(naServerLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -175,7 +175,6 @@ public class AppXrwMaster
             cleanup();
             throw new InstantiationException();
         }
-
         synchronized (masterApps) {
             masterApps.add(this);
         }
@@ -262,7 +261,7 @@ public class AppXrwMaster
             masterApps.remove(this);
         }
 
-        logger.severe("AppXrwMaster stopped.");
+        logger.info("AppXrwMaster stopped.");
 
         if (exitListener != null) {
             exitListener.appExitted(this);

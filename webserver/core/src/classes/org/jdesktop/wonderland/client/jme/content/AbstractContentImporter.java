@@ -19,15 +19,15 @@ package org.jdesktop.wonderland.client.jme.content;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Properties;
-import java.util.Set;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellSelectionRegistry;
@@ -48,7 +48,13 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 @ExperimentalAPI
 public abstract class AbstractContentImporter implements ContentImporterSPI {
 
-    private static Logger logger = Logger.getLogger(AbstractContentImporter.class.getName());
+    // The error logger
+    private static final Logger LOGGER =
+            Logger.getLogger(AbstractContentImporter.class.getName());
+    
+    // The I18N resource bundle
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/client/jme/content/Bundle");
 
     /**
      * @inheritDoc()
@@ -63,20 +69,25 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         int result = JOptionPane.YES_OPTION;
         String uri = isContentExists(file);
         if (uri != null) {
-            Object[] options = {"Replace", "Use Existing", "Cancel" };
-            String msg = "The file " + file.getName() + " already exists in" +
-                    " the content repository. Do you wish to replace it and " +
-                    "continue?";
-            String title = "Replace Content?";
+
+            Object[] options = {
+                BUNDLE.getString("Replace"),
+                BUNDLE.getString("Use_Existing"),
+                BUNDLE.getString("Cancel")
+            };
+            String msg = MessageFormat.format(
+                    BUNDLE.getString("Replace_Question"), file.getName());
+            String title = BUNDLE.getString("Replace_Title");
+
             result = JOptionPane.showOptionDialog(frame, msg, title,
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
-            logger.warning("RESULT = " + result);
-
             // If the user hits Cancel or a "closed" action (e.g. Escape key)
             // then just return
-            if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
+            if (result == JOptionPane.CANCEL_OPTION ||
+                    result == JOptionPane.CLOSED_OPTION) {
+                
                 return null;
             }
         }
@@ -90,32 +101,36 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
 
         // Display a dialog showing a wait message while we import. We need
         // to do this in the SwingWorker thread so it gets drawn
-        JOptionPane waitMsg = new JOptionPane("Please wait while " +
-                file.getName() + " is being uploaded");
-        final JDialog dialog = waitMsg.createDialog(frame, "Uploading Content");
+        String msg = MessageFormat.format(
+                BUNDLE.getString("Please_Wait_Message"), file.getName());
+        String title = BUNDLE.getString("Please_Wait_Title");
+        JOptionPane waitMsg = new JOptionPane(msg);
+        final JDialog dialog = waitMsg.createDialog(frame, title);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 dialog.setVisible(true);
             }
         });
-
-        logger.warning("Uploading content");
         
         // Next, do the actual upload of the file. This should display a
         // progress dialog if the upload is going to take a long time.
         try {
             uri = uploadContent(file);
         } catch (java.io.IOException excp) {
-            logger.log(Level.WARNING, "Failed to upload content file " +
+            LOGGER.log(Level.WARNING, "Failed to upload content file " +
                     file.getAbsolutePath(), excp);
 
-            final String fileName = file.getName();
+            final String fname = file.getName();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     dialog.setVisible(false);
-                    JOptionPane.showMessageDialog(frame,
-                            "Failed to upload content file " + fileName,
-                            "Upload Failed", JOptionPane.ERROR_MESSAGE);
+
+                    String msg = MessageFormat.format(
+                            BUNDLE.getString("Upload_Failed_Message"), fname);
+                    String title = BUNDLE.getString("Upload_Failed_Title");
+
+                    JOptionPane.showMessageDialog(frame, msg, title,
+                            JOptionPane.ERROR_MESSAGE);
                 }
             });
             return null;
@@ -164,7 +179,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         // the final '.'.
         String extension = getFileExtension(uri);
         if (extension == null) {
-            logger.warning("Could not find extension for " + uri);
+            LOGGER.warning("Could not find extension for " + uri);
             return;
         }
 
@@ -174,7 +189,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         CellSelectionSPI spi = CellSelectionRegistry.getCellSelectionSPI();
         if (spi == null) {
              final JFrame frame = JmeClientMain.getFrame().getFrame();
-            logger.warning("Could not find the CellSelectionSPI factory");
+            LOGGER.warning("Could not find the CellSelectionSPI factory");
             JOptionPane.showMessageDialog(frame,
                     "Unable to launch Cell that supports " + uri,
                     "Launch Failed", JOptionPane.ERROR_MESSAGE);
@@ -188,7 +203,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
             factory = spi.getCellSelection(extension);
         } catch (CellCreationException excp) {
             final JFrame frame = JmeClientMain.getFrame().getFrame();
-            logger.log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Could not find cell factory for " + extension, excp);
             JOptionPane.showMessageDialog(frame,
                     "Unable to launch Cell that supports " + uri,
@@ -212,7 +227,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         try {
             CellUtils.createCell(state);
         } catch (CellCreationException excp) {
-            logger.log(Level.WARNING, "Unable to create cell for uri " + uri, excp);
+            LOGGER.log(Level.WARNING, "Unable to create cell for uri " + uri, excp);
         }
     }
 

@@ -167,13 +167,14 @@ public class AddComponentDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         capabilityScrollPane = new javax.swing.JScrollPane();
 
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("Add_Capability_Title")); // NOI18N
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
             }
         });
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle"); // NOI18N
         okButton.setText(bundle.getString("AddComponentDialog.okButton.text")); // NOI18N
         okButton.setEnabled(false);
         okButton.addActionListener(new java.awt.event.ActionListener() {

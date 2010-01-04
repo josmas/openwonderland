@@ -19,6 +19,12 @@ package org.jdesktop.wonderland.modules.portal.client;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.awt.Component;
+import java.util.ResourceBundle;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -26,10 +32,16 @@ import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkType;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 
 /**
- *
+ * A property sheet for the Portal component, allowing users to enter the
+ * destination URL, location, and look direction.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
@@ -37,12 +49,20 @@ import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 public class PortalComponentProperties extends JPanel
         implements PropertiesFactorySPI {
 
-    private CellPropertiesEditor editor;
-    private String origServerURL;
-    private String origX;
-    private String origY;
-    private String origZ;
-    private String origAngle;
+    // The I18N resource bundle
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/portal/client/resources/Bundle");
+    
+    // The main editor object for the Cell Editor
+    private CellPropertiesEditor editor = null;
+
+    // The original values for all of the fields. We use the convention that
+    // if empty, an empty string ("") is used, rather than null.
+    private String origServerURL = "";
+    private String origX = "";
+    private String origY = "";
+    private String origZ = "";
+    private String origAngle = "";
 
     /** Creates new form PortalComponentProperties */
     public PortalComponentProperties() {
@@ -56,13 +76,28 @@ public class PortalComponentProperties extends JPanel
         locY.getDocument().addDocumentListener(listener);
         locZ.getDocument().addDocumentListener(listener);
         angleTF.getDocument().addDocumentListener(listener);
+
+        // set renderer for placemarks
+        placemarkCB.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent(JList list,
+                    Object value, int index, boolean isSelected,
+                    boolean cellHasFocus)
+            {
+                Placemark pm = (Placemark) value;
+
+                return super.getListCellRendererComponent(list, pm.getName(),
+                        index, isSelected, cellHasFocus);
+            }
+        });
     }
 
     /**
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Portal";
+        return BUNDLE.getString("Portal");
     }
 
     /**
@@ -72,6 +107,9 @@ public class PortalComponentProperties extends JPanel
         return this;
     }
 
+    /**
+     * @inheritDoc()
+     */
     public void setCellPropertiesEditor(CellPropertiesEditor editor) {
         this.editor = editor;
     }
@@ -80,38 +118,57 @@ public class PortalComponentProperties extends JPanel
      * @inheritDoc()
      */
     public void open() {
+        // Fetch the current state from the Cell. If none exist, then just
+        // return.
         CellServerState cellServerState = editor.getCellServerState();
-        PortalComponentServerState state =
-                (PortalComponentServerState) cellServerState.getComponentServerState(
+        PortalComponentServerState state = (PortalComponentServerState)
+                cellServerState.getComponentServerState(
                 PortalComponentServerState.class);
-        if (state != null) {
-            origServerURL = state.getServerURL();
-            if (origServerURL != null) {
-                urlTF.setText(origServerURL);
-            }
-
-            Vector3f origin = state.getLocation();
-            if (origin != null) {
-                origX = String.valueOf(origin.x);
-                origY = String.valueOf(origin.y);
-                origZ = String.valueOf(origin.z);
-            } else {
-                origX = "";
-                origY = "";
-                origZ = "";
-            }
-            locX.setText(origX);
-            locY.setText(origY);
-            locZ.setText(origZ);
-
-            Quaternion r = state.getLook();
-            if (r != null) {
-                origAngle = String.valueOf(Math.toDegrees(r.toAngleAxis(new Vector3f())));
-            } else {
-                origAngle = "";
-            }
-            angleTF.setText(origAngle);
+        if (state == null) {
+            return;
         }
+
+        // Otherwise, update the values of the text fields and store away the
+        // original values. We use the convention that an empty entry is
+        // represented by an empty string ("") rather than null.
+
+        // Fetch the destination URL from the server state. If the original
+        // state is null, then convert it into an empty string and update the
+        // text field.
+        origServerURL = state.getServerURL();
+        if (origServerURL == null) {
+            origServerURL = "";
+        }
+        urlTF.setText(origServerURL);
+
+        // Fetch the destination location from the server state. If the value
+        // is null, then set the original values and text fields to empty
+        // strings.
+        Vector3f origin = state.getLocation();
+        if (origin != null) {
+            origX = String.valueOf(origin.x);
+            origY = String.valueOf(origin.y);
+            origZ = String.valueOf(origin.z);
+        } else {
+            origX = "";
+            origY = "";
+            origZ = "";
+        }
+        locX.setText(origX);
+        locY.setText(origY);
+        locZ.setText(origZ);
+
+        // Fetc the destination look direction from the server state. If the
+        // value is null, then set the original value and text field to an
+        // empty string.
+        Quaternion lookAt = state.getLook();
+        if (lookAt != null) {
+            double angle = Math.toDegrees(lookAt.toAngleAxis(new Vector3f()));
+            origAngle = String.valueOf(angle);
+        } else {
+            origAngle = "";
+        }
+        angleTF.setText(origAngle);
     }
 
     /**
@@ -126,7 +183,7 @@ public class PortalComponentProperties extends JPanel
      */
     public void apply() {
         // Figure out whether there already exists a server state for the
-        // component.
+        // component. If not, then create one.
         CellServerState cellServerState = editor.getCellServerState();
         PortalComponentServerState state = 
                 (PortalComponentServerState) cellServerState.getComponentServerState(
@@ -135,32 +192,50 @@ public class PortalComponentProperties extends JPanel
             state = new PortalComponentServerState();
         }
 
+        // Set the values in the server state from the text fields. If the text
+        // fields are empty, they will return an empty string (""), this is
+        // converted to null to set in the server state.
+
+        // Fetch the destination URL from the text field, and convert an empty
+        // string into a null.
         String serverURL = urlTF.getText().trim();
         if (serverURL.length() == 0) {
             serverURL = null;
         }
         state.setServerURL(serverURL);
 
-        Vector3f location = new Vector3f();
+        // Fetch the destination location from the text fields, and convert an
+        // empty string into 0.0 indivudually.
         String xstr = locX.getText().trim();
-        String ystr = locY.getText().trim();
-        String zstr = locZ.getText().trim();
-        if (xstr.length() == 0 || ystr.length() == 0 || zstr.length() == 0) {
-            location = null;
-        } else {
-            location.x = Float.parseFloat(xstr);
-            location.y = Float.parseFloat(ystr);
-            location.z = Float.parseFloat(zstr);
+        if (xstr.length() == 0) {
+            xstr = "0.0";
         }
+        
+        String ystr = locY.getText().trim();
+        if (ystr.length() == 0) {
+            ystr = "0.0";
+        }
+
+        String zstr = locZ.getText().trim();
+        if (zstr.length() == 0) {
+            zstr = "0.0";
+        }
+
+        // Set the location on the server state
+        Vector3f location = new Vector3f();
+        location.x = Float.parseFloat(xstr);
+        location.y = Float.parseFloat(ystr);
+        location.z = Float.parseFloat(zstr);
         state.setLocation(location);
 
+        // Set the destination look direction from the text field. If the text
+        // field is empty, then set the server state as a zero rotation.
         Quaternion look = new Quaternion();
         String anglestr = angleTF.getText().trim();
-        if (anglestr.length() == 0) {
-            look = null;
-        } else {
-            look.fromAngleAxis((float) Math.toRadians(Float.parseFloat(anglestr)),
-                               new Vector3f(0.0f, 1.0f, 0.0f));
+        if (anglestr.length() != 0) {
+            Vector3f axis = new Vector3f(0.0f, 1.0f, 0.0f);
+            double angle = Math.toRadians(Float.parseFloat(anglestr));
+            look.fromAngleAxis((float) angle, axis);
         }
         state.setLook(look);
         editor.addToUpdateList(state);
@@ -220,6 +295,11 @@ public class PortalComponentProperties extends JPanel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        placemarkDialog = new javax.swing.JDialog();
+        jLabel6 = new javax.swing.JLabel();
+        placemarkCB = new javax.swing.JComboBox();
+        placemarkCancelB = new javax.swing.JButton();
+        placemarkSetB = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         urlTF = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
@@ -231,8 +311,59 @@ public class PortalComponentProperties extends JPanel
         jLabel5 = new javax.swing.JLabel();
         angleTF = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
+        fromPlacemarkB = new javax.swing.JButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/portal/client/resources/Bundle"); // NOI18N
+        jLabel6.setText(bundle.getString("PortalComponentProperties.jLabel6.text")); // NOI18N
+
+        placemarkCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        placemarkCancelB.setText(bundle.getString("PortalComponentProperties.placemarkCancelB.text")); // NOI18N
+        placemarkCancelB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                placemarkCancelBActionPerformed(evt);
+            }
+        });
+
+        placemarkSetB.setText(bundle.getString("PortalComponentProperties.placemarkSetB.text")); // NOI18N
+        placemarkSetB.setSelected(true);
+        placemarkSetB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                placemarkSetBActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout placemarkDialogLayout = new org.jdesktop.layout.GroupLayout(placemarkDialog.getContentPane());
+        placemarkDialog.getContentPane().setLayout(placemarkDialogLayout);
+        placemarkDialogLayout.setHorizontalGroup(
+            placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(placemarkDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(placemarkDialogLayout.createSequentialGroup()
+                        .add(jLabel6)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(placemarkCB, 0, 243, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, placemarkDialogLayout.createSequentialGroup()
+                        .add(placemarkSetB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(placemarkCancelB))))
+        );
+        placemarkDialogLayout.setVerticalGroup(
+            placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(placemarkDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel6)
+                    .add(placemarkCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(placemarkCancelB)
+                    .add(placemarkSetB))
+                .addContainerGap())
+        );
+
         jLabel1.setText(bundle.getString("PortalComponentProperties.jLabel1.text")); // NOI18N
 
         jLabel2.setText(bundle.getString("PortalComponentProperties.jLabel2.text")); // NOI18N
@@ -245,6 +376,13 @@ public class PortalComponentProperties extends JPanel
 
         jLabel10.setText(bundle.getString("PortalComponentProperties.jLabel10.text")); // NOI18N
 
+        fromPlacemarkB.setText(bundle.getString("PortalComponentProperties.fromPlacemarkB.text")); // NOI18N
+        fromPlacemarkB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fromPlacemarkBActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -252,31 +390,42 @@ public class PortalComponentProperties extends JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jLabel10)
-                            .add(jLabel5)
-                            .add(jLabel4)
-                            .add(jLabel3)
-                            .add(jLabel1))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(urlTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, angleTF)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, locY, 0, 0, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, locX, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, locZ, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)))
-                        .addContainerGap())
-                    .add(jLabel2)))
+                    .add(jLabel1)
+                    .add(jLabel2)
+                    .add(jLabel10))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(urlTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, angleTF)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, locY, 0, 0, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, locX, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, locZ, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(89, 89, 89)
+                .add(jLabel3)
+                .add(267, 267, 267))
+            .add(layout.createSequentialGroup()
+                .add(90, 90, 90)
+                .add(jLabel4)
+                .add(267, 267, 267))
+            .add(layout.createSequentialGroup()
+                .add(90, 90, 90)
+                .add(jLabel5)
+                .add(267, 267, 267))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(184, Short.MAX_VALUE)
+                .add(fromPlacemarkB)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(urlTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(urlTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -294,20 +443,61 @@ public class PortalComponentProperties extends JPanel
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(angleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel10)))
+                    .add(jLabel10))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(fromPlacemarkB)
+                .addContainerGap(10, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void placemarkSetBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_placemarkSetBActionPerformed
+        placemarkDialog.setVisible(false);
+
+        // get the currently selected placemark
+        Placemark pm = (Placemark) placemarkCB.getSelectedItem();
+
+        // set values
+        urlTF.setText(pm.getUrl());
+        locX.setText(String.valueOf(pm.getX()));
+        locY.setText(String.valueOf(pm.getY()));
+        locZ.setText(String.valueOf(pm.getZ()));
+
+        // convert angle properly
+        angleTF.setText(String.valueOf(Math.toDegrees(pm.getAngle())));
+    }//GEN-LAST:event_placemarkSetBActionPerformed
+
+    private void placemarkCancelBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_placemarkCancelBActionPerformed
+        placemarkDialog.setVisible(false);
+    }//GEN-LAST:event_placemarkCancelBActionPerformed
+
+    private void fromPlacemarkBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fromPlacemarkBActionPerformed
+        // display the list of placemarks
+        PlacemarkRegistry reg = PlacemarkRegistryFactory.getInstance();
+        Vector<Placemark> allPlacemarks = new Vector<Placemark>();
+        allPlacemarks.addAll(reg.getAllPlacemarks(PlacemarkType.SYSTEM));
+        allPlacemarks.addAll(reg.getAllPlacemarks(PlacemarkType.USER));
+
+        placemarkCB.setModel(new DefaultComboBoxModel(allPlacemarks));
+        placemarkDialog.setVisible(true);
+    }//GEN-LAST:event_fromPlacemarkBActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField angleTF;
+    private javax.swing.JButton fromPlacemarkB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JTextField locX;
     private javax.swing.JTextField locY;
     private javax.swing.JTextField locZ;
+    private javax.swing.JComboBox placemarkCB;
+    private javax.swing.JButton placemarkCancelB;
+    private javax.swing.JDialog placemarkDialog;
+    private javax.swing.JButton placemarkSetB;
     private javax.swing.JTextField urlTF;
     // End of variables declaration//GEN-END:variables
 }

@@ -283,14 +283,12 @@ public class UniverseImpl implements Universe {
         // update list of cells for this listener
         synchronized (updateListeners) {
             Set<CellID> cellIDs = updateListeners.get(viewUpdateListener);
-            if (cellIDs == null) {
-                return;
-            }
+	    if (cellIDs != null) {
+                cellIDs.remove(cellID);
             
-            cellIDs.remove(cellID);
-            
-            if (cellIDs.isEmpty()) {
-                updateListeners.remove(viewUpdateListener);
+                if (cellIDs.isEmpty()) {
+                    updateListeners.remove(viewUpdateListener);
+		}
             }
         }
 

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.TreatmentType;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
@@ -34,6 +35,8 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
 
     public String groupId = null;
 
+    public TreatmentType treatmentType;
+
     public String[] treatments;
 
     public double volume;
@@ -44,11 +47,15 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
 
     public double extent;
 
+    public boolean useCellBounds;
+
     public double fullVolumeAreaPercent;
 
     public boolean distanceAttenuated;
 
     public double falloff;
+
+    public boolean showBounds = false;
 
     public AudioTreatmentComponentClientState() {
 	super(false, false);
@@ -57,6 +64,11 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     @XmlElement
     public String getGroupId() {
 	return groupId;
+    }
+
+    @XmlElement
+    public TreatmentType getTreatmentType() {
+	return treatmentType;
     }
 
     @XmlElement
@@ -85,10 +97,14 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     }
 
     @XmlElement
+    public boolean getUseCellBounds() {
+        return useCellBounds;
+    }
+
+    @XmlElement
     public double getFullVolumeAreaPercent() {
         return fullVolumeAreaPercent;
     }
-
     @XmlElement
     public boolean getDistanceAttenuated() {
         return distanceAttenuated;
@@ -97,6 +113,11 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     @XmlElement
     public double getFalloff() {
 	return falloff;
+    }
+
+    @XmlElement
+    public boolean getShowBounds() {
+	return showBounds;
     }
 
 }

@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -57,15 +58,16 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.PluginFilter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 import org.jdesktop.wonderland.testharness.slave.ProcessingException;
 import org.jdesktop.wonderland.testharness.slave.RequestProcessor;
+import org.jdesktop.wonderland.testharness.slave.SlaveMain.ReplySender;
 
 /**
  * A test client that simulates a 3D client
@@ -93,7 +95,7 @@ public class Client3DSim
         return "Client3DSim";
     }
 
-    public void initialize(String username, Properties props)
+    public void initialize(String username, Properties props, ReplySender replyHandler)
             throws ProcessingException {
         this.username = username;
 
@@ -421,8 +423,8 @@ public class Client3DSim
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public void requestLogin(WebURLLoginControl control) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public void requestLogin(EitherLoginControl control) {
+            requestLogin(control.getNoAuthLogin());
         }
     }
 
@@ -599,6 +601,38 @@ public class Client3DSim
         }
 
         public void removeFromWindowMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addToInsertMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addToInsertMenu(JMenuItem menuItem, int index) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromInsertMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void connected(boolean connected) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setDesiredFrameRate(int desiredFrameRate) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addToCameraChoices(JRadioButtonMenuItem cameraMenuItem, int index) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromCameraChoices(JRadioButtonMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromHelpMenu(JMenuItem menuItem) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

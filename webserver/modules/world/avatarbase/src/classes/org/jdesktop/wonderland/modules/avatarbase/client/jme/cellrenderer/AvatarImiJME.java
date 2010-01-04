@@ -31,6 +31,7 @@ import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.Geometry;
+import com.jme.scene.Spatial.CullHint;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
@@ -95,7 +96,6 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
 @ExperimentalAPI
 public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
-    private WlAvatarCharacter pendingAvatar = null;
     private WlAvatarCharacter avatarCharacter = null;
 
     private boolean selectedForInput = false;
@@ -120,8 +120,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private AvatarCollisionListener collisionListener = null;
     
     /** Collection of listeners **/
-    private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners
-            = new FastList();
+    private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners = new FastList();
+
+    private AvatarUIEventListener avatarUIEventListener;
+
+    private static BoundsDebugger boundsDebugger = new BoundsDebugger();
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -182,44 +185,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         };
 
-        ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
 
-            private Class[] consumeClasses = new Class[]{
-                AvatarRendererChangeRequestEvent.class,
-                AvatarNameEvent.class
-            };
-
-            @Override
-            public Class[] eventClassesToConsume() {
-                return consumeClasses;
-            }
-
-            @Override
-            public void commitEvent(Event event) {
-                if (event instanceof AvatarNameEvent) {
-                    AvatarNameEvent e = (AvatarNameEvent) event;
-
-                    // Fetch the name tag node, there should only be one of
-                    // these in the system and set the name.
-                    NameTagNode nameTagNode = getNameTagNode();
-                    if (e.getUsername().equals(username) == true) {
-                        nameTagNode.setNameTag(e.getEventType(), username,
-                                           e.getUsernameAlias());
-                    }
-                } else if (event instanceof AvatarRendererChangeRequestEvent) {
-                    handleAvatarRendererChangeRequest((AvatarRendererChangeRequestEvent)event);
-                }
-            }
-
-            @Override
-            public void computeEvent(Event evtIn) {
-            }
-        });
-
-        collisionChangeRequestListener = new CollisionChangeRequestListener();
-        ClientContext.getInputManager().addGlobalEventListener(collisionChangeRequestListener);
 
     }
+
+
+
 
     /**
      * Returns the avatar renderer for the primary view cell, or null if none
@@ -244,15 +215,22 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     @Override
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
+        WlAvatarCharacter pendingAvatar = null;
 
         logger.info("AVATAR RENDERER STATUS " + status + " DIR " + increasing);
         
         // If we are increasing to the ACTIVE state, then turn everything on.
         // Add the listeners to the avatar Cell and set the avatar character
         if (status == CellStatus.ACTIVE && increasing == true) {
-
+            boundsDebugger.add(this);
             if (cellMoveListener != null) {
-                cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
+                // mc should not be null, but sometimes it seems to be
+                MovableComponent mc = cell.getComponent(MovableComponent.class);
+                if (mc==null) {
+                    logger.severe("NULL MovableComponent in avatar "+((AvatarCell)cell).getName());
+                } else {
+                    mc.removeServerCellMoveListener(cellMoveListener);
+                }
                 cellMoveListener = null;
             }
 
@@ -295,6 +273,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 };
             }
             cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
+
+            avatarUIEventListener = new AvatarUIEventListener();
+            ClientContext.getInputManager().addGlobalEventListener(avatarUIEventListener);
+
+            collisionChangeRequestListener = new CollisionChangeRequestListener();
+            ClientContext.getInputManager().addGlobalEventListener(collisionChangeRequestListener);
+        } else if (status==CellStatus.DISK && !increasing) {
+            boundsDebugger.remove(this);
+            ClientContext.getInputManager().removeGlobalEventListener(avatarUIEventListener);
+            ClientContext.getInputManager().removeGlobalEventListener(collisionChangeRequestListener);
+            cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
+            avatarUIEventListener=null;
+            cellMoveListener=null;
+            collisionChangeRequestListener=null;
         }
 
     }
@@ -364,12 +356,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // away its position. Remove the name tag, turn off input and destroy
         // the avatar character.
         PMatrix currentLocation = null;
-        boolean wasSelectedForInput = false;
         if (avatarCharacter != null) {
             currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
             rootEntity.removeEntity(avatarCharacter);
             avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTagNode);
-            wasSelectedForInput = selectedForInput;
             selectForInput(false);
             avatarCharacter.destroy();
         }
@@ -395,10 +385,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // Attach the name tag to the new avatar and add the avatar entity to
         // the cell renderer root entity and turn on input.
         Node externalRoot = avatarCharacter.getJScene().getExternalKidsRoot();
-        externalRoot.attachChild(nameTagNode);
-        externalRoot.setModelBound(new BoundingSphere());
-        externalRoot.updateModelBound();
-        externalRoot.updateGeometricState(0, true);
+        if (nameTagNode!=null) {
+            externalRoot.attachChild(nameTagNode);
+            externalRoot.setModelBound(new BoundingSphere());
+            externalRoot.updateModelBound();
+            externalRoot.updateGeometricState(0, true);
+        }
         rootEntity.addEntity(avatarCharacter);
 
         // Turn on input handle for the renderer, if we wish. Check for AvatarCell
@@ -527,7 +519,17 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (shaderCheck != null && shaderCheck.equals("true")) {
             shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
         }
-        if (rm.supportsOpenGL20() == false || !shaderPass) {
+
+        // Issue 1114: make sure the system is telling the truth about what
+        // it supports by trying a mock shader program
+        boolean uniformsPass = shaderPass && ShaderTest.getInstance().testShaders();
+
+        logger.warning("Checking avatar detail level.  OpenGL20: " +
+                       rm.supportsOpenGL20() + " ShaderCheck: " + shaderPass +
+                       " UniformsCheck: " + uniformsPass);
+
+        if (rm.supportsOpenGL20() == false || !shaderPass || !uniformsPass) {
+            logger.warning("Forcing low detail.");
             avatarDetail = "low";
         }
 
@@ -544,7 +546,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 logger.warning("No default avatar factory is registered.");
                 return null;
             }
-            ret = factory.getAvatarLoader().getAvatarCharacter(cell, username, avatarConfigInfo);
+
+            // We need to rewrite the AvatarConfigInfo object here a bit,
+            // otherwise, the loader may still loader the wrong avatar. If
+            // we set the URL in the AvatarConfigInfo to null, that should do
+            // the trick. (Note that since we manually obtained the
+            // AvatarLoaderFactorySPI, we don't need to update the factory
+            // class name in the AvatarConfigInfo object, but we do anyway).
+            String defaultClassName = factory.getClass().getName();
+            AvatarConfigInfo defaultInfo =
+                    new AvatarConfigInfo(null, defaultClassName);
+
+            // Go ahead and load the default avatar
+            ret = factory.getAvatarLoader().getAvatarCharacter(cell, username,
+                    defaultInfo);
         }
         else {
             // If the avatar has a non-null configuration information, then
@@ -605,8 +620,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private NameTagNode getNameTagNode() {
         NameTagComponent nameTagComp = cell.getComponent(NameTagComponent.class);
         if (nameTagComp == null) {
-            nameTagComp = new NameTagComponent(cell, username, 2);
-            cell.addComponent(nameTagComp);
+            return null;
         }
         return nameTagComp.getNameTagNode();
     }
@@ -650,7 +664,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             ac.removeCollisionListener(collisionListener);
          }
     }
-
 
     /**
      * Sets the Z-buffer state on the given node.
@@ -769,6 +782,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     cameraChainedProcessor.setRunInRenderer(true);
                 }
 
+                // Disable culling for local avatar, fix for issue 799
+                avatarCharacter.getJScene().setCullHint(CullHint.Never);
             } else {
                 avatarCharacter.getContext().getController().removeCharacterMotionListener(characterMotionListener);
                 avatarCharacter.getContext().removeGameContextListener(gameContextListener);
@@ -780,6 +795,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     cameraChainedProcessor.removeFromChain(ViewManager.getViewManager().getCameraProcessor());
                     cameraChainedProcessor = null;
                 }
+                //Reenable culling for local avatar, fix for issue 799
+                avatarCharacter.getJScene().setCullHint(CullHint.Dynamic);
             }
         } else {
             logger.severe("The avatar was null during enableInputListeners().");
@@ -820,7 +837,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         transform.setRotation(look);
         transform.setTranslation(position);
         cell.getComponent(MovableComponent.class).localMoveRequest(transform);
-        avatarCharacter.getModelInst().setTransform(new PTransform(look, position, new Vector3f(1, 1, 1)));
+        if (avatarCharacter!=null)
+            avatarCharacter.getModelInst().setTransform(new PTransform(look, position, new Vector3f(1, 1, 1)));
     }
 
     /**
@@ -939,5 +957,38 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             ClientContextJME.getInputManager().postEvent(new AvatarCollisionEvent(collisionInfo), cd.getEntity());
         }
 
+    }
+    
+    class AvatarUIEventListener extends EventClassListener {
+            private Class[] consumeClasses = new Class[]{
+                AvatarRendererChangeRequestEvent.class,
+                AvatarNameEvent.class
+            };
+
+            @Override
+            public Class[] eventClassesToConsume() {
+                return consumeClasses;
+            }
+
+            @Override
+            public void commitEvent(Event event) {
+                if (event instanceof AvatarNameEvent) {
+                    AvatarNameEvent e = (AvatarNameEvent) event;
+
+                    // Fetch the name tag node, there should only be one of
+                    // these in the system and set the name.
+                    NameTagNode nameTagNode = getNameTagNode();
+                    if (nameTagNode!=null && e.getUsername().equals(username) == true) {
+                        nameTagNode.setNameTag(e.getEventType(), username,
+                                           e.getUsernameAlias());
+                    }
+                } else if (event instanceof AvatarRendererChangeRequestEvent) {
+                    handleAvatarRendererChangeRequest((AvatarRendererChangeRequestEvent)event);
+                }
+            }
+
+            @Override
+            public void computeEvent(Event evtIn) {
+            }
     }
 }

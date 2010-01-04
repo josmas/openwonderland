@@ -90,7 +90,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // Create the Palette menu and the Cell submenu and dialog that lets
         // users create new cells.  The menu will be added when our server
         // becomes primary.
-        paletteMI = new JMenuItem(BUNDLE.getString("Component..."));
+        paletteMI = new JMenuItem(BUNDLE.getString("Object..."));
         paletteMI.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

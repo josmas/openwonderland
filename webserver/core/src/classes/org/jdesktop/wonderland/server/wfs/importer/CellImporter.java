@@ -153,7 +153,7 @@ public class CellImporter {
          */
         Cell childs[] = dir.getChildren();
         if (childs == null) {
-            logger.warning("WSLoader: could not read children in WFS " + root);
+            logger.fine("WFSLoader: no children in " + dir.getRelativePath());
             return;
         }
         
@@ -264,6 +264,8 @@ public class CellImporter {
              */
             CellList newChildren = CellImporterUtils.getWFSChildren(root, cellPath);
             if (newChildren != null) {
+                logger.fine("WFSLoader: for path " + cellPath + " # of " +
+                        "children is " + newChildren.getChildren());
                 children.addLast(newChildren);
             }
         }

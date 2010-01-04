@@ -47,9 +47,6 @@ public class ConeOfSilenceCellMO extends CellMO {
     private static final Logger logger =
 	Logger.getLogger(ConeOfSilenceCellMO.class.getName());
 
-    private String name;
-    private float fullVolumeRadius;
-
     @UsesCellComponentMO(ConeOfSilenceComponentMO.class)
     private ManagedReference<ConeOfSilenceComponentMO> compRef;
 
@@ -82,7 +79,7 @@ public class ConeOfSilenceCellMO extends CellMO {
     @Override
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new ConeOfSilenceCellClientState(name, fullVolumeRadius);
+            cellClientState = new ConeOfSilenceCellClientState();
         }
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -96,8 +93,7 @@ public class ConeOfSilenceCellMO extends CellMO {
 
 	ConeOfSilenceCellServerState coneOfSilenceCellServerState = (ConeOfSilenceCellServerState) cellServerState;
 
-	name = coneOfSilenceCellServerState.getName();
-	fullVolumeRadius = coneOfSilenceCellServerState.getFullVolumeRadius();
+	setLocalBounds(new BoundingSphere(4.5f, new Vector3f()));
     }
 
     /**
@@ -107,7 +103,7 @@ public class ConeOfSilenceCellMO extends CellMO {
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new ConeOfSilenceCellServerState(name, fullVolumeRadius);
+            cellServerState = new ConeOfSilenceCellServerState();
         }
         return super.getServerState(cellServerState);
     }

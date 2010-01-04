@@ -100,6 +100,10 @@ public class HUDEvent {
          */
         CHANGED_NAME,
         /**
+         * A HUD object's control state changed
+         */
+        CHANGED_CONTROL,
+        /**
          * A HUD object has been closed
          */
         CLOSED

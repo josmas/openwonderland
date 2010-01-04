@@ -258,7 +258,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // Fetch the currently selected Cell. If none, then do nothing
         Cell cell = getSelectedCell();
         if (cell == null) {
-            affordanceHUD.setName(BUNDLE.getString("Edit_Component_None_Selected"));
+            affordanceHUD.setName(BUNDLE.getString("Edit_Object_None_Selected"));
             translateToggleButton.setSelected(false);
             translateToggleButton.setEnabled(false);
             rotateToggleButton.setSelected(false);
@@ -271,7 +271,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         }
 
         // Set the name of the Cell label
-        String name = BUNDLE.getString("Edit_Component");
+        String name = BUNDLE.getString("Edit_Object");
         name = MessageFormat.format(name, cell.getName());
         affordanceHUD.setName(name);
         Logger.getLogger(AffordanceHUDPanel.class.getName()).warning("Setting name to " + name);

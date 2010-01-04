@@ -37,6 +37,8 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 /**
  * If you want to customize the geometry of a displayer, implement
  * this interface and pass an instance to displayer.setGeometryNode.
+ *
+ * @author deronj
  */
 @ExperimentalAPI
 public abstract class GeometryNode extends Node {
@@ -173,6 +175,7 @@ public abstract class GeometryNode extends Node {
             }
         }
 
+        // TODO
         Window2D window = view.getWindow();
         int winWidth = window.getWidth();
         int winHeight = window.getHeight();
@@ -346,8 +349,7 @@ public abstract class GeometryNode extends Node {
         int width = (int) v2e.getDisplayerLocalWidth();
         int height = (int) v2e.getDisplayerLocalHeight();
 
-        // TODO: must handle subwindow case (bug 218)
-        Vector2f locOrtho = v2e.getLocationOrtho();
+        Vector2f locOrtho = calcLocationOrtho();
 
         // Compute top left in canvas coords
         int canvasHeight = JmeClientMain.getFrame().getCanvas().getHeight();
@@ -356,9 +358,52 @@ public abstract class GeometryNode extends Node {
         topLeft.y = canvasHeight - (int)locOrtho.y - height/2;
         Point bottomRight = new Point(topLeft.x + width - 1, topLeft.y + height - 1);
 
-        Point pt = new Point(x - topLeft.x, y - topLeft.y);
+        // Convert to view local coords
+        float xLocal = x - topLeft.x;
+        float yLocal = y - topLeft.y;
+
+        // Convert to pixel coords
+        Vector2f pixelScale = v2e.getPixelScaleOrtho();
+        int xPixel = (int)(xLocal / pixelScale.x);
+        int yPixel = (int)(yLocal / pixelScale.y);
+
+        Point pt = new Point(xPixel, yPixel);
         logger.fine("pixel position = " + pt);
         return pt;
+    }
+
+    /**
+     * Calculate the center position of this view in the ortho coordinate system.
+     */
+    private Vector2f calcLocationOrtho () {
+
+        if (view.getType() == View2D.Type.PRIMARY ||
+            view.getType() == View2D.Type.UNKNOWN) {
+            return ((View2DEntity)view).getLocationOrtho();
+        }
+
+        // Sum pixel offsets up to the ultimate parent
+        Point pixelOffsetTotal = new Point();
+        View2D parent = view.getParent();
+        while (parent != null) {
+            Point pixelOffset = view.getPixelOffset();
+            pixelOffsetTotal.x += pixelOffset.x;
+            pixelOffsetTotal.y += pixelOffset.y;
+            view = parent;
+            parent = view.getParent();
+        }
+
+        // Convert pixel offset to an offset in local coords
+        View2DEntity v2e = (View2DEntity) view;
+        Vector2f pixelScale = v2e.getPixelScaleOrtho();
+        Vector2f locationOrtho = new Vector2f((float) pixelOffsetTotal.x, (float) pixelOffsetTotal.y);
+        locationOrtho.x *= pixelScale.x;
+        locationOrtho.y *= pixelScale.y;
+
+        // Now add in the location of the ultimate parent in ortho coordinates.
+        locationOrtho = locationOrtho.add(v2e.getLocationOrtho());
+
+        return locationOrtho;
     }
 }
 

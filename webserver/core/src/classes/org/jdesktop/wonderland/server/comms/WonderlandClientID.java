@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.comms;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ObjectNotFoundException;
 import java.io.Serializable;
 import java.math.BigInteger;
 
@@ -70,9 +71,16 @@ public class WonderlandClientID implements Serializable {
      * <code>ClientSession.send()</code> method should not be used directly.
      * Instead, use
      * <code>WonderlandClientSender.send(WonderlandClientID, message)</code>.
+     * @return the session associated with this client, or null if the session
+     * has expired because the user logged out.
      */
     public ClientSession getSession() {
-        return sessionRef.get();
+        try {
+            return sessionRef.get();
+        } catch (ObjectNotFoundException onfe) {
+            // issue 963: return null if the session no longer exists
+            return null;
+        }
     }
 
     /**

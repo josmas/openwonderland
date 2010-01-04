@@ -42,7 +42,7 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
     private static final int MIN_LEFT_MARGIN = 10;
     private static final int MIN_RIGHT_MARGIN = 10;
     private static final int MIN_TOP_MARGIN = 20;
-    private static final int MIN_BOTTOM_MARGIN = 10;
+    private static final int MIN_BOTTOM_MARGIN = 5;
     protected Map<HUDComponent, Vector2f> positionMap;
 
     public HUDCompassLayoutManager(HUD hud) {
@@ -106,12 +106,14 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
             float compHeight = view2d.getDisplayerLocalHeight();
 
             // get the bounds of the HUD containing the component
+            int hudX = hud.getX();
+            int hudY = hud.getY();
             int hudWidth = hud.getWidth();
             int hudHeight = hud.getHeight();
 
             // find the center of the HUD
-            float hudCenterX = hudWidth / 2f;
-            float hudCenterY = hudHeight / 2f;
+            float hudCenterX = hudX + hudWidth / 2f;
+            float hudCenterY = hudY + hudHeight / 2f;
 
             if ((component.getPreferredLocation() != Layout.NONE) &&
                     (component.getX() == 0) && (component.getY() == 0)) {
@@ -149,28 +151,41 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
                         break;
                 }
                 // offset from the HUD origin
-                location.set(location.x + hud.getX(), location.y + hud.getY());
+                location.set(location.x + hudX, location.y + hudY);
             } else {
                 // just use the component's current location, but constrain the
                 // position of the component to fit the bounds of the HUD
                 int x = component.getX();
                 int y = component.getY();
 
-                if (x < hud.getX() + MIN_LEFT_MARGIN) {
-                    x = hud.getX() + MIN_LEFT_MARGIN;
-                } else if (x + compWidth > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
-                    x = (int) (hud.getX() + hudWidth - MIN_RIGHT_MARGIN - compWidth);
+                if (x + compWidth < hudX + MIN_LEFT_MARGIN*4) {
+                    // allow component to move off left edge, with at least
+                    // MIN_LEFT_MARGIN visible (close button visible)
+                    x = (int) (hudX + MIN_LEFT_MARGIN*4 - compWidth);
+                } else if (x > hudX + hudWidth - MIN_RIGHT_MARGIN) {
+                    // allow component to move off right edge, with at least
+                    // MIN_RIGHT_MARGIN visible
+                    x = hudX + hudWidth - MIN_RIGHT_MARGIN;
                 }
-                if (y < hud.getY() + MIN_BOTTOM_MARGIN) {
-                    y = hud.getY() + MIN_BOTTOM_MARGIN;
-                } else if (y + compHeight > hud.getY() + hudHeight - MIN_TOP_MARGIN) {
-                    y = (int) (hud.getY() + hudHeight - MIN_TOP_MARGIN - compHeight);
+                if (y + compHeight < hud.getY() + MIN_BOTTOM_MARGIN) {
+                    // allow component to move off bottom edge, with at least
+                    // MIN_BOTTOM_MARGIN visible (header visible)
+                    y = (int) (hudY + MIN_BOTTOM_MARGIN - compHeight);
+                } else if (y + compHeight > hudY + hudHeight - MIN_TOP_MARGIN) {
+                    // do not allow component to move off top of HUD
+                    y = (int) (hudY + hudHeight - MIN_TOP_MARGIN - compHeight);
                 }
+
                 location.set(x, y);
             }
 
+            if (location.y + compHeight > hudY + hudHeight) {
+                // make sure frame header isn't off top of HUD
+                location.set(location.x, hudY + hudHeight - MIN_TOP_MARGIN - compHeight);
+            }
+
             Vector2f currentPosition = positionMap.get(component);
-            Vector2f newPosition = new Vector2f((location.x - hud.getX()) / hudWidth, (location.y - hud.getY()) / hudHeight);
+            Vector2f newPosition = new Vector2f((location.x - hudX) / hudWidth, (location.y - hudY) / hudHeight);
 
             if ((currentPosition == null) || (Math.abs(currentPosition.x - newPosition.x) > 0.03) || (Math.abs(currentPosition.y - newPosition.y) > 0.03)) {
                 positionMap.put(component, newPosition);
@@ -201,6 +216,10 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
 
         HUDComponent2D component2D = (HUDComponent2D) component;
         Vector2f positionPercent = positionMap.get(component2D);
+        if (positionPercent == null) {
+            logger.warning("no position for component: " + component2D);
+            return;
+        }
         float compX = hud.getX() + positionPercent.x * hudWidth;
         float compY = hud.getY() + positionPercent.y * hudHeight;
 

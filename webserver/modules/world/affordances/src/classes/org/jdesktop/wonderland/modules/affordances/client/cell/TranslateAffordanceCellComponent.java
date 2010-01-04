@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.affordances.client.cell;
 
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.utils.CellPlacementUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.affordances.client.jme.TranslateAffordance;
@@ -75,11 +76,33 @@ public class TranslateAffordanceCellComponent extends AffordanceCellComponent {
          * @inheritDoc()
          */
         public void translationPerformed(Vector3f translation) {
-            // Move the cell via the moveable comopnent
-            CellTransform transform = cell.getLocalTransform();
-            Vector3f newTranslation = translationOnPress.add(translation);
-            transform.setTranslation(newTranslation);
-            movableComp.localMoveRequest(transform);
+
+            // We must convert the translation in world coordinates to local
+            // coordinates of the Cell. First find the Cell Transform of the
+            // parent Cell (if there is one) and the world root transform.
+            CellTransform cellWorldTransform = new CellTransform();
+            if (cell.getParent() != null) {
+                cellWorldTransform = cell.getParent().getWorldTransform();
+                cellWorldTransform.setTranslation(new Vector3f());
+            }
+            CellTransform worldTransform = new CellTransform();
+
+            // Formulate a new transform that just has the new world translation
+            // of the Cell.
+            CellTransform transform = new CellTransform(null, translation);
+
+            // Convert into a Cell's local coordinations.
+            CellTransform newTransform = CellPlacementUtils.transform(
+                    transform, worldTransform, cellWorldTransform);
+
+            // Find out how much to add to the transform. This is done in
+            // world coordinates.
+            Vector3f newTranslation = translationOnPress.add(newTransform.getTranslation(null));
+
+            // Set the translation back on the Cell using the movable component
+            CellTransform cellTransform = cell.getLocalTransform();
+            cellTransform.setTranslation(newTranslation);
+            movableComp.localMoveRequest(cellTransform);
         }
 
         /**

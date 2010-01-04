@@ -45,9 +45,11 @@ import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkClientConfigConnection.PlacemarkConfigListener;
-import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkListener;
-import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkType;
-import org.jdesktop.wonderland.modules.placemarks.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkListener;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkType;
+import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
+import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
 
 /**
@@ -103,7 +105,6 @@ public class PlacemarkPlugin extends BaseClientPlugin
                     JFrame frame = JmeClientMain.getFrame().getFrame();
                     managePlacemarksFrame = new EditPlacemarksJFrame();
                     managePlacemarksFrame.setLocationRelativeTo(frame);
-                    managePlacemarksFrame.setSize(500, 300);
                     managePlacemarksFrameRef =
                             new WeakReference(managePlacemarksFrame);
                 } else {
@@ -111,7 +112,6 @@ public class PlacemarkPlugin extends BaseClientPlugin
                 }
 
                 if (!managePlacemarksFrame.isVisible()) {
-                    managePlacemarksFrame.setSize(400, 300);
                     managePlacemarksFrame.setVisible(true);
                 }
             }
@@ -131,7 +131,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
                 // Fetch the list of known USER Placemark names
                 PlacemarkRegistry registry =
-                        PlacemarkRegistry.getPlacemarkRegistry();
+                        PlacemarkRegistryFactory.getInstance();
                 Set<Placemark> placemarkSet =
                         registry.getAllPlacemarks(PlacemarkType.USER);
 
@@ -155,8 +155,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
                     float y = dialog.getLocationY();
                     float z = dialog.getLocationZ();
                     float angle = dialog.getLookAtAngle();
-                    Placemark newPlacemark =
-                            new Placemark(name, url, x, y, z, angle);
+                    Placemark newPlacemark = new Placemark(name, url, x, y, z, angle);
 
                     try {
                         PlacemarkUtils.addUserPlacemark(newPlacemark);
@@ -168,23 +167,19 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
                     // Tell the client-side registry of placemarks that a new
                     // one has been added
-                    registry.registerPlacemark(
-                            newPlacemark, PlacemarkType.USER);
+                    registry.registerPlacemark(newPlacemark, PlacemarkType.USER);
                 }
             }
         });
 
         // Menu item to take avatar to starting location
-        startingLocationMI = new JMenuItem(
-                BUNDLE.getString("Starting_Location"));
+        startingLocationMI = new JMenuItem(BUNDLE.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 Vector3f position = new Vector3f();
                 Quaternion look = new Quaternion();
                 try {
-                    ClientContextJME.getClientMain().gotoLocation(
-                            null, position, look);
+                    ClientContextJME.getClientMain().gotoLocation(null, position, look);
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Failed to go to starting " +
                             "location.", ex);
@@ -212,7 +207,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
         // Listen for changes to the list of Placemarks. This needs to come
         // first before we actually add the Placemarks from WebDav
-        PlacemarkRegistry registry = PlacemarkRegistry.getPlacemarkRegistry();
+        PlacemarkRegistry registry = PlacemarkRegistryFactory.getInstance();
         registry.addPlacemarkRegistryListener(listener);
 
         // Fetch the list of system-wide placemarks and add them to the
@@ -287,8 +282,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
     private void connectClient(WonderlandSession session) {
         try {
             configListener = new ClientPlacemarkConfigListener();
-            placemarksConfigConnection.addPlacemarkConfigListener(
-                    configListener);
+            placemarksConfigConnection.addPlacemarkConfigListener(configListener);
             placemarksConfigConnection.connect(session);
         } catch (ConnectionFailureException e) {
             LOGGER.log(Level.WARNING, "Connect client error", e);
@@ -300,8 +294,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
      */
     private void disconnectClient() {
         placemarksConfigConnection.disconnect();
-        placemarksConfigConnection.removePlacemarkConfigListener(
-                configListener);
+        placemarksConfigConnection.removePlacemarkConfigListener(configListener);
         configListener = null;
     }
 
@@ -335,8 +328,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
         // following formula: angle = atan2(normal dot (v1 cross v2), v1 dot v2)
         float dotProduct = v1.dot(v2);
         Vector3f crossProduct = v1.cross(v2);
-        float lookAngle = (float) Math.atan2(
-                normal.dot(crossProduct), dotProduct);
+        float lookAngle = (float) Math.atan2(normal.dot(crossProduct), dotProduct);
         lookAngle = (float) Math.toDegrees(lookAngle);
 
         return new Placemark("", url, x, y, z, lookAngle);
@@ -345,18 +337,17 @@ public class PlacemarkPlugin extends BaseClientPlugin
     /**
      * Listens for when Placemarks are added or removed.
      */
-    private class ClientPlacemarkConfigListener
-            implements PlacemarkConfigListener {
+    private class ClientPlacemarkConfigListener implements PlacemarkConfigListener {
 
         public void placemarkAdded(Placemark placemark) {
             PlacemarkRegistry registry =
-                    PlacemarkRegistry.getPlacemarkRegistry();
+                    PlacemarkRegistryFactory.getInstance();
             registry.registerPlacemark(placemark, PlacemarkType.SYSTEM);
         }
 
         public void placemarkRemoved(Placemark placemark) {
             PlacemarkRegistry registry =
-                    PlacemarkRegistry.getPlacemarkRegistry();
+                    PlacemarkRegistryFactory.getInstance();
             registry.unregisterPlacemark(placemark, PlacemarkType.SYSTEM);
         }
     }
@@ -386,9 +377,14 @@ public class PlacemarkPlugin extends BaseClientPlugin
             Vector3f axis = new Vector3f(Vector3f.UNIT_Y);
             look.fromAngleAxis((float) Math.toRadians(angle), axis);
 
+            // If the URL is an empty string, convert it to null. If the URL
+            // is null, then it will use the current server.
+            if (url != null && url.length() == 0) {
+                url = null;
+            }
+
             try {
-                ClientContextJME.getClientMain().gotoLocation(
-                        url, location, look);
+                ClientContextJME.getClientMain().gotoLocation(url, location, look);
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, null, ex);
             }

@@ -26,6 +26,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.LinkedList;
 
 /**
  * The generic 2D application superclass. All 2D apps in Wonderland have this
@@ -95,6 +97,12 @@ public abstract class App2D {
     private FirstVisibleInitializer fvi;
 
     /**
+     * False if shutdown() has been called. If true, the app base is running. If false, it
+     * has been shut down by a Java runtime hook.
+     */
+    private static boolean isAppBaseRunning = true;
+
+    /**
      * There are some deadlock situations during app cleanup. I would prefer to address this
      * by replacing all app base locks with a single app-wide lock, but that is to big a change
      * to do at this point. For now, we'll just use this lock to force the cleanup process to be
@@ -102,12 +110,32 @@ public abstract class App2D {
      */
     private final Integer appCleanupLock = new Integer(0);
 
+    /**
+     * A singleton thread which the app base uses to offload things from the Render Thread that
+     * shouldn't be done on the EDT. This thread provides serialization of execution
+     * like the EDT, so it can run MT unsafe code. But, unlike the EDT, it is okay to 
+     * acquire appbase object locks on this thread. 
+     */
+    private static Thread invoker;
+
+    /** A queue used by the invoker thread. */
+    //private static LinkedBlockingQueue<Runnable> invokeLaterQueue = new LinkedBlockingQueue<Runnable>();
+    private static LinkedList<Runnable> invokeLaterQueue = new LinkedList<Runnable>();
+
+    /** A flag which stops the invoker thread. */
+    private static boolean stopInvoker = false;
+
     // Register the appbase shutdown hook
     static {
+
         Runtime.getRuntime().addShutdownHook(new Thread("App Base Shutdown Hook") {
             @Override
             public void run() { App2D.shutdown(); }
         });
+
+        // Start the invoker thread
+        invoker = new Thread(new Invoker(), "Invoker Thread for App Base");
+        invoker.start();
     }
 
     /**
@@ -163,23 +191,51 @@ public abstract class App2D {
 
     /**
      * Deallocate resources.
+     *
+     * THREAD USAGE NOTE: This is sometimes called on the EDT (e.g.HeaderPanel close button)
+     * and sometimes called off the EDT (e.g. App2DCell.setStatus, SasXreminProviderMain.stop).
+     * Do not call this while holding any app base locks.
      */
     public void cleanup() {
+
+        // Must be done outside the app cleanup lock.
+        if (controlArb != null) {
+            controlArb.cleanup();
+            controlArb = null;
+        }
+
         synchronized (appCleanupLock) {
+            setShowInHUD(false);
             viewSet.cleanup();
-            if (controlArb != null) {
-                controlArb.cleanup();
-                controlArb = null;
-            }
             stack.cleanup();
-            LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
-            for (Window2D window : toRemoveList) {
+
+            LinkedList<Window2D> windowsCopy;
+            synchronized (this) {
+                windowsCopy = (LinkedList<Window2D>) windows.clone();
+                windows.clear();
+            }
+
+            for (Window2D window : windowsCopy) {
                 window.cleanup();
             }
-            windows.clear();
-            toRemoveList.clear();
+
             pixelScale = null;
         }
+
+        synchronized(apps) {
+            apps.remove(this);
+        }
+    }
+
+    // Signal the invoker to stop and wake it up so it actually stops.
+    private static void stopInvokerThread () {
+        stopInvoker = true;
+        invokeLater(new Runnable () {
+            public void run () {
+                // Do nothing
+            }
+        });
+        invoker = null;
     }
 
     /** INTERNAL ONLY. */
@@ -228,8 +284,10 @@ public abstract class App2D {
      * Add a window to this app. 
      * @param window The window to add.
      */
-    public synchronized void addWindow(Window2D window) {
-        windows.add(window);
+    public void addWindow(Window2D window) {
+        synchronized (this) {
+            windows.add(window);
+        }
         viewSet.add(window);
     }
 
@@ -240,7 +298,9 @@ public abstract class App2D {
     public void removeWindow(Window2D window) {
         synchronized (appCleanupLock) {
             viewSet.remove(window);
-            windows.remove(window);
+            synchronized (this) {
+                windows.remove(window);
+            }
             if (window == primaryWindow) {
                 setPrimaryWindow(null);
             }
@@ -270,7 +330,12 @@ public abstract class App2D {
         this.primaryWindow = primaryWindow;
         logger.info("set primary window to " + primaryWindow);
 
-        for (Window2D window : windows) {
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
             if (window.getType() == Window2D.Type.SECONDARY) {
                 window.setParent(primaryWindow);
             }
@@ -297,7 +362,12 @@ public abstract class App2D {
      * Tell all windows that their stack order may have changed.
      */
     private void changedStackAllWindows () {
-        for (Window2D window : windows) {
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
             window.changedStack();
         }
     }
@@ -306,7 +376,12 @@ public abstract class App2D {
      * Tell all non-coplanar windows (except the argument window) that their stack order may have changed.
      */
     public void changedStackAllWindowsExcept (Window2D windowExcept) {
-        for (Window2D window : windows) {
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
             if (window != windowExcept) {
                 if (!window.isCoplanar()) {
                     window.changedStack();
@@ -357,20 +432,34 @@ public abstract class App2D {
         return getName();
     }
 
-    /** Executed by the JVM shutdown process. */
+    /** 
+     * Executed by the JVM shutdown process. 
+     *
+     * THREAD USAGE NOTE: No appbase locks are held during this call. 
+     */
     private static void shutdown () {
-        logger.warning("Shutting down app base...");
+        logger.info("Shutting down app base...");
+        isAppBaseRunning = false;
 
         // Note: I tried to run this in a synchronized block, but it hung.
         LinkedList<App2D> appsCopy = (LinkedList<App2D>) apps.clone();
         for (App2D app : appsCopy) {
-            logger.warning("Shutting down app " + app);
+            logger.info("Shutting down app " + app);
             app.cleanup();
         }
-        logger.warning("Done shutting down apps.");
+        logger.info("Done shutting down apps.");
 
         apps.clear();
-        logger.warning("Done shutting down app base.");
+        stopInvokerThread();
+
+        logger.info("Done shutting down app base.");
+    }
+
+    /**
+     * Returns whether the app base is running.
+     */
+    public static boolean isAppBaseRunning () {
+        return isAppBaseRunning;
     }
 
     /**
@@ -391,6 +480,13 @@ public abstract class App2D {
     }
 
     /**
+     * Returns true if the app is currently shown in the HUD.
+     */
+    public boolean isShownInHUD () {
+        return showInHUD;
+    }
+
+    /**
      * Specify a first-visible initializer for this app. If non-null, this will perform
      * some sort of initialization for the app the first time a window is made visible.
      */
@@ -404,5 +500,70 @@ public abstract class App2D {
      */
     public FirstVisibleInitializer getFirstVisibleInitializer () {
         return fvi;
+    }
+
+    /**
+     * Invoked in the sas xremwin provider to guaranteed that the app is completely
+     * stopped, including the app processes.
+     *
+     * THREAD USAGE NOTE: Called from a darkstar comm thread in the SAS. No appbase locks are held 
+     * during this call. 
+     */
+    public void stop () {
+
+        LinkedList<Window2D> windowsCopy;
+        synchronized (this) {
+            windowsCopy = (LinkedList<Window2D>) windows.clone();
+        }
+            
+        for (Window2D window : windowsCopy) {
+            window.closeUser(true);
+        }
+
+        cleanup();
+    }
+
+    /**
+     * Invoke the given runnable later (at some point in time). The app base uses
+     * this to offload things from the Render Thread that shouldn't be done on the EDT. 
+     * This provides serialization of execution like the EDT, so it can run MT unsafe code.
+     * But, unlike the SwingUtilities.invokeLater, it is okay to acquire appbase object 
+     * locks on this thread.
+     */
+    public static void invokeLater (Runnable runnable) {
+        synchronized (invokeLaterQueue) {
+            invokeLaterQueue.addLast(runnable);
+            invokeLaterQueue.notifyAll();
+        }
+    }
+
+    static long start;
+    static long stop;
+
+    private static class Invoker implements Runnable {
+        public void run () {
+            while (!stopInvoker) {
+                try {
+                    //Runnable runnable = invokeLaterQueue.take();
+                    Runnable runnable = null;
+                    synchronized (invokeLaterQueue) {
+                        while (invokeLaterQueue.size() <= 0 && !stopInvoker) {
+                            invokeLaterQueue.wait();
+                        }
+                        if (!stopInvoker) {
+                            runnable = invokeLaterQueue.getFirst();
+                            invokeLaterQueue.remove(0);
+                        }
+                    }
+                    if (runnable != null) {
+                        runnable.run();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    stopInvoker = true;
+                }
+            }
+            logger.info("App Base Invoker Thread stopped");
+        }
     }
 }

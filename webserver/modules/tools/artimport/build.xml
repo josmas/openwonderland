@@ -32,7 +32,7 @@
         </copy>
 
         <module name="artimport" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/artimport.jar"
-                moduleDescription="Art Import tools" builddir="${build.dir}">
+                moduleDescription="3D model import library" builddir="${build.dir}">
                     
             <client dir="${current.dir}/lib">
                 <clientjar name="artimport-client" basedir="${build.classes.dir}">

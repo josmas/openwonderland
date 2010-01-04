@@ -23,7 +23,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="palette" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Cell palette library" builddir="${build.dir}">
                     
             <client>
                 <clientjar name="palette-client" basedir="${build.classes.dir}">

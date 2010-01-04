@@ -21,6 +21,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.state.CullState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.resource.ResourceLocator;
@@ -43,18 +44,18 @@ import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.component.CellPhysicsPropertiesComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -84,6 +85,7 @@ public abstract class BasicRenderer implements CellRendererJME {
     private boolean collisionEnabled = true;
     private boolean pickingEnabled = true;
     private boolean lightingEnabled = true;
+    private boolean backfaceCullingEnabled = true;
 
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -144,11 +146,13 @@ public abstract class BasicRenderer implements CellRendererJME {
             case INACTIVE :
                 if (!increasing) {
                     try {
-                        Entity parent = getEntity().getParent();
+                        Entity child = getEntity();
+                        Entity parent = child.getParent();
                         if (parent!=null)
-                            parent.removeEntity(getEntity());
+                            parent.removeEntity(child);
                         else
-                            ClientContextJME.getWorldManager().removeEntity(getEntity());
+                            ClientContextJME.getWorldManager().removeEntity(child);
+                        cleanupSceneGraph(child);
                     } catch(Exception e) {
                         System.err.println("NPE in "+this);
                         e.printStackTrace();
@@ -255,7 +259,8 @@ public abstract class BasicRenderer implements CellRendererJME {
             } else {
                 rc.setSceneRoot(rootNode);
             }
-            
+
+            // TODO: shouldn't this just be a call to adjustCollisionSystem()?
             WonderlandSession session = cell.getCellCache().getSession();
             CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
 
@@ -266,6 +271,9 @@ public abstract class BasicRenderer implements CellRendererJME {
             if (cc!=null) {
                 entity.addComponent(CollisionComponent.class, cc);
             }
+
+            // set initial lighting
+            adjustLighting(entity);
 
 //            PhysicsSystem jBulletPhysicsSystem = ClientContextJME.getPhysicsSystem(session.getSessionManager(), "Physics");
 //            CollisionSystem jBulletCollisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Physics");
@@ -334,6 +342,16 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @return
      */
     protected abstract Node createSceneGraph(Entity entity);
+
+    /**
+     * Cleanup the scene graph, allowing resources to be gc'ed
+     * TODO - should be abstract, but don't want to break compatability in 0.5 API
+     *
+     * @param entity
+     */
+    protected void cleanupSceneGraph(Entity entity) {
+
+    }
 
     /**
      * Apply the transform to the jme node
@@ -457,17 +475,46 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         this.lightingEnabled = lightingEnabled;
 
-        ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
-            public void commit() {
-                if (lightingEnabled) {
-                    rootNode.setLightCombineMode(Spatial.LightCombineMode.Inherit);
-                } else {
-                    rootNode.setLightCombineMode(Spatial.LightCombineMode.Off);
-                }
+        if (entity != null) {
+            adjustLighting(entity);
+        }
+    }
 
-                ClientContextJME.getWorldManager().addToUpdateList(rootNode);
+    public void setBackfaceCullingEnabled(boolean backfaceCullingEnabled) {
+        if (this.backfaceCullingEnabled==backfaceCullingEnabled)
+            return;
+
+        this.backfaceCullingEnabled = backfaceCullingEnabled;
+
+        if (entity!=null) {
+            final RenderComponent rc = entity.getComponent(RenderComponent.class);
+            final CullState.Face face = backfaceCullingEnabled ? CullState.Face.Back : CullState.Face.None;
+            if (rc!=null && rc.getSceneRoot()!=null) {
+                ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                    public void update(Object arg0) {
+                        TreeScan.findNode(rc.getSceneRoot(), new ProcessNodeInterface() {
+                            public boolean processNode(Spatial node) {
+                                CullState cs = (CullState) node.getRenderState(RenderState.RS_CULL);
+                                if (cs==null) {
+                                    cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_CULL);
+                                    node.setRenderState(cs);
+                                }
+                                cs.setCullFace(face);
+
+                                return true;
+                            }
+                        });
+                        ClientContextJME.getWorldManager().addToUpdateList(rc.getSceneRoot());
+                    }
+                }, null);
             }
-        });
+        }
+    }
+
+    private void adjustLighting(final Entity entity) {
+        RenderComponent rc = entity.getComponent(RenderComponent.class);
+        rc.setLightingEnabled(lightingEnabled);
     }
 
     /**

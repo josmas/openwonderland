@@ -992,6 +992,8 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         RenderComponent scene = renderManager.createRenderComponent(rootBG);
         entity.addComponent(RenderComponent.class, scene);
 
+        scene.setLightingEnabled(loadedModel.getImportSettings().isLightingEnabled());
+
         entity.addComponent(TransformProcessorComponent.class,
                 new TransformProcessorComponent(wm, modelBG, rootBG));
 

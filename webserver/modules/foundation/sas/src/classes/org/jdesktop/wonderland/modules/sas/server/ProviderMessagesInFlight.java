@@ -24,25 +24,37 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.util.LinkedList;
+import java.util.logging.Logger;
+
+/**
+ * There is one one instance of this data structure for every provider. It is used to store
+ * the app launch messages which have been sent to a provider whose result we have not yet
+ * been told by the provider.
+ *
+ * @author deronj
+ */
 
 // TODO: must have a timeout on how long messages live in this
 @ExperimentalAPI
 public class ProviderMessagesInFlight implements ManagedObject, Serializable {
 
+    private static final Logger logger = Logger.getLogger(ProviderMessagesInFlight.class.getName());
+
     class MessageInfo implements Serializable {
-        public ProviderProxy provider;
+        public ManagedReference providerRef;
         public CellID cellID;
-        public MessageInfo (ProviderProxy provider, CellID cellID) {
-            this.provider = provider;
+        public MessageInfo (ManagedReference providerRef, CellID cellID) {
+            this.providerRef = providerRef;
             this.cellID = cellID;
         }
     }
 
     private HashMap<MessageID,MessageInfo> messageMap = new HashMap<MessageID,MessageInfo>();
 
-    void addMessageInfo (MessageID msgID, ProviderProxy provider, CellID cellID) {
-        MessageInfo msgInfo = new MessageInfo(provider, cellID);
+    void addMessageInfo (MessageID msgID, ManagedReference providerRef, CellID cellID) {
+        MessageInfo msgInfo = new MessageInfo(providerRef, cellID);
         messageMap.put(msgID, msgInfo);
         AppContext.getDataManager().markForUpdate(this);
     }
@@ -59,11 +71,12 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
     /**
      * Removes all messages that are in-flight for a given cell and provider.
      */
-    void removeMessagesForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    void removeMessagesForCellAndProvider (ManagedReference providerRef, CellID cellID) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
-            if (messageInfo.cellID == cellID && messageInfo.provider == provider) {
+            if (messageInfo.cellID.equals(cellID) && 
+                messageInfo.providerRef.getId().equals(providerRef.getId())) {
                 removeList.add(msgID);
             }
         }        
@@ -77,11 +90,11 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
     /**
      * Removes all messages that are in-flight to the given provider.
      */
-    void removeMessagesForProvider (ProviderProxy provider) {
+    void removeMessagesForProvider (ManagedReference providerRef) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
-            if (messageInfo.provider == provider) {
+            if (messageInfo.providerRef.getId().equals(providerRef.getId())) {
                 removeList.add(msgID);
             }
         }        
@@ -94,10 +107,11 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
 
     // Given an an app identified by a provider and a cell, returns the launch message ID
     // for that app. TODO: someday: assumes only one app launched per cell.
-    MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    MessageID getLaunchMessageIDForCellAndProvider (ManagedReference providerRef, CellID cellID) {
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
-            if (messageInfo.provider == provider && messageInfo.cellID == cellID) {
+            if (messageInfo.providerRef.getId().equals(providerRef.getId()) && 
+                messageInfo.cellID.equals(cellID)) {
                 return msgID;
             }
         }        

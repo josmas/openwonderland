@@ -49,7 +49,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="sas" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
-                builddir="${build.dir}">
+                moduleDescription="Shared application server" builddir="${build.dir}">
 
            <client>
                <clientjar name="sas-client" basedir="${build.classes.dir}">

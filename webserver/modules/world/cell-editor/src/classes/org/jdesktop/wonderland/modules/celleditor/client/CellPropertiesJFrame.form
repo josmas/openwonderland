@@ -86,6 +86,16 @@
                     <Property name="verticalGap" type="int" value="0"/>
                   </Layout>
                   <SubComponents>
+                    <Component class="javax.swing.JButton" name="refreshButton">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle.properties" key="CellPropertiesJFrame.refreshButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JButton" name="restoreButton">
                       <Properties>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -271,7 +281,7 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="World Hierarchy">
+                        <TitledBorder title="Object Hierarchy">
                           <ResourceString PropertyName="titleX" bundle="org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle.properties" key="CellPropertiesJFrame.cellHierarchyPanel.border.title" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                         </TitledBorder>
                       </Border>

@@ -72,7 +72,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/ext/common/swing-layout-1.0.jar:../../../core/ext/common/mtgame.jar:../../../core/ext/jme20/target/jme.jar:../../../core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../appbase/build/client/appbase-client.jar:../appbase/build/client/appbase-client-cell.jar:../animationbase/lib/trident.jar:../animationbase/build/client/animationbase-client.jar</classpath>
+                <classpath mode="compile">../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/ext/common/swing-layout-1.0.jar:../../../core/ext/common/swing-worker-1.2.jar:../../../core/ext/common/mtgame.jar:../../../core/ext/jme20/target/jme.jar:../../../core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../appbase/build/client/appbase-client.jar:../appbase/build/client/appbase-client-cell.jar:../animationbase/lib/trident.jar:../animationbase/build/client/animationbase-client.jar</classpath>
                 <built-to>dist/hud.jar</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>

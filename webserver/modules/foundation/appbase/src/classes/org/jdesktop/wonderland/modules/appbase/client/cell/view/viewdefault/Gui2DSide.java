@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
-import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * The GUI code for a side of a frame.
@@ -77,6 +77,10 @@ class Gui2DSide extends Gui2D {
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 
             // We only recognize some events on the border when user has control
+            if (view == null || view.getWindow() == null ||
+                view.getWindow().getApp() == null || view.getWindow().getApp().getControlArb() == null) {
+                return;
+            }                
             if (view.getWindow().getApp().getControlArb().hasControl()) {
 
                 // Is this a Window menu event?
@@ -153,7 +157,7 @@ class Gui2DSide extends Gui2D {
     @Override
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
         if (action.type == ActionType.TO_FRONT) {
-            SwingUtilities.invokeLater(new Runnable () {
+            App2D.invokeLater(new Runnable() {
                 public void run () {
                     Gui2DSide.this.view.getWindow().restackToTop();
                 }

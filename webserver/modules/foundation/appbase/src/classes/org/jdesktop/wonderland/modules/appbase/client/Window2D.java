@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.client.hud.HUDDisplayable;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -65,23 +66,15 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
  * The generic 2D window superclass. All 2D windows in Wonderland have this root
  * class. Instances of this class are created by the createWindow methods of
  * App2D subclasses.
- *
+ * <br><br>
  * Windows can be arranged into a stack with other windows. Each window occupies
  * a unique position in the stack. The lowest window is at position 0, the
  * window immediately above that is at position 1, and so on.
+ * <br><br>
+ * A Window2D can have zero or more views. For example, a window can have a view which displays
+ * the window in a cell in the 3D world and it can also have a view which displays the window
+ * in the HUD. 
  *
-// TODO: move this to the class description
-// User configuration of a primary window configures the cell. A cell has only one primary window.
-// TODO: move this to the class description
-// A secondary window is a top-level window which is potentially decorated but which 
-// is positioned relative to the primary. A secondary window may be promoted to a 
-// primary window goes away.
-
-A Window2D can have zero or more views.
-
-fundamental: currently, a window can only have one view for a particular displayer    
-otherwise view.setParent gets really tricky
-
  * @author deronj
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  *
@@ -236,7 +229,9 @@ public abstract class Window2D implements HUDDisplayable {
     private ContextMenuItem toBackMenuItem;
     private ContextMenuItem releaseControlMenuItem;
     private ContextMenuItem takeControlMenuItem;
-    private ContextMenuItem showInHudMenuItem;
+
+    /** True if cleanup has been called. */
+    private boolean isZombie = false;
 
     /**
      * Create an instance of Window2D with a default name. The first such window
@@ -284,7 +279,7 @@ public abstract class Window2D implements HUDDisplayable {
 
         this.surface = surface;
         surface.setWindow(this);
-
+       
         // Must occur before adding window to the app
         updateTexture();
 
@@ -292,6 +287,7 @@ public abstract class Window2D implements HUDDisplayable {
 
         changeMask = CHANGED_ALL;
         updateViews();
+        updateFrames();
     }
 
     /**
@@ -402,12 +398,14 @@ public abstract class Window2D implements HUDDisplayable {
 
         changeMask = CHANGED_ALL;
         updateViews();
+        updateFrames();
     }
 
     /**
      * {@inheritDoc}
      */
     public void cleanup() {
+        isZombie = true;
         if (app == null) {
             return;
         }
@@ -427,6 +425,13 @@ public abstract class Window2D implements HUDDisplayable {
                 visibleApp = false;
             }
         }
+    }
+
+    /**
+     * Returns whether cleanup has been called on this window.
+     */
+    public boolean isZombie () {
+        return isZombie;
     }
 
     /**
@@ -488,17 +493,19 @@ public abstract class Window2D implements HUDDisplayable {
      * is going to shortly make a secondary into the new primary.
      */
     @InternalAPI
-    public synchronized void setType(Type type, boolean okayToDemotePrimary) throws IllegalStateException {
+    public void setType(Type type, boolean okayToDemotePrimary) throws IllegalStateException {
 
-        if (type == Type.UNKNOWN) {
-            throw new RuntimeException("Cannot set window type to unknown.");
-        }
+        synchronized (this) {
 
-        if (this.type == type) {
-            return;
-        }
+            if (type == Type.UNKNOWN) {
+                throw new RuntimeException("Cannot set window type to unknown.");
+            }
 
-        switch (this.type) {
+            if (this.type == type) {
+                return;
+            }
+
+            switch (this.type) {
             case UNKNOWN:
             case SECONDARY:
                 break;
@@ -509,27 +516,32 @@ public abstract class Window2D implements HUDDisplayable {
                 break;
             case POPUP:
                 throw new IllegalStateException(
-                        "Cannot change the type of a popup window.");
-        }
+                                                "Cannot change the type of a popup window.");
+            }
 
-        if (type == Type.PRIMARY) {
-            // Is there already a primary window? 
-            if (app.getPrimaryWindow() != null) {
-                throw new IllegalStateException(
-                        "This app already has a primary window.");
+            if (type == Type.PRIMARY) {
+                // Is there already a primary window? 
+                if (app != null && app.getPrimaryWindow() != null) {
+                    throw new IllegalStateException(
+                                                    "This app already has a primary window.");
+                }
+            }
+
+            logger.info("Set type of window " + this + " to " + type);
+            this.type = type;
+            changeMask |= CHANGED_TYPE;
+            updateViews();
+
+            if (type == Type.PRIMARY) {
+                // Tell the app about the new primary. This also parent existing
+                // secondaries to this new primary.
+                if (app != null) {
+                    app.setPrimaryWindow(this);
+                }
             }
         }
 
-        logger.info("Set type of window " + this + " to " + type);
-        this.type = type;
-        changeMask |= CHANGED_TYPE;
-        updateViews();
-
-        if (type == Type.PRIMARY) {
-            // Tell the app about the new primary. This also parent existing
-            // secondaries to this new primary.
-            app.setPrimaryWindow(this);
-        }
+        updateFrames();
     }
 
     /**
@@ -542,14 +554,18 @@ public abstract class Window2D implements HUDDisplayable {
     /** 
      * Set the parent of the window. (This is ignored for primary windows). 
      */
-    public synchronized void setParent(Window2D parent) {
-        if (type == Type.PRIMARY || parent == this.parent) {
-            return;
+    public void setParent(Window2D parent) {
+        synchronized (this) {
+            if (type == Type.PRIMARY || parent == this.parent) {
+                return;
+            }
+            logger.info("Set parent of window " + this + " to " + parent);
+            this.parent = parent;
+            changeMask |= CHANGED_PARENT;
+            updateViews();
         }
-        logger.info("Set parent of window " + this + " to " + parent);
-        this.parent = parent;
-        changeMask |= CHANGED_PARENT;
-        updateViews();
+
+        updateFrames();
     }
 
     /**
@@ -587,12 +603,16 @@ public abstract class Window2D implements HUDDisplayable {
      * parent the offset is ignored. Any decoration is ignored.
      */
     public void setOffset(Vector2f offset) {
-        if (this.offset.x == offset.x && this.offset.y == offset.y) {
-            return;
+        synchronized (this) {
+            if (this.offset.x == offset.x && this.offset.y == offset.y) {
+                return;
+            }
+            this.offset = (Vector2f) offset.clone();
+            changeMask |= CHANGED_OFFSET;
+            updateViews();
         }
-        this.offset = (Vector2f) offset.clone();
-        changeMask |= CHANGED_OFFSET;
-        updateViews();
+
+        updateFrames();
     }
 
     /**
@@ -618,13 +638,16 @@ public abstract class Window2D implements HUDDisplayable {
      * offset. If the window has no parent the offset is ignored. Any decoration
      * is ignored.
      */
-    public synchronized void setPixelOffset(int x, int y) {
-        if (pixelOffset.x == x && pixelOffset.y == y) {
-            return;
+    public void setPixelOffset(int x, int y) {
+        synchronized (this) {
+            if (pixelOffset.x == x && pixelOffset.y == y) {
+                return;
+            }
+            this.pixelOffset = new Point(x, y);
+            changeMask |= CHANGED_OFFSET;
+            updateViews();
         }
-        this.pixelOffset = new Point(x, y);
-        changeMask |= CHANGED_OFFSET;
-        updateViews();
+        updateFrames();
     }
 
     /**
@@ -655,31 +678,34 @@ public abstract class Window2D implements HUDDisplayable {
      * @param width The new width of the window.
      * @param height The new height of the window.
      */
-    public synchronized void setSize(int width, int height) {
+    public void setSize(int width, int height) {
+        synchronized (this) {
 
-        if (width <= 0 || height <= 0) {
-            throw new RuntimeException("Invalid window size");
-        }
+            if (width <= 0 || height <= 0) {
+                throw new RuntimeException("Invalid window size");
+            }
 
-        if (this.size.width == width && this.size.height == height) {
-            return;
-        }
-        Dimension oldSize = this.size;
-        this.size = new Dimension(width, height);
-        if (surface != null) {
-            surface.setTexture(texture);
-            surface.setSize(width, height);
-        }
-        changeMask |= CHANGED_SIZE;
-        updateViews();
+            if (this.size.width == width && this.size.height == height) {
+                return;
+            }
+            Dimension oldSize = this.size;
+            this.size = new Dimension(width, height);
+            if (surface != null) {
+                surface.setTexture(texture);
+                surface.setSize(width, height);
+            }
+            changeMask |= CHANGED_SIZE;
+            updateViews();
 
-        // Call resize listeners
-        synchronized (resizeListeners) {
-            for (ResizeListener listener : resizeListeners) {
-                listener.windowResized(this, oldSize, this.size);
+            // Call resize listeners
+            synchronized (resizeListeners) {
+                for (ResizeListener listener : resizeListeners) {
+                    listener.windowResized(this, oldSize, this.size);
+                }
             }
         }
 
+        updateFrames();
     }
 
     /**
@@ -712,23 +738,27 @@ public abstract class Window2D implements HUDDisplayable {
      * @param sibling The window which will be directly below this window after
      * this call.
      */
-    public synchronized void configure(int width, int height, Window2D sibWin) {
+    public void configure(int width, int height, Window2D sibWin) {
+        synchronized (this) {
 
-        if (width <= 0 || height <= 0) {
-            throw new RuntimeException("Invalid window size");
+            if (width <= 0 || height <= 0) {
+                throw new RuntimeException("Invalid window size");
+            }
+
+            this.size = new Dimension(width, height);
+            changeMask |= CHANGED_SIZE;
+
+            if (sibWin != null) {
+                app.getWindowStack().restackAbove(this, sibWin);
+                changeMask |= CHANGED_STACK;
+                updateViews();
+                app.changedStackAllWindowsExcept(this);
+            } else {
+                updateViews();
+            }
         }
 
-        this.size = new Dimension(width, height);
-        changeMask |= CHANGED_SIZE;
-
-        if (sibWin != null) {
-            app.getWindowStack().restackAbove(this, sibWin);
-            changeMask |= CHANGED_STACK;
-            updateViews();
-            app.changedStackAllWindowsExcept(this);
-        } else {
-            updateViews();
-        }
+        updateFrames();
     }
 
     /**
@@ -756,14 +786,18 @@ public abstract class Window2D implements HUDDisplayable {
      * Throws a RuntimeException if visible is true and the type is
      * <code>UNKNOWN</code>.
      */
-    public synchronized void setVisibleApp(boolean visible) {
-        if (visibleApp == visible) {
-            return;
+    public void setVisibleApp(boolean visible) {
+        synchronized (this) {
+            if (visibleApp == visible) {
+                return;
+            }
+
+            setVisibleAppPart1(visible);
+            performFirstVisibleInitialization();
+            setVisibleAppPart2();
         }
 
-        setVisibleAppPart1(visible);
-        performFirstVisibleInitialization();
-        setVisibleAppPart2();
+        updateFrames();
     }
 
     protected void setVisibleAppPart1(boolean visible) {
@@ -779,6 +813,7 @@ public abstract class Window2D implements HUDDisplayable {
                 changeMask |= CHANGED_STACK;
                 updateViews();
                 app.changedStackAllWindowsExcept(this);
+                updateFrames();
             }
         } else {
             // Remove newly invisible windows from the stack
@@ -788,6 +823,7 @@ public abstract class Window2D implements HUDDisplayable {
                     changeMask |= CHANGED_STACK;
                     updateViews();
                     app.changedStackAllWindowsExcept(this);
+                    updateFrames();
                 }
             }
         }
@@ -804,8 +840,7 @@ public abstract class Window2D implements HUDDisplayable {
      * Specifies whether the user wants the window to be visible in the given
      * displayer.
      */
-    public synchronized void setVisibleUser(
-            View2DDisplayer displayer, boolean visible) {
+    public void setVisibleUser(View2DDisplayer displayer, boolean visible) {
         performFirstVisibleInitialization();
         View2D view = getView(displayer);
         if (view != null) {
@@ -851,13 +886,17 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Specify whether this window is decorated with a frame.
      */
-    public synchronized void setDecorated(boolean decorated) {
-        if (this.decorated == decorated) {
-            return;
+    public void setDecorated(boolean decorated) {
+        synchronized (this) {
+            if (this.decorated == decorated) {
+                return;
+            }
+            this.decorated = decorated;
+            changeMask |= CHANGED_DECORATED;
+            updateViews();
         }
-        this.decorated = decorated;
-        changeMask |= CHANGED_DECORATED;
-        updateViews();
+
+        updateFrames();
     }
 
     /**
@@ -872,16 +911,20 @@ public abstract class Window2D implements HUDDisplayable {
      *
      * @param title The string to display as the window title.
      */
-    public synchronized void setTitle(String title) {
-        if (title == null && this.title == null) {
-            return;
+    public void setTitle(String title) {
+        synchronized (this) {
+            if (title == null && this.title == null) {
+                return;
+            }
+            if (title.equals(this.title)) {
+                return;
+            }
+            this.title = title;
+            changeMask |= CHANGED_TITLE;
+            updateViews();
         }
-        if (title.equals(this.title)) {
-            return;
-        }
-        this.title = title;
-        changeMask |= CHANGED_TITLE;
-        updateViews();
+
+        updateFrames();
     }
 
     /**
@@ -896,12 +939,16 @@ public abstract class Window2D implements HUDDisplayable {
      * user.
      */
     public void setUserResizable(boolean userResizable) {
-        if (this.userResizable == userResizable) {
-            return;
+        synchronized (this) {
+            if (this.userResizable == userResizable) {
+                return;
+            }
+            this.userResizable = userResizable;
+            changeMask |= CHANGED_USER_RESIZABLE;
+            updateViews();
         }
-        this.userResizable = userResizable;
-        changeMask |= CHANGED_USER_RESIZABLE;
-        updateViews();
+
+        updateFrames();
     }
 
     /**
@@ -945,21 +992,29 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Moves this window to the top of the app's window stack.
      */
-    public synchronized void restackToTop() {
-        app.getWindowStack().restackToTop(this);
-        changeMask |= CHANGED_STACK;
-        updateViews();
+    public void restackToTop() {
+        synchronized (this) {
+            app.getWindowStack().restackToTop(this);
+            changeMask |= CHANGED_STACK;
+            updateViews();
+        }
         app.changedStackAllWindowsExcept(this);
+
+        updateFrames();
     }
 
     /**
      * Moves this window to the bottom of the app's window stack.
      */
-    public synchronized void restackToBottom() {
-        app.getWindowStack().restackToBottom(this);
-        changeMask |= CHANGED_STACK;
-        updateViews();
-        app.changedStackAllWindowsExcept(this);
+    public void restackToBottom() {
+        synchronized (this) {
+            app.getWindowStack().restackToBottom(this);
+            changeMask |= CHANGED_STACK;
+            updateViews();
+            app.changedStackAllWindowsExcept(this);
+        }
+
+        updateFrames();
     }
 
     /**
@@ -969,11 +1024,15 @@ public abstract class Window2D implements HUDDisplayable {
      * @param sibling After this call, the sibling window will be below this
      * window in the stack.
      */
-    public synchronized void restackAbove(Window2D sibling) {
-        app.getWindowStack().restackAbove(this, sibling);
-        changeMask |= CHANGED_STACK;
-        updateViews();
-        app.changedStackAllWindowsExcept(this);
+    public void restackAbove(Window2D sibling) {
+        synchronized (this) {
+            app.getWindowStack().restackAbove(this, sibling);
+            changeMask |= CHANGED_STACK;
+            updateViews();
+            app.changedStackAllWindowsExcept(this);
+        }
+
+        updateFrames();
     }
 
     /**
@@ -983,11 +1042,14 @@ public abstract class Window2D implements HUDDisplayable {
      * @param sibling After this call, the sibling window will be above this
      * window in the stack.
      */
-    public synchronized void restackBelow(Window2D sibling) {
-        app.getWindowStack().restackBelow(this, sibling);
-        changeMask |= CHANGED_STACK;
-        updateViews();
-        app.changedStackAllWindowsExcept(this);
+    public void restackBelow(Window2D sibling) {
+        synchronized (this) {
+            app.getWindowStack().restackBelow(this, sibling);
+            changeMask |= CHANGED_STACK;
+            updateViews();
+            app.changedStackAllWindowsExcept(this);
+        }
+        updateFrames();
     }
 
     /**
@@ -995,8 +1057,12 @@ public abstract class Window2D implements HUDDisplayable {
      * changed.
      */
     public void changedStack() {
-        changeMask |= CHANGED_STACK;
-        updateViews();
+        synchronized (this) {
+            changeMask |= CHANGED_STACK;
+            updateViews();
+        }
+
+        updateFrames();
     }
 
     /**
@@ -1084,7 +1150,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Deliver the given key event to this window.
-     *
+     * NOTE: on the slave, this must be called on the EDT.
      * @param event The key event.
      */
     public void deliverEvent(KeyEvent event) {
@@ -1110,7 +1176,7 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Deliver the given mouse event to this window.
      * Note: mostly used only for share-aware apps.
-     *
+     * NOTE: on the slave, this must be called on the EDT.
      * @param event The mouse event.
      */
     public void deliverEvent(MouseEvent event) {
@@ -1185,6 +1251,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for key events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The key listener to add.
      */
@@ -1197,6 +1264,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for mouse events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The mouse listener to add.
      */
@@ -1209,6 +1277,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for mouse motion events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The mouse motion listener to add.
      */
@@ -1222,6 +1291,7 @@ public abstract class Window2D implements HUDDisplayable {
 
     /**
      * Add a new listener for mouse wheel events.
+     * NOTE: the listener methods are called on the EDT.
      *
      * @param listener The mouse wheel listener to add.
      */
@@ -1325,15 +1395,28 @@ public abstract class Window2D implements HUDDisplayable {
      * Called by the GUI to close the window.
      */
     public void closeUser() {
+        closeUser(false);
+    }
 
-        // User must have control in order to close the window
-        if (!app.getControlArb().hasControl()) {
-            // TODO: bring up swing option window: "You cannot close this window
-            // because you do not have control"
-            // Danger: can't do this in SAS!
-            logger.warning("You cannot close this window because you do not " +
-                    "have control");
-            return;
+    /**
+     * INTERNAL API.
+     * <br><br>
+     * Same as closeUser, but if forceClose is true, closes the window even if this
+     * client doesn't have control. (This is used only by the SAS).
+     */
+    public void closeUser (boolean forceClose) {
+        if (!forceClose) {
+            if (app == null || app.getControlArb() == null) return;
+
+            // User must have control in order to close the window
+            if (!app.getControlArb().hasControl()) {
+                // TODO: bring up swing option window: "You cannot close this window
+                // because you do not have control"
+                // Danger: can't do this in SAS!
+                logger.warning("You cannot close this window because you do not " +
+                               "have control");
+                return;
+            }
         }
 
         // Call close listeners
@@ -1416,11 +1499,13 @@ public abstract class Window2D implements HUDDisplayable {
      * Add an event listener to all of this window's views.
      * @param listener The listener to add.
      */
-    public synchronized void addEventListener(EventListener listener) {
-        if (eventListeners.contains(listener)) {
-            return;
+    public void addEventListener(EventListener listener) {
+        synchronized (eventListeners) {
+            if (eventListeners.contains(listener)) {
+                return;
+            }
+            eventListeners.add(listener);
         }
-        eventListeners.add(listener);
         for (View2D view : views) {
             view.addEventListener(listener);
         }
@@ -1435,7 +1520,7 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
         synchronized (app.getAppCleanupLock()) {
-            synchronized (this) {
+            synchronized (eventListeners) {
                 if (eventListeners.contains(listener)) {
                     eventListeners.remove(listener);
                     for (View2D view : views) {
@@ -1459,9 +1544,11 @@ public abstract class Window2D implements HUDDisplayable {
      * component.
      */
     private EntityComponentEntry entityComponentEntryForClass(Class clazz) {
-        for (EntityComponentEntry entry : entityComponents) {
-            if (entry.clazz.equals(clazz)) {
-                return entry;
+        synchronized (entityComponents) {
+            for (EntityComponentEntry entry : entityComponents) {
+                if (entry.clazz.equals(clazz)) {
+                    return entry;
+                }
             }
         }
         return null;
@@ -1471,12 +1558,13 @@ public abstract class Window2D implements HUDDisplayable {
      * Add an entity component to all of this window's views. If the window's
      * views already have an entity component with this class, nothing happens.
      */
-    public synchronized void addEntityComponent(
-            Class clazz, EntityComponent comp) {
-        if (entityComponentEntryForClass(clazz) != null) {
-            return;
+    public synchronized void addEntityComponent(Class clazz, EntityComponent comp) {
+        synchronized (entityComponents) {
+            if (entityComponentEntryForClass(clazz) != null) {
+                return;
+            }
+            entityComponents.add(new EntityComponentEntry(clazz, comp));
         }
-        entityComponents.add(new EntityComponentEntry(clazz, comp));
         for (View2D view : views) {
             view.addEntityComponent(clazz, comp);
         }
@@ -1490,7 +1578,7 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
         synchronized (app.getAppCleanupLock()) {
-            synchronized (this) {
+            synchronized (entityComponents) {
                 EntityComponentEntry entry =
                         entityComponentEntryForClass(clazz);
                 if (entry != null) {
@@ -1523,35 +1611,45 @@ public abstract class Window2D implements HUDDisplayable {
      * result in corresponding changes to these attributes. (In other words,
      * things that happen to a window happen the same to all of its views).
      */
-    public synchronized void addView(View2D view) {
-        if (views.contains(view)) {
-            return;
+    public void addView(View2D view) {
+        synchronized (this) {
+            if (views.contains(view)) {
+                return;
+            }
+
+            // TODO: someday: Currently ViewSet2D constrains a view for a window to
+            // appear only once in a single displayer. Someday we might relax this.
+            // Until then we enforce it.
+            if (getView(view.getDisplayer()) != null) {
+                throw new RuntimeException("A view of this window is already in " +
+                                           "this view's displayer.");
+            }
+
+            views.add(view);
+            if (view instanceof View2DCell) {
+                cellViews.add((View2DCell) view);
+            }
+            addViewForDisplayer(view);
+
+            changeMask = CHANGED_ALL;
+            updateViews();
+
         }
 
-        // TODO: someday: Currently ViewSet2D constrains a view for a window to
-        // appear only once in a single displayer. Someday we might relax this.
-        // Until then we enforce it.
-        if (getView(view.getDisplayer()) != null) {
-            throw new RuntimeException("A view of this window is already in " +
-                    "this view's displayer.");
+        synchronized (eventListeners) {
+            // Attach event listeners and entity components to this new view
+            for (EventListener listener : eventListeners) {
+                view.addEventListener(listener);
+            }
         }
 
-        views.add(view);
-        if (view instanceof View2DCell) {
-            cellViews.add((View2DCell) view);
+        synchronized (entityComponents) {
+            for (EntityComponentEntry entry : entityComponents) {
+                view.addEntityComponent(entry.clazz, entry.comp);
+            }
         }
-        addViewForDisplayer(view);
 
-        changeMask = CHANGED_ALL;
-        updateViews();
-
-        // Attach event listeners and entity components to this new view
-        for (EventListener listener : eventListeners) {
-            view.addEventListener(listener);
-        }
-        for (EntityComponentEntry entry : entityComponents) {
-            view.addEntityComponent(entry.clazz, entry.comp);
-        }
+        updateFrames();
     }
 
     /**
@@ -1568,16 +1666,21 @@ public abstract class Window2D implements HUDDisplayable {
                         cellViews.remove((View2DCell) view);
                     }
                     removeViewForDisplayer(view);
-
-                    // Detach event listeners and entity components to this new
-                    // view
-                    for (EventListener listener : eventListeners) {
-                        view.removeEventListener(listener);
-                    }
-                    for (EntityComponentEntry entry : entityComponents) {
-                        view.removeEntityComponent(entry.clazz);
-                    }
                 }
+            }
+        }
+
+        // Detach event listeners and entity components from this view
+
+        synchronized (eventListeners) {
+            for (EventListener listener : eventListeners) {
+                view.removeEventListener(listener);
+            }
+        }
+
+        synchronized (entityComponents) {
+            for (EntityComponentEntry entry : entityComponents) {
+                view.removeEntityComponent(entry.clazz);
             }
         }
     }
@@ -1590,22 +1693,24 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
         synchronized (app.getAppCleanupLock()) {
+            LinkedList<View2D> viewsToRemove;
             synchronized (this) {
-                LinkedList<View2D> viewsToRemove =
-                        (LinkedList<View2D>) views.clone();
-                for (View2D view : viewsToRemove) {
-                    View2DDisplayer displayer = view.getDisplayer();
-                    if (displayer != null) {
-                        displayer.destroyView(view);
-                    }
-                }
+                viewsToRemove =  (LinkedList<View2D>) views.clone();
                 views.clear();
                 cellViews.clear();
+            }                
+            for (View2D view : viewsToRemove) {
+                View2DDisplayer displayer = view.getDisplayer();
+                if (displayer != null) {
+                    displayer.destroyView(view);
+                }
             }
         }
     }
 
     /** Add a new view for the displayer of the view. */
+    // IMPLEMENTATION NOTE: It is a fundamental assumption that a window can have only one
+    // view for a particular displayer. Otherwise it becomes very tricky to implement view.setParent.
     private void addViewForDisplayer(View2D view) {
         View2DDisplayer displayer = view.getDisplayer();
         displayerToView.put(displayer, view);
@@ -1643,9 +1748,13 @@ public abstract class Window2D implements HUDDisplayable {
      * are notified.
      */
     public void setUserTransformCellLocal(CellTransform transform) {
-        userTransformCell = transform;
-        changeMask |= CHANGED_USER_TRANSFORM_CELL;
-        updateViews();
+        synchronized (this) {
+            userTransformCell = transform;
+            changeMask |= CHANGED_USER_TRANSFORM_CELL;
+            updateViews();
+        }
+
+        updateFrames();
     }
 
     /** Returns the user transform of this window in it's cell views. */
@@ -1654,9 +1763,11 @@ public abstract class Window2D implements HUDDisplayable {
         // syncUserTransformCell makes sure that the transform is the same in
         // all cell views.
         View2DCell cellView = null;
-        try {
-            cellView = cellViews.getFirst();
-        } catch (NoSuchElementException ex) {
+        synchronized (this) {
+            try {
+                cellView = cellViews.getFirst();
+            } catch (NoSuchElementException ex) {
+            }
         }
         if (cellView == null) {
             // Return identity. (This happens in the SAS).
@@ -1672,8 +1783,7 @@ public abstract class Window2D implements HUDDisplayable {
      * @param changingView The view the user manipulated to change the
      * transform.
      */
-    public void changedUserTransformCell(
-            CellTransform transform, View2D changingView) {
+    public void changedUserTransformCell(CellTransform transform, View2D changingView) {
         (new UserTransformCellNotifier(transform, changingView)).execute();
     }
 
@@ -1707,12 +1817,17 @@ public abstract class Window2D implements HUDDisplayable {
      * @param changingView The view the user manipulated to change the
      * transform.
      */
-    public synchronized void notifyUserTransformCell(
-            CellTransform transform, View2D changingView) {
-        for (View2DCell view : cellViews) {
+    public void notifyUserTransformCell(CellTransform transform, View2D changingView) {
+        LinkedList<View2DCell> cellViewsCopy;
+        synchronized (this) {
+            cellViewsCopy = (LinkedList<View2DCell>) cellViews.clone();
+        }
+        for (View2DCell view : cellViewsCopy) {
             if (view != changingView) {
                 // Notify other clients as well
                 view.setUserTransformCellLocal(transform);
+                view.update();
+                view.updateFrame();
             }
         }
     }
@@ -1740,7 +1855,12 @@ public abstract class Window2D implements HUDDisplayable {
                 "Processing window changes for window " + getName());
         logger.info(" changeMask = " + Integer.toHexString(changeMask));
 
-        for (View2D view : views) {
+        LinkedList<View2D> viewsCopy;
+        synchronized (this) {
+            viewsCopy =  (LinkedList<View2D>) views.clone();
+        }                
+
+        for (View2D view : viewsCopy) {
             if ((changeMask & CHANGED_TYPE) != 0) {
                 View2D.Type viewType;
                 switch (type) {
@@ -1805,6 +1925,32 @@ public abstract class Window2D implements HUDDisplayable {
 
         logger.info("Done processing changes for window " + getName());
         changeMask = 0;
+    }
+
+    /**
+     * Must be called outside the window lock.
+     */
+    protected void updateFrames() {
+
+        // Only update this window's views if the window is visible and this
+        // isn't a visibility change. This improves performance and decreases
+        // transient visible artifacts from view frames.
+        if (!isVisibleApp()) {
+            return;
+        }
+
+        logger.info("=================== " + "Processing window frame changes for window " + getName());
+
+        LinkedList<View2D> viewsCopy;
+        synchronized (this) {
+            viewsCopy =  (LinkedList<View2D>) views.clone();
+        }                
+
+        for (View2D view : viewsCopy) {
+            view.updateFrame();
+        }
+
+        logger.info("Done processing frame changes for window " + getName());
     }
 
     /** 
@@ -1919,6 +2065,7 @@ public abstract class Window2D implements HUDDisplayable {
 
         // Now make it all happen
         view.update();
+        view.updateFrame();
     }
 
     /**
@@ -1932,7 +2079,7 @@ public abstract class Window2D implements HUDDisplayable {
         entities.add(entity);
         WindowContextMenuEvent windowMenuEvent =
                 new WindowContextMenuEvent(entities, mouseEvent);
-        InputManager.inputManager().postEvent(windowMenuEvent);
+        SceneManager.getSceneManager().postEvent(windowMenuEvent);
     }
 
     /**
@@ -2064,19 +2211,43 @@ public abstract class Window2D implements HUDDisplayable {
     }
 
     private synchronized ContextMenuItem getShowInHudMenuItem() {
-        if (showInHudMenuItem == null) {
-            showInHudMenuItem = new SimpleContextMenuItem(
-                    BUNDLE.getString("Show_in_HUD"),
-                    new ContextMenuActionListener() {
-
-                        public void actionPerformed(
-                                ContextMenuItemEvent event) {
-                            app.setShowInHUD(true);
-                        }
-                    });
+        if (app.isShownInHUD()) {
+            return new SimpleContextMenuItem(
+                                    BUNDLE.getString("Remove_from_HUD"),
+                                    new ContextMenuActionListener() {
+                                        public void actionPerformed(ContextMenuItemEvent event) {
+                                            // Show this window's app on the HUD. This method
+                                            // is called on the EDT, so we need to do this on a non-EDT thread.
+                                            (new HUDShower(false)).execute();
+                                        }
+                                    });
+        } else {
+            return new SimpleContextMenuItem(
+                                    BUNDLE.getString("Show_in_HUD"),
+                                    new ContextMenuActionListener() {
+                                        public void actionPerformed(ContextMenuItemEvent event) {
+                                            // Show this window's app on the HUD. This method
+                                            // is called on the EDT, so we need to do this on a non-EDT thread.
+                                            (new HUDShower(true)).execute();
+                                        }
+                                    });
         }
-        return showInHudMenuItem;
     }
+
+    private class HUDShower extends SwingWorker<String, Object> {
+        
+        private boolean showInHUD;
+
+        private HUDShower (boolean showInHUD) {
+            this.showInHUD = showInHUD;
+        }
+
+        @Override
+        public String doInBackground() {
+            app.setShowInHUD(showInHUD);
+            return null;
+        }
+    } 
 
     /**
      * Return the window menu items for this window based on its current state.
