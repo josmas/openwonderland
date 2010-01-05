@@ -156,6 +156,8 @@ public class ModuleManager {
             logger.fine("[MODULES] Calculated deployment order: " + order.toString());
         }
 
+        logger.warning("[MODULES] deploying " + order.size() + " modules.");
+
         for (String name : order) {
             Module module = modules.get(name);
 

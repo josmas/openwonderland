@@ -22,12 +22,12 @@
             requestHeaders: { Accept:'application/json' },
             onSuccess: function(response) {
                 var groups = response.responseText.evalJSON(true);
-                if (groups.groupsInternal.length > 1) {
-                    for (var i = 0; i < groups.groupsInternal.length; i++) {
-                        updateGroup(groups.groupsInternal[i], i);
+                if (groups.groups.length > 1) {
+                    for (var i = 0; i < groups.groups.length; i++) {
+                        updateGroup(groups.groups[i], i);
                     }
                 } else {
-                    updateGroup(groups.groupsInternal, 0);
+                    updateGroup(groups.groups, 0);
                 }
             }
         });
