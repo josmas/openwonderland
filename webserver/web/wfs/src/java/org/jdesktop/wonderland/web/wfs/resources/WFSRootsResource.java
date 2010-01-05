@@ -57,7 +57,7 @@ public class WFSRootsResource {
      * @return The XML serialization of the cell setup information via HTTP GET
      */
     @GET
-    @Produces("text/plain")
+    @Produces("application/xml")
     public Response getCellResource() {
         /* Fetch thhe error logger for use in this method */
         Logger logger = WFSManager.getLogger();
@@ -75,15 +75,7 @@ public class WFSRootsResource {
         WorldRootList wfsRoots = new WorldRootList(rootNames.toArray(new String[0]));
         
         /* Send the serialized cell names to the client */
-        try {
-            StringWriter sw = new StringWriter();
-            wfsRoots.encode(sw);
-            ResponseBuilder rb = Response.ok(sw.toString());
-            return rb.build();
-        } catch (javax.xml.bind.JAXBException excp) {
-            logger.warning("WFSManager: Unable to write roots: " + excp.toString());
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
+        ResponseBuilder rb = Response.ok(wfsRoots);
+        return rb.build();
     }
 }

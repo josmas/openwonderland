@@ -65,7 +65,7 @@ public class WFSDirectoryResource {
      * @return The XML serialization of the cell setup information via HTTP GET.
      */
     @GET
-    @Produces({"text/plain", "application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public Response getCellResource(@PathParam("wfsname") String wfsName,
             @PathParam("path") String path) {
 

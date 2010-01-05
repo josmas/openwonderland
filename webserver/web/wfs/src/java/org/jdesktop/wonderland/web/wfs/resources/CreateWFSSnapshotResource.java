@@ -26,6 +26,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
@@ -54,7 +55,7 @@ public class CreateWFSSnapshotResource {
      * @return A WorldRoot object
      */
     @GET
-    @Produces({"text/plain", "application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public Response createWFSSnapshot(@QueryParam("name") String name) {
         // Do some basic stuff, get the WFS manager class, etc
         Logger logger = Logger.getLogger(CreateWFSSnapshotResource.class.getName());
