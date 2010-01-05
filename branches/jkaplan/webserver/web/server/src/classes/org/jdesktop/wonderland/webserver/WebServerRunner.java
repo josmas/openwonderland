@@ -48,8 +48,8 @@ public class WebServerRunner extends BaseRunner {
     public File getLogFile() {
         File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
 
-        // XXX log file can wrap XXX
-        File logFile = new File(logDir, "web_server.log.0");
+        // log file has a non-standard name
+        File logFile = new File(logDir, "web_server.log");
         return logFile;
     }
 

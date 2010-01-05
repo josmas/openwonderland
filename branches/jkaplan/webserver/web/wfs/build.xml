@@ -27,10 +27,6 @@
                 <include name="org/jdesktop/wonderland/web/wfs/resources/**"/>
             </zipfileset>
 
-            <zipfileset dir="${core.dir}/build/lib" prefix="WEB-INF/lib">
-                <include name="wonderland-common.jar"/>
-            </zipfileset>
-
             <fileset dir="${current.dir}/web"/>
         </jar>
 

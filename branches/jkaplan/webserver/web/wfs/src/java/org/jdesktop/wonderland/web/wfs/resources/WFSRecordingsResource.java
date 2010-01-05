@@ -54,7 +54,7 @@ public class WFSRecordingsResource {
      * @return The XML serialization of the wfs recordings via HTTP GET
      */
     @GET
-    @Produces({"text/plain", "application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public Response getRecordings() {
         /*
          * Fetch the wfs manager and the individual recording names. If the recordings
