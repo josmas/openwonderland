@@ -18,7 +18,6 @@
         <file name="sharedstate/build.xml"/>
         <file name="artimport/build.xml"/>
         <file name="coneofsilence/build.xml"/>
-        <file name="microphone/build.xml"/>
         <file name="phone/build.xml"/>
         <file name="artimport/build.xml"/>
         <file name="webdav/build.xml"/>
