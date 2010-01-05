@@ -42,6 +42,7 @@ public class DefaultSAM implements ServerAuthModule, ServerAuthContext {
             Logger.getLogger(DefaultSAM.class.getName());
 
     private static Class<? extends ServerAuthModule> delegateClass;
+    private static boolean started = false;
 
     private ServerAuthModule delegate;
 
@@ -77,7 +78,7 @@ public class DefaultSAM implements ServerAuthModule, ServerAuthContext {
     
     private synchronized ServerAuthModule getDelegate() {
         // nothing registered, just return the default class
-        if (delegate == null && delegateClass == null) {
+        if (!isStarted() || (delegate == null && delegateClass == null)) {
             return new DefaultDelegate();
         }
 
@@ -112,6 +113,24 @@ public class DefaultSAM implements ServerAuthModule, ServerAuthContext {
      */
     public synchronized static Class<? extends ServerAuthModule> getDelegateClass() {
         return DefaultSAM.delegateClass;
+    }
+
+    /**
+     * Set whether the SAM should start delegating connections to the
+     * delegate.
+     * @param started true if the SAM has started delegating connections
+     */
+    public synchronized static void setStarted(boolean started) {
+        DefaultSAM.started = started;
+    }
+
+    /**
+     * Get whether the SAM should start delegating connections to the
+     * delegate.
+     * @return true if the SAM has started delegating connections
+     */
+    public synchronized static boolean isStarted() {
+        return DefaultSAM.started;
     }
 
     /**

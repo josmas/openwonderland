@@ -43,7 +43,7 @@
                 <caption>
                     <span class="heading">Properties</span>
                 </caption>
-                <c:forEach var="prop" items="${requestScope['entry'].runProps}"
+                <c:forEach var="prop" items="${requestScope['entry'].properties}"
                            varStatus="propStat">
                     <tr class="installed">
                         <td class="installed"><input type="text" size="35" name="key-${propStat.count}" value="${prop.key}"/></td>

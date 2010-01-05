@@ -75,7 +75,7 @@ public class WebLibDeployer extends WebDeployer {
         // add the URL of the record's file to the global classpath
         URL u = record.getFile().toURI().toURL();
         
-        logger.warning("Weblib deploy: " + u);
+        logger.info("Weblib deploy: " + u);
 
         WebServerLauncher.getClassLoader().addURL(u);
 

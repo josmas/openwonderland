@@ -104,6 +104,11 @@ public class RunAppServer {
         // install all pending modules
         ModuleManager.getModuleManager().redeployAll();
 
+        // start accepting secure connections to the web server (needed
+        // by the services that start when we fire the startup complete
+        // event below)
+        DefaultSAM.setStarted(true);
+
         // now that all the modules are deployed, notify anyone waiting
         // for startup
         AppServerMonitor.getInstance().fireStartupComplete();
@@ -217,7 +222,7 @@ public class RunAppServer {
         // deploy all webapps
         File deployDir = new File(RunUtil.getRunDir(), getWebappDir());
         for (File war : deployDir.listFiles(WAR_FILTER)) {
-            logger.warning("Deploying " + war.getPath());
+            logger.info("Deploying " + war.getPath());
             
             try {
                 as.deploy(war);
