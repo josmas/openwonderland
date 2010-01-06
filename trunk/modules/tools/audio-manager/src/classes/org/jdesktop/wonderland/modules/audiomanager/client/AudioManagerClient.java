@@ -338,8 +338,6 @@ public class AudioManagerClient extends BaseConnection implements
 
 	connected = false;
 
-	System.out.println("DISCONNECTED!");
-
         // remove open dialogs
         removeDialogs();
 
@@ -584,12 +582,8 @@ public class AudioManagerClient extends BaseConnection implements
 
 	timer.schedule(new TimerTask() {
 	    public void run() {
-	 	System.out.println("CONNECTED " + connected + " status "
-		    + getStatus());
-
 		if (connected && getStatus().equals(Status.DISCONNECTED) == false) {
 		    if (getSession() != null && getSession().getStatus().equals(Status.DISCONNECTED) == false)
-		    System.out.println("FOO!");
 		    audioProblemJFrame.setText(problem);
 
 		    if (SoftphoneControlImpl.getInstance().isVisible() == false) {
