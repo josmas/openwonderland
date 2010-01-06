@@ -22,6 +22,7 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.AvatarCollisionEvent;
+import org.jdesktop.wonderland.client.utils.AudioResource;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -60,9 +62,12 @@ public class PortalComponent extends CellComponent
     @UsesCellComponent
     private ProximityComponent prox;
     private CollisionListener collisionListener = null;
+    private AudioResource teleportAudio;
 
     public PortalComponent(Cell cell) {
         super(cell);
+        URL url = PortalComponent.class.getResource("resources/" + "Teleport.au");
+        teleportAudio = new AudioResource(url);
     }
 
     @Override
@@ -116,6 +121,7 @@ public class PortalComponent extends CellComponent
             public void run() {
                 try {
                     // teleport!
+                    teleportAudio.play();
                     ClientContextJME.getClientMain().gotoLocation(serverURL, location, look);
 
                     logger.warning("[PortalComponent] going to " + serverURL +
