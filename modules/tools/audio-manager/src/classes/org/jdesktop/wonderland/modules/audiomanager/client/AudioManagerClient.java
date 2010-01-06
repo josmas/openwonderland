@@ -577,10 +577,6 @@ public class AudioManagerClient extends BaseConnection implements
 	}
 
 	showSoftphoneProblem(problem);
-
-	if (SoftphoneControlImpl.getInstance().isVisible() == false) {
-	    showSoftphone();
-	}
     }
 
     private void showSoftphoneProblem(final String problem) {
@@ -588,10 +584,17 @@ public class AudioManagerClient extends BaseConnection implements
 
 	timer.schedule(new TimerTask() {
 	    public void run() {
-	 	System.out.println("CONNECTED " + connected);
+	 	System.out.println("CONNECTED " + connected + " status "
+		    + getStatus());
 
-		if (connected) {
+		if (connected && getStatus().equals(Status.DISCONNECTED) == false) {
+		    if (getSession() != null && getSession().getStatus().equals(Status.DISCONNECTED) == false)
+		    System.out.println("FOO!");
 		    audioProblemJFrame.setText(problem);
+
+		    if (SoftphoneControlImpl.getInstance().isVisible() == false) {
+	    		showSoftphone();
+		    }
 		}
 	    }
 	}, 3000);
