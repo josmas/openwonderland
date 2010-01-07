@@ -34,6 +34,8 @@ public interface AudioMenuListener {
 
     public void testAudio();
 
+    public void testUDPPort(int port, int duration);
+
     public void reconnectSoftphone();
 
     public void transferCall();
