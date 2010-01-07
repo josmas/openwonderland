@@ -148,6 +148,7 @@ public class AudioMenu extends javax.swing.JPanel {
         audioQualityMenu = new javax.swing.JMenu();
         transferCallMenuItem = new javax.swing.JMenuItem();
         testAudioMenuItem = new javax.swing.JMenuItem();
+        testUDPPortMenuItem = new javax.swing.JMenuItem();
         reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
         logAudioProblemMenuItem = new javax.swing.JMenuItem();
         softphoneMenuItem = new javax.swing.JMenuItem();
@@ -183,6 +184,14 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
         audioMenu.add(testAudioMenuItem);
+
+        testUDPPortMenuItem.setText(bundle.getString("AudioMenu.testUDPPortMenuItem.text")); // NOI18N
+        testUDPPortMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testUDPPortMenuItemActionPerformed(evt);
+            }
+        });
+        audioMenu.add(testUDPPortMenuItem);
 
         reconnectSoftphoneMenuItem.setText(bundle.getString("AudioMenu.reconnectSoftphoneMenuItem.text")); // NOI18N
         reconnectSoftphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -245,7 +254,6 @@ public class AudioMenu extends javax.swing.JPanel {
 }//GEN-LAST:event_logAudioProblemMenuItemActionPerformed
 
     private void audioMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_audioMenuActionPerformed
-        // TODO add your handling code here:
 }//GEN-LAST:event_audioMenuActionPerformed
 
 private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_audioQualityMenuActionPerformed
@@ -254,6 +262,20 @@ private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//
 private void softphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_softphoneMenuItemActionPerformed
     audioMenuListener.showSoftphone();
 }//GEN-LAST:event_softphoneMenuItemActionPerformed
+
+private TestUDPFrame testUDPFrame;
+
+private void testUDPPortMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testUDPPortMenuItemActionPerformed
+        if (audioMenuListener == null) {
+	    return;
+	}
+
+	if (testUDPFrame == null) {
+	    testUDPFrame = new TestUDPFrame(audioMenuListener);
+	}
+
+	testUDPFrame.setVisible(true);
+}//GEN-LAST:event_testUDPPortMenuItemActionPerformed
 
     private void populateAudioQualityMenu() {
         ButtonGroup audioQualityButtons = new ButtonGroup();
@@ -294,6 +316,7 @@ private void softphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
     private javax.swing.JMenuItem softphoneMenuItem;
     private javax.swing.JMenuItem testAudioMenuItem;
+    private javax.swing.JMenuItem testUDPPortMenuItem;
     private javax.swing.JMenuItem transferCallMenuItem;
     // End of variables declaration//GEN-END:variables
 }

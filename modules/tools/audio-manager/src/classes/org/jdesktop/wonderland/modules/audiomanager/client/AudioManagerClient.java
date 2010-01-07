@@ -79,6 +79,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallReq
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.UDPPortTestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatCallEndedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatHoldMessage;
@@ -125,6 +126,8 @@ public class AudioManagerClient extends BaseConnection implements
     private HUDComponent vuMeterComponent;
     private ImageIcon voiceChatIcon;
     private ImageIcon userListIcon;
+
+    private String localAddress;
 
     /**
      * Create a new AudioManagerClient
@@ -418,7 +421,7 @@ public class AudioManagerClient extends BaseConnection implements
         logger.warning("Sending message to server to get voice bridge... ");
 
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-        sendmessage(new GetVoiceBridgeRequestMessage(sc.getCallID()));
+        sendMessage(new GetVoiceBridgeRequestMessage(sc.getCallID()));
     }
 
     public void showSoftphone() {
@@ -442,6 +445,18 @@ public class AudioManagerClient extends BaseConnection implements
         }
     }
 
+    public void testUDPPort(int port, int duration) {
+	try {
+            SoftphoneControlImpl.getInstance().sendCommandToSoftphone(
+		"TestUDPPort:" + port + ":" + duration);
+	}  catch (IOException e) {
+            logger.warning("Unable to run UDP port test:  " + e.getMessage());
+	    return;
+        }
+
+	sendMessage(new UDPPortTestMessage(localAddress, port, duration));
+    }
+	
     public void reconnectSoftphone() {
         connectSoftphone();
     }
@@ -491,7 +506,7 @@ public class AudioManagerClient extends BaseConnection implements
 
         sc.mute(isMuted);
 
-        sendmessage(new MuteCallRequestMessage(callID, isMuted));
+        sendMessage(new MuteCallRequestMessage(callID, isMuted));
     }
 
     public void personalPhone() {
@@ -583,11 +598,14 @@ public class AudioManagerClient extends BaseConnection implements
 	timer.schedule(new TimerTask() {
 	    public void run() {
 		if (connected && getStatus().equals(Status.DISCONNECTED) == false) {
-		    if (getSession() != null && getSession().getStatus().equals(Status.DISCONNECTED) == false)
-		    audioProblemJFrame.setText(problem);
+		    if (getSession() != null && 
+			    getSession().getStatus().equals(Status.DISCONNECTED) == false) {
 
-		    if (SoftphoneControlImpl.getInstance().isVisible() == false) {
-	    		showSoftphone();
+		        audioProblemJFrame.setText(problem);
+
+		        if (SoftphoneControlImpl.getInstance().isVisible() == false) {
+	    		    showSoftphone();
+		        }
 		    }
 		}
 	    }
@@ -638,11 +656,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void transferCall(String phoneNumber) {
-        sendmessage(new TransferCallRequestMessage(presenceInfo, phoneNumber, false));
+        sendMessage(new TransferCallRequestMessage(presenceInfo, phoneNumber, false));
     }
 
     public void cancelCallTransfer() {
-        sendmessage(new TransferCallRequestMessage(presenceInfo, "", true));
+        sendMessage(new TransferCallRequestMessage(presenceInfo, "", true));
     }
 
     @Override
@@ -753,7 +771,7 @@ public class AudioManagerClient extends BaseConnection implements
         if (message instanceof VoiceChatCallEndedMessage) {
             VoiceChatCallEndedMessage msg = (VoiceChatCallEndedMessage) message;
             voiceChatCallEnded(msg);
-            sendmessage(new VoiceChatLeaveMessage(msg.getGroup(), msg.getCallee(),
+            sendMessage(new VoiceChatLeaveMessage(msg.getGroup(), msg.getCallee(),
                     COSName));
             return;
         }
@@ -816,7 +834,7 @@ public class AudioManagerClient extends BaseConnection implements
                 "org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER", "");
 
         if (phoneNumber != null && phoneNumber.length() > 0) {
-            sendmessage(new PlaceCallRequestMessage(presenceInfo, phoneNumber,
+            sendMessage(new PlaceCallRequestMessage(presenceInfo, phoneNumber,
                     0., 0., 0., 90., false));
             return;
         }
@@ -838,7 +856,7 @@ public class AudioManagerClient extends BaseConnection implements
 
         registrarAddress += tokens[7];
 
-        String localAddress = null;
+        localAddress = null;
 
         try {
             InetAddress ia = NetworkAddress.getPrivateLocalAddress(
@@ -876,7 +894,7 @@ public class AudioManagerClient extends BaseConnection implements
 
                 if (sipURL != null) {
                     // XXX need location and direction
-                    sendmessage(new PlaceCallRequestMessage(
+                    sendMessage(new PlaceCallRequestMessage(
                             presenceInfo, sipURL, 0., 0., 0., 90., false));
                 } else {
                     logger.warning("Failed to start softphone, retrying.");
@@ -1160,7 +1178,7 @@ public class AudioManagerClient extends BaseConnection implements
         notifyMemberChangeListeners(message.getGroup(), info, message.getIsAdded(), true);
     }
 
-    private void sendmessage(Message message) {
+    private void sendMessage(Message message) {
         if (session.getStatus() != WonderlandSession.Status.CONNECTED) {
             logger.warning("Not connected, can't send " + message);
             return;
