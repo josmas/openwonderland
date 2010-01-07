@@ -36,11 +36,12 @@ public class ConeOfSilenceComponentFactory implements CellComponentFactorySPI {
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
 
     public String getDisplayName() {
-        return BUNDLE.getString("Cone_of_Silence");
+        return BUNDLE.getString("ConeOfSilence");
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
         ConeOfSilenceComponentServerState state = new ConeOfSilenceComponentServerState();
+	state.setName(BUNDLE.getString("ConeOfSilence"));
         return (T) state;
     }
 

@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
@@ -563,7 +565,7 @@ public class AudioManagerClient extends BaseConnection implements
          * If presenceInfo is null, connectSoftphone will be called when
          * the presenceInfo is set.
          */
-	audioProblemJFrame.setText("Softphone Exited, attempting to restart...");
+	showSoftphoneProblem("Softphone Exited, attempting to restart...");
         connectSoftphone();
     }
 
@@ -572,11 +574,24 @@ public class AudioManagerClient extends BaseConnection implements
 	    return;
 	}
 
-	audioProblemJFrame.setText(problem);
+	showSoftphoneProblem(problem);
+    }
 
-	if (SoftphoneControlImpl.getInstance().isVisible() == false) {
-	    showSoftphone();
-	}
+    private void showSoftphoneProblem(final String problem) {
+	Timer timer = new Timer();
+
+	timer.schedule(new TimerTask() {
+	    public void run() {
+		if (connected && getStatus().equals(Status.DISCONNECTED) == false) {
+		    if (getSession() != null && getSession().getStatus().equals(Status.DISCONNECTED) == false)
+		    audioProblemJFrame.setText(problem);
+
+		    if (SoftphoneControlImpl.getInstance().isVisible() == false) {
+	    		showSoftphone();
+		    }
+		}
+	    }
+	}, 3000);
     }
 
     public void microphoneGainTooHigh() {

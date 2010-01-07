@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import java.util.ResourceBundle;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -41,10 +40,8 @@ import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 public class ConeOfSilenceComponentServerState
         extends CellComponentServerState {
 
-    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
     @XmlElement(name = "name")
-    private String name = BUNDLE.getString("ConeOfSilence");
+    private String name = "ConeOfSilence";
     @XmlElement(name = "boundsType")
     private COSBoundsType boundsType = COSBoundsType.CELL_BOUNDS;
     @XmlElement(name="bounds")
