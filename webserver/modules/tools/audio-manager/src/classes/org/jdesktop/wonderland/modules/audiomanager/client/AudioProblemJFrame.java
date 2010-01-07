@@ -44,23 +44,29 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
 	    problem = problem.substring(ix + pattern.length());
 	}
 
-	String[] tokens = problem.split("[.]");
+	final String[] tokens = problem.split("[.]");
 
-	audioProblemLabel.setText(tokens[0].trim());
+	String s = "";
 
-	if (tokens.length == 1) {
-	    audioProblemTextArea.setText("No details.");
-	} else {
-	    String s = "";
-
-	    for (int i = 1; i < tokens.length; i++) {
-		s += tokens[i].trim() + "\n";
-	    }
-
-	    audioProblemTextArea.setText(s);
+	for (int i = 1; i < tokens.length; i++) {
+	    s += tokens[i].trim() + "\n";
 	}
 
-	setVisible(true);
+	final String text = s;
+
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		audioProblemLabel.setText(tokens[0].trim());
+
+		if (tokens.length == 1) {
+		    audioProblemTextArea.setText("No details.");
+		} else {
+		    audioProblemTextArea.setText(text);
+		}
+
+		setVisible(true);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
