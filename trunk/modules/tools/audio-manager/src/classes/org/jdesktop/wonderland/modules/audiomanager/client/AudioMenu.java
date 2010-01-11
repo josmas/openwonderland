@@ -263,18 +263,12 @@ private void softphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {/
     audioMenuListener.showSoftphone();
 }//GEN-LAST:event_softphoneMenuItemActionPerformed
 
-private TestUDPFrame testUDPFrame;
-
 private void testUDPPortMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testUDPPortMenuItemActionPerformed
         if (audioMenuListener == null) {
 	    return;
 	}
 
-	if (testUDPFrame == null) {
-	    testUDPFrame = new TestUDPFrame(audioMenuListener);
-	}
-
-	testUDPFrame.setVisible(true);
+	audioMenuListener.testUDPPort();
 }//GEN-LAST:event_testUDPPortMenuItemActionPerformed
 
     private void populateAudioQualityMenu() {
