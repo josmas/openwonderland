@@ -445,16 +445,13 @@ public class AudioManagerClient extends BaseConnection implements
         }
     }
 
-    public void testUDPPort(int port, int duration) {
+    public void testUDPPort() {
 	try {
-            SoftphoneControlImpl.getInstance().sendCommandToSoftphone(
-		"TestUDPPort:" + port + ":" + duration);
+            SoftphoneControlImpl.getInstance().sendCommandToSoftphone("TestUDPPort");
 	}  catch (IOException e) {
             logger.warning("Unable to run UDP port test:  " + e.getMessage());
 	    return;
         }
-
-	sendMessage(new UDPPortTestMessage(localAddress, port, duration));
     }
 	
     public void reconnectSoftphone() {
@@ -610,6 +607,10 @@ public class AudioManagerClient extends BaseConnection implements
 		}
 	    }
 	}, 3000);
+    }
+
+    public void softphoneTestUDPPort(int port, int duration) {
+	sendMessage(new UDPPortTestMessage(localAddress, port, duration));
     }
 
     public void microphoneGainTooHigh() {

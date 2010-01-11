@@ -174,6 +174,9 @@ public class UserListHUDPanel
             public void microphoneGainTooHigh() {
             }
 
+	    public void softphoneTestUDPPort(int port, int duration) {
+	    }
+
 	    public void softphoneProblem(String problem) {
 	    }
         });
