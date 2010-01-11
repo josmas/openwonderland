@@ -600,9 +600,9 @@ public class AudioManagerClient extends BaseConnection implements
 
 		        audioProblemJFrame.setText(problem);
 
-		        if (SoftphoneControlImpl.getInstance().isVisible() == false) {
-	    		    showSoftphone();
-		        }
+		        //if (SoftphoneControlImpl.getInstance().isVisible() == false) {
+	    		//    showSoftphone();
+		        //}
 		    }
 		}
 	    }
