@@ -390,7 +390,7 @@ public class JmeColladaLoader implements ModelLoader {
             File targetFile = new File(targetDir, filenameGZ);
             try {
                 targetFile.createNewFile();
-                // TODO compress the dae file using gzip stream
+                // compress the dae file using gzip stream
                 copyAsset(source[0], targetFile, true); // TODO handle multiple dae files
                 deployedModel.setModelURL(importedModel.getDeploymentBaseURL() + filename + "/" + filenameGZ);
 //            deployedModel.setModelURL("wla://"+moduleName+"/"+filename+"/"+filenameGZ);
@@ -474,12 +474,13 @@ public class JmeColladaLoader implements ModelLoader {
                     if (targetFilename==null) {
                         targetFilename = t.getValue();
                     }
-                } else {
+                } else if (targetFilename.startsWith("..")) {
                     // Relative path
-                    if (targetFilename.startsWith("..")) {
-                        deployFilename = targetFilename.substring(3);
-                        target = new File(targetDir, deployFilename);
-                    }
+                    deployFilename = targetFilename.substring(3);
+                    target = new File(targetDir, deployFilename);
+                } else if (targetFilename.startsWith("./")) {
+                    deployFilename = targetFilename.substring(2);
+                    target = new File(targetDir, deployFilename);
                 }
 
                 if (target==null) {
