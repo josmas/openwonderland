@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 
@@ -141,18 +142,21 @@ class KmzLoader extends JmeColladaLoader {
             ResourceLocatorTool.addThreadResourceLocator(
                 ResourceLocatorTool.TYPE_TEXTURE,
                 zipResource);
-            if (models.size()==1) {
-                importedModel.setModelBG(load(zipFile, models.get(0)));
+
+          JmeColladaLoader.LoaderErrorListener errorListener = new JmeColladaLoader.LoaderErrorListener(importedModel, LoaderManager.getLoaderManager().getLoaderListeners());
+
+          if (models.size()==1) {
+                importedModel.setModelBG(load(zipFile, models.get(0), errorListener));
             } else {
                 Node modelBG = new Node();
                 for(KmlParser.KmlModel model : models) {
-                    modelBG.attachChild(load(zipFile, model));
+                    modelBG.attachChild(load(zipFile, model, errorListener));
                 }
                 importedModel.setModelBG(modelBG);
             }
             ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
             WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
-            
+
         } catch (ZipException ex) {
             logger.log(Level.SEVERE, null, ex);
             throw new IOException("Zip Error");
@@ -168,7 +172,9 @@ class KmzLoader extends JmeColladaLoader {
         return importedModel;
     }
     
-    private Node load(ZipFile zipFile, KmlParser.KmlModel model) throws IOException {
+    private Node load(ZipFile zipFile, 
+                        KmlParser.KmlModel model,
+                        ThreadSafeColladaImporter.LoaderErrorListener errorListener) throws IOException {
 
         String filename = model.getHref();
 
@@ -179,6 +185,7 @@ class KmzLoader extends JmeColladaLoader {
         BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
 
         ThreadSafeColladaImporter importer = new ThreadSafeColladaImporter(filename);
+        importer.setErrorListener(errorListener);
         importer.load(in);
         Node modelNode = importer.getModel();
 

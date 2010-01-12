@@ -45,7 +45,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +63,8 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderListener;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
@@ -108,9 +113,11 @@ public class JmeColladaLoader implements ModelLoader {
         logger.info("Loading MODEL " + origFile.toExternalForm());
         BufferedInputStream in = new BufferedInputStream(origFile.openStream());
 
-        modelNode = loadModel(in, getFilename(origFile), true);
+        LoaderErrorListener errorListener = new LoaderErrorListener(importedModel, LoaderManager.getLoaderManager().getLoaderListeners());
+
+        modelNode = loadModel(in, getFilename(origFile), true, errorListener);
         in.close();
-        
+
         ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
         importedModel.setModelBG(modelNode);
@@ -120,9 +127,13 @@ public class JmeColladaLoader implements ModelLoader {
         return importedModel;
     }
 
-    private Node loadModel(InputStream in, String name, boolean applyColladaAxisAndScale) {
+    private Node loadModel(InputStream in,
+                            String name,
+                            boolean applyColladaAxisAndScale,
+                            ThreadSafeColladaImporter.LoaderErrorListener listener) {
         Node modelNode;
         ThreadSafeColladaImporter importer = new ThreadSafeColladaImporter(name);
+        importer.setErrorListener(listener);
         importer.load(in);
         modelNode = importer.getModel();
 
@@ -209,7 +220,7 @@ public class JmeColladaLoader implements ModelLoader {
                         resourceLocator);
             }
 
-            modelBG = loadModel(in, getFilename(deployedModel.getModelURL()), false);
+            modelBG = loadModel(in, getFilename(deployedModel.getModelURL()), false, null);
             deployedModel.applyModelTransform(modelBG);
 
             if (resourceLocator!=null) {
@@ -632,5 +643,30 @@ public class JmeColladaLoader implements ModelLoader {
                 return locateResourceImpl(resourceName);
             }
         }
+    }
+
+    public static class LoaderErrorListener implements ThreadSafeColladaImporter.LoaderErrorListener {
+
+        private Collection<LoaderListener> listeners;
+        private ImportedModel model;
+
+        public LoaderErrorListener(ImportedModel model, Collection<LoaderListener> listeners) {
+            this.listeners = listeners;
+            this.model = model;
+        }
+
+        /**
+         * Called when the loader experiences an error. Once this callback
+         * returns loading will continue to the best of the loaders ability
+         *
+         * @param level the severity of the error
+         * @param msg the error message
+         * @param throwable any associated exception, may be null
+         */
+        public void error(Level level, String msg, Throwable throwable) {
+            for(LoaderListener l : listeners)
+                l.modelImportErrors(model, level, msg, throwable);
+        }
+
     }
 }
