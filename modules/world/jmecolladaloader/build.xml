@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="jmecolladaloader" default="package" basedir=".">
+<project name="jmecolladaloader" default="deploy" basedir=".">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.jmecolladaloader}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
