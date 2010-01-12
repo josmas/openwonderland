@@ -12,6 +12,14 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="importModelMIActionPerformed"/>
       </Events>
     </Component>
+    <Component class="javax.swing.JMenuItem" name="modelImportErrorsMI">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Model Import Errors..."/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="modelImportErrorsMIActionPerformed"/>
+      </Events>
+    </Component>
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
