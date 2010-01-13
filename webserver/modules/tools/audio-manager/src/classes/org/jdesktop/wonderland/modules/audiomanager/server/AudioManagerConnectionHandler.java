@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallRequ
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.UDPPortTestMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.EndCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.CallEndedMessage;
@@ -157,6 +158,19 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
 	
 	    sender.send(clientID, new GetPlayersInRangeResponseMessage(msg.getPlayerID(),
 		playerIDList));
+
+	    return;
+	}
+
+        if (message instanceof UDPPortTestMessage) {
+	    UDPPortTestMessage msg = (UDPPortTestMessage) message;
+
+	    try {
+	        vm.testUDPPort(msg.getHost(), msg.getPort(), msg.getDuration());
+	    } catch (IOException e) {
+		logger.warning("Unable to test udp port " + msg.getPort()
+		    + ": " + e.getMessage());
+	    }
 
 	    return;
 	}

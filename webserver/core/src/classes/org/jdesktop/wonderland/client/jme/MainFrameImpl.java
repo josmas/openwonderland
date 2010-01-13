@@ -71,6 +71,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private int desiredFrameRate = 30;
     private FrameRateListener frameRateListener = null;
     private JMenuItem fpsMI;
+    private JMenuItem logViewerMI;
     private Chart chart;
     private HUDComponent fpsComponent;
     private WorldManager wm;
@@ -115,6 +116,15 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
             public void changedUpdate(DocumentEvent e) {
                 updateGoButton();
+            }
+        });
+
+        // show the log viewer if visible on startup is selected
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (LogViewerFrame.getInstance().isVisibleOnStartup()) {
+                    LogViewerFrame.getInstance().setVisible(true);
+                }
             }
         });
 
@@ -251,6 +261,16 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 });
 
                 addToWindowMenu(fpsMI, -1);
+
+                // log viwer
+                logViewerMI = new JMenuItem(BUNDLE.getString("Log_Viewer"));
+                logViewerMI.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent ae) {
+                        LogViewerFrame.getInstance().setVisible(true);
+                        LogViewerFrame.getInstance().toFront();
+                    }
+                });
+                addToHelpMenu(logViewerMI, -1);
             }
         });
     }

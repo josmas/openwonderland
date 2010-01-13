@@ -115,12 +115,18 @@ public class BoundsDebugger extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     void remove(AvatarImiJME avatar) {
+        if (!(avatar.getCell() instanceof ViewCell))
+            return;
+
         synchronized(avatarMap) {
             avatarMap.remove(((ViewCell)avatar.getCell()).getIdentity().getUsername());
         }
     }
 
     void add(AvatarImiJME avatar) {
+        if (!(avatar.getCell() instanceof ViewCell))
+            return;
+
         synchronized(avatarMap) {
             final String username = ((ViewCell)avatar.getCell()).getIdentity().getUsername();
             avatarMap.put(username, avatar);

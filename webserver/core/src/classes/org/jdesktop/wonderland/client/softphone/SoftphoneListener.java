@@ -27,6 +27,7 @@ public interface SoftphoneListener {
     public void softphoneConnected(boolean connected);
     public void softphoneExited();
     public void softphoneProblem(String problem);
+    public void softphoneTestUDPPort(int port, int duration);
 
     /*
      * This will allow some feedback to the user that the mic gain is too high.
