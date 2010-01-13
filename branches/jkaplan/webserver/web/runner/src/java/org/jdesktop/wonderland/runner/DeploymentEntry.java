@@ -17,9 +17,14 @@
  */
 package org.jdesktop.wonderland.runner;
 
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -43,8 +48,8 @@ public class DeploymentEntry {
         this.runnerClass = runnerClass;
     }
     
-    @XmlElement(name="property")
-    @XmlJavaTypeAdapter(PropertyAdapter.class)
+    
+    @XmlTransient
     public Properties getProperties() {
         return props;
     }
@@ -53,6 +58,15 @@ public class DeploymentEntry {
         this.props = props;
     }
     
+    @XmlElement(name="property")
+    public Set<Property> getPropertiesInternal() {
+        PropertySet out = new PropertySet();
+        for (String key : props.stringPropertyNames()) {
+            out.addInternal(key, props.getProperty(key));
+        }
+        return out;
+    }
+
     @XmlElement
     public String getRunnerClass() {
         return runnerClass;
@@ -107,33 +121,6 @@ public class DeploymentEntry {
         return getRunnerName() + " " + getRunnerClass() + " " + getProperties().size();
     } 
 
-    private static class PropertyAdapter extends XmlAdapter<Property[], Properties> {
-
-        @Override
-        public Properties unmarshal(Property[] vt) throws Exception {
-            Properties out = new Properties();
-            for (Property prop : vt) {
-                out.setProperty(prop.key, prop.value);
-            }
-            return out;
-        }
-
-        @Override
-        public Property[] marshal(Properties bt) throws Exception {
-            Property[] out = new Property[bt.size()];
-            int count = 0;
-
-            for (String propertyName : bt.stringPropertyNames()) {
-                out[count++] = new Property(propertyName,
-                                   bt.getProperty(propertyName));
-            }
-
-            return out;
-        }
-
-
-    }
-
     // internal representation of elements in the properties set
     protected static class Property {
         @XmlElement public String key;
@@ -144,6 +131,25 @@ public class DeploymentEntry {
         public Property(String key, String value) {
             this.key = key;
             this.value = value;
+        }
+    }
+
+    /**
+     * A set that is backed by the internal properties object that
+     * this entry stores.
+     */
+    private class PropertySet extends LinkedHashSet<Property> {
+        @Override
+        public boolean add(Property p) {
+            boolean res = super.add(p);
+            if (res) {
+                props.setProperty(p.key, p.value);
+            }
+            return res;
+        }
+
+        public void addInternal(String key, String value) {
+            super.add(new Property(key, value));
         }
     }
 }
