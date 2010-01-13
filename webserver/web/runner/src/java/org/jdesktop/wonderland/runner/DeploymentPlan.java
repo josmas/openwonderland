@@ -23,6 +23,8 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,11 +32,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Store information for starting runners
@@ -45,7 +45,7 @@ public class DeploymentPlan implements Cloneable {
     private static final Logger logger =
             Logger.getLogger(DeploymentPlan.class.getName());
 
-    private final Set<DeploymentEntry> entries =
+    private Set<DeploymentEntry> entries =
             new LinkedHashSet<DeploymentEntry>();
 
     /* The JAXB context for later use */
@@ -75,16 +75,10 @@ public class DeploymentPlan implements Cloneable {
 
     public void addEntry(DeploymentEntry entry) {
         entries.add(entry);
-
-        logger.info("Add entry (" + this.entries.size() +
-                    "): " + this.entries.toString());
     }
     
     public void removeEntry(DeploymentEntry entry) {
         entries.remove(entry);
-
-        logger.info("Remove entry (" + this.entries.size() +
-                    "): " + this.entries.toString());
     }
         
     public DeploymentEntry getEntry(String name) {
@@ -100,19 +94,10 @@ public class DeploymentPlan implements Cloneable {
     
     /* Setters and getters */
     @XmlElement(name="entry")
-    @XmlJavaTypeAdapter(EntrySetAdapter.class)
     public Set<DeploymentEntry> getEntries() {
-        return this.entries; 
+        return this.entries;
     }
      
-    public void setEntries(Set<DeploymentEntry> entries) {
-        this.entries.clear();
-        this.entries.addAll(entries);
-
-        logger.info("Set entries (" + this.entries.size() +
-                    "): " + this.entries.toString());
-    }
-    
     /**
      * Takes the input reader of the XML file and instantiates an instance of
      * the DeploymentPlan class
@@ -170,37 +155,5 @@ public class DeploymentPlan implements Cloneable {
 
         out += "}";
         return out;
-    }
-
-    private static class EntrySetAdapter
-            extends XmlAdapter<DeploymentEntry[], Set<DeploymentEntry>>
-    {
-
-        @Override
-        public Set<DeploymentEntry> unmarshal(DeploymentEntry[] vt)
-                throws Exception
-        {
-            Set<DeploymentEntry> out = new LinkedHashSet<DeploymentEntry>();
-
-            for (DeploymentEntry de : vt) {
-                out.add(de);
-            }
-
-            return out;
-        }
-
-        @Override
-        public DeploymentEntry[] marshal(Set<DeploymentEntry> bt)
-                throws Exception
-        {
-            DeploymentEntry[] out = new DeploymentEntry[bt.size()];
-            int count = 0;
-
-            for (DeploymentEntry de : bt) {
-                out[count++] = de;
-            }
-
-            return out;
-        }
     }
 }

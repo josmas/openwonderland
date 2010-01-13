@@ -461,7 +461,9 @@ public class RunAppServer {
 
         Server server = serverBuilder.build();
 
-        server.createPort(8080);
+        String portStr = System.getProperty(Constants.WEBSERVER_PORT_PROP).trim();
+        int port = Integer.parseInt(portStr);
+        server.createPort(port);
         server.addContainer(ContainerBuilder.Type.all);
 
         // setup and launch
