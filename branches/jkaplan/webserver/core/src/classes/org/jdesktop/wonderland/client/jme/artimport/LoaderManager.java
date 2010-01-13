@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,7 @@ public class LoaderManager {
     private HashMap<String, ModelLoaderFactory> activeLoaders = new HashMap();
     private HashMap<String, ModelLoaderFactory> classnameToLoader = new HashMap();
     private static LoaderManager loaderManager;
+    private final ArrayList<LoaderListener> loaderListeners = new ArrayList();
     
     private LoaderManager() {
     }
@@ -124,7 +126,7 @@ public class LoaderManager {
 
     /**
      * Load the specified deployment file (.dep) and return the DeployedModel object
-     * which includes the model loader
+     * which includes the model loader.
      * @param url url of .dep file
      * @return DeployedModel, or null
      */
@@ -147,6 +149,39 @@ public class LoaderManager {
     public String[] getLoaderExtensions() {
         return activeLoaders.keySet().toArray(new String[activeLoaders.size()]);
     }
-    
 
+    /**
+     * Add a LoaderListener
+     *
+     * @param listener
+     */
+    public void addLoaderListener(LoaderListener listener) {
+        synchronized(loaderListeners) {
+            loaderListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove the supplied LoaderListener. Return false if the listener was
+     * not actually present in the list of listeners, true if it was.
+     * 
+     * @param listener
+     * @return
+     */
+    public boolean removeLoaderListener(LoaderListener listener) {
+        synchronized(loaderListeners) {
+            return loaderListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Return the collection of listeners. The collection is a clone of the
+     * internal structure, so this call is thread safe.
+     * @return
+     */
+    public Collection<LoaderListener> getLoaderListeners() {
+        synchronized(loaderListeners) {
+            return (Collection<LoaderListener>) loaderListeners.clone();
+        }
+    }
 }

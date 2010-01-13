@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
+import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 
@@ -108,7 +109,6 @@ public class ModelRenderer extends BasicRenderer {
         deployedModel.setModelTranslation(modelTranslation);
         deployedModel.setModelRotation(modelRotation);
         deployedModel.setModelScale(modelScale);
-        System.err.println("ModelRenderer modelRotation "+modelRotation);
 
         return loader.loadDeployedModel(deployedModel, entity);
     }
@@ -124,8 +124,11 @@ public class ModelRenderer extends BasicRenderer {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                 public void update(Object arg0) {
                     ((Node)arg0).removeFromParent();
+
+                    // TODO DONT do the load (createSceneGraph) on the render thread
                     sceneRoot = createSceneGraph(entity);
                     rootNode.attachChild(sceneRoot);
+                    ClientContextJME.getWorldManager().addToUpdateList(rootNode);
                 }
             }, sceneRoot);
         }

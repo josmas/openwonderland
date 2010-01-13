@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.artimport.client.jme;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
@@ -38,6 +39,8 @@ public class ArtToolsPlugin extends javax.swing.JPanel
      *  back to this class.
      */
     private BaseClientPlugin plugin;
+
+    private LoaderWarningsHandler loaderWarningsHandler;
 
     /** Creates new form ArtToolsPlugin1 */
     public ArtToolsPlugin() {
@@ -58,20 +61,25 @@ public class ArtToolsPlugin extends javax.swing.JPanel
         };
         
         plugin.initialize(lm);
+        loaderWarningsHandler = new LoaderWarningsHandler();
+        LoaderManager.getLoaderManager().addLoaderListener(loaderWarningsHandler);
     }
 
     public void cleanup() {
         plugin.cleanup();
+        LoaderManager.getLoaderManager().removeLoaderListener(loaderWarningsHandler);
     }
 
     public void register() {
         // activate
         JmeClientMain.getFrame().addToInsertMenu(importModelMI, 1);
+        JmeClientMain.getFrame().addToWindowMenu(modelImportErrorsMI, -1);
     }
 
     public void unregister() {
         // deactivate
         JmeClientMain.getFrame().removeFromInsertMenu(importModelMI);
+        JmeClientMain.getFrame().removeFromWindowMenu(modelImportErrorsMI);
     }
 
     /** This method is called from within the constructor to
@@ -84,12 +92,20 @@ public class ArtToolsPlugin extends javax.swing.JPanel
     private void initComponents() {
 
         importModelMI = new javax.swing.JMenuItem();
+        modelImportErrorsMI = new javax.swing.JMenuItem();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
         importModelMI.setText(bundle.getString("Import_Model...")); // NOI18N
         importModelMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importModelMIActionPerformed(evt);
+            }
+        });
+
+        modelImportErrorsMI.setText("Model Import Errors...");
+        modelImportErrorsMI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                modelImportErrorsMIActionPerformed(evt);
             }
         });
 
@@ -112,9 +128,14 @@ public class ArtToolsPlugin extends javax.swing.JPanel
         importSessionFrame.setVisible(true);
 }//GEN-LAST:event_importModelMIActionPerformed
 
+    private void modelImportErrorsMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelImportErrorsMIActionPerformed
+        loaderWarningsHandler.showJFrame(true);
+    }//GEN-LAST:event_modelImportErrorsMIActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem importModelMI;
+    private javax.swing.JMenuItem modelImportErrorsMI;
     // End of variables declaration//GEN-END:variables
 
 }

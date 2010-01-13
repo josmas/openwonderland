@@ -71,8 +71,9 @@ public class SoftphoneControlImpl implements SoftphoneControl {
     /**
      * State of the softphone
      */
-    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, DISCONNECTED, EXITED, TOO_LOUD,
-	PROBLEM }
+    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, 
+	DISCONNECTED, EXITED, TOO_LOUD, PROBLEM
+    }
     
     /**
      * Gets the one instance of SoftphoneControlImpl
@@ -682,6 +683,11 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    	quiet = true;
 	    }
 
+	    if (line.indexOf("TestUDPPort") >= 0) {
+		notifyListenersTestUDPPort(line);
+	 	return;
+	    }
+
 	    if (line.indexOf("Softphone Problem:") >= 0) {
 		problem = line;
 		notifyListeners(State.PROBLEM);
@@ -807,8 +813,40 @@ public class SoftphoneControlImpl implements SoftphoneControl {
                     break;
 		case PROBLEM:
 		    listener.softphoneProblem(problem);
+		    break;
                 }
             }
+	}
+    }
+
+    private void notifyListenersTestUDPPort(String line) {
+	String[] tokens = line.split(":");
+
+	if (tokens.length != 3) {
+	    System.err.println("Missing parameters:  " + line);
+	    return;
+	}
+
+	int port;
+
+	try {
+	    port = Integer.parseInt(tokens[1]);
+	} catch (NumberFormatException e) {
+	    System.err.println("Invalid port:  " + line);
+	    return;
+	}
+
+	int duration;
+
+	try {
+	    duration = Integer.parseInt(tokens[2]);
+	} catch (NumberFormatException e) {
+	    System.err.println("Invalid duration:  " + line);
+	    return;
+	}
+
+	for (SoftphoneListener listener : listeners) {
+	    listener.softphoneTestUDPPort(port, duration);
 	}
     }
 

@@ -242,6 +242,9 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 	speakerVolumeSlider.setEnabled(isEnabled);
     }
 
+    public void softphoneTestUDPPort(int port, int duration) {
+    }
+
     public void microphoneGainTooHigh() {
     }
 
