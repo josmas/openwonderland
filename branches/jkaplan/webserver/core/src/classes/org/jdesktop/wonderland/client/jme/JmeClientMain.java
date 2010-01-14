@@ -59,6 +59,7 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.LogControl;
 /* For Testing FocusEvent3D
 import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
@@ -524,6 +525,17 @@ public class JmeClientMain {
             }
         }
 
+        // set up logging
+        new LogControl(JmeClientMain.class,
+                "/org/jdesktop/wonderland/client/jme/resources/" +
+                "logging.properties");
+
+        // set up our custom log handler to pipe messages to the LogViewerFrame.
+        // We need to do this to work around the fact that Web Start won't
+        // load loggers not on the system classpath
+        Logger rootLogger = Logger.getLogger("");
+        rootLogger.addHandler(new LogViewerHandler());
+        
         if (Webstart.isWebstart()) {
             Webstart.webstartSetup();
         }
