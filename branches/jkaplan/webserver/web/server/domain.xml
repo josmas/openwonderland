@@ -29,12 +29,9 @@
  <configs>
    <config name="server-config">
      <http-service>
-        <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
-        <virtual-server hosts="${wonderland.webserver.host}" id="server">
-            <property name="docroot" value="${org.jdesktop.wonderland.docRoot}"/>
-        </virtual-server>
-        <property value="false" name="accessLoggingEnabled" />
-      </http-service>
+        <access-log />
+        <virtual-server id="server" docroot="${org.jdesktop.wonderland.docRoot}" hosts="${wonderland.webserver.host}"/>
+     </http-service>
       <iiop-service>
         <orb use-thread-pool-ids="thread-pool-1" />
         <iiop-listener address="0.0.0.0" port="3700" id="orb-listener-1" />
