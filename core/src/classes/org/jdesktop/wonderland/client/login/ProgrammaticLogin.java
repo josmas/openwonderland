@@ -117,7 +117,7 @@ public class ProgrammaticLogin<T extends WonderlandSession> {
                     loggedIn = true;
                 } catch (LoginFailureException le) {
                     if (!notified) {
-                        logger.log(Level.WARNING, "[SasProvider] Darkstar " +
+                        logger.log(Level.WARNING, "Darkstar " +
                                    "server not available.  Retrying every 5 " +
                                    "seconds.");
                         notified = true;
@@ -127,7 +127,7 @@ public class ProgrammaticLogin<T extends WonderlandSession> {
             } while (!loggedIn);
 
             if (notified) {
-                logger.log(Level.WARNING, "[SasProvider] connected to " +
+                logger.log(Level.WARNING, "Connected to " +
                            "Darkstar server.");
             }
        } catch (InterruptedException ie) {
