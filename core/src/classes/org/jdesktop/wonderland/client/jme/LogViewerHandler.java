@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.jme;
 
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.SwingUtilities;
 
@@ -30,6 +31,7 @@ public class LogViewerHandler extends Handler {
     public LogViewerHandler() {
         super();
 
+        setLevel(Level.ALL);
         LogViewerFrame.getInstance().setHandler(this);
     }
 

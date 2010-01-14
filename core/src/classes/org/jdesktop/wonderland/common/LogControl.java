@@ -17,9 +17,11 @@
  */
 package org.jdesktop.wonderland.common;
 
+import java.io.BufferedReader;
 import java.util.logging.LogManager;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Read the log configuration from the jar as a resource
@@ -41,5 +43,5 @@ public class LogControl {
             e.printStackTrace();
         }
     }
-    
+
 }
