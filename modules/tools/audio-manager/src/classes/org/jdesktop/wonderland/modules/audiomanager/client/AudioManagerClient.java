@@ -594,17 +594,24 @@ public class AudioManagerClient extends BaseConnection implements
 
 	timer.schedule(new TimerTask() {
 	    public void run() {
-		if (connected && getStatus().equals(Status.DISCONNECTED) == false) {
-		    if (getSession() != null && 
-			    getSession().getStatus().equals(Status.DISCONNECTED) == false) {
-
-		        audioProblemJFrame.setText(problem);
-
-		        //if (SoftphoneControlImpl.getInstance().isVisible() == false) {
-	    		//    showSoftphone();
-		        //}
-		    }
+		if (connected == false || getStatus().equals(Status.DISCONNECTED)) {
+		    return;
 		}
+
+		if (getSession() == null ||
+		        getSession().getStatus().equals(Status.DISCONNECTED) == true) {
+
+		    return;
+		}
+
+		try {
+		    if (SoftphoneControlImpl.getInstance().isConnected()) {
+			return;
+		    }
+		} catch (IOException e) {
+		}
+			
+		audioProblemJFrame.setText(problem);
 	    }
 	}, 3000);
     }
