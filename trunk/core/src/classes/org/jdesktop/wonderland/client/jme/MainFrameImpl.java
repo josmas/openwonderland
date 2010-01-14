@@ -32,7 +32,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.common.LogControl;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -76,11 +75,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private HUDComponent fpsComponent;
     private WorldManager wm;
 
-    static {
-        new LogControl(MainFrameImpl.class,
-                "/org/jdesktop/wonderland/client/jme/resources/" +
-                "logging.properties");
-    }
     // variables for the location field
     private String serverURL;
     private ServerURLListener serverListener;
