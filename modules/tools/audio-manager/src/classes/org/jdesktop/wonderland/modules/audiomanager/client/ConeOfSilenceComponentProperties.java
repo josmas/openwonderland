@@ -495,8 +495,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         zExtentSpinner.setEnabled(false);
 
-        boundsLabel.setText(bundle.getString("ConeOfSilenceComponentProperties.boundsLabel.text")); // NOI18N
-
         showBoundsCheckBox.setText(bundle.getString("ConeOfSilenceComponentProperties.showBoundsCheckBox.text")); // NOI18N
         showBoundsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -506,7 +504,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
         outsideVolumeSlider.setMinorTickSpacing(10);
         outsideVolumeSlider.setPaintTicks(true);
-        outsideVolumeSlider.setPreferredSize(new java.awt.Dimension(200, 38));
         outsideVolumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 outsideVolumeSliderStateChanged(evt);
@@ -537,7 +534,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(specifyRadiusRadioButton)
                                     .add(specifyBoxRadioButton))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 14, Short.MAX_VALUE)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
                                         .add(xExtentSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)
@@ -554,7 +551,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(outsideVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {fullVolumeRadiusSpinner, xExtentSpinner, yExtentSpinner, zExtentSpinner}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -589,7 +586,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(outsideVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(358, Short.MAX_VALUE))
+                .addContainerGap(352, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
