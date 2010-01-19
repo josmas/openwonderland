@@ -747,7 +747,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
             Enumeration<String> loggerNames = logManager.getLoggerNames();
             while (loggerNames.hasMoreElements()) {
                 String loggerName = loggerNames.nextElement();
-                if (loggerName.isEmpty()) {
+                if (loggerName.length() == 0) {
                     // skip loggers with empty names
                     continue;
                 }
