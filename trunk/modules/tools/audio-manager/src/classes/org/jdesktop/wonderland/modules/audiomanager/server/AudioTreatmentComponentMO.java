@@ -128,6 +128,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     private double falloff = 50;
     private boolean showBounds = false;
 
+    private BoundingVolume audioBounds;
+
     private boolean treatmentCreated;
 
     /** the channel from that cell */
@@ -471,6 +473,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	BoundingVolume bounds = cellMO.getWorldBounds();
 
 	if (useCellBounds) {
+	    audioBounds = bounds;
+
 	    if (bounds instanceof BoundingBox) {
 	        System.out.println("BoundingBox:  " + bounds);
 	        return getSpatializer((BoundingBox) bounds);
@@ -491,10 +495,14 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	        }     
 	    }
 
+	    audioBounds = new BoundingSphere((float) extent, new Vector3f());
+
 	    Spatializer spatializer = new FullVolumeSpatializer(extent);
 	    spatializer.setAttenuator(volume);
 	    return spatializer;
-	}
+	} else {
+            audioBounds = new BoundingSphere((float) extent, new Vector3f());
+        }
 	
 	double fullVolumeRadius = fullVolumeAreaPercent / 100. * extent;
 
@@ -670,7 +678,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             break;
 
         case CallStatus.TREATMENTDONE:
-	    System.out.println("TREATMENT DONE, playOnce " + playOnce);
+	    logger.info("TREATMENT DONE, playOnce " + playOnce);
 
 	    if (playOnce == true) {
 		channelRef.get().sendAll(null, new AudioTreatmentDoneMessage(cellID, callId));
@@ -812,7 +820,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         // We are making this component live, add a listener to the proximity component.
 	BoundingVolume[] bounds = new BoundingVolume[1];
 
-        bounds[0] = new BoundingSphere(getCellRadius(), new Vector3f());
+        bounds[0] = audioBounds;
 
         AudioTreatmentProximityListener proximityListener = 
 	    new AudioTreatmentProximityListener(cellRef.get(), treatment);
