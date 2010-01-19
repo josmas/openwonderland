@@ -99,7 +99,6 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv,
 
 	//System.out.println("Cell entered, restarting input treatment " + treatment);
 	treatment.restart(false);
-	treatment.pause(false);
     }
 
     public void cellExited() {
