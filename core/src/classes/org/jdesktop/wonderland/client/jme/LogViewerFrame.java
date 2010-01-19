@@ -327,8 +327,6 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
         jLabel1.setText(bundle.getString("LogViewerFrame.jLabel1.text")); // NOI18N
 
-        backlogTF.setText(bundle.getString("LogViewerFrame.backlogTF.text")); // NOI18N
-
         configCancelButton.setText(bundle.getString("LogViewerFrame.configCancelButton.text")); // NOI18N
         configCancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -366,7 +364,6 @@ public class LogViewerFrame extends javax.swing.JFrame {
             }
         });
         levelTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        levelTable.setShowGrid(true);
         jScrollPane1.setViewportView(levelTable);
 
         levelTablePlus.setText(bundle.getString("LogViewerFrame.levelTablePlus.text")); // NOI18N
@@ -386,8 +383,6 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
         jLabel4.setText(bundle.getString("LogViewerFrame.jLabel4.text")); // NOI18N
 
-        startupCB.setText(bundle.getString("LogViewerFrame.startupCB.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout configDialogLayout = new org.jdesktop.layout.GroupLayout(configDialog.getContentPane());
         configDialog.getContentPane().setLayout(configDialogLayout);
         configDialogLayout.setHorizontalGroup(
@@ -399,28 +394,26 @@ public class LogViewerFrame extends javax.swing.JFrame {
                         .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(configDialogLayout.createSequentialGroup()
                                 .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, configDialogLayout.createSequentialGroup()
-                                            .add(jLabel1)
-                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                            .add(backlogTF))
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, configDialogLayout.createSequentialGroup()
-                                            .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                                .add(jLabel2)
-                                                .add(jLabel4))
-                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                            .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                                .add(levelCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                .add(startupCB))
-                                            .add(4, 4, 4)))
+                                    .add(configDialogLayout.createSequentialGroup()
+                                        .add(jLabel1)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(backlogTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(configDialogLayout.createSequentialGroup()
+                                        .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(jLabel2)
+                                            .add(jLabel4))
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(levelCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(startupCB)))
                                     .add(jLabel3))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 78, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, Short.MAX_VALUE))
                             .add(configDialogLayout.createSequentialGroup()
                                 .add(okButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)))
                         .add(configCancelButton))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, configDialogLayout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(levelTableMinus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -498,7 +491,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
                 .add(errorCopyButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(errorCloseButton))
-            .add(errorScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
+            .add(errorScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
         );
         errorReportDialogLayout.setVerticalGroup(
             errorReportDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -541,9 +534,9 @@ public class LogViewerFrame extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(logScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .add(logScrollPane)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(206, Short.MAX_VALUE)
+                .addContainerGap(335, Short.MAX_VALUE)
                 .add(errorReportButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(configureButton)
@@ -734,11 +727,13 @@ public class LogViewerFrame extends javax.swing.JFrame {
     }
 
     private class LoggerTableModel extends DefaultTableModel {
+
         private Map<String, Level> origLevels;
 
         public LoggerTableModel() {
-            super (new Object[] { BUNDLE.getString("Logger"),
-                                  BUNDLE.getString("Level") }, 0);
+            super(new Object[]{
+                        BUNDLE.getString("Logger"),
+                        BUNDLE.getString("Level")}, 0);
         }
 
         public void reload() {
@@ -747,24 +742,26 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
             origLevels = new TreeMap<String, Level>();
 
-            // collect the logger names and levels, and sort them
-            Enumeration<String> loggerNames =
-                LogManager.getLogManager().getLoggerNames();
+            // collect the logger names and levels, and sort them by their name
+            LogManager logManager = LogManager.getLogManager();
+            Enumeration<String> loggerNames = logManager.getLoggerNames();
             while (loggerNames.hasMoreElements()) {
                 String loggerName = loggerNames.nextElement();
-
-                Logger l = LogManager.getLogManager().getLogger(loggerName);
-                if (loggerName.length() == 0 || l.getLevel() == null) {
+                if (loggerName.isEmpty()) {
+                    // skip loggers with empty names
+                    continue;
+                }
+                Level level = logManager.getLogger(loggerName).getLevel();
+                if (level == null) {
                     // skip loggers with undefined levels
                     continue;
                 }
-
-                origLevels.put(loggerName, l.getLevel());
+                origLevels.put(loggerName, level);
             }
 
             // populate the model
             for (Map.Entry<String, Level> e : origLevels.entrySet()) {
-                addRow(new Object[] { e.getKey(), e.getValue() });
+                addRow(new Object[]{e.getKey(), e.getValue()});
             }
         }
 
