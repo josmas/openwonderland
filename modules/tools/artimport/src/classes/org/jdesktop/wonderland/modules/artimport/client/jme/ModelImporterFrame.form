@@ -26,7 +26,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="261" max="32767" attributes="0"/>
+              <EmptySpace pref="334" max="32767" attributes="0"/>
               <Component id="cancelB" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="okB" min="-2" max="-2" attributes="0"/>
@@ -93,8 +93,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="scaleTF" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
-                                  <Component id="modelX3dTF" alignment="0" pref="313" max="32767" attributes="1"/>
-                                  <Component id="modelNameTF" alignment="0" pref="313" max="32767" attributes="1"/>
+                                  <Component id="modelX3dTF" alignment="0" pref="320" max="32767" attributes="1"/>
+                                  <Component id="modelNameTF" alignment="0" pref="320" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -162,10 +162,10 @@
                                   <Component id="translationZTF" min="-2" pref="100" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="10" max="32767" attributes="0"/>
+                          <EmptySpace pref="38" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace pref="34" max="32767" attributes="0"/>
+                          <EmptySpace pref="78" max="32767" attributes="0"/>
                           <Component id="avatarMoveCB" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -189,7 +189,7 @@
                               <Component id="translationZTF" alignment="2" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel9" alignment="2" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="7" max="32767" attributes="0"/>
                           <Component id="avatarMoveCB" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -342,9 +342,6 @@
             </Container>
             <Component class="javax.swing.JTextField" name="modelNameTF">
               <Properties>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.modelNameTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.modelNameTF.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
@@ -360,9 +357,6 @@
             <Component class="javax.swing.JTextField" name="modelX3dTF">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.modelX3dTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.modelX3dTF.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
@@ -437,28 +431,20 @@
                                   </Group>
                                   <Component id="jLabel26" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="11" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="geometryStatsB" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="6" pref="6" max="6" attributes="0"/>
+                              <Component id="jScrollPane1" pref="411" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="geometryStatsB" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="229" max="32767" attributes="0"/>
+                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="texturePrefixTF" pref="294" max="32767" attributes="1"/>
                           </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="6" pref="6" max="6" attributes="0"/>
-                                      <Component id="jScrollPane1" pref="395" max="32767" attributes="1"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="texturePrefixTF" pref="281" max="32767" attributes="1"/>
-                                  </Group>
-                                  <Component id="jLabel30" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jLabel30" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -515,7 +501,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="geometryStatsB" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="20" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -542,9 +528,6 @@
             <Component class="javax.swing.JTextField" name="texturePrefixTF">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.texturePrefixTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.texturePrefixTF.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
@@ -573,9 +556,6 @@
                     <Font component="boundsCenterYTF" property="font" relativeSize="true" size="0"/>
                   </FontInfo>
                 </Property>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.boundsCenterYTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="boundsCenterXTF">
@@ -586,9 +566,6 @@
                   <FontInfo relative="true">
                     <Font component="boundsCenterXTF" property="font" relativeSize="true" size="0"/>
                   </FontInfo>
-                </Property>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.boundsCenterXTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Events>
@@ -618,9 +595,6 @@
                     <Font component="boundsCenterZTF" property="font" relativeSize="true" size="0"/>
                   </FontInfo>
                 </Property>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.boundsCenterZTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="boundsSizeXTF">
@@ -631,9 +605,6 @@
                   <FontInfo relative="true">
                     <Font component="boundsSizeXTF" property="font" relativeSize="true" size="0"/>
                   </FontInfo>
-                </Property>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.boundsSizeXTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
             </Component>
@@ -674,9 +645,6 @@
                     <Font component="boundsSizeYTF" property="font" relativeSize="true" size="0"/>
                   </FontInfo>
                 </Property>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.boundsSizeYTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="boundsSizeZTF">
@@ -687,9 +655,6 @@
                   <FontInfo relative="true">
                     <Font component="boundsSizeZTF" property="font" relativeSize="true" size="0"/>
                   </FontInfo>
-                </Property>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle.properties" key="ModelImporterFrame.boundsSizeZTF.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
             </Component>

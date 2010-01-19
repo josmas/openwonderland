@@ -502,10 +502,10 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(102, 167));
 
         basicPanel.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 basicPanelInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
 
@@ -551,9 +551,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel4Layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(translationZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(34, Short.MAX_VALUE)
+                .addContainerGap(78, Short.MAX_VALUE)
                 .add(avatarMoveCB))
         );
         jPanel4Layout.setVerticalGroup(
@@ -572,7 +572,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(translationZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel9))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 7, Short.MAX_VALUE)
                 .add(avatarMoveCB))
         );
 
@@ -623,13 +623,11 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 .addContainerGap(29, Short.MAX_VALUE))
         );
 
-        modelNameTF.setText(bundle.getString("ModelImporterFrame.modelNameTF.text")); // NOI18N
         modelNameTF.setToolTipText(bundle.getString("ModelImporterFrame.modelNameTF.toolTipText")); // NOI18N
 
         jLabel5.setText(bundle.getString("ModelImporterFrame.jLabel5.text")); // NOI18N
 
         modelX3dTF.setEditable(false);
-        modelX3dTF.setText(bundle.getString("ModelImporterFrame.modelX3dTF.text")); // NOI18N
         modelX3dTF.setToolTipText(bundle.getString("ModelImporterFrame.modelX3dTF.toolTipText")); // NOI18N
         modelX3dTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -656,8 +654,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(scaleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(modelX3dTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                            .add(modelNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)))
+                            .add(modelX3dTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                            .add(modelNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)))
                     .add(basicPanelLayout.createSequentialGroup()
                         .add(31, 31, 31)
                         .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -694,7 +692,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         jLabel2.setText(bundle.getString("ModelImporterFrame.jLabel2.text")); // NOI18N
 
         texturePrefixTF.setEditable(false);
-        texturePrefixTF.setText(bundle.getString("ModelImporterFrame.texturePrefixTF.text")); // NOI18N
         texturePrefixTF.setToolTipText(bundle.getString("ModelImporterFrame.texturePrefixTF.toolTipText")); // NOI18N
 
         jLabel25.setText(bundle.getString("ModelImporterFrame.jLabel25.text")); // NOI18N
@@ -704,12 +701,10 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         boundsCenterYTF.setColumns(12);
         boundsCenterYTF.setEditable(false);
         boundsCenterYTF.setFont(boundsCenterYTF.getFont());
-        boundsCenterYTF.setText(bundle.getString("ModelImporterFrame.boundsCenterYTF.text")); // NOI18N
 
         boundsCenterXTF.setColumns(12);
         boundsCenterXTF.setEditable(false);
         boundsCenterXTF.setFont(boundsCenterXTF.getFont());
-        boundsCenterXTF.setText(bundle.getString("ModelImporterFrame.boundsCenterXTF.text")); // NOI18N
         boundsCenterXTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 boundsCenterXTFActionPerformed(evt);
@@ -723,12 +718,10 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         boundsCenterZTF.setColumns(12);
         boundsCenterZTF.setEditable(false);
         boundsCenterZTF.setFont(boundsCenterZTF.getFont());
-        boundsCenterZTF.setText(bundle.getString("ModelImporterFrame.boundsCenterZTF.text")); // NOI18N
 
         boundsSizeXTF.setColumns(12);
         boundsSizeXTF.setEditable(false);
         boundsSizeXTF.setFont(boundsSizeXTF.getFont());
-        boundsSizeXTF.setText(bundle.getString("ModelImporterFrame.boundsSizeXTF.text")); // NOI18N
 
         jLabel26.setText(bundle.getString("ModelImporterFrame.jLabel26.text")); // NOI18N
 
@@ -746,12 +739,10 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         boundsSizeYTF.setColumns(12);
         boundsSizeYTF.setEditable(false);
         boundsSizeYTF.setFont(boundsSizeYTF.getFont());
-        boundsSizeYTF.setText(bundle.getString("ModelImporterFrame.boundsSizeYTF.text")); // NOI18N
 
         boundsSizeZTF.setColumns(12);
         boundsSizeZTF.setEditable(false);
         boundsSizeZTF.setFont(boundsSizeZTF.getFont());
-        boundsSizeZTF.setText(bundle.getString("ModelImporterFrame.boundsSizeZTF.text")); // NOI18N
 
         jLabel31.setText(bundle.getString("ModelImporterFrame.jLabel31.text")); // NOI18N
 
@@ -790,22 +781,17 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                                     .add(boundsSizeXTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(boundsSizeYTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(boundsSizeZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(jLabel26))
-                        .addContainerGap(11, Short.MAX_VALUE))
-                    .add(advancedPanelLayout.createSequentialGroup()
-                        .add(geometryStatsB)
-                        .addContainerGap(229, Short.MAX_VALUE))
+                            .add(jLabel26)))
+                    .add(geometryStatsB)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedPanelLayout.createSequentialGroup()
-                        .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(advancedPanelLayout.createSequentialGroup()
-                                .add(6, 6, 6)
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, advancedPanelLayout.createSequentialGroup()
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(texturePrefixTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel30))
-                        .addContainerGap())))
+                        .add(6, 6, 6)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(texturePrefixTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                    .add(jLabel30))
+                .addContainerGap())
         );
 
         advancedPanelLayout.linkSize(new java.awt.Component[] {boundsSizeXTF, boundsSizeYTF, boundsSizeZTF}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -855,7 +841,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                             .add(boundsSizeZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(geometryStatsB)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab(bundle.getString("ModelImporterFrame.advancedPanel.TabConstraints.tabTitle"), advancedPanel); // NOI18N
@@ -879,7 +865,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(261, Short.MAX_VALUE)
+                .addContainerGap(334, Short.MAX_VALUE)
                 .add(cancelB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okB)
