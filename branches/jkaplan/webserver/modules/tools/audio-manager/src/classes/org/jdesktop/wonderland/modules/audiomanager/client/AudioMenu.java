@@ -84,7 +84,7 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
 
-        audioVolumeMenuItem = new JMenuItem("Audio Volume");
+        audioVolumeMenuItem = new JMenuItem(BUNDLE.getString("Audio_Volume"));
         audioVolumeMenuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {

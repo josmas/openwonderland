@@ -53,6 +53,13 @@ public class WindowSystemXrw
      */
     private static SmallIntegerAllocator displayNumAllocator = new SmallIntegerAllocator(2);
 
+    /**
+     * The minimum display number, for guaranteeing that Wonderland X displays
+     * don't interfere with existing X displays.
+     */
+    private static final int minDisplayNum = Integer.parseInt(
+            System.getProperty("wonderland.appshare.minXDisplay", "0"));
+
     /** The name of the app instance */
     private String appInstanceName;
     /** The X display number of the X server started. This number is valid when it is non-zero */
@@ -224,7 +231,7 @@ public class WindowSystemXrw
      * @return The display number allocated.
      */
     private static int allocDisplayNum() {
-        return displayNumAllocator.allocate();
+        return displayNumAllocator.allocate() + minDisplayNum;
     }
 
     /**
@@ -233,7 +240,7 @@ public class WindowSystemXrw
      * @param displayNum The display number to deallocated.
      */
     private static void deallocDisplayNum(int displayNum) {
-        displayNumAllocator.free(displayNum);
+        displayNumAllocator.free(displayNum - minDisplayNum);
     }
 
     /**

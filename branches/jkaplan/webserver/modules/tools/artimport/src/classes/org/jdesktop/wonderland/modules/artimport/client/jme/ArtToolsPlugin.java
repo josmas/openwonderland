@@ -102,7 +102,7 @@ public class ArtToolsPlugin extends javax.swing.JPanel
             }
         });
 
-        modelImportErrorsMI.setText("Model Import Errors...");
+        modelImportErrorsMI.setText(bundle.getString("ArtToolsPlugin.modelImportErrorsMI.text")); // NOI18N
         modelImportErrorsMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 modelImportErrorsMIActionPerformed(evt);

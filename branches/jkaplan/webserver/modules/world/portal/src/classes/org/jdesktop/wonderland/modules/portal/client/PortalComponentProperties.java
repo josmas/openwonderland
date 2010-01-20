@@ -22,6 +22,7 @@ import com.jme.math.Vector3f;
 import java.awt.Component;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -52,6 +53,8 @@ public class PortalComponentProperties extends JPanel
     // The I18N resource bundle
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/portal/client/resources/Bundle");
+    private static final Logger LOGGER =
+            Logger.getLogger(PortalComponentProperties.class.getName());
     
     // The main editor object for the Cell Editor
     private CellPropertiesEditor editor = null;
@@ -83,11 +86,10 @@ public class PortalComponentProperties extends JPanel
             @Override
             public Component getListCellRendererComponent(JList list,
                     Object value, int index, boolean isSelected,
-                    boolean cellHasFocus)
-            {
-                Placemark pm = (Placemark) value;
-
-                return super.getListCellRendererComponent(list, pm.getName(),
+                    boolean cellHasFocus) {
+                Placemark placemark = (Placemark) value;
+                String name = placemark == null ? "" : placemark.getName();
+                return super.getListCellRendererComponent(list, name,
                         index, isSelected, cellHasFocus);
             }
         });
@@ -316,8 +318,6 @@ public class PortalComponentProperties extends JPanel
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/portal/client/resources/Bundle"); // NOI18N
         jLabel6.setText(bundle.getString("PortalComponentProperties.jLabel6.text")); // NOI18N
 
-        placemarkCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         placemarkCancelB.setText(bundle.getString("PortalComponentProperties.placemarkCancelB.text")); // NOI18N
         placemarkCancelB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -326,7 +326,6 @@ public class PortalComponentProperties extends JPanel
         });
 
         placemarkSetB.setText(bundle.getString("PortalComponentProperties.placemarkSetB.text")); // NOI18N
-        placemarkSetB.setSelected(true);
         placemarkSetB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 placemarkSetBActionPerformed(evt);
@@ -343,12 +342,12 @@ public class PortalComponentProperties extends JPanel
                     .add(placemarkDialogLayout.createSequentialGroup()
                         .add(jLabel6)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(placemarkCB, 0, 243, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .add(placemarkCB, 0, 162, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, placemarkDialogLayout.createSequentialGroup()
                         .add(placemarkSetB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(placemarkCancelB))))
+                        .add(placemarkCancelB)))
+                .addContainerGap())
         );
         placemarkDialogLayout.setVerticalGroup(
             placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -357,11 +356,11 @@ public class PortalComponentProperties extends JPanel
                 .add(placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel6)
                     .add(placemarkCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(18, 18, 18)
                 .add(placemarkDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(placemarkCancelB)
                     .add(placemarkSetB))
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel1.setText(bundle.getString("PortalComponentProperties.jLabel1.text")); // NOI18N
@@ -390,63 +389,53 @@ public class PortalComponentProperties extends JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(jLabel2)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jLabel1)
+                        .add(jLabel2)
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel5)))
                     .add(jLabel10))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(urlTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                    .add(urlTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, locX)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, locY)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, angleTF)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, locY, 0, 0, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, locX, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, locZ, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(89, 89, 89)
-                .add(jLabel3)
-                .add(267, 267, 267))
-            .add(layout.createSequentialGroup()
-                .add(90, 90, 90)
-                .add(jLabel4)
-                .add(267, 267, 267))
-            .add(layout.createSequentialGroup()
-                .add(90, 90, 90)
-                .add(jLabel5)
-                .add(267, 267, 267))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(184, Short.MAX_VALUE)
-                .add(fromPlacemarkB)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, locZ, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))
+                    .add(fromPlacemarkB))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
+                    .add(jLabel1)
+                    .add(urlTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(locX, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3))
+                    .add(jLabel2)
+                    .add(fromPlacemarkB))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(locY, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel4))
+                    .add(jLabel3)
+                    .add(locX, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(locZ, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel5))
+                    .add(jLabel4)
+                    .add(locY, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(locZ, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(angleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel10))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(fromPlacemarkB)
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -455,6 +444,11 @@ public class PortalComponentProperties extends JPanel
 
         // get the currently selected placemark
         Placemark pm = (Placemark) placemarkCB.getSelectedItem();
+
+        if (pm == null) {
+            LOGGER.warning("null placemark selected!");
+            return;
+        }
 
         // set values
         urlTF.setText(pm.getUrl());
@@ -478,6 +472,8 @@ public class PortalComponentProperties extends JPanel
         allPlacemarks.addAll(reg.getAllPlacemarks(PlacemarkType.USER));
 
         placemarkCB.setModel(new DefaultComboBoxModel(allPlacemarks));
+        placemarkDialog.pack();
+        placemarkDialog.setLocationRelativeTo(this);
         placemarkDialog.setVisible(true);
     }//GEN-LAST:event_fromPlacemarkBActionPerformed
 

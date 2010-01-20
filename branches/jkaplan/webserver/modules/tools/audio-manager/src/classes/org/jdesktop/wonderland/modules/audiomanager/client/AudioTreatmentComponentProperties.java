@@ -845,7 +845,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
         falloffSlider.setMinorTickSpacing(10);
         falloffSlider.setPaintTicks(true);
-        falloffSlider.setPreferredSize(new java.awt.Dimension(200, 38));
         falloffSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 falloffSliderStateChanged(evt);
@@ -889,11 +888,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
-        cellBoundsLabel.setText(bundle.getString("AudioTreatmentComponentProperties.cellBoundsLabel.text")); // NOI18N
-
         jLabel4.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel4.text")); // NOI18N
-
-        statusLabel.setText(bundle.getString("AudioTreatmentComponentProperties.statusLabel.text")); // NOI18N
 
         buttonGroup4.add(fileRadioButton);
         fileRadioButton.setSelected(true);
@@ -920,8 +915,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
-        boundsLabel.setText(bundle.getString("AudioTreatmentComponentProperties.boundsLabel.text")); // NOI18N
-
         volumeSlider.setMinorTickSpacing(10);
         volumeSlider.setPaintTicks(true);
         volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -935,7 +928,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(7, 7, 7)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2)

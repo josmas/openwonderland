@@ -501,8 +501,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	    spatializer.setAttenuator(volume);
 	    return spatializer;
 	} else {
-	    audioBounds = new BoundingSphere((float) extent, new Vector3f());
-	}
+            audioBounds = new BoundingSphere((float) extent, new Vector3f());
+        }
 	
 	double fullVolumeRadius = fullVolumeAreaPercent / 100. * extent;
 

@@ -33,9 +33,17 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
     public AudioProblemJFrame(AudioManagerClient client) {
 	this.client = client;
         initComponents();
+
+	getRootPane().setDefaultButton(okButton);
     }
 
+    private boolean ignoreProblem;
+
     public void setText(String problem) {
+	if (ignoreProblem) {
+	    return;
+	}
+
 	String pattern = "Softphone Problem: ";
 
 	int ix = problem.indexOf(pattern);
@@ -85,6 +93,7 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
         reconfigureButton = new javax.swing.JButton();
         reconnectButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
+        ignoreButton = new javax.swing.JButton();
 
         setTitle("Audio Problem");
 
@@ -124,6 +133,13 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
             }
         });
 
+        ignoreButton.setText("Ignore");
+        ignoreButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ignoreButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -135,10 +151,12 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
                     .add(audioProblemLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                         .add(reconfigureButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(reconnectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(okButton)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(ignoreButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -151,8 +169,9 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(okButton)
+                    .add(reconfigureButton)
                     .add(reconnectButton)
-                    .add(reconfigureButton))
+                    .add(ignoreButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -182,6 +201,11 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
 	setVisible(false);
     }//GEN-LAST:event_okButtonActionPerformed
 
+    private void ignoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreButtonActionPerformed
+        ignoreProblem = true;
+	setVisible(false);
+    }//GEN-LAST:event_ignoreButtonActionPerformed
+
     /**
     * @param args the command line arguments
     */
@@ -196,6 +220,7 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel audioProblemLabel;
     private javax.swing.JTextArea audioProblemTextArea;
+    private javax.swing.JButton ignoreButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton okButton;
