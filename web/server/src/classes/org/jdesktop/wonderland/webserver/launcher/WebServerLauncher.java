@@ -40,6 +40,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
@@ -373,7 +374,7 @@ public class WebServerLauncher {
      * Classloader that can dynamically add URLs.  Used to support modules
      * with weblib components.
      */
-    public static class LauncherClassLoader extends URLClassLoader {
+    public static class LauncherClassLoader extends ScannedClassLoader {
 
         /**
          * creates a new LauncherClassLoader

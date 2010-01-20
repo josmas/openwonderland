@@ -89,10 +89,10 @@ public class ReconnectDialog implements Runnable {
                 LOGGER.info("[ReconnectPane] sleeping");
                 Thread.sleep(5000);
             } while (mgr.getDetails().getDarkstarServers() == null ||
-                    mgr.getDetails().getDarkstarServers().length == 0);
+                    mgr.getDetails().getDarkstarServers().size() == 0);
 
             LOGGER.info("[ReconnectPane] loading server " +
-                    Arrays.toString(mgr.getDetails().getDarkstarServers()));
+                        mgr.getDetails().getDarkstarServers());
 
             main.loadServer(mgr.getServerURL());
         } catch (IOException ex) {

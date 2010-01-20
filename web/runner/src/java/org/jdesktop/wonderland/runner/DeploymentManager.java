@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.runner;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -84,7 +86,7 @@ public class DeploymentManager {
      * Get the current deployment plan
      * @return the current deployment plan
      */
-    public DeploymentPlan getPlan() {
+    public synchronized DeploymentPlan getPlan() {
         // if the plan was set manually, return the version that was
         // set.  Otherwise, reload the plan to get any changes since we
         // last started
@@ -104,7 +106,7 @@ public class DeploymentManager {
      * until savePlan() is called.
      * @param plan the new plan
      */
-    public void setPlan(DeploymentPlan plan) {
+    public synchronized void setPlan(DeploymentPlan plan) {
         this.plan = plan;
         this.planSet = true;
     }
@@ -125,7 +127,7 @@ public class DeploymentManager {
      */
     protected DeploymentPlan loadPlan() throws IOException {
         Reader planReader;
-        
+
         if (getRemotePlanURL() != null) {
             logger.info("Loading deployment plan from URL: " + getRemotePlanURL());
             planReader = new InputStreamReader(getRemotePlanURL().openStream());
@@ -153,7 +155,7 @@ public class DeploymentManager {
     /**
      * Save the current deployment plan to disk.
      */
-    public void savePlan() throws IOException {
+    public synchronized void savePlan() throws IOException {
         // remote plans can't be saved
         if (getRemotePlanURL() != null) {
             throw new IllegalStateException("Remote plans can't be saved");
@@ -162,7 +164,8 @@ public class DeploymentManager {
         try {
             FileWriter writer = new FileWriter(getPlanFile());
             getPlan().encode(writer);
-
+            writer.close();
+            
             // the plan has no longer been set manually, since it has now
             // been saved
             this.planSet = false;
@@ -177,7 +180,7 @@ public class DeploymentManager {
     /**
      * Remove the current plan, restoring the defaults
      */
-    public void removePlan() throws IOException {
+    public synchronized void removePlan() throws IOException {
         File planFile = getPlanFile();
         if (planFile.exists()) {
             planFile.delete();

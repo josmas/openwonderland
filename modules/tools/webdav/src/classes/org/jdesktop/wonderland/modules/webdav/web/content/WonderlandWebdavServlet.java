@@ -77,9 +77,9 @@ public class WonderlandWebdavServlet extends WebdavServlet {
                 }
 
             };*/
-        } catch (IOException ioe) {
+        } catch (Exception ex) {
             throw new ServletException("Unable to initialize webdav servlet",
-                                       ioe);
+                                       ex);
         }
     }
 
@@ -159,8 +159,8 @@ public class WonderlandWebdavServlet extends WebdavServlet {
 
         @Override
         public NamingEnumeration list(String name) throws NamingException {
-            File file = file(name);
-            checkRead(file);
+            final File listBase = file(name);
+            checkRead(listBase);
 
             // return an enumeration that only includes files we have read
             // access to
@@ -213,7 +213,7 @@ public class WonderlandWebdavServlet extends WebdavServlet {
                     while (res.hasMoreElements()) {
                         NameClassPair ncp = (NameClassPair) res.nextElement();
                         try {
-                            File file = file(ncp.getName());
+                            File file = new File(listBase, ncp.getName());
                             checkRead(file);
                          
                             // if we got here, the file is valid

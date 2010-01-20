@@ -40,8 +40,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
@@ -364,14 +368,20 @@ public class PlacemarksServlet extends HttpServlet implements ServletContextList
         // start a specific connection that sends messages when the configuration
         // of xapps has changed.
         try {
-            WonderlandSession session = mgr.createSession();
-            context.setAttribute(SESSION_ATTR, session);
+            PlacemarkSession session = mgr.createSession(new SessionCreator<PlacemarkSession>() {
 
-            PlacemarkWebConfigConnection conn = new PlacemarkWebConfigConnection();
-            session.connect(conn);
-            context.setAttribute(PLACEMARKS_CONN_ATTR, conn);
-        } catch (ConnectionFailureException ex) {
-            logger.log(Level.SEVERE, "Connection failed", ex);
+                public PlacemarkSession createSession(ServerSessionManager session,
+                                                      WonderlandServerInfo info,
+                                                      ClassLoader loader)
+                {
+                    // issue #891: use the webapp classloader to resolve
+                    // placemark messages
+                    return new PlacemarkSession(session, info,
+                                                getClass().getClassLoader());
+                }
+            });
+            context.setAttribute(SESSION_ATTR, session);
+            context.setAttribute(PLACEMARKS_CONN_ATTR, session.getConnection());
         } catch (LoginFailureException ex) {
             logger.log(Level.WARNING, "Login failed", ex);
         }
@@ -382,6 +392,38 @@ public class PlacemarksServlet extends HttpServlet implements ServletContextList
         // context
         context.removeAttribute(SESSION_ATTR);
         context.removeAttribute(PLACEMARKS_CONN_ATTR);
+    }
+
+    // issue #891: use a custom session class, to make sure that messages
+    // are resolved using the correct classloader (in this case, the 
+    // webapp classloader must be used, since it has the Placemark messages
+    // defined).
+    private static class PlacemarkSession extends WonderlandSessionImpl {
+        private PlacemarkWebConfigConnection conn;
+
+        public PlacemarkSession(ServerSessionManager session,
+                                WonderlandServerInfo info, ClassLoader cl)
+        {
+            super (session, info, cl);
+        }
+
+        public PlacemarkWebConfigConnection getConnection() {
+            return conn;
+        }
+
+        @Override
+        public void login(LoginParameters loginParams)
+                throws LoginFailureException
+        {
+            super.login(loginParams);
+
+            try {
+                conn = new PlacemarkWebConfigConnection();
+                connect(conn);
+            } catch (ConnectionFailureException ex) {
+                throw new LoginFailureException(ex);
+            }
+        }
     }
 
     /**

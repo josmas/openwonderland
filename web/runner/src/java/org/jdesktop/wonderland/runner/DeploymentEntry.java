@@ -17,12 +17,16 @@
  */
 package org.jdesktop.wonderland.runner;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Store information for starting a single runners
@@ -33,7 +37,7 @@ public class DeploymentEntry {
     private String runnerName;
     private String runnerClass;
     private String location = "localhost";
-    private Properties runProps = new Properties();
+    private Properties props = new Properties();
     
     public DeploymentEntry() {
         // default no-arg constructor
@@ -44,35 +48,25 @@ public class DeploymentEntry {
         this.runnerClass = runnerClass;
     }
     
+    
     @XmlTransient
-    public Properties getRunProps() {
-        return runProps;
+    public Properties getProperties() {
+        return props;
     }
-
-    public void setRunProps(Properties runProps) {
-        this.runProps = runProps;
+    
+    public void setProperties(Properties props) {
+        this.props = props;
     }
-
+    
     @XmlElement(name="property")
-    public Property[] getProperties() {
-        Property[] out = new Property[getRunProps().size()];
-        int i = 0;
-        for (Entry<Object, Object> entry : getRunProps().entrySet()) {
-            out[i++] = new Property(entry);
+    public Set<Property> getPropertiesInternal() {
+        PropertySet out = new PropertySet();
+        for (String key : props.stringPropertyNames()) {
+            out.addInternal(key, props.getProperty(key));
         }
-        
         return out;
     }
-    
-    public void setProperties(Property[] properties) {
-        Properties props = new Properties();
-        for (Property prop : properties) {
-            props.setProperty(prop.key, prop.value);
-        }
-        
-        setRunProps(props);
-    }
-    
+
     @XmlElement
     public String getRunnerClass() {
         return runnerClass;
@@ -124,9 +118,9 @@ public class DeploymentEntry {
     
     @Override
     public String toString() {
-        return getRunnerName() + " " + getRunnerClass() + " " + getRunProps().size();
+        return getRunnerName() + " " + getRunnerClass() + " " + getProperties().size();
     } 
-    
+
     // internal representation of elements in the properties set
     protected static class Property {
         @XmlElement public String key;
@@ -134,9 +128,28 @@ public class DeploymentEntry {
 
         private Property() {} //Required by JAXB
 
-        public Property(Map.Entry<Object, Object> entry) {
-            this.key = (String) entry.getKey();
-            this.value = (String) entry.getValue();
+        public Property(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    /**
+     * A set that is backed by the internal properties object that
+     * this entry stores.
+     */
+    private class PropertySet extends LinkedHashSet<Property> {
+        @Override
+        public boolean add(Property p) {
+            boolean res = super.add(p);
+            if (res) {
+                props.setProperty(p.key, p.value);
+            }
+            return res;
+        }
+
+        public void addInternal(String key, String value) {
+            super.add(new Property(key, value));
         }
     }
 }

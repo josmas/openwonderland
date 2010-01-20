@@ -5,13 +5,12 @@
     </listener>
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
-        <servlet-class>com.sun.jersey.impl.container.servlet.ServletAdaptor</servlet-class>
-        <load-on-startup>1</load-on-startup>
-
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>unit:WonderlandGroupPU</param-name>
             <param-value>persistence/wonderlandgroup</param-value>
         </init-param>
+        <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>

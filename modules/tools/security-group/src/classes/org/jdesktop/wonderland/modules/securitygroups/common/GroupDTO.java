@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.securitygroups.common;
 
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -29,7 +28,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -87,23 +85,13 @@ public class GroupDTO {
         this.editable = editable;
     }
 
-    @XmlTransient
+    @XmlElement
     public Set<MemberDTO> getMembers() {
         return members;
     }
 
     public void setMembers(Set<MemberDTO> members) {
         this.members = members;
-    }
-
-    @XmlElement
-    public MemberDTO[] getMembersInternal() {
-        return members.toArray(new MemberDTO[0]);
-    }
-
-    public void setMembersInternal(MemberDTO[] memberArr) {
-        members = new TreeSet<MemberDTO>(new MemberComparator());
-        members.addAll(Arrays.asList(memberArr));
     }
 
     /**

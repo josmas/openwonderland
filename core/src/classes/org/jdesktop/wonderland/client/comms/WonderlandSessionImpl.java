@@ -21,9 +21,6 @@ import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.ClientChannelListener;
 import com.sun.sgs.client.simple.SimpleClient;
 import com.sun.sgs.client.simple.SimpleClientListener;
-import java.awt.Dimension;
-import java.awt.GraphicsEnvironment;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.PasswordAuthentication;
@@ -41,13 +38,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
-import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -936,29 +926,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
         public synchronized LoginResult waitForLogin() 
             throws InterruptedException
         {
-            JDialog waitingDialog = null;
-
             while (!loginComplete) {
-                wait(10000);
-                if (!loginComplete) {
-                    logger.warning("Still waiting for login response from server...");
-                    // TODO this should be refactored to remove UI code from this class.
-                    // Instead a callback should be passed into the login method which
-                    // will be periodically notified if the the login takes too long
-                    if (waitingDialog==null && !GraphicsEnvironment.isHeadless()) {
-                        waitingDialog = new JDialog(JmeClientMain.getFrame().getFrame(), java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/login/Bundle").getString("WAITING_FOR_SERVER"));
-                        waitingDialog.getContentPane().add(new WaitingDialogPanel());
-                        waitingDialog.pack();
-                        Dimension screenD=Toolkit.getDefaultToolkit().getScreenSize();
-                        waitingDialog.setLocation(screenD.width/2-waitingDialog.getWidth()/2, screenD.height/2-waitingDialog.getHeight()/2);
-                        waitingDialog.setVisible(true);
-                    }
-               }
-            }
-
-            if (loginComplete && waitingDialog!=null) {
-                waitingDialog.setVisible(false);
-                waitingDialog.dispose();
+                wait();
             }
             
             return new LoginResult(loginSuccess, loginException);

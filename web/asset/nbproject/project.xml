@@ -78,7 +78,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/java</package-root>
-                <classpath mode="compile">../lib/glassfish/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar:../lib/restlib/jsr311-api-1.0.jar:../../lib/jaxb/jaxb-api.jar:../../lib/jaxb/jsr173_1.0_api.jar:../modules/dist/wonderland-modules-core.jar:../../core/build/lib/wonderland-client.jar:../../core/build/lib/wonderland-common.jar:../utils/dist/wonderland-web-utils.jar:../front/dist/wonderland-webadmin-core.jar</classpath>
+                <classpath mode="compile">../lib/glassfish/glassfish-embedded-all-3.0-b74b.jar:../lib/restlib/jsr311-api-1.1.1.jar:../../lib/jaxb/jaxb-api.jar:../../lib/jaxb/jsr173_1.0_api.jar:../modules/dist/wonderland-modules-core.jar:../../core/build/lib/wonderland-client.jar:../../core/build/lib/wonderland-common.jar:../utils/dist/wonderland-web-utils.jar:../front/dist/wonderland-webadmin-core.jar</classpath>
                 <built-to>dist/wonderland-asset-core.jar</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>

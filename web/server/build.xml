@@ -83,13 +83,21 @@
                 <include name="org/jdesktop/wonderland/utils/FileListUtil*.class"/>
                 <include name="org/jdesktop/wonderland/utils/SystemPropertyUtil*.class"/>
             </zipfileset>
+
+            <!-- we also need ScannedClassloader from wonderland-common -->
+            <zipfileset src="${top.dir}/core/build/lib/wonderland-common.jar">
+                <include name="org/jdesktop/wonderland/common/utils/ScannedClassLoader*.class"/>
+                <include name="org/jdesktop/wonderland/common/utils/ClassScanningError*.class"/>
+            </zipfileset>
+
+            <!-- and scannotation & javassist -->
+            <zipfileset src="${core.common.dir}/scannotation-1.0.2.jar"/>
+            <zipfileset src="${core.common.dir}/javassist.jar"/>
             
             <!-- files that are needed for the web server classpath -->
             <checksumfileset file="${web.dir}/utils/dist/wonderland-web-utils.jar" prefix="webserver"/>
             <checksumfileset dir="${web.dir}/lib/glassfish" prefix="webserver"/>
             <checksumfileset file="${build.dir}/lib/wonderland-webserver.jar" prefix="webserver"/>
-            <checksumfileset dir="${top.dir}/lib/jaxb" prefix="webserver"/>
-            <checksumfileset dir="${web.dir}/lib/restlib" prefix="webserver"/>
             <checksumfileset dir="${web.dir}/lib/apache" prefix="webserver"/>
             <checksumfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/asset/dist/wonderland-asset-core.jar" prefix="webserver"/>
@@ -107,9 +115,6 @@
             <checksumfileset file="${top.dir}/core/build/lib/wonderland-common.jar" prefix="webserver"/>
             <checksumfileset dir="${core.sgs.client.dir}/lib" prefix="webserver"/>
             <checksumfileset file="${core.common.dir}/stun.jar" prefix="webserver"/>
-            <checksumfileset file="${core.common.dir}/scannotation-1.0.2.jar" prefix="webserver"/>
-            <checksumfileset file="${core.common.dir}/javassist.jar" prefix="webserver"/>
-            <checksumfileset file="${core.common.dir}/derby.jar" prefix="webserver"/>
 
             <!-- contents of the document root -->
             <checksumfileset dir="${current.dir}/web" prefix="docroot"/>

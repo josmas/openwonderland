@@ -44,7 +44,7 @@ public class DeploymentPlanResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @Produces({"text/plain", "application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public Response getDeploymentPlan(@QueryParam(value="location") String location) {
         DeploymentPlan dp = DeploymentManager.getInstance().getPlan().clone();
 
