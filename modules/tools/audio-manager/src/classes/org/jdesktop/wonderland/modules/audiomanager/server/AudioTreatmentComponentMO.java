@@ -176,9 +176,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
         groupId = state.getGroupId();
 
-	if (groupId == null || groupId.length() == 0) {
-	    groupId = CallID.getCallID(cellID);
-	}
+	//if (groupId == null || groupId.length() == 0) {
+	//    groupId = CallID.getCallID(cellID);
+	//}
 
 	treatmentType = state.getTreatmentType();
 
@@ -218,9 +218,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         if (state == null) {
             state = new AudioTreatmentComponentServerState();
 
-	    if (groupId == null || groupId.length() == 0) {
-	        groupId = CallID.getCallID(cellID);
-	    }
+	    //if (groupId == null || groupId.length() == 0) {
+	    //    groupId = CallID.getCallID(cellID);
+	    //}
 
             state.setGroupId(groupId);
 	    state.setTreatmentType(treatmentType);
@@ -300,7 +300,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     }
 
     private void initialize() {
-	if (groupId == null || treatments.length == 0) {
+	if (treatments.length == 0) {
 	    /*
 	     * The AudioTreatmentComponent hasn't been configured yet.
 	     */
@@ -312,7 +312,11 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        TreatmentGroup group = vm.createTreatmentGroup(groupId);
+        TreatmentGroup group = null;
+
+	if (groupId != null && groupId.length() > 0) {
+	    group = vm.createTreatmentGroup(groupId);
+	}
 	
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
@@ -407,7 +411,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
             try {
 		Treatment t = vm.createTreatment(treatmentId, setup);
-                group.addTreatment(t);
+
+		if (group != null) {
+                    group.addTreatment(t);
+		}
 
 		if (playWhen.equals(PlayWhen.ALWAYS) == false) {
 		    t.pause(true);
