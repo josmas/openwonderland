@@ -44,10 +44,12 @@
                       <Component id="audioProblemLabel" alignment="0" pref="359" max="32767" attributes="2"/>
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="reconfigureButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="reconnectButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="okButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="ignoreButton" pref="91" max="32767" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="okButton" min="-2" pref="54" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -64,8 +66,9 @@
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="okButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="reconnectButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="reconfigureButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="reconnectButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ignoreButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -129,6 +132,14 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="okButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="ignoreButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Ignore"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ignoreButtonActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

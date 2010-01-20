@@ -360,7 +360,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 		phoneCellMO.getWorldBounds().getCenter(center);
 
-        	center.setY((float)1.5);
+        	center.setY((float)1.8);
 
                 new Orb(listing.getContactName(), listing.getContactName(), 
 		    externalCallID, center, .1, listing.simulateCalls());

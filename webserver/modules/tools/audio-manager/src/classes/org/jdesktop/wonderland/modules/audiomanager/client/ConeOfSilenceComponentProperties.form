@@ -50,7 +50,7 @@
                                   <Component id="specifyRadiusRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="specifyBoxRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace pref="14" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="xExtentSpinner" linkSize="1" pref="54" max="32767" attributes="1"/>
@@ -75,7 +75,7 @@
                       <Component id="outsideVolumeSlider" min="-2" pref="200" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="8" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -116,7 +116,7 @@
                   <Component id="jLabel3" alignment="2" min="-2" pref="26" max="-2" attributes="0"/>
                   <Component id="outsideVolumeSlider" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="358" max="32767" attributes="0"/>
+              <EmptySpace pref="352" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -206,11 +206,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="boundsLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="ConeOfSilenceComponentProperties.boundsLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="showBoundsCheckBox">
       <Properties>
@@ -226,9 +221,6 @@
       <Properties>
         <Property name="minorTickSpacing" type="int" value="10"/>
         <Property name="paintTicks" type="boolean" value="true"/>
-        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[200, 38]"/>
-        </Property>
       </Properties>
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="outsideVolumeSliderStateChanged"/>
