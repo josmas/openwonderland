@@ -20,8 +20,10 @@ package org.jdesktop.wonderland.modules.phone.client.cell;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -63,6 +65,12 @@ public class PhoneCellFactory implements CellFactorySPI {
         //Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
         //cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
 
+	BoundingBox box = new BoundingBox(
+	    new Vector3f(0, 0, 0), 0.27053905F, 0.060000006F, 0.27053908F);
+
+	BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
+	cellServerState.setBoundingVolumeHint(hint);
+	
         Logger.getLogger(PhoneCellFactory.class.getName()).warning(
                 "New Virtual Phone!!!!");
         return (T) cellServerState;
