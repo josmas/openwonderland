@@ -22,9 +22,12 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachVirtualPlaye
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbBystandersMessage;
 
+import java.util.Set;
+
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -35,6 +38,10 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+
+import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
+import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 //import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
@@ -70,7 +77,7 @@ import org.jdesktop.wonderland.server.cell.annotation.NoSnapshot;
  * @author jprovino
  */
 @NoSnapshot
-public class OrbCellMO extends CellMO {
+public class OrbCellMO extends ViewCellMO {
 
     private static final Logger logger =
             Logger.getLogger(OrbCellMO.class.getName());
@@ -81,10 +88,38 @@ public class OrbCellMO extends CellMO {
     private VirtualPlayer vp;
     private String[] bystanders;
 
+    private ManagedReference<OrbCellCacheMO> orbCellCacheRef;
+
 //    @UsesCellComponentMO(AudioParticipantComponentMO.class)
 //    private ManagedReference<AudioParticipantComponentMO> compRef;
 
     public OrbCellMO() {
+	initialize();
+    }
+
+    public OrbCellMO(Vector3f center, float size, String username, 
+	    String callID, boolean simulateCalls) {
+
+	this(center, size, username, callID, simulateCalls, null, new String[0]);
+    }
+
+    public OrbCellMO(Vector3f center, float size, String username, 
+	    String callID, boolean simulateCalls, VirtualPlayer vp,
+	    String[] bystanders) {
+
+	super(new BoundingSphere(size, center), new CellTransform(null, center));
+
+	this.username = username;
+        this.callID = callID;
+        this.simulateCalls = simulateCalls;
+	this.vp = vp;
+	this.bystanders = bystanders;
+
+        addComponent(new MovableComponentMO(this));
+        addTransformChangeListener(new TransformChangeListener());
+    }
+
+    private void initialize() {
         addComponent(new MovableComponentMO(this));
 
 	try {
@@ -112,27 +147,6 @@ public class OrbCellMO extends CellMO {
         }
     }
 
-    public OrbCellMO(Vector3f center, float size, String username, 
-	    String callID, boolean simulateCalls) {
-
-	this(center, size, username, callID, simulateCalls, null, new String[0]);
-    }
-
-    public OrbCellMO(Vector3f center, float size, String username, 
-	    String callID, boolean simulateCalls, VirtualPlayer vp,
-	    String[] bystanders) {
-
-	super(new BoundingSphere(size, center), new CellTransform(null, center));
-
-	this.username = username;
-        this.callID = callID;
-        this.simulateCalls = simulateCalls;
-	this.vp = vp;
-	this.bystanders = bystanders;
-
-        addComponent(new MovableComponentMO(this));
-    }
-
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
@@ -148,11 +162,15 @@ public class OrbCellMO extends CellMO {
                 orbMessageHandler.done();
             }
 
+	    if (orbCellCacheRef != null) {
+	        orbCellCacheRef.get().logout();
+	        orbCellCacheRef = null;
+	    }
             return;
         }
 
         orbMessageHandlerRef = AppContext.getDataManager().createReference(
-                new OrbMessageHandler(this, username, callID, simulateCalls));
+             new OrbMessageHandler(this, username, callID, simulateCalls));
     }
 
     @Override
@@ -248,5 +266,45 @@ public class OrbCellMO extends CellMO {
 	    orbMessageHandlerRef.get().done();
 	}
     }
+
+    @Override
+    public ViewCellCacheMO getCellCache() {
+        return orbCellCacheRef.get();
+    }
+
+    Set<CellID> getLoadedCells() {
+        return orbCellCacheRef.get().getLoadedCells();
+    }
+
+    private ManagedReference<OrbCellCacheMO> getOrbCellCacheRef() {
+        return orbCellCacheRef;
+    }
+
+    private void setCellCache(OrbCellCacheMO cache) {
+	orbCellCacheRef = AppContext.getDataManager().createReference(cache);
+    	cache.login();
+    }
+
+    private static class TransformChangeListener implements TransformChangeListenerSrv {
+
+        public void transformChanged(ManagedReference<CellMO> cellRef, CellTransform localTransform, 
+	    CellTransform worldTransform) {
+
+            //It's at this stage that we know we're in the world and located at a certain position
+            //logger.info("worldTransform: " + getWorldTransform(null));
+            //Create the cell cache and set it up
+            OrbCellMO cellMO = (OrbCellMO) cellRef.get();
+
+            if (cellMO.getOrbCellCacheRef() == null) {
+		cellMO.setCellCache(new OrbCellCacheMO(cellMO));
+                //We don't need to listen any longer
+                cellMO.removeTransformChangeListener(this);
+            } else {
+                //we shouldn't have reached here
+                logger.severe("Failed to remove change listener");
+            }
+        }
+   
+    } 
 
 }

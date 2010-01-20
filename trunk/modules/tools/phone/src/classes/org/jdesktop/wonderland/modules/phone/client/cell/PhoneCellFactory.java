@@ -57,10 +57,10 @@ public class PhoneCellFactory implements CellFactorySPI {
         cellServerState.setPhoneInfo(new PhoneInfo(false, "100", "foo",
                 "Unknown location", .2, .1, true, true));
 
-        Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
         /*
          * Try rotating 45 degrees to see what that does.
          */
+        //Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
         //cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
 
         Logger.getLogger(PhoneCellFactory.class.getName()).warning(
