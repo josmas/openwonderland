@@ -284,6 +284,13 @@ public class RunAppServer {
 
         for (String addFile : addFiles) {
             String fullPath = "/" + getWebappDir() + "/" + addFile;
+
+            // make sure to clear the directory before we write to it
+            File existingDir = new File(deployDir, addFile);
+            if (existingDir.exists() && existingDir.isDirectory()) {
+                RunUtil.deleteDir(existingDir);
+            }
+
             RunUtil.extractJar(getClass(), fullPath, deployDir);
         }
 

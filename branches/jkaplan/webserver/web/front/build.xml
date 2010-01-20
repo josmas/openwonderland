@@ -33,7 +33,6 @@
         <pathconvert property="web-extra.classpath">
             <path path="${current.dir}/lib/deployment-servlet-1.0beta.jar"/>
             <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
-            <path path="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
             <path path="${core.dir}/build/lib/wonderland-client.jar"/>
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
             <path path="${top.dir}/utils/wonderland-version/dist/wonderland-version.jar"/>
