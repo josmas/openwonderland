@@ -225,10 +225,16 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	        callHandler.removeCallStatusListener(this);
 
 		try {
-		    callHandler.getCall().end(false);
+	    	    Call call = callHandler.getCall();
+
+		    if (call == null) {
+			logger.info("Can't find call for " + callId);
+			return;
+		    }
+
+		    call.end(false);
 		} catch (IOException e) {
-		    logger.warning("Unable to end call " + callHandler.getCall()
-			+ ": " + e.getMessage());
+		    logger.warning("Unable to end call for " + callId + ": " + e.getMessage());
 		}
 	    }
 	    return;
@@ -364,36 +370,39 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
         private String lastMessagePlayed;
 
- 	private Call call;
+ 	private String callId;
 
-	public CallHandler(Call call, CallStatus establishedStatus, 	
-		int timeout) {
-
-	    this.call = call;
+	public CallHandler(Call call, CallStatus establishedStatus, int timeout) {
 	    this.establishedStatus = establishedStatus;
 
-	    logger.info("New Call Handler for call " + call);
+	    callId = call.getId();
+
+	    logger.info("New Call Handler for call " + callId);
 
 	    state = WAITING_FOR_PHONE_NUMBER;
 
-	    playWaitingForPhoneNumber();
+	    playWaitingForPhoneNumber(call);
 
 	    // TODO The thread must run as a darkstar transaction!
 	    //start();
 	}
 
 	public Call getCall() {
-	    return call;
+	    return AppContext.getManager(VoiceManager.class).getCall(callId);
 	}
-
+	
 	public void addCallStatusListener(ManagedCallStatusListener listener) {
 	    AppContext.getManager(VoiceManager.class).addCallStatusListener(listener,
-		call.getId());
+		callId);
 	}
 
 	public void removeCallStatusListener(ManagedCallStatusListener listener) {
 	    AppContext.getManager(VoiceManager.class).removeCallStatusListener(listener,
-		call.getId());
+		callId);
+	}
+
+	private void playWaitingForPhoneNumber(Call call) {
+	    playTreatment(call, "enter_phone_number.au");
 	}
 
 	private void playWaitingForPhoneNumber() {
@@ -418,7 +427,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		try {
 		    Thread.sleep(timeout);
 
-		    logger.info("state is  " + state + " for call " + call);
+		    logger.info("state is  " + state + " for call " + getCall());
 
 		    if (state != WAITING_FOR_PHONE_NUMBER) {
 			break;
@@ -443,7 +452,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 			    } catch (InterruptedException e) {
 			    }
 
-			    cancelCall(call);
+			    cancelCall();
 			    break;
 			}
 
@@ -458,7 +467,14 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	    }
 	}
 
-        private void cancelCall(Call call) {
+        private void cancelCall() {
+	    Call call = getCall();
+
+	    if (call == null) {
+		logger.info("Can't find call for " + callId);
+		return;
+	    }
+
 	    try {
 	        call.end(true);
 	    } catch (IOException e) {
@@ -466,7 +482,21 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	    }
 	}
 
+	private void playInitialTreatment(Call call, String treatment) {
+	}
+
 	private void playTreatment(String treatment) {
+	    Call call = getCall();
+
+	    if (call == null) {
+		logger.info("Can't find call for " + callId);
+		return;
+	    }
+
+	    playTreatment(call, treatment);
+	}
+
+	private void playTreatment(Call call, String treatment) {
 	    try {
 	        call.playTreatment(treatment);
 	    } catch (IOException e) {
@@ -654,6 +684,13 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	}
 
 	private boolean transferCall() {
+	    Call call = getCall();
+
+	    if (call == null) {
+		logger.info("Can't find call for " + callId);
+		return false;
+	    }
+
 	    try {
 		PhoneInfo phoneInfo = phone.phoneInfo;
 
