@@ -4,7 +4,7 @@
    
     <!-- embedded glassfish v3 -->
     <pathconvert property="web.glassfish.classpath">
-        <path location="${web.glassfish.dir}/glassfish-embedded-custom-v3-prelude-b11-02_21_2009.jar"/>
+        <path location="${web.glassfish.dir}/glassfish-embedded-all-3.0-b74b.jar"/>
     </pathconvert>
    
     <!-- apache commons -->
@@ -15,12 +15,7 @@
     
     <!-- Other wonderland specific supporting jars -->
     <pathconvert property="web.restlib.classpath">
-        <path location="${web.restlib.dir}/asm-3.1.jar"/>
-        <path location="${web.restlib.dir}/jersey-core-1.0.jar"/>
-        <path location="${web.restlib.dir}/jersey-json-1.0.jar"/>
-        <path location="${web.restlib.dir}/jersey-server-1.0.jar"/>
-        <path location="${web.restlib.dir}/jettison-1.0.1.jar"/>
-        <path location="${web.restlib.dir}/jsr311-api-1.0.jar"/>
+        <path location="${web.restlib.dir}/jsr311-api-1.1.1.jar"/>
     </pathconvert>
 
     <!-- web utlities -->

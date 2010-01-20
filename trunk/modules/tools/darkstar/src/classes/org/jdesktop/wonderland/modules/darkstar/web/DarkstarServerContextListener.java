@@ -96,7 +96,6 @@ public class DarkstarServerContextListener
         }
 
         // update the list of Darkstar servers
-        DarkstarServer[] servers = out.toArray(new DarkstarServer[0]);
-        ServerInfo.getServerDetails().setDarkstarServers(servers);
+        ServerInfo.getServerDetails().setDarkstarServers(out);
     }
 }

@@ -33,9 +33,9 @@
                 onSuccess: function(response) {
                     group = response.responseText.evalJSON(true);
 
-                    if (group.membersInternal.length == 1) {
-                        var member = group.membersInternal;
-                        group.membersInternal = [ member ];
+                    if (group.members.length == 1) {
+                        var member = group.members;
+                        group.members = [ member ];
                     }
 
                     refresh();
@@ -45,11 +45,11 @@
     }
     
     function refresh() {
-        for (var i = 0; i < group.membersInternal.length; i++) {
-            updateMember(group.membersInternal[i], i);
+        for (var i = 0; i < group.members.length; i++) {
+            updateMember(group.members[i], i);
         }
         
-        var lastRow = $('memberTable').down('tr', group.membersInternal.length);
+        var lastRow = $('memberTable').down('tr', group.members.length);
         while (lastRow.next() != null) {
             lastRow.next().remove();
         }
@@ -59,7 +59,7 @@
         var newMember = new Object();
         newMember.id = "";
         newMember.owner = "false";
-        group.membersInternal.push(newMember);
+        group.members.push(newMember);
         refresh();
     }
     
@@ -103,18 +103,18 @@
         var row = $('memberTable').down('tr', index + 1);
         
         var id = row.down('td', 0).down('input', 0);
-        group.membersInternal[index].id = id.getValue();
+        group.members[index].id = id.getValue();
 
         var owner = row.down('td', 1).down('input', 0);
         if (owner.getValue() != null) {
-            group.membersInternal[index].owner = "true";
+            group.members[index].owner = "true";
         } else {
-            group.membersInternal[index].owner = "false";
+            group.members[index].owner = "false";
         }
     }
 
     function removeMember(index) {
-        group.membersInternal.splice(index, 1);
+        group.members.splice(index, 1);
         refresh();
     }
 
@@ -126,15 +126,15 @@
     function submitForm() {
         // remove any groups with no name
         var remove = [];
-        for (var i = 0; i < group.membersInternal.length; i++) {
-            var id = group.membersInternal[i].id;
+        for (var i = 0; i < group.members.length; i++) {
+            var id = group.members[i].id;
             if (id == null || id.empty()) {
                 remove.push(i);
             }
         }
 
         for (var i = 0; i < remove.length; i++) {
-            group.membersInternal.splice(remove[i], 1);
+            group.members.splice(remove[i], 1);
         }
 
         new Ajax.Request('resources/groups/' + groupId, {

@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.securitygroups.common;
 
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
@@ -30,7 +29,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -58,23 +56,13 @@ public class GroupsDTO {
         this.groups.addAll(groups);
     }
 
-    @XmlTransient
+    @XmlElement
     public Set<GroupDTO> getGroups() {
         return groups;
     }
 
     public void setGroups(Set<GroupDTO> groups) {
         this.groups = groups;
-    }
-
-    @XmlElement
-    public GroupDTO[] getGroupsInternal() {
-        return groups.toArray(new GroupDTO[0]);
-    }
-
-    public void setGroupsInternal(GroupDTO[] groupArr) {
-        groups = new TreeSet<GroupDTO>(new GroupComparator());
-        groups.addAll(Arrays.asList(groupArr));
     }
 
     /**

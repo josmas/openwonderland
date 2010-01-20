@@ -64,7 +64,7 @@ public class WFSListCellsResource {
      * @return The XML serialization of the cell setup information via HTTP GET.
      */
     @GET
-    @Produces("text/plain")
+    @Produces({"application/xml", "application/json"})
     public Response getCellResource(@PathParam("wfsname") String wfsName, @QueryParam("reload") String reload) {
         /* Fetch thhe error logger for use in this method */
         Logger logger = WFSManager.getLogger();
@@ -125,16 +125,8 @@ public class WFSListCellsResource {
         CellList wfsCellList = new CellList("", childs);
         
         /* Send the serialized cell names to the client */
-        try {
-            StringWriter sw = new StringWriter();
-            wfsCellList.encode(sw);
-            ResponseBuilder rb = Response.ok(sw.toString());
-            return rb.build();
-        } catch (JAXBException excp) {
-            logger.info("WFSManager: Unable to write cell list");
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
+        ResponseBuilder rb = Response.ok(wfsCellList);
+        return rb.build();
     }
     
     /**

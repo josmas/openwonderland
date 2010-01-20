@@ -312,14 +312,14 @@ public class ServerSessionManager {
 
             // make sure there is a Darkstar server available
             if (getDetails().getDarkstarServers() == null ||
-                    getDetails().getDarkstarServers().length == 0)
+                    getDetails().getDarkstarServers().size() == 0)
             {
                 throw new ServerUnavailableException("No running Darkstar " +
                         "server found for " + getDetails().getServerURL());
             }
 
             // choose a Darkstar server to connect to
-            DarkstarServer ds = getDetails().getDarkstarServers()[0];
+            DarkstarServer ds = getDetails().getDarkstarServers().get(0);
             WonderlandServerInfo serverInfo =
                     new WonderlandServerInfo(ds.getHostname(), ds.getPort());
 

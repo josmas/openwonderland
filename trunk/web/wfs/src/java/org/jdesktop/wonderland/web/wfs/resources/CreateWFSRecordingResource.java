@@ -51,7 +51,7 @@ public class CreateWFSRecordingResource {
      * @return A WorldRoot object
      */
     @GET
-    @Produces({"text/plain", "application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public Response createWFSRecording(@QueryParam("name") String name) {
         // Do some basic stuff, get the WFS manager class, etc
         Logger logger = Logger.getLogger(CreateWFSRecordingResource.class.getName());

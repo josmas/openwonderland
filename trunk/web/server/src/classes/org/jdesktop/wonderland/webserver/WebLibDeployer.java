@@ -23,7 +23,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
@@ -39,6 +43,10 @@ public class WebLibDeployer extends WebDeployer {
             Logger.getLogger(WebLibDeployer.class.getName());
 
     private static final String CHECKSUM_FILE = "weblibchecksums.list";
+
+    // the set of plugin types we have already initialized. Only one plugin
+    // of any type will be active at a time.
+    private final Set<Class> plugins = new HashSet<Class>();
 
     @Override
     public String getName() {
@@ -67,9 +75,21 @@ public class WebLibDeployer extends WebDeployer {
         // add the URL of the record's file to the global classpath
         URL u = record.getFile().toURI().toURL();
         
-        logger.warning("Weblib deploy: " + u);
+        logger.info("Weblib deploy: " + u);
 
         WebServerLauncher.getClassLoader().addURL(u);
+
+        // update plugins
+        Iterator<WebLibPlugin> i =
+            WebServerLauncher.getClassLoader().getAll(Plugin.class,
+                                                      WebLibPlugin.class);
+        while (i.hasNext()) {
+            WebLibPlugin plugin = i.next();
+            if (!plugins.contains(plugin.getClass())) {
+                plugin.initialize(RunAppServer.getAppServer());
+                plugins.add(plugin.getClass());
+            }
+        }
     }
 
     @Override

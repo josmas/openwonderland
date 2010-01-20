@@ -84,7 +84,7 @@ public class DeployManager {
         logger.info("[DEPLOY] Module has parts " + parts.keySet().toString());
         logger.info("[DEPLOY] Number of Deployers " + this.deployers.size());
         for (Class clazz : deployers.keySet()) {
-            logger.warning("[DEPLOY] Deployer Class " + clazz.getName() + " " +
+            logger.info("[DEPLOY] Deployer Class " + clazz.getName() + " " +
                     deployers.get(clazz).getName());
         }
         

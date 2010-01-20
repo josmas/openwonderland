@@ -125,8 +125,8 @@ public class RunnerServlet extends HttpServlet {
         // add in the default properties to the runner.  These will be removed
         // before they are saved
         Properties props = runner.getDefaultProperties();
-        props.putAll(de.getRunProps());
-        de.setRunProps(props);
+        props.putAll(de.getProperties());
+        de.setProperties(props);
         
         request.setAttribute("entry", de);
        
@@ -147,7 +147,7 @@ public class RunnerServlet extends HttpServlet {
         } else if (button.equalsIgnoreCase("Cancel")) {
             redirectToRun(response);
         } else if (button.equalsIgnoreCase("Restore Defaults")) {
-            de.setRunProps(runner.getDefaultProperties());
+            de.setProperties(runner.getDefaultProperties());
             doEdit(request, response, runner, de);
         } else {
             doEdit(request, response, runner, de);
@@ -165,12 +165,12 @@ public class RunnerServlet extends HttpServlet {
         
         // if any property is the same as the default property,
         // remove it so it will change as the default changes
-        for (String propName : de.getRunProps().stringPropertyNames()) {
-            String runVal = de.getRunProps().getProperty(propName);
+        for (String propName : de.getProperties().stringPropertyNames()) {
+            String runVal = de.getProperties().getProperty(propName);
             String defVal = runner.getDefaultProperties().getProperty(propName);
 
             if (runVal.equals(defVal)) {
-                de.getRunProps().remove(propName);
+                de.getProperties().remove(propName);
             }
         }
 
@@ -400,7 +400,7 @@ public class RunnerServlet extends HttpServlet {
         if (location != null) {
             de.setLocation(location);
         }
-        de.setRunProps(props);
+        de.setProperties(props);
         
         return de;
     }
