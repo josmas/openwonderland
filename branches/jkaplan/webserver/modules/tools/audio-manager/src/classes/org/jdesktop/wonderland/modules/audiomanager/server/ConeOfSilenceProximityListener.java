@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
@@ -54,6 +55,10 @@ import org.jdesktop.wonderland.server.security.ResourceMap;
 import org.jdesktop.wonderland.server.security.SecureTask;
 import org.jdesktop.wonderland.server.security.SecurityManager;
 
+import org.jdesktop.wonderland.modules.orb.common.OrbCellServerState;
+
+import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
+
 /**
  * A server cell that provides conference coneofsilence functionality
  * @author jprovino
@@ -65,15 +70,27 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
 
     private CellID cellID;
-    private String callID;
     private String name;
     private double outsideAudioVolume;
     private boolean entered;
 
-    public ConeOfSilenceProximityListener(CellMO cellMO, String name, double outsideAudioVolume) {
-	cellID = cellMO.getCellID();
+    public ConeOfSilenceProximityListener(CellMO cellMO, String name, 
+	    double outsideAudioVolume) {
+
         this.name = name;
 	this.outsideAudioVolume = outsideAudioVolume;
+
+	cellID = cellMO.getCellID();
+    }
+
+    private String getCallID(CellID viewCellID) {
+	CellMO viewCellMO = CellManagerMO.getCell(viewCellID);
+
+	if (viewCellMO instanceof OrbCellMO) {
+	    return ((OrbCellMO) viewCellMO).getCallID();
+	}
+
+	return CallID.getCallID(viewCellID);
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -87,7 +104,6 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	    + " viewCellID " + viewCellID + " " + proximityVolume);
 
 	this.entered = entered;
-	this.callID = CallID.getCallID(viewCellID);
 
 	if (entered) {
 	    cellEntered(viewCellID);
@@ -96,7 +112,11 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	}
     }
 
-    public void cellEntered(CellID cellID) {
+    public void cellEntered(CellID viewCellID) {
+	cellEntered(cellID, getCallID(viewCellID));
+    }
+
+    private void cellEntered(CellID cellID, String callId) {
         // get the security manager
         SecurityManager security = AppContext.getManager(SecurityManager.class);
         CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
@@ -112,20 +132,23 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
             request.put(resource.getId(), am);
 
             // perform the security check
-            security.doSecure(request, new CellEnteredTask(resource.getId(), cellID));
+            security.doSecure(request, new CellEnteredTask(resource.getId(), cellID, 
+		callId));
         } else {
             // no security, just make the call directly
-            cellEntered(CallID.getCallID(cellID));
+            cellEntered(callId);
         }
     }
 
     private class CellEnteredTask implements SecureTask, Serializable {
         private String resourceID;
-        private CellID softphoneCellID;
+        private CellID viewCellID;
+	private String callId;
 
-        public CellEnteredTask(String resourceID, CellID softphoneCellID) {
+        public CellEnteredTask(String resourceID, CellID viewCellID, String callId) {
             this.resourceID = resourceID;
-            this.softphoneCellID = softphoneCellID;
+            this.viewCellID = viewCellID;
+	    this.callId = callId;
         }
 
         public void run(ResourceMap granted) {
@@ -133,7 +156,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
             if (am != null && !am.isEmpty()) {
                 // request was granted -- the user has permission to
                 // enter the COS
-                cellEntered(CallID.getCallID(softphoneCellID));
+                cellEntered(callId);
             } else {
                 logger.warning("Access denied to enter Cone of Silence");
             }
@@ -221,8 +244,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
     }
 
-    public void cellExited(CellID cellID) {
-        cellExited(CallID.getCallID(cellID));
+    public void cellExited(CellID viewCellID) {
+        cellExited(getCallID(viewCellID));
     }
 
     private void cellExited(String callId) {
@@ -263,7 +286,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	    WonderlandClientSender sender =
                 WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	    sender.send(new ConeOfSilenceEnterExitMessage(name, callID, false));
+	    sender.send(new ConeOfSilenceEnterExitMessage(name, player.getId(), false));
 	}
     }
 
@@ -280,4 +303,5 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
 	vm.removeAudioGroup(audioGroup);
     }
+
 }
