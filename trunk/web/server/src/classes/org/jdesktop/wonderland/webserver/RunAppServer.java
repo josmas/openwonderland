@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipInputStream;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.embedded.ContainerBuilder;
 import org.glassfish.api.embedded.EmbeddedFileSystem;
@@ -79,7 +80,10 @@ public class RunAppServer {
             
             // write the web server's document root
             writeDocumentRoot();
-            
+
+            // write DTDs for local deployments
+            writeDtds();
+
             // write the updated webapps
             writeWebApps();
         }
@@ -297,6 +301,25 @@ public class RunAppServer {
         // write the updated checksum list
         RunUtil.extract(getClass(), "/META-INF/" + getWebappDir() +
                                     "/files.list", deployDir);
+    }
+
+    protected void writeDtds() throws IOException {
+        // issue #1191: for offline instances of Wonderland, make sure
+        // we have a copy of all the dtd files locally, otherwise
+        // glassfish will fail
+        File install_dir = new File(RunUtil.getRunDir(), "web_install");
+        File lib_dir = new File(install_dir, "lib");
+        File dtds_dir = new File(lib_dir, "dtds");
+
+        // clear the directory & recreate it
+        if (dtds_dir.exists()) {
+            RunUtil.deleteDir(dtds_dir);
+        }
+
+        // extract the dtds
+        ZipInputStream zis = new ZipInputStream(
+                getClass().getResourceAsStream("/webserver/dtds/dtds.zip"));
+        RunUtil.extractZip(zis, lib_dir);
     }
 
     /**
