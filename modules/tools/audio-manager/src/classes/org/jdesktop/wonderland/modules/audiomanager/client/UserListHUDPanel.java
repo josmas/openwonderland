@@ -840,8 +840,7 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 }//GEN-LAST:event_voiceChatButtonActionPerformed
 
 private void muteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteButtonActionPerformed
-    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-    sc.mute(!sc.isMuted());
+    client.toggleMute();
 }//GEN-LAST:event_muteButtonActionPerformed
 
 private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneButtonActionPerformed
