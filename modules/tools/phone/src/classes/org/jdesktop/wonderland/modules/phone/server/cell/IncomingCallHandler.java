@@ -774,7 +774,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
 		phone.phoneCellRef.get().getWorldBounds().getCenter(center);
 
-        	center.setY((float)1.5);
+        	center.setY((float).5);
 
 		String username = call.getSetup().cp.getName();
 
