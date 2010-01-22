@@ -601,7 +601,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
     private void deployToServerBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deployToServerBActionPerformed
 
         String moduleName = targetModuleTF.getText();
-        ArrayList<DeployedModel> deploymentInfo = new ArrayList();
+        final ArrayList<DeployedModel> deploymentInfo = new ArrayList();
         WorldManager wm = ClientContextJME.getWorldManager();
         final ServerSessionManager targetServer =
                 (ServerSessionManager) targetServerSelector.getSelectedItem();
@@ -682,6 +682,19 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                     return;
                 }
 
+                // Now create the cells for the new content
+                WonderlandSession session =
+                        LoginManager.getPrimary().getPrimarySession();
+                CellEditChannelConnection connection =
+                        (CellEditChannelConnection) session.getConnection(
+                        CellEditConnectionType.CLIENT_TYPE);
+                for (DeployedModel info : deploymentInfo) {
+                    CellID parentCellID = null;
+                    CellCreateMessage msg = new CellCreateMessage(
+                            parentCellID, info.getCellServerState());
+                    connection.send(msg);
+                }
+
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         uploadingDialog.setVisible(false);
@@ -696,19 +709,6 @@ public class ImportSessionFrame extends javax.swing.JFrame {
         // will be sent the client cells
         for (ImportedModel model : imports) {
             wm.removeEntity(model.getEntity());
-        }
-        // Now create the cells for the new content
-        WonderlandSession session =
-                LoginManager.getPrimary().getPrimarySession();
-        CellEditChannelConnection connection =
-                (CellEditChannelConnection) session.getConnection(
-                CellEditConnectionType.CLIENT_TYPE);
-        for (DeployedModel info : deploymentInfo) {
-//            System.err.println("SENDING cell create "+info.getCellServerState());
-            CellID parentCellID = null;
-            CellCreateMessage msg = new CellCreateMessage(
-                    parentCellID, info.getCellServerState());
-            connection.send(msg);
         }
 
         tableModel.setRowCount(0);
