@@ -75,9 +75,6 @@ public class VolumeConverter {
 	    v = 1 + ((volume - middle) * plusIncrement);
 	}
 	
-	System.out.println("int v " + volume + " float v " + v
-	    + " int v " + getVolume(v));
-
 	return v;
     }
 
