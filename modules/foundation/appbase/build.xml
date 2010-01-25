@@ -17,7 +17,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="appbase" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="appbase" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="2D application API and library" builddir="${build.dir}">
         
             <client dir="${current.dir}/lib">

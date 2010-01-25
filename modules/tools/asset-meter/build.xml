@@ -18,7 +18,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="asset-meter" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="asset-meter" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Asset download progress meter" builddir="${build.dir}">
                     
             <client>

@@ -23,7 +23,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="cellselection" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="cellselection" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Cell creation library" builddir="${build.dir}">
 
             <client>

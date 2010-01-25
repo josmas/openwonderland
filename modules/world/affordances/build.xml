@@ -22,7 +22,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="affordances" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="affordances" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Visual affordances to move, rotate, and scale cells" builddir="${build.dir}">
                     
             <client>

@@ -47,7 +47,7 @@
             </fileset>
         </jar>
 
-        <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
+        <module name="${module.name}" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.name}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
                     
             <part name="weblib" dir="${build.lib.dir}">

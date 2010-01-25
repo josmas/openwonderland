@@ -17,7 +17,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="avatarbaseart" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/avatarbaseart.jar"
+        <module name="avatarbaseart" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/avatarbaseart.jar"
                 moduleDescription="Avatar artwork" builddir="${build.dir}">
             <!--
             <client>
