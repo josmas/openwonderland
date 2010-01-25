@@ -225,14 +225,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    DefaultSpatializer spatializer = (DefaultSpatializer)
 		vm.getVoiceManagerParameters().livePlayerSpatializer.clone();
 
-
-	    double volume;
-
-	    if (msg.getVolume() <= 5.0) {
-		volume = msg.getVolume() / 5.0;
-	    } else {
-		volume = (msg.getVolume() - 5) * .8;
-	    } 
+	    double volume = msg.getVolume();
 
 	    spatializer.setAttenuator(volume);
 
@@ -241,6 +234,8 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    } else {
 	        softphonePlayer.setPrivateSpatializer(player, spatializer);
 	    }
+
+	    logger.fine("player " + player + " sp " + spatializer + " v " + volume);
 	    return;
  	}
 	
