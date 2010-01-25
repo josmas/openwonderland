@@ -43,12 +43,14 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="audiomanager" version="1" minorversion="1"
+        <module name="audiomanager" majorVersion="0" minorVersion="5"
                 moduleDescription="Audio foundation API and library"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
-            <requires name="presencemanager" version="1"/>
-            <requires name="content-repository" version="1"/>
+
+            <requires name="presencemanager" version="0" minorVersion="5"/>
+            <requires name="content-repository" version="0" minorVersion="5"/>
+
             <client dir="${current.dir}/lib">
                 <clientjar name="audiomanager-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>

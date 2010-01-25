@@ -22,7 +22,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="celleditor" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="celleditor" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Cell editor dialog" builddir="${build.dir}">
                     
             <client>

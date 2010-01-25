@@ -31,7 +31,7 @@
             <fileset dir="${current.dir}/src/classes/${module.src}/client/jme/resources"/>
         </copy>
 
-        <module name="artimport" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/artimport.jar"
+        <module name="artimport" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/artimport.jar"
                 moduleDescription="3D model import library" builddir="${build.dir}">
                     
             <client dir="${current.dir}/lib">

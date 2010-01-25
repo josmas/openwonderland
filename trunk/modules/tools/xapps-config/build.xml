@@ -54,13 +54,13 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="xapps-config" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="xapps-config" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Shared apps configuration library" builddir="${build.dir}">
 
-          <requires name="darkstar-api" version="1"/>
-          <requires name="content-repository" version="1"/>
-          <requires name="appbase" version="1"/>
-          <requires name="xremwin" version="1"/>
+          <requires name="darkstar-api" version="0" minorVersion="5"/>
+          <requires name="content-repository" version="0" minorVersion="5"/>
+          <requires name="appbase" version="0" minorVersion="5"/>
+          <requires name="xremwin" version="0" minorVersion="5"/>
           
           <server>
                 <serverjar name="xapps-config-server" basedir="${build.classes.dir}">

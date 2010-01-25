@@ -26,12 +26,12 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
 
-        <module name="${module.name}" version="1" minorversion="1"
+        <module name="${module.name}" majorVersion="0" minorVersion="5"
                 moduleDescription="${module.description}"
                 jarfile="${module.dist.dir}/${module.name}.jar"
                 builddir="${build.lib.dir}">
 
-            <requires name="placemarks-api" version="1"/>
+            <requires name="placemarks-api" version="0" minorVersion="5"/>
 
             <client>
                 <clientjar name="portal-client" basedir="${build.classes.dir}">

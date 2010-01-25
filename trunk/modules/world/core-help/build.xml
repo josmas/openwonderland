@@ -17,7 +17,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="core-help" majorVersion="0" minorVersion="1"
+        <module name="core-help" majorVersion="0" minorVersion="5"
                 moduleDescription="Help menu library"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">

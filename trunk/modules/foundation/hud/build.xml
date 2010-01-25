@@ -33,10 +33,10 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
+        <module name="${module.name}" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.name}.jar"
  	                moduleDescription="${module.description}" builddir="${build.dir}">
             
-            <requires name="animationbase" version="1"/>
+            <requires name="animationbase" version="0" minorVersion="5"/>
             <client dir="${current.dir}/lib">
                 <include name="*.jar"/>
 

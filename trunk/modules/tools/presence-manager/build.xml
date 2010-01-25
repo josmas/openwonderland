@@ -28,7 +28,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="presencemanager" version="1" minorversion="1"
+        <module name="presencemanager" majorVersion="0" minorVersion="5"
                 moduleDescription="Presence manager API and library"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">

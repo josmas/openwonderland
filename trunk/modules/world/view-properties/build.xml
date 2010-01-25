@@ -22,10 +22,10 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="viewproperties" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="viewproperties" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="View properties configuration library" builddir="${build.dir}">
 
-            <requires name="content-repository" version="1"/>
+            <requires name="content-repository" version="0" minorVersion="5"/>
             <client>
                 <clientjar name="viewproperties-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>

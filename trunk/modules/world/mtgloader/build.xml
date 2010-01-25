@@ -23,7 +23,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="mtgloader" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="mtgloader" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="MTG loader library" builddir="${build.dir}">
            <client>
                 <clientjar name="mtgloader-client" basedir="${build.classes.dir}">

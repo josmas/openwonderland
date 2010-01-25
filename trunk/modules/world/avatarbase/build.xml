@@ -47,10 +47,10 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="avatarbase" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/avatarbase.jar"
+        <module name="avatarbase" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/avatarbase.jar"
                 moduleDescription="Avatar API and library" builddir="${build.dir}">
 
-            <requires name="content-repository" version="1"/>
+            <requires name="content-repository" version="0" minorVersion="5"/>
 
             <client dir="${current.dir}/lib">
                 <include name="avatars.jar"/>

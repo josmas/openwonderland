@@ -230,7 +230,7 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
         // first tell the module manager to remove any modules scheduled for
         // removal
         mm.uninstallAll();
-        
+
         // next tell the module manager to install any pending modules
         mm.installAll();
 
