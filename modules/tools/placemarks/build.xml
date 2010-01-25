@@ -66,13 +66,12 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="placemarks" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="placemarks" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Placemark API and library" builddir="${build.dir}">
 
-            <requires name="placemarks-api" version="1"/>
-            <requires name="content-repository" version="1"/>
-            <requires name="darkstar-api" version="1"/>
-
+            <requires name="placemarks-api" version="0" minorVersion="5"/>
+            <requires name="content-repository" version="0" minorVersion="5"/>
+            <requires name="darkstar-api" version="0" minorVersion="5"/>
 
             <client>
                 <clientjar name="placemarks-client" basedir="${build.classes.dir}">
