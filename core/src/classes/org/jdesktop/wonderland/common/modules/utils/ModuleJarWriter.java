@@ -218,7 +218,7 @@ public class ModuleJarWriter {
     
     public static void main(String[] args) throws IOException, JAXBException {
         ModuleJarWriter mjw = new ModuleJarWriter();
-        ModuleInfo info = new ModuleInfo("Fubar", 1, 0, "Fubar module");
+        ModuleInfo info = new ModuleInfo("Fubar", 1, 0, 0, "Fubar module");
         mjw.setModuleInfo(info);
         mjw.addArtFile("models/castle.tiff", new File("/Users/jordanslott/Desktop/yuval.tiff"));
         mjw.addArtFile("models/castle/mystuff.tiff", new File("/Users/jordanslott/Desktop/yuval.tiff"));

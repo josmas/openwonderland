@@ -90,17 +90,20 @@ public class ModuleInfo implements Serializable {
     }
     
     /**
-     * The Version static inner class simply stores the major and minor version
-     * numbers
+     * The Version static inner class simply stores the major, minor, and mini
+     * version numbers
      */
     public static class Version {
-        /* The major and minor version numbers */
+        /* The major, minor, and mini version numbers */
         @XmlElement(name="major")
         public int major = ModuleInfo.VERSION_UNSET;
         
         @XmlElement(name="minor")
         public int minor = ModuleInfo.VERSION_UNSET;
-        
+
+        @XmlElement(name="mini")
+        public int mini = ModuleInfo.VERSION_UNSET;
+
         /** Default constructor */
         public Version() {}
 
@@ -119,6 +122,9 @@ public class ModuleInfo implements Serializable {
             if (this.minor != other.minor) {
                 return false;
             }
+            if (this.mini != other.mini) {
+                return false;
+            }
             return true;
         }
 
@@ -127,6 +133,7 @@ public class ModuleInfo implements Serializable {
             int hash = 7;
             hash = 71 * hash + this.major;
             hash = 71 * hash + this.minor;
+            hash = 71 * hash + this.mini;
             return hash;
         }
     }
@@ -158,17 +165,18 @@ public class ModuleInfo implements Serializable {
     public ModuleInfo() {}
     
     /** Constructor which takes major/minor version number and description */
-    public ModuleInfo(String name, int major, int minor, String description) {
-        this(name, major, minor);
+    public ModuleInfo(String name, int major, int minor, int mini, String description) {
+        this(name, major, minor, mini);
         this.description = description;
     }
     
     /** Constructor which takes major/minor version number */
-    public ModuleInfo(String name, int major, int minor) {
+    public ModuleInfo(String name, int major, int minor, int mini) {
         /* Populate the basic elements of the module info */
         this.name          = name;
         this.version.major = major;
         this.version.minor = minor;
+        this.version.mini  = mini;
     }
     
     /* Java Bean Setter/Getter methods */
@@ -178,6 +186,8 @@ public class ModuleInfo implements Serializable {
     public void setMajor(int major) { this.version.major = major; }
     @XmlTransient public int getMinor() { return this.version.minor; }
     public void setMinor(int minor) { this.version.minor = minor; }
+    @XmlTransient public int getMini() { return this.version.mini; }
+    public void setMini(int mini) { this.version.mini = mini; }
     @XmlTransient public String getDescription() { return this.description; }
     public void setDescription(String description) { this.description = description; }
     
@@ -225,7 +235,8 @@ public class ModuleInfo implements Serializable {
     public String toString() {
         return this.getName() + "(v" +
                 Integer.toString(this.getMajor()) + "." +
-                Integer.toString(this.getMinor()) + ")";
+                Integer.toString(this.getMinor()) + "." +
+                Integer.toString(this.getMini()) + ")";
     }
     
     /**

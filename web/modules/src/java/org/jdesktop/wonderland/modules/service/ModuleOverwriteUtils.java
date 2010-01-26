@@ -86,7 +86,7 @@ public class ModuleOverwriteUtils {
         if (provider.getName().compareTo(requirer.getName()) != 0) {
             return false;
         }
-        
+
         /*
          * Next check if the requirer needs a version. If major is -1, then
          * there is no requirement and all satisfy it.
@@ -94,15 +94,15 @@ public class ModuleOverwriteUtils {
         if (requirer.getMajor() == ModuleInfo.VERSION_UNSET) {
             return true;
         }
-        
+
         /*
          * Next check to see if the required major version number is greater
-         * than the provided one. If so, then return false
+         * than the provided one. If so, then return false.
          */
         if (requirer.getMajor() > provider.getMajor()) {
             return false;
         }
-        
+
         /*
          * Next, check to see if the required major version number is less
          * than the provided one. If so return true.
@@ -110,21 +110,47 @@ public class ModuleOverwriteUtils {
         if (provider.getMajor() > requirer.getMajor()) {
             return true;
         }
-        
+
         /*
-         * At this point we know that there is a required version number and
-         * that the two major version numbers are equal. Now check the minor
+         * At this point we know that there is a required major version number
+         * and that the two major version numbers are equal. Now check the minor
          * number. If the required minor number is unset, then any will do.
          */
         if (requirer.getMinor() == ModuleInfo.VERSION_UNSET) {
             return true;
         }
-        
+
         /*
-         * If the required minor number of less than or equal to what is
+         * Next check to see if the required minor version number is greater
+         * than the provided one. If so, then return false.
+         */
+        if (requirer.getMinor() > provider.getMinor()) {
+            return false;
+        }
+
+        /*
+         * Next, check to see if the required minor version number is less
+         * than the provided one. If so return true.
+         */
+        if (provider.getMinor() > requirer.getMinor()) {
+            return true;
+        }
+
+        /*
+         * At this point we know that there is a required major and minor
+         * version number and that the two major and minor version numbers are
+         * equal. Now check the mini number. If the required mini number is
+         * unset, then any will do.
+         */
+        if (requirer.getMini() == ModuleInfo.VERSION_UNSET) {
+            return true;
+        }
+
+        /*
+         * If the required mini number of less than or equal to what is
          * provided, then we are good, otherwise, not.
          */
-        if (requirer.getMinor() <= provider.getMinor()) {
+        if (requirer.getMini() <= provider.getMini()) {
             return true;
         }
         return false;

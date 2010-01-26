@@ -166,16 +166,19 @@ public class CellUtils {
         
         logger.info("Final adjusted origin " + transform.getTranslation(null).toString());
         
-        // Create a position component that will set the initial origin
+        // Create a position component that will set the initial origin. We
+        // only use the computed state if an existing position component does
+        // not already exist.
         PositionComponentServerState position = (PositionComponentServerState)
                 state.getComponentServerState(PositionComponentServerState.class);
         if (position == null) {
             position = new PositionComponentServerState();
             state.addComponentServerState(position);
+
+            position.setTranslation(transform.getTranslation(null));
+            position.setRotation(transform.getRotation(null));
+            position.setScaling(transform.getScaling(null));
         }
-        position.setTranslation(transform.getTranslation(null));
-        position.setRotation(transform.getRotation(null));
-        position.setScaling(transform.getScaling(null));
 
         // Always pass in the view transform to the Cell's server state
         state.addComponentServerState(new ViewComponentServerState(viewTransform));

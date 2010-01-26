@@ -48,6 +48,7 @@ public class ModuleTask extends Jar {
     private String name;
     private int majorVersion = ModuleInfo.VERSION_UNSET;
     private int minorVersion = ModuleInfo.VERSION_UNSET;
+    private int miniVersion = ModuleInfo.VERSION_UNSET;
     private String moduleDescription;
     
     private List<Requires> requires = new ArrayList<Requires>();
@@ -71,7 +72,11 @@ public class ModuleTask extends Jar {
     public void setMinorVersion(int minorVersion) {
         this.minorVersion = minorVersion;
     }
-    
+
+    public void setMiniVersion(int miniVersion) {
+        this.miniVersion = miniVersion;
+    }
+
     public void setModuleDescription(String moduleDescription) {
         this.moduleDescription = moduleDescription;
     }
@@ -177,7 +182,8 @@ public class ModuleTask extends Jar {
     }
     
     private void writeModuleInfo() throws IOException, JAXBException {
-        ModuleInfo mi = new ModuleInfo(name, majorVersion, minorVersion, moduleDescription);
+        ModuleInfo mi = new ModuleInfo(name, majorVersion, minorVersion,
+                miniVersion, moduleDescription);
         
         File moduleInfoFile;
         if (buildDir == null) {
@@ -253,7 +259,8 @@ public class ModuleTask extends Jar {
     private void writeRequires() throws IOException, JAXBException {
         Set<ModuleInfo> mis = new HashSet<ModuleInfo>();
         for (Requires r : requires) {
-            mis.add(new ModuleInfo(r.name, r.majorVersion, r.minorVersion));
+            mis.add(new ModuleInfo(r.name, r.majorVersion, r.minorVersion,
+                    r.miniVersion));
         }
         
         ModuleRequires mr = new ModuleRequires(mis.toArray(new ModuleInfo[0]));
@@ -369,6 +376,11 @@ public class ModuleTask extends Jar {
         if (minorVersion == ModuleInfo.VERSION_UNSET) {
             minorVersion = 0;
         }
+
+        // force the mini version to be 0 if it is unset
+        if (miniVersion == ModuleInfo.VERSION_UNSET) {
+            miniVersion = 0;
+        }
         
         // check any included requirements
         for (Requires r : requires) {
@@ -380,6 +392,7 @@ public class ModuleTask extends Jar {
         private String name;
         private int majorVersion = ModuleInfo.VERSION_UNSET;
         private int minorVersion = ModuleInfo.VERSION_UNSET;
+        private int miniVersion = ModuleInfo.VERSION_UNSET;
         
         public void setName(String name) {
             this.name = name;
@@ -388,11 +401,19 @@ public class ModuleTask extends Jar {
         public void setVersion(int majorVersion) {
             this.majorVersion = majorVersion;
         }
-    
+
+        public void setMajorVersion(int majorVersion) {
+            this.majorVersion = majorVersion;
+        }
+
         public void setMinorVersion(int minorVersion) {
             this.minorVersion = minorVersion;
         }
-        
+
+        public void setMiniVersion(int miniVersion) {
+            this.miniVersion = miniVersion;
+        }
+
         private void validate() throws BuildException {
             if (name == null) {
                 throw new BuildException("Requires without name.");

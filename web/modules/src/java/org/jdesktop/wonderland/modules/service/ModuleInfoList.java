@@ -116,8 +116,8 @@ public class ModuleInfoList {
     }
     
     public static void main(String args[]) throws JAXBException, IOException {
-        ModuleInfo info1 = new ModuleInfo("mpk20", 1, 0);
-        ModuleInfo info2 = new ModuleInfo("default", 5, 2);
+        ModuleInfo info1 = new ModuleInfo("mpk20", 1, 0, 0);
+        ModuleInfo info2 = new ModuleInfo("default", 5, 2, 0);
         ModuleInfoList list = new ModuleInfoList(new ModuleInfo[] { info1, info2 });
         list.encode(new FileWriter("foo.xml"));
     }
