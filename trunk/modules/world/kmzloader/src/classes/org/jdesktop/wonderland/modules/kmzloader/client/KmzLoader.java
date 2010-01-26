@@ -275,7 +275,8 @@ class KmzLoader extends JmeColladaLoader {
             deployedModel.setLoaderDataURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".ldr");
             deployedModel.setModelBounds(importedModel.getModelBG().getWorldBound());
             deployDeploymentData(targetDir, deployedModel, kmzFilename);
-            state.setDeployedModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".dep");
+            importedModel.setDeployedModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".dep");
+            state.setDeployedModelURL(importedModel.getDeployedModelURL());
             state.setLightingEnabled(false);
         } catch (ZipException ex) {
             Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
