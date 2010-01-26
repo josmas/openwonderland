@@ -752,7 +752,7 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                 }
             }
             ModuleInfo mi =
-                    new ModuleInfo(moduleName, 1, 0, descriptionTF.getText());
+                    new ModuleInfo(moduleName, 1, 0, 0, descriptionTF.getText());
             mjw.setModuleInfo(mi);
             try {
                 if (targetDir == null) {

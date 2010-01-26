@@ -65,7 +65,11 @@
             <tr class="installed">
                 <td width="5%" class="installed"><input type="checkbox" name="remove" value="<%= moduleName%>"/></td>
                 <td width="15%" class="installed"><%= moduleName%></td>
+                <%if (moduleInfo.getMini() == 0) {%>
                 <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
+                <%} else {%>
+                <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%>.<%= moduleInfo.getMini()%></td>
+                <%}%>
                 <td width="65%" class="installed"><%= (description != null) ? description : "[None]" %></td>
             </tr>
             <% }%>
@@ -95,8 +99,12 @@
         %>
         <tr class="installed">
             <td width="15%" class="installed"><%= moduleName%></td>
-            <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
-            <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
+                <%if (moduleInfo.getMini() == 0) {%>
+                <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
+                <%} else {%>
+                <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%>.<%= moduleInfo.getMini()%></td>
+                <%}%>
+                <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
         </tr>
         <% }%>
     </table>
@@ -120,8 +128,12 @@
         %>
         <tr class="installed">
             <td width="15%" class="installed"><%= moduleInfo.getName()%></td>
-            <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
-            <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
+                <%if (moduleInfo.getMini() == 0) {%>
+                <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
+                <%} else {%>
+                <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%>.<%= moduleInfo.getMini()%></td>
+                <%}%>
+                <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
         </tr>
         <% }%>
     </table>
