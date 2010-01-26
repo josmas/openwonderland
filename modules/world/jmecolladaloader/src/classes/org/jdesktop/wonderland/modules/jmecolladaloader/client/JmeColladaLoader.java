@@ -393,13 +393,11 @@ public class JmeColladaLoader implements ModelLoader {
                 // compress the dae file using gzip stream
                 copyAsset(source[0], targetFile, true); // TODO handle multiple dae files
                 deployedModel.setModelURL(importedModel.getDeploymentBaseURL() + filename + "/" + filenameGZ);
-//            deployedModel.setModelURL("wla://"+moduleName+"/"+filename+"/"+filenameGZ);
-
-//                System.err.println("--------> "+deployedModel.toString());
 
                 deployedModel.setLoaderDataURL(deployedModel.getModelURL() + ".ldr");
                 deployDeploymentData(targetDir, deployedModel, filenameGZ);
-                state.setDeployedModelURL(deployedModel.getModelURL() + ".dep");
+                importedModel.setDeployedModelURL(deployedModel.getModelURL() + ".dep");
+                state.setDeployedModelURL(importedModel.getDeployedModelURL());
                 // Decided not to do this for deployment. Instead we will create and
                 // manage the binary form in the client asset cache. The binary
                 // files are only slightly smaller than compresses collada.

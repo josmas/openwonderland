@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.jme.artimport.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -75,12 +76,21 @@ public class ModelDndContentImporter extends AbstractContentImporter {
         // Check to see if the model already exists on the server. It should
         // be under a file named: <filename>/<filename>.dep. If so, then return
         // the ContentResource that points to the file, otherwise, return null.
-        String fileName = "art/" + file.getName() + "/" + file.getName() + ".dep";
+
+        // The model loader may use a different filename, so check the directory exists rather
+        // than the existance of the .dep file.
+        String fileName = "art/" + file.getName();
         ContentCollection userRoot = getUserRoot();
         try {
             ContentNode node = userRoot.getChild(fileName);
-            if (node != null && node instanceof ContentResource) {
-                return getModelURI(file);
+            if (node != null && node instanceof ContentCollection) {
+                // Search for the dep file, and return it's url
+                List<ContentNode> children = ((ContentCollection)node).getChildren();
+                for(ContentNode c : children) {
+                    if (c instanceof ContentResource && ((ContentResource)c).getName().endsWith(".dep")) {
+                        return getModelURI(file, c.getName().substring(c.getName().lastIndexOf('/')+1));
+                    }
+                }
             }
             return null;
         } catch (ContentRepositoryException excp) {
@@ -127,7 +137,7 @@ public class ModelDndContentImporter extends AbstractContentImporter {
 
         // Deploy the model to a module as an intermediate step. Write to a
         // directory.
-        loader.deployToModule(tmpDir, importedModel);
+        DeployedModel deployedModel = loader.deployToModule(tmpDir, importedModel);
 
         // Now copy the temporary files into webdav
 
@@ -140,7 +150,8 @@ public class ModelDndContentImporter extends AbstractContentImporter {
             // Copy from the art directory
             File artDir = FileUtils.findDir(tmpDir, "art");
             copyFiles(artDir, modelRoot);
-            return getModelURI(file);
+            System.err.println("RET "+ getModelURI(file, deployedModel.getModelURL()));
+            return getModelURI(file, importedModel.getDeployedModelURL());
         } catch (ContentRepositoryException excp) {
             String msg = "Failed to upload model file " + file.getName();
             LOGGER.log(Level.WARNING, msg, excp);
@@ -212,11 +223,12 @@ public class ModelDndContentImporter extends AbstractContentImporter {
     }
 
     /**
-     * Returns the String URI of the deployed model (.dep) for the given local
-     * file.
+     * Returns the String URI of the deployed model (.dep) for the given the
+     * original art file name and the name of the dep file. The original art
+     * filename is used to form the directory name.
      */
-    private String getModelURI(File file) {
+    private String getModelURI(File originalFile, String deployedFile) {
+        String deployedFilename = deployedFile.substring(deployedFile.lastIndexOf('/')+1);
         return "wlcontent://users/" + loginInfo.getUsername() + "/art/" +
-                file.getName() + "/" + file.getName() + ".dep";
-    }
-}
+                originalFile.getName() + "/" + deployedFilename;
+    }}
