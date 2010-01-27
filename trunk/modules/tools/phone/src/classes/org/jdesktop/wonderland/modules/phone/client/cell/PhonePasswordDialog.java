@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
@@ -33,6 +34,8 @@ public class PhonePasswordDialog extends JDialog {
 
     private CellID phoneCellID;  
     private ChannelComponent channelComp;
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/phone/client/cell/resources/Bundle");
     
     public PhonePasswordDialog(JDialog parent, CellID phoneCellID, ChannelComponent channelComp) {
         super(parent, false);
@@ -49,13 +52,19 @@ public class PhonePasswordDialog extends JDialog {
     public void setLocked(final boolean locked) {
 	java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-        	invalidPasswordLabel.setVisible(false);
-        	keepUnlockedCheckBox.setEnabled(locked);
-        	keepUnlockedLabel.setEnabled(keepUnlockedCheckBox.isSelected());
-        	phonePasswordOkButton.setText(locked ? "Unlock" : "Lock");
-        	dialogLabel.setText("Enter the password to " +
-                    ((locked) ? "unlock" : "lock") + " the phone");
-	    }
+                invalidPasswordLabel.setVisible(false);
+                keepUnlockedCheckBox.setEnabled(locked);
+                keepUnlockedLabel.setEnabled(keepUnlockedCheckBox.isSelected());
+                if (locked) {
+                    phonePasswordOkButton.setText(BUNDLE.getString("Unlock"));
+                    dialogLabel.setText(
+                            BUNDLE.getString("Enter_Unlock_Password"));
+                } else {
+                    phonePasswordOkButton.setText(BUNDLE.getString("Lock"));
+                    dialogLabel.setText(
+                            BUNDLE.getString("Enter_Lock_Password"));
+                }
+            }
 	});
     }
 
@@ -199,7 +208,7 @@ public class PhonePasswordDialog extends JDialog {
 
 	boolean lock = false;
 
-	if (s.equals("Lock")) {
+	if (s.equals(BUNDLE.getString("Lock"))) {
 	    lock = true;
 	}
 
