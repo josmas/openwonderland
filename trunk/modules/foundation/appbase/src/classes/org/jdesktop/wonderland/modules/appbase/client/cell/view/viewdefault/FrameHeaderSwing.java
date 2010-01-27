@@ -21,28 +21,28 @@ import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import java.awt.Component;
 import java.awt.Color;
-import java.awt.Point;
+import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseEvent;
+import java.awt.Point;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
+import java.util.ResourceBundle;
+import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
-import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
-import javax.swing.SwingUtilities;
-import java.awt.Dimension;
-import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -54,7 +54,10 @@ public class FrameHeaderSwing
     extends FrameComponent
     implements HeaderPanel.Container, MouseListener, MouseMotionListener
 {
-    private static Logger logger = Logger.getLogger(FrameHeaderSwing.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            FrameHeaderSwing.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/appbase/client/Bundle");
 
     // TODO: New UI: add zones: move planar, move z, rotate
     private FrameHeaderSwingWindow headerWindow;
@@ -343,7 +346,7 @@ public class FrameHeaderSwing
 
             WindowSwing.EventHookInfo hookInfo = headerWindow.getHookInfoForEvent(e);
             if (hookInfo == null) {
-                logger.warning("Cannot drag window because can't get hook info for event " + e);
+                LOGGER.warning("Cannot drag window because can't get hook info for event " + e);
                 return;
             }
 
@@ -353,7 +356,7 @@ public class FrameHeaderSwing
             View2DEntity parentView = (View2DEntity) view.getParent();
             if (parentView == null) {            
                 // Note: we don't yet support dragging of primaries
-                logger.warning("Drag secondary operation can't get parent of secondary");
+                LOGGER.warning("Drag secondary operation can't get parent of secondary");
                 return;
             }
 
@@ -380,7 +383,7 @@ public class FrameHeaderSwing
 
         WindowSwing.EventHookInfo hookInfo = headerWindow.getHookInfoForEvent(e);
         if (hookInfo == null) {
-            logger.warning("Cannot drag window because can't get hook info for event " + e);
+            LOGGER.warning("Cannot drag window because can't get hook info for event " + e);
             return;
         }
 
@@ -459,11 +462,12 @@ public class FrameHeaderSwing
 
                 // Display a confirmation dialog to make sure we really want to delete the cell.
                 App2D app = viewWindow.getApp();
+                String message = BUNDLE.getString("Quit_Message");
+                message = MessageFormat.format(message, app.getName());
                 int result = JOptionPane.showConfirmDialog(
-                    JmeClientMain.getFrame().getFrame(),
-                    "Are you sure you wish to quit app " + app.getName() + "?",
-                    "Confirm Quit",
-                    JOptionPane.YES_NO_OPTION);
+                        JmeClientMain.getFrame().getFrame(),
+                        message, BUNDLE.getString("Confirm_Quit"),
+                        JOptionPane.YES_NO_OPTION);
                 if (result == JOptionPane.NO_OPTION) {
                     return;
                 }

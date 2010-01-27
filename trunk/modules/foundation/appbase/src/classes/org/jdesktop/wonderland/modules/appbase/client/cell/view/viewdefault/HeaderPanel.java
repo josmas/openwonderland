@@ -86,12 +86,9 @@ public class HeaderPanel extends javax.swing.JPanel {
 
         appLabel.setFont(appLabel.getFont().deriveFont(appLabel.getFont().getStyle() | java.awt.Font.BOLD, appLabel.getFont().getSize()+2));
         appLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/appbase/client/Bundle"); // NOI18N
-        appLabel.setText(bundle.getString("HeaderPanel.appLabel.text")); // NOI18N
 
         controllerLabel.setFont(controllerLabel.getFont().deriveFont(controllerLabel.getFont().getStyle() | java.awt.Font.BOLD, controllerLabel.getFont().getSize()+2));
         controllerLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        controllerLabel.setText(bundle.getString("HeaderPanel.controllerLabel.text")); // NOI18N
 
         closeButton.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
         closeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close24x24.png"))); // NOI18N
@@ -113,9 +110,9 @@ public class HeaderPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(appLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .add(appLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(controllerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
+                .add(controllerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(hudButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(3, 3, 3)
