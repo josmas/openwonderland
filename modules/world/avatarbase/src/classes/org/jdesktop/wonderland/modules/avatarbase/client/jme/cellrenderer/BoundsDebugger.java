@@ -21,6 +21,7 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -34,23 +35,26 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
  */
 public class BoundsDebugger extends javax.swing.JFrame {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/avatarbase/client/jme/cellrenderer/resources/Bundle");
     private final HashMap<String, AvatarImiJME> avatarMap = new HashMap();
 
     /** Creates new form BoundsDebugger */
     public BoundsDebugger() {
         initComponents();
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        JLabel jLabel1 = new JLabel("Username");
+        JLabel jLabel1 = new JLabel(BUNDLE.getString("Username"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 7);
         avatarPanel.add(jLabel1, gridBagConstraints);
 
-        JLabel jLabel2 = new JLabel("Print Avatar Bounds");
+        JLabel jLabel2 = new JLabel(BUNDLE.getString("Print_Avatar_Bounds"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         avatarPanel.add(jLabel2, gridBagConstraints);
 
-        JMenuItem editorMI = new JMenuItem("Avatar Bounds Debugger...");
+        JMenuItem editorMI = new JMenuItem(
+                BUNDLE.getString("Avatar_Bounds_Debugger..."));
         editorMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 BoundsDebugger.this.setVisible(true);
@@ -73,7 +77,8 @@ public class BoundsDebugger extends javax.swing.JFrame {
         avatarPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
 
-        setTitle("Avatar Bounds Debugger");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/jme/cellrenderer/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("BoundsDebugger.title")); // NOI18N
 
         avatarPanel.setLayout(new java.awt.GridBagLayout());
 
