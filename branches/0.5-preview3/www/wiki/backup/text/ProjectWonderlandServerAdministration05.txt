@@ -1,0 +1,365 @@
+%WEBTOPICLIST%   <!-- This creates the navigation links to :  Home | Help | Index | etc.  -->
+
+---++!! Project Wonderland v0.5: Web-based Server Administration
+
+<!-- Your JavaDesktop article goes here. Please try to include at least one sentence describing this topic. -->
+<!-- Also please try to include at least one sentence describing where each link goes. -->
+<!-- Please make sure some other page points to your new article so that others can find it! -->
+<!-- For more on how to write Javapedia articles please read the WritingArticles page. -->
+
+---+++!! %BLUE%Table of Contents%ENDCOLOR%
+
+Project Wonderland v0.5 has a unified, web-based administration tool. This administration tool lets you start and stop the Wonderland server components (darkstar server, voice bridge, shared application server), view server-related log files, monitor the performance of the server, and configure various aspects of Project Wonderland.
+
+%TOC%
+
+---+++ %BLUE%Launching the web-based administration tool%ENDCOLOR%
+
+After you have started Wonderland, you may launch the web-based administration tool by visiting the
+following URL in your web browser:
+
+<verbatim>
+http://<host name>:<port>/wonderland-web-front/admin
+</verbatim>
+
+where &lt;host name&gt; is the host and domain name of your server machine (e.g. localhost) and &lt;port&gt; is the port on which the server is registered, most often port 8080. When you visit this URL, you should see the Web Administration UI screen with the *Manage Server* category initially selected.
+
+---+++ %BLUE%Managing server components%ENDCOLOR%
+
+To view the server components currently running, click the *Manage Server* link on the left-hand side bar. It should display the Project Wonderland server components running and also a collection of update controls. The table gives the name of the server component (Darkstar, Voice Bridge, Shared Application Server), the machine on which it is running, its status (Running, Starting, Shutting Down, Not Running), and Actions to take upon the server component.
+
+By default, this view will refresh every 15 seconds. Click the links on top of the server component table to control the refresh rate of this information.
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-server/manage-server.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-server/manage-server-thumbnail.jpg"></a>
+
+---++++ Starting and stopping the server components
+
+You may start, stop, and restart each server component individually or all at once via the links present on the *Manage Server* page.
+
+Next to each server component, under the Actions column:
+
+   * Click *stop* to stop the server component (if running)
+   * Click *restart* to stop and then start the server component (if running)
+   * Click *start* to start the server component (if not running)
+
+At the bottom of the table:
+
+   * Click *Stop All* to stop all currently running server components
+   * Click *Start All* to start all server components not currently running
+   * Click *Restart All* to stop and then start all currently running server components
+
+*Note:* You may not stop, start, or restart the Web server via the web-based administration tool.
+
+---++++ Editing the server component properties
+
+Each server component has a collection of configuration properties that are editable via this web-based administration tool.
+
+Next to each server component under the Actions column:
+
+   * Click *edit* to edit the server component properties
+   * Edit the existing properties directly in the table
+   * Click *Add Property* to add a new configuration property
+   * Click *Restore Defaults* to restore the previously saved property values
+   * Click *Save* to save the new properties or *Cancel* to revert to the existing property values
+
+*Note:* You may not edit the Web server properties via the web-based administration tool.
+
+For example, the properties for the Darkstar server component looks like this:
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-server/edit-server-properties.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-server/edit-server-properties-thumbnail.jpg"></a>
+
+---++++ Viewing the server log files
+
+To view the log files for each server component:
+   * Click *log* under the Actions column next to each server component
+
+For example, the log file for the Darkstar server component looks like this:
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-server/server-log.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-server/server-log-thumbnail.jpg"></a>
+
+---++++ (Advanced) Running the server components on different machines
+
+In Project Wonderland v0.5, you can run each server component (e.g. Darkstar server, Voice Bridge, Shared Application server) on different machines to balance load. To manage where each server component runs, click the "(edit)" link next to the text "Server Components". This screen displays each of the server components configured for this installation; each of these server components runs locally on your machine by default.
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-server/edit-server-components.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-server/edit-server-components-thumbnail.jpg"></a>
+
+In order to run a server component of a different machine, you will need to have the Project Wonderland software (either compiled from source or from the binary distribution) installed on the second machine. You will also need to run the server software differently on the second machine than you do on the primary machine.
+
+   1 Copy the *Wonderland.jar* file (typically found beneath the *dist/* directory if compiling from the source code) onto the second server machine (into any directory there).
+   1 In the same directory that contains the *Wonderland.jar* file on the second machine, create a file named *remote.runner.properties*. This is simply the normal *my.run.properties* file with the following extra lines:
+      1 wonderland.webserver.launch.class=org.jdesktop.wonderland.webserver.RunRemoteRunner
+      1 wonderland.web.server.url=http://&lt;address of main server&gt;:&lt;port&gt;, where &lt;port&gt; is typically 8080.
+   1 Run the secondary server, with the command *java -jar Wonderland.jar remote.runner.properties*
+
+Next, you must configure your primary Project Wonderland server to use a server component on the secondary machine. From the Edit Server Components page, make a note of the *Name* and *Class* of the server component you wish to run remotely. For your reference, the following server components are standard:
+
+%TABLE{  tablewidth="90%" cellpadding="5" }%
+|*Name*|*Class*|
+|Darkstar Server|org.jdesktop.wonderland.modules.darkstar.server.DarkstarRemoteRunnerImpl|
+|Voice Bridge|org.jdesktop.wonderland.modules.voicebridge.server.VoicebridgeRemoteRunner|
+|Shared Application Server|org.jdesktop.wonderland.modules.sasxremwin.weblib.SasProviderRemoteRunnerImpl|
+
+To configure your primary Project Wonderland server to use a server component on the secondary machine:
+
+   1 Click *remove* next to the desired server component (whose Location should read *localhost*)
+   1 Click *Add Component*.
+   1 Using the values for Name and Class of the desired server component above, fill in the form. For Location, select the Remote radio button. Fill in the text field beneath the Remote radio button with &lt;remove server&gt;:&lt;port&gt;, where &lt;remote server&gt; is the name of the remote server, and &lt;port&gt; is typically 8080.
+
+For example, you Add Component screen should look like this:
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-server/add-server-component.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-server/add-server-component-thumbnail.jpg"></a>
+
+Finally,
+
+   1 Click Ok on the Add Component page
+   1 Click Save on the Edit Components page
+
+Your Edit Components page should look like the following:
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-server/remote-server-component.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-server/remote-server-component-thumbnail.jpg"></a>
+
+---+++ %BLUE%Editing system-wide placemarks%ENDCOLOR%
+
+Placemarks are (x, y, z) positions in the virtual world to which avatars may teleport. As a system administrator, you may create placemarks that all users can see. To view the current list of system-wide placemarks, select the *Edit Placemarks* tab in the web administration UI:
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/edit-placemarks/edit-placemarks.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/edit-placemarks/edit-placemarks-thumbnail.jpg"></a>
+
+To add a new placemark:
+
+   1 Click the Add Placemark link beneath the table.
+   1 Enter a unique name for the new placemark.
+   1 Enter the URL (e.g. http://&lt;server name&gt;:&lt;port&gt;/) of the desired server to which to teleport; leave blank for the current server.
+   1 Enter the X, Y, and Z coordinations to which to teleport.
+   1 Enter the direction in which to look after teleportation. The Look Angle is the angle in degrees, where 0 degrees faces the +z axis.
+   1 Click Ok.
+
+Your Add New Placemark page should look like the following:
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/edit-placemarks/add-new-placemark.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/edit-placemarks/add-new-placemark-thumbnail.jpg"></a>
+
+---+++ %BLUE%Managing X11 shared applications%ENDCOLOR%
+
+Shared (X11) applications are native 2D applications that run either on Linux or Solaris (e.g. Firefox, Netbeans) that can be displayed and used collaboratively in-world. The Project Wonderland server bundles a specialized X11 server to run these applications. As a system administrator, you must manually list all of the shared applications that users can create in the world. To view the list of currently configured shared applications, click on the Manage Apps tab in the web administration UI.
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-apps/manage-apps.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-apps/manage-apps-thumbnail.jpg"></a>
+
+To add a new shared (X11) application:
+
+   1 Click the Add App link beneath the table.
+   1 In the App Name field, enter the name of the application that will appear in the Object Palette in the Project Wonderland client. If left blank, the last token (following the final forward-slash) in the Command is used.
+   1 In the Command field, enter the full path of the executable of the shared application.
+   1 Click Ok.
+
+Your Add New Desktop (X11) App page should look like the following:
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-apps/add-new-app.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-apps/add-new-app-thumbnail.jpg"></a>
+
+---+++ %BLUE%Managing content%ENDCOLOR%
+
+The Project Wonderland v0.5 server embeds a !WebDav repository that serves content (e.g. 3D models) to clients. When users drag-and-drop 3D models, or other content (e.g. PDFs) into the world, they are uploaded to the !WebDav repository. This content can be viewed and managed via the web-based administration UI. To view the content in the !WebDav repository, click the *Manage Content* tab in the web-based administration UI.
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-content/manage-content.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-content/manage-content-thumbnail.jpg"></a>
+
+The *Manage Content* page has three main sections:
+
+   1 *Directory listing for &lt;directory&gt;*: Displays the entries in the current directory. The four top-level directories are: checksums, modules, system, and users
+   1 *Create New Directory*: Allows an administrator to create a new directory in the current directory.
+   1 *Upload File*: Allows an administrator to upload a file into the current directory.
+
+To navigate the hierarchy of directories in !WebDav:
+
+   1 Click on the name of the directory, under the Name column
+
+---++++ Deleting existing directories or files
+
+To delete a directory or file:
+
+   1 Click on the delete link next to the desired directory or file
+
+*NOTE:* As an administrator, take great care when deleting directories and/or files, as you can affect the proper operation of the software. Specifically, never delete anything under the *checksums* and *modules* directories.
+
+---++++ Creating new directories
+
+To create a new directory in the current directory:
+
+   1 Under the Create New Directory section, enter the name of the new directory
+   1 Click Create Directory
+
+---++++ Uploading files
+
+To upload a file into the current directory:
+
+   1 Under the Upload File section, click the Choose File button, and select the file you wish to upload
+   1 Click the Upload button
+
+---+++ %BLUE%Managing security groups%ENDCOLOR%
+
+To view the current list of security groups, click the *Manage Groups* link on the left-hand side bar. It should display a list the security groups. Your screen should look something like this (Click on the image to see a full-screen version):
+
+<a href="http://wonderland.dev.java.net/wiki/webui/manage-groups/manage-groups.jpg"><img src="http://wonderland.dev.java.net/wiki/webui/manage-groups/manage-groups-thumbnail.jpg"></a>
+
+Security groups are collections of users to which fine-grained security permissions may be assigned. Examples of fine-grained security permissions include the ability to view and edit Cells in a world. Assigning specific fine-grained security permissions to security groups is done via the Wonderland client.
+
+Each security group entry in the list has a unique name, a number of members, and actions to be taken upon the group definition.
+
+---++++ Editing a security group
+
+You can edit both the name of the security group and its members via the Web Administration UI.
+
+   1 Click on the "edit" link under the Actions column next to the desired Security Group to edit
+   1 Edit the name of a member of the group, whether that member "Owns" the Security Group (and hence can make changes the group), whether to delete the member from the Security Group, or whether to add a new member to the security group.
+   1 Click "Update group" to save your changes or "Cancel" to revert to the previous settings.
+
+The edit window should look something like this (Click on the image to see a full-screen version):
+
+<a href="http://wonderland.dev.java.net/wiki/webui/manage-groups/edit-group.jpg"><img src="http://wonderland.dev.java.net/wiki/webui/manage-groups/edit-group-thumbnail.jpg"></a>
+
+---++++ Delete a security group
+
+To delete a security group:
+
+   1 Click on "delete" under the Actions column on the row of the desired Security Group to delete. Note: there is no confirmation step after you click on the "delete" link.
+
+---++++ Add a security group
+
+To add a new security group:
+
+   1 Click on the "Add group" link
+   1 Enter the desired name of the new Security Group
+   1 Click "Edit group members" to continue to add members to the new Security Group, etc.
+
+The add window should look something like this (Click on the image to see a full-screen version):
+
+<a href="http://wonderland.dev.java.net/wiki/webui/manage-groups/add-group.jpg"><img src="http://wonderland.dev.java.net/wiki/webui/manage-groups/add-group-thumbnail.jpg"></a>
+
+<a name="managing_modules"></a>
+---+++ %BLUE%Managing modules%ENDCOLOR%
+
+To view the list of modules currently installed in Wonderland, click on the Manage Modules link on the left-hand side bar. It should display four sections:
+
+   1 *Install a New module*: Provides the ability to select a module JAR file to upload and install
+   1 *Installed Modules*: A table of modules currently installed, their version, descriptions, and a checkbox to mark the module for deletion
+   1 *Pending Modules*: A table of modules that are waiting to be installed for some reason, typically during the next server restart or when a module it depends upon is installed
+   1 *Removed Modules*: A table of modules that are waiting to be uninstalled for some reason, typically during the next server restart or when a module that requires it is uninstalled
+
+This screen should look something like this (Click on the image to see a full-screen version):
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-modules/manage-modules.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-modules/manage-modules-thumbnail.jpg" /></a>
+
+---++++ Installing new modules
+
+In Project Wonderland v0.5, modules are encapsulated in JAR archive files. To install a new module into Wonderland:
+
+   1 Select *Choose File* under the *Install a New Module* heading and locate the module JAR archive file to install
+   1 Click the *INSTALL* button
+   1 A page will display a success or error message
+   1 Click the *Manage Modules* tab once again to refresh your view of the modules
+
+If the module does not depend upon any other missing module, or if the module does not require any of the server components to be restarted, it should be appear under the *Installed Modules* heading. Otherwise, it will appear under the *Pending Modules* heading, as follows:
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-modules/pending-modules.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-modules/pending-modules-thumbnail.jpg" /></a>
+
+To have this module installed, revisit the *Manager Server* tab and select *Restart All* to restart all of the server components. Once they have restarted, the module should appear under the *Installed Modules* section.
+
+---++++ Removing existing modules
+
+To remove an existing installed module, first select the checkbox next to its entry under the *Installed Selection*. For example, the "shape" module has been selected to be removed.
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-modules/remove-selected-modules.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-modules/remove-selected-modules-thumbnail.jpg" /></a>
+
+Next, click the *Remove Selected Modules* button underneath the table of installed modules. If some other installed module does not depend upon the selected module, or if the module does not require any of the server components to be restarted, it should be removed from the  *Installed Modules* heading. Otherwise, it will appear under the *Removed Modules* heading, as follows:
+
+<a href="https://wonderland.dev.java.net/wiki/webui/manage-modules/removed-modules.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/manage-modules/removed-modules-thumbnail.jpg" /></a>
+
+To have this module uninstalled, revisit the *Manager Server* tab and select *Restart All* to restart all of the server components. Once they have restarted, the module should no longer appear under the *Installed Modules* section.
+
+---+++ %BLUE%Managing the Initial World and World Snapshots%ENDCOLOR%
+
+To view the current list of initial worlds and world snapshots, click the *Manage Words* link on the left-hand side bar. It should display two lists: a list of initial worlds and a list of snapshots of worlds. Your screen should look something like this (Click on the image to see a full-screen version):
+
+<a href="http://wonderland.dev.java.net/wiki/webui/manage-worlds/manage-worlds.jpg"><img src="http://wonderland.dev.java.net/wiki/webui/manage-worlds/manage-worlds-thumbnail.jpg"></a>
+
+Each Initial World has a name, a path, and a set of actions. Under the Actions header, initial worlds either have the "Current" label and the "restore" link, indicating that it is the basis for the initial world state, or the "make current" link. 
+
+Each Snapshot, has a name, date, description, and a set of actions. Under the Actions header, snapshots of worlds either have the "Current" label and the "restore" link, indicating that it is the basis for the initial world state, or the "make current" link. They also have "edit" and "remove" links.
+
+---++++ Selecting the initial world
+
+You may initialize the state of the world to one of the worlds listed under either the "Initial Worlds" heading or the "Snapshots" heading. The current initial world has the label "Current" under the Actions column. To set the initial state of the world:
+
+   1 Click the "make current" under the Action header of the desired initial world or world snapshot
+   1 Click OK on the Confirm page
+
+This will reset the state of the world to that stored in the selected world and restart the server. When clients reconnect to the server, they see a new world state.
+
+---++++ Restoring the world state
+
+You may restore the state of the world to the currently-selected world. You may do this for either an Initial World or a Snapshot. You can only restore to the state of the world if it has a "Current" label under the Actions column. To restore the state of the world.
+
+   1 Click the "restore" under the Action header of the desired initial world or world snapshot
+   1 Click OK on the Confirm page
+
+This will restore the state of the world to that which is stored and restart the server. When clients reconnect to the server, they see a new world state.
+
+---++++ Creating a world snapshot
+
+A Snapshot represents the current state of the running world stored on disk. You may take a Snapshot at any point (and restore to that snapshot using the steps above), although the process will restart the server and clients will have to reconnect. To create a Snapshot:
+
+   1 Click the "Create snapshot" link under the Snapshots section
+   1 Click OK on the Confirm page
+
+After the snapshot has been created your screen should look something like this (Click on the image to see a full-screen version):
+
+<a href="http://wonderland.dev.java.net/wiki/webui/manage-worlds/new-snapshot.jpg"><img src="http://wonderland.dev.java.net/wiki/webui/manage-worlds/new-snapshot-thumbnail.jpg"></a>
+
+The initial name of the snapshot is the time and date the snapshot was performed. To reset the state of the world to the state stored in the snapshot, please follow the instructions above.
+
+---++++ Deleting a world snapshot
+
+You may also delete a stored snapshot at any point:
+
+   1 Click on the "remove" link under the Actions column next to the desired Snapshot to remove. Note: there is no confirmation step after you click on the "remove" link
+
+---++++ Editing a world snapshot's properties
+
+You can edit both the Snapshot name and its description that appears on the Web Administration UI.
+
+   1 Click on the "edit" link under the Actions column next to the desired Snapshot to edit
+   1 Edit either/both the name and description
+   1 Click OK to save your changes
+
+The edit window should look something like this (Click on the image to see a full-screen version):
+
+<a href="http://wonderland.dev.java.net/wiki/webui/manage-worlds/edit-snapshot.jpg"><img src="http://wonderland.dev.java.net/wiki/webui/manage-worlds/edit-snapshot-thumbnail.jpg"></a>
+
+---+++ %BLUE%Monitoring the server%ENDCOLOR%
+
+To view statistics on the current performance of the server, click the *Monitor Server* link on the left-hand side bar. It should display a graph of network "ping" times, indicating the health of the Darkstar server component. (Typically values below 250 ms indicate a healthy server).
+
+You may control the rate at which this information is refreshed via the links on top of the graph. The list to the right of the graph, labelled with the letters of the alphabet, indicate when the Darkstar server component has been stopped and started.
+
+(Click on the image to view a full-sized version)
+
+<a href="https://wonderland.dev.java.net/wiki/webui/monitor-server/monitor-server.jpg"><img src="https://wonderland.dev.java.net/wiki/webui/monitor-server/monitor-server-thumbnail.jpg"></a>
