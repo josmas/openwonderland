@@ -26,6 +26,8 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
 import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
+import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState.AudioSourceType;
+
 /**
  * Client state for portal cell component
  *
@@ -36,16 +38,33 @@ public class PortalComponentClientState extends CellComponentClientState {
     private Vector3f location;
     private Quaternion look;
 
+    private AudioSourceType audioSourceType;
+
+    private String audioSource;
+
+    private boolean uploadFile;
+
+    private String cachedAudioSource;
+
+    private float volume;
+
     /** Default constructor */
     public PortalComponentClientState() {
     }
 
     public PortalComponentClientState(String serverURL, Vector3f location,
-                                      Quaternion look)
+                                      Quaternion look,  AudioSourceType audioSourceType,
+                                      String audioSource, boolean uploadFile,
+				      String cachedAudioSource, float volume)
     {
         this.serverURL = serverURL;
         this.location = location;
         this.look = look;
+	this.audioSourceType = audioSourceType;
+	this.audioSource = audioSource;
+	this.uploadFile = uploadFile;
+	this.cachedAudioSource = cachedAudioSource;
+	this.volume = volume;
     }
 
     @XmlElement
@@ -76,4 +95,50 @@ public class PortalComponentClientState extends CellComponentClientState {
     public void setLook(Quaternion look) {
         this.look = look;
     }
+
+    @XmlElement
+    public AudioSourceType getAudioSourceType() {
+	return audioSourceType;
+    }
+
+    public void setAudioSourceType(AudioSourceType audioSourceType) {
+	this.audioSourceType = audioSourceType;
+    }
+
+    @XmlElement
+    public String getAudioSource() {
+	return audioSource;
+    }
+
+    public void setAudioSource(String audioSource) {
+	this.audioSource = audioSource;
+    }
+
+    @XmlElement
+    public boolean getUploadFile() {
+        return uploadFile;
+    }
+
+    public void setUploadFile(boolean uploadFile) {
+        this.uploadFile = uploadFile;
+    }
+
+    @XmlElement
+    public String getCachedAudioSource() {
+	return cachedAudioSource;
+    }
+
+    public void setCachedAudioSource(String cachedAudioSource) {
+	this.cachedAudioSource = cachedAudioSource;
+    }
+
+    @XmlElement
+    public float getVolume() {
+	return volume;
+    }
+
+    public void setVolume(float volume) {
+	this.volume = volume;
+    }
+
 }

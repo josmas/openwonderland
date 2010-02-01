@@ -29,6 +29,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
@@ -42,6 +43,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
+
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 /**
  * Client-side portal component. Moves the client to the specified position
@@ -59,26 +62,60 @@ public class PortalComponent extends CellComponent
     private Vector3f location;
     private Quaternion look;
 
+    private String audioSource;
+    private boolean uploadFile;
+    private float volume;
+
     @UsesCellComponent
     private ProximityComponent prox;
     private CollisionListener collisionListener = null;
-    private AudioResource teleportAudio;
+    //private AudioResource teleportAudio;
+
+    private URL teleportAudioURL;
+
+    private ChannelComponent channelComp;
 
     public PortalComponent(Cell cell) {
         super(cell);
-        URL url = PortalComponent.class.getResource("resources/" + "Teleport.au");
-        teleportAudio = new AudioResource(url);
+
+	new PortalComponentProperties(true);
     }
 
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
 
-        serverURL = ((PortalComponentClientState) clientState).getServerURL();
+	PortalComponentClientState state = (PortalComponentClientState) clientState;
+
+        serverURL = state.getServerURL();
         
-        location = ((PortalComponentClientState) clientState).getLocation();
+        location = state.getLocation();
         
-        look = ((PortalComponentClientState) clientState).getLook();
+        look = state.getLook();
+
+	audioSource = state.getAudioSource();
+	
+	if (audioSource == null || audioSource.length() == 0) {
+	    audioSource = PortalComponentProperties.getDefaultAudioSource();
+	}
+
+	uploadFile = state.getUploadFile();
+
+	volume = state.getVolume();
+
+	if (audioSource != null) {
+	    try {
+                teleportAudioURL = 
+		    PortalComponent.class.getResource(audioSource);
+
+                //URL url = PortalComponent.class.getResource(audioSource);
+                //teleportAudio = new AudioResource(url);
+	        //teleportAudio.setVolume(volume);
+	    } catch (Exception e) {
+		System.out.println("Invalid URL:  " + audioSource
+		    + ": " + e.getMessage());
+	    }
+	}
     }
 
     @Override
@@ -91,11 +128,13 @@ public class PortalComponent extends CellComponent
         };
 
         if (increasing && status == CellStatus.ACTIVE) {
-//            System.out.println("[PortalComponent] add prox listener: " + bounds[0]);
-//            prox.addProximityListener(this, bounds);
+	    channelComp = cell.getComponent(ChannelComponent.class);
+
+            //System.out.println("[PortalComponent] add prox listener: " + bounds[0]);
+            //prox.addProximityListener(this, bounds);
         } else if (!increasing && status == CellStatus.INACTIVE) {
-//            System.out.println("[PortalComponent] remove prox listener");
-            prox.removeProximityListener(this);
+            //System.out.println("[PortalComponent] remove prox listener");
+            //prox.removeProximityListener(this);
         } else if (status==CellStatus.VISIBLE) {
             if (increasing) {
                 collisionListener = new CollisionListener();
@@ -121,11 +160,20 @@ public class PortalComponent extends CellComponent
             public void run() {
                 try {
                     // teleport!
-                    teleportAudio.play();
+                    //teleportAudio.play();
+
+		    System.out.println("GOTO LOCATION " + serverURL + " " + location);
+
                     ClientContextJME.getClientMain().gotoLocation(serverURL, location, look);
+
+		    //URL url = PortalComponent.class.getResource(
+		    //	"resources/" + "Teleport.au")
 
                     logger.warning("[PortalComponent] going to " + serverURL +
                                        " at " + location + ", " + look);
+
+		    SoftphoneControlImpl.getInstance().sendCommandToSoftphone(
+		    	"playFile=" + audioSource + "=" + volume);
                 } catch (IOException ex) {
                     logger.log(Level.WARNING, "Error teleporting", ex);
                 }
