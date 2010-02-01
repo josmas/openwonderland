@@ -26,6 +26,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -39,9 +40,10 @@ public class AudioResource {
 
     private static final Logger resourceLogger = Logger.getLogger(AudioResource.class.getName());
     private URL resourceURL;
+    private float volume;
 
     /**
-     * Create a new audio resource from a URL. If the URL is in accessible the play() method will
+     * Create a new audio resource from a URL. If the URL is inaccessible the play() method will
      * report an exception.
      * @param resourceURL the URL that identifies the audio resource.
      */
@@ -60,6 +62,8 @@ public class AudioResource {
             DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
             Clip clip = getClip(dataLineInfo);
             clip.open(audioInputStream);
+            FloatControl volctrl=(FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
+            volctrl.setValue(volume);
             clip.start();
         } catch (UnsupportedAudioFileException ex) {
             resourceLogger.log(Level.SEVERE, null, ex);
@@ -74,6 +78,10 @@ public class AudioResource {
                 resourceLogger.log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
     }
 
     private Clip getClip(DataLine.Info info) throws LineUnavailableException {

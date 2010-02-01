@@ -39,17 +39,36 @@ public class PortalComponentServerState extends CellComponentServerState {
     private String serverURL;
     private Vector3f location = new Vector3f();
     private Quaternion look = new Quaternion();
+    
+    public enum AudioSourceType {
+	FILE,
+	CONTENT_REPOSITORY,
+	URL
+    };
 
+    private AudioSourceType audioSourceType;
+    private String audioSource;
+    private boolean uploadFile;
+    private String cachedAudioSource;
+    private float volume = 1F;
+ 
     /** Default constructor */
     public PortalComponentServerState() {
     }
 
     public PortalComponentServerState(String serverURL, Vector3f location,
-                                      Quaternion look)
+                                      Quaternion look, AudioSourceType audioSourceType,
+				      String audioSource, boolean uploadFile,
+				      String cachedAudioSource, float volume)
     {
         this.serverURL = serverURL;
         this.location = location;
         this.look = look;
+	this.audioSourceType = audioSourceType;
+	this.audioSource = audioSource;
+	this.uploadFile = uploadFile;
+	this.cachedAudioSource = cachedAudioSource;
+	this.volume = volume;
     }
 
     @Override
@@ -85,4 +104,50 @@ public class PortalComponentServerState extends CellComponentServerState {
     public void setLook(Quaternion look) {
         this.look = look;
     }
+
+    @XmlElement
+    public AudioSourceType getAudioSourceType() {
+	return audioSourceType;
+    }
+
+    public void setAudioSourceType(AudioSourceType audioSourceType) {
+	this.audioSourceType = audioSourceType;
+    }
+
+    @XmlElement
+    public String getAudioSource() {
+	return audioSource;
+    }
+
+    public void setAudioSource(String audioSource) {
+	this.audioSource = audioSource;
+    }
+
+    @XmlElement
+    public boolean getUploadFile() {
+        return uploadFile;
+    }
+
+    public void setUploadFile(boolean uploadFile) {
+        this.uploadFile = uploadFile;
+    }
+
+    @XmlElement
+    public String getCachedAudioSource() {
+	return cachedAudioSource;
+    }
+
+    public void setCachedAudioSource(String cachedAudioSource) {
+	this.cachedAudioSource = cachedAudioSource;
+    }
+
+    @XmlElement
+    public float getVolume() {
+	return volume;
+    }
+
+    public void setVolume(float volume) {
+	this.volume = volume;
+    }
+
 }

@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
+import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState.AudioSourceType;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -43,6 +44,12 @@ public class PortalComponentMO extends CellComponentMO {
     private Vector3f location;
     private Quaternion look;
 
+    private AudioSourceType audioSourceType;
+    private String audioSource;
+    private boolean uploadFile;
+    private String cachedAudioSource;
+    private float volume;
+
     public PortalComponentMO(CellMO cell) {
         super(cell);
     }
@@ -58,9 +65,16 @@ public class PortalComponentMO extends CellComponentMO {
             state = new PortalComponentClientState();
         }
 
-        ((PortalComponentClientState)state).setServerURL(serverURL);
-        ((PortalComponentClientState)state).setLocation(location);
-        ((PortalComponentClientState)state).setLook(look);
+	PortalComponentClientState clientState = (PortalComponentClientState) state;
+
+        clientState.setServerURL(serverURL);
+        clientState.setLocation(location);
+        clientState.setLook(look);
+	clientState.setAudioSourceType(audioSourceType);
+	clientState.setAudioSource(audioSource);
+	clientState.setUploadFile(uploadFile);
+	clientState.setCachedAudioSource(cachedAudioSource);
+	clientState.setVolume(volume);
 
         return super.getClientState(state, clientID, capabilities);
     }
@@ -71,9 +85,16 @@ public class PortalComponentMO extends CellComponentMO {
             state = new PortalComponentServerState();
         }
 
-        ((PortalComponentServerState)state).setServerURL(serverURL);
-        ((PortalComponentServerState)state).setLocation(location);
-        ((PortalComponentServerState)state).setLook(look);
+	PortalComponentServerState serverState = (PortalComponentServerState) state;
+
+        serverState.setServerURL(serverURL);
+        serverState.setLocation(location);
+        serverState.setLook(look);
+	serverState.setAudioSourceType(audioSourceType);
+	serverState.setAudioSource(audioSource);
+	serverState.setUploadFile(uploadFile);
+	serverState.setCachedAudioSource(cachedAudioSource);
+	serverState.setVolume(volume);
 
         return super.getServerState(state);
     }
@@ -82,8 +103,16 @@ public class PortalComponentMO extends CellComponentMO {
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
 
-        serverURL = ((PortalComponentServerState) state).getServerURL();
-        location = ((PortalComponentServerState) state).getLocation();
-        look = ((PortalComponentServerState) state).getLook();
+	PortalComponentServerState serverState = (PortalComponentServerState) state;
+
+        serverURL = serverState.getServerURL();
+        location = serverState.getLocation();
+        look = serverState.getLook();
+	audioSourceType = serverState.getAudioSourceType();
+	audioSource = serverState.getAudioSource();
+	uploadFile = serverState.getUploadFile();
+	cachedAudioSource = serverState.getCachedAudioSource();
+	volume = serverState.getVolume();
     }
+
 }

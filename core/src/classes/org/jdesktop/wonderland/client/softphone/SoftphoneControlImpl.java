@@ -151,7 +151,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    s += " " + command[i];
         }
 
-        logger.info("Launching communicator: " + s);
+        System.out.println("Launching communicator: " + s);
 
         softphoneProcess = Runtime.getRuntime().exec(command);
             
