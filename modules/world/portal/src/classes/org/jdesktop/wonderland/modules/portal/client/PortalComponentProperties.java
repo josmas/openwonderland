@@ -132,7 +132,7 @@ public class PortalComponentProperties extends JPanel
 
 	    if (cacheResources) {
 		cacheResource("resources/whatever.au");
-		cacheResource("resources/Teleport.au");
+		cacheResource("resources/teleport1.au");
 		cacheResource("resources/Transporter_Passby.au");
 		cacheResource("resources/teleport.au");
 		    cacheResource("resources/weapAppear.au");
