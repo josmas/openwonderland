@@ -321,10 +321,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	    case FILE:
 		lastFileTreatment = treatments;
 		try {
-		    statusLabel.setText("Uploading " + treatments);
+                    String text = BUNDLE.getString("Uploading_Treatment");
+                    text = MessageFormat.format(text, treatments);
+		    statusLabel.setText(text);
 		    uploadFileTreatments();
 		} catch (Exception e) {
-		    statusLabel.setText("Failed to upload " + treatments);
+                    String text = BUNDLE.getString("Upload_Failed");
+                    text = MessageFormat.format(text, treatments);
+		    statusLabel.setText(text);
 		    break;	
 		}
 
@@ -375,7 +379,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         File file = new File(s);
 
         if (file.exists() == false) {
-	    error("Non-existent file " + file);
+            String message = BUNDLE.getString("Nonexistent_File");
+            message = MessageFormat.format(message, file);
+	    error(message);
 	    return;
 	}
 
@@ -412,8 +418,10 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
             r.put(file);
         } catch (Exception e) {
-            error("Failed to upload " + file + " " + e.getMessage());
-	}
+            String message = BUNDLE.getString("Upload_Failed_Exception");
+            message = MessageFormat.format(message, file, e.getMessage());
+            error(message);
+        }
     }
 
     private void error(final String msg) throws Exception {
@@ -423,7 +431,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 
             public void run() {
 		System.out.println(msg);
-		String title = "Content Upload Error";
+		String title = BUNDLE.getString("Content_Upload_Error");
 		javax.swing.JOptionPane.showMessageDialog(
             	    panel, msg, title, javax.swing.JOptionPane.ERROR_MESSAGE);
 	    }
@@ -436,7 +444,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 	java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-		statusLabel.setText("Treatment started successfully");
+		statusLabel.setText(BUNDLE.getString("Treatment_Started"));
 		close();
 		open();
 	    }
