@@ -59,9 +59,10 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         volumeSlider = new javax.swing.JSlider();
 
-        setTitle("Volume Control");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("VolumeControlJFrame.title")); // NOI18N
 
-        jLabel1.setText("Volume:");
+        jLabel1.setText(bundle.getString("VolumeControlJFrame.jLabel1.text")); // NOI18N
 
         volumeSlider.setMinorTickSpacing(10);
         volumeSlider.setPaintTicks(true);
