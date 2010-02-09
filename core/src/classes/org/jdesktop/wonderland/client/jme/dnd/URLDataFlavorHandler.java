@@ -22,7 +22,9 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -47,19 +49,23 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 @ExperimentalAPI
 public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
 
-    private static Logger logger = Logger.getLogger(URLDataFlavorHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            URLDataFlavorHandler.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/client/jme/dnd/Bundle");
 
     /**
      * @inheritDoc()
      */
     public DataFlavor[] getDataFlavors() {
         try {
-            return new DataFlavor[] {
-                new DataFlavor("application/x-java-url; class=java.net.URL")
-            };
+            return new DataFlavor[]{
+                        new DataFlavor(
+                                "application/x-java-url; class=java.net.URL")
+                    };
         } catch (ClassNotFoundException ex) {
-            logger.log(Level.WARNING, "Unable to find DataFlavor for URL", ex);
-            return new DataFlavor[] {};
+            LOGGER.log(Level.WARNING, "Unable to find DataFlavor for URL", ex);
+            return new DataFlavor[]{};
         }
     }
 
@@ -71,12 +77,12 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         // protocol. We kick those out to the "flie list" data flavor handler
         URL url = null;
         try {
-            url = (URL)transferable.getTransferData(dataFlavor);
+            url = (URL) transferable.getTransferData(dataFlavor);
         } catch (java.io.IOException excp) {
-            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
+            LOGGER.log(Level.WARNING, "Unable to complete drag and drop", excp);
             return false;
         } catch (UnsupportedFlavorException excp) {
-            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
+            LOGGER.log(Level.WARNING, "Unable to complete drag and drop", excp);
             return false;
         }
 
@@ -90,16 +96,17 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
     /**
      * @inheritDoc()
      */
-    public void handleDrop(Transferable transferable, DataFlavor dataFlavor, Point dropLocation) {
+    public void handleDrop(Transferable transferable, DataFlavor dataFlavor,
+            Point dropLocation) {
         // Fetch the url from the transferable using the flavor it is provided
         // (assuming it is a URL data flavor)
         URL url = null;
         try {
-            url = (URL)transferable.getTransferData(dataFlavor);
+            url = (URL) transferable.getTransferData(dataFlavor);
         } catch (java.io.IOException excp) {
-            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
+            LOGGER.log(Level.WARNING, "Unable to complete drag and drop", excp);
         } catch (UnsupportedFlavorException excp) {
-            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
+            LOGGER.log(Level.WARNING, "Unable to complete drag and drop", excp);
         }
         URLDataFlavorHandler.launchCellFromURL(url);
     }
@@ -120,11 +127,13 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         // one registered in the system).
         CellSelectionSPI spi = CellSelectionRegistry.getCellSelectionSPI();
         if (spi == null) {
-             final JFrame frame = JmeClientMain.getFrame().getFrame();
-            logger.warning("Could not find the CellSelectionSPI factory");
-            JOptionPane.showMessageDialog(frame,
-                    "Unable to launch Cell that supports " + url.toExternalForm(),
-                    "Launch Failed", JOptionPane.ERROR_MESSAGE);
+            final JFrame frame = JmeClientMain.getFrame().getFrame();
+            LOGGER.warning("Could not find the CellSelectionSPI factory");
+            String message = BUNDLE.getString("Launch_Failed_Message");
+            message = MessageFormat.format(message, url.toExternalForm());
+            JOptionPane.showMessageDialog(frame, message,
+                    BUNDLE.getString("Launch_Failed"),
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -134,12 +143,12 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         try {
             factory = spi.getCellSelection(extension);
         } catch (CellCreationException excp) {
-            logger.log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Could not find cell factory for " + extension, excp);
             JFrame frame = JmeClientMain.getFrame().getFrame();
-            JOptionPane.showMessageDialog(frame,
-                    "The content type for this URL is not supported: " +
-                    url.toExternalForm());
+            String message = BUNDLE.getString("Unsupported_Content_Type");
+            message = MessageFormat.format(message, url.toExternalForm());
+            JOptionPane.showMessageDialog(frame, message);
             return;
         }
 
@@ -159,7 +168,8 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         try {
             CellUtils.createCell(state);
         } catch (CellCreationException excp) {
-            logger.log(Level.WARNING, "Unable to create cell for uri " + url, excp);
+            LOGGER.log(Level.WARNING,
+                    "Unable to create cell for uri " + url, excp);
         }
     }
 }

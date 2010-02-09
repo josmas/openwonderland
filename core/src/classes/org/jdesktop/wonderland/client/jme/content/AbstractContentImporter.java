@@ -51,7 +51,6 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
     // The error logger
     private static final Logger LOGGER =
             Logger.getLogger(AbstractContentImporter.class.getName());
-    
     // The I18N resource bundle
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/client/jme/content/Bundle");
@@ -85,9 +84,9 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
 
             // If the user hits Cancel or a "closed" action (e.g. Escape key)
             // then just return
-            if (result == JOptionPane.CANCEL_OPTION ||
-                    result == JOptionPane.CLOSED_OPTION) {
-                
+            if ((result == JOptionPane.CANCEL_OPTION)
+                    || (result == JOptionPane.CLOSED_OPTION)) {
+
                 return null;
             }
         }
@@ -107,21 +106,23 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         JOptionPane waitMsg = new JOptionPane(msg);
         final JDialog dialog = waitMsg.createDialog(frame, title);
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 dialog.setVisible(true);
             }
         });
-        
+
         // Next, do the actual upload of the file. This should display a
         // progress dialog if the upload is going to take a long time.
         try {
             uri = uploadContent(file);
         } catch (java.io.IOException excp) {
-            LOGGER.log(Level.WARNING, "Failed to upload content file " +
-                    file.getAbsolutePath(), excp);
+            LOGGER.log(Level.WARNING, "Failed to upload content file "
+                    + file.getAbsolutePath(), excp);
 
             final String fname = file.getName();
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     dialog.setVisible(false);
 
@@ -137,12 +138,13 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         } finally {
             // Close down the dialog indicating success
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     dialog.setVisible(false);
                 }
             });
         }
-        
+
         // Finally, go ahead and create the cell.
         createCell(uri);
         return uri;
@@ -163,7 +165,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      *
      * @param file The content file to upload
      * @return A URI that represents the uploaded content
-     * @throw IOException Upon upload error
+     * @throws IOException Upon upload error
      */
     public abstract String uploadContent(File file) throws IOException;
 
@@ -172,7 +174,6 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      * of the uploaded file.
      *
      * @param uri The URI of the uploaded content
-     * @param extension The file extension of the content
      */
     public void createCell(String uri) {
         // Figure out what the file extension is from the uri, looking for
@@ -188,11 +189,13 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         // one registered in the system).
         CellSelectionSPI spi = CellSelectionRegistry.getCellSelectionSPI();
         if (spi == null) {
-             final JFrame frame = JmeClientMain.getFrame().getFrame();
+            final JFrame frame = JmeClientMain.getFrame().getFrame();
             LOGGER.warning("Could not find the CellSelectionSPI factory");
-            JOptionPane.showMessageDialog(frame,
-                    "Unable to launch Cell that supports " + uri,
-                    "Launch Failed", JOptionPane.ERROR_MESSAGE);
+            String message = BUNDLE.getString("Launch_Failed_Message");
+            message = MessageFormat.format(message, uri);
+            JOptionPane.showMessageDialog(frame, message,
+                    BUNDLE.getString("Launch_Failed"),
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -205,9 +208,11 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
             final JFrame frame = JmeClientMain.getFrame().getFrame();
             LOGGER.log(Level.WARNING,
                     "Could not find cell factory for " + extension, excp);
-            JOptionPane.showMessageDialog(frame,
-                    "Unable to launch Cell that supports " + uri,
-                    "Launch Failed", JOptionPane.ERROR_MESSAGE);
+            String message = BUNDLE.getString("Launch_Failed_Message");
+            message = MessageFormat.format(message, uri);
+            JOptionPane.showMessageDialog(frame, message,
+                    BUNDLE.getString("Launch_Failed"),
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -216,7 +221,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         if (factory == null) {
             return;
         }
-        
+
         // Get the cell server state, injecting the content URI into it via
         // the properties
         Properties props = new Properties();
