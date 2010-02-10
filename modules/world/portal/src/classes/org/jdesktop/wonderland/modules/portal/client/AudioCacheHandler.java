@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
@@ -44,6 +45,7 @@ import org.jdesktop.wonderland.client.login.LoginManager;
  * @author Joe Provino <jprovino@dev.java.net>
  */
 public class AudioCacheHandler {
+    private static final Logger logger = Logger.getLogger(AudioCacheHandler.class.getName());
 
     // The I18N resource bundle
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
@@ -60,7 +62,7 @@ public class AudioCacheHandler {
 	audioCacheDir = new File(ClientContext.getUserDirectory().getAbsolutePath()
 	   + File.separator + "cache" + File.separator + "audio");
 
-	System.out.println("Audio cache dir " + audioCacheDir.getAbsolutePath());
+	logger.warning("Audio cache dir " + audioCacheDir.getAbsolutePath());
 
 	if (audioCacheDir.isDirectory() == false) {
 	    if (audioCacheDir.exists()) {
@@ -98,7 +100,7 @@ public class AudioCacheHandler {
 	    throw new AudioCacheHandlerException("Nonexistent file to upload " + s);
 	}
 
-	System.out.println("Upload File: " + s);
+	logger.warning("Upload File: " + s);
 
         ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
 
@@ -195,7 +197,7 @@ public class AudioCacheHandler {
 	    throw new AudioCacheHandlerException("Bad URL: " + e.getMessage());
 	}
 
-	System.out.println("Cache content: " + url);
+	logger.warning("Cache content: " + url);
 	return cacheURL(url);
     }
 
@@ -203,7 +205,7 @@ public class AudioCacheHandler {
 	// replace "/" with "_" in url.  Then create the cache file
 	// get an input stream to the url and write to the file.
 	// return the path to the local file.
-	System.out.println("Cache URL: " + url);
+	logger.warning("Cache URL: " + url);
 	File file = createCacheFile(url.toString());
 
 	copyFile(url, file);
@@ -211,7 +213,8 @@ public class AudioCacheHandler {
     }
 
     private File createCacheFile(String resource) throws AudioCacheHandlerException {
-	int ix = resource.lastIndexOf(File.separator);
+        logger.warning("resource: " + resource);
+	int ix = resource.lastIndexOf('/');//Not File.separator as we're dealing with URLs
 
 	String s = resource;
 
@@ -220,12 +223,13 @@ public class AudioCacheHandler {
 	}
 
 	File file = new File(audioCacheDir, s);
+        logger.warning("file: " + file);
 
 	if (file.getAbsolutePath().equals(resource)) {
 	    return file;
 	}
 
-	System.out.println("Create cache file for: " + file.getAbsolutePath());
+	logger.warning("Create cache file for: " + file.getAbsolutePath());
 
 	file.delete();
 
