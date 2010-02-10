@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.CallID;
@@ -187,6 +188,8 @@ public class AudioTreatmentComponent
 	        volumeControlJFrame = new VolumeControlJFrame(this, "");
 	    }
 
+            volumeControlJFrame.setLocationRelativeTo(
+                    JmeClientMain.getFrame().getFrame());
 	    volumeControlJFrame.setVisible(true);
 	    return;
         }
