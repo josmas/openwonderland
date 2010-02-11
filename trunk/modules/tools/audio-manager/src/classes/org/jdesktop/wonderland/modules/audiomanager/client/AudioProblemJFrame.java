@@ -95,10 +95,11 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
         okButton = new javax.swing.JButton();
         ignoreButton = new javax.swing.JButton();
 
-        setTitle("Audio Problem");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("AudioProblemJFrame.title")); // NOI18N
 
         audioProblemLabel.setFont(audioProblemLabel.getFont().deriveFont(audioProblemLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        audioProblemLabel.setText("Softphone Problem: ");
+        audioProblemLabel.setText(bundle.getString("AudioProblemJFrame.audioProblemLabel.text")); // NOI18N
         audioProblemLabel.setFocusable(false);
         audioProblemLabel.setRequestFocusEnabled(false);
 
@@ -112,28 +113,28 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
         audioProblemTextArea.setRequestFocusEnabled(false);
         jScrollPane2.setViewportView(audioProblemTextArea);
 
-        reconfigureButton.setText("Reconfigure...");
+        reconfigureButton.setText(bundle.getString("AudioProblemJFrame.reconfigureButton.text")); // NOI18N
         reconfigureButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reconfigureButtonActionPerformed(evt);
             }
         });
 
-        reconnectButton.setText("Reconnect");
+        reconnectButton.setText(bundle.getString("AudioProblemJFrame.reconnectButton.text")); // NOI18N
         reconnectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reconnectButtonActionPerformed(evt);
             }
         });
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("AudioProblemJFrame.okButton.text")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        ignoreButton.setText("Ignore");
+        ignoreButton.setText(bundle.getString("AudioProblemJFrame.ignoreButton.text")); // NOI18N
         ignoreButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ignoreButtonActionPerformed(evt);
@@ -147,14 +148,14 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
-                    .add(audioProblemLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
+                    .add(audioProblemLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                         .add(reconfigureButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(reconnectButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(ignoreButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                        .add(ignoreButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -162,17 +163,17 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(9, 9, 9)
+                .add(12, 12, 12)
                 .add(audioProblemLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(okButton)
-                    .add(reconfigureButton)
                     .add(reconnectButton)
-                    .add(ignoreButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(ignoreButton)
+                    .add(reconfigureButton))
+                .addContainerGap())
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
