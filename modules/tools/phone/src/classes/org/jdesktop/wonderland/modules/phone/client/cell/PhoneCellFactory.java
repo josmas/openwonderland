@@ -54,7 +54,7 @@ public class PhoneCellFactory implements CellFactorySPI {
         // Create a setup with some default values
         PhoneCellServerState cellServerState = new PhoneCellServerState();
 
-	cellServerState.setName("Phone");
+	cellServerState.setName(BUNDLE.getString("Virtual_Phone"));
 
         cellServerState.setPhoneInfo(new PhoneInfo(false, "100", "foo",
                 "Unknown location", .2, .1, true, true));
