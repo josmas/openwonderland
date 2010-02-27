@@ -18,8 +18,8 @@
 package org.jdesktop.wonderland.modules.testcells.client.jme;
 
 import org.jdesktop.wonderland.client.ClientPlugin;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
  *
@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
  */
 public class ClientInit implements ClientPlugin {
 
-    public void initialize(WonderlandSession session) {
+    public void initialize(LoginManager loginManager) {
         System.out.println("------------> HERE <---------------------");
         ClientContextJME.getEnvironmentManager().addEnvironment("Default", new DefaultEnvironment());
         ClientContextJME.getEnvironmentManager().setCurrentEnvironment("Default");

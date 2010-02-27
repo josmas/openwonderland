@@ -15,8 +15,9 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.comms;
+package org.jdesktop.wonderland.client.login;
 
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -27,8 +28,15 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public interface SessionLifecycleListener {
     /**
      * Called when a new WonderlandSession is created.  When this method is
-     * called, the session has been initialized, but not logged in.
+     * called, the session has been initialized and logged in, so is in
+     * the CONNECTED state.
      * @param session the session that was created
      */
     public void sessionCreated(WonderlandSession session);
+
+    /**
+     * Called when a primary session is set.
+     * @param session the session that was declared the primary session
+     */
+    public void primarySession(WonderlandSession session);
 }

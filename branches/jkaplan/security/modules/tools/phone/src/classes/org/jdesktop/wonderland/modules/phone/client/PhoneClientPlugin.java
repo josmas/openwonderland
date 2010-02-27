@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.modules.phone.client.cell.PhoneClient;
 
 /**
@@ -34,15 +36,22 @@ import org.jdesktop.wonderland.modules.phone.client.cell.PhoneClient;
  * @author jprovino
  */
 public class PhoneClientPlugin implements ClientPlugin,
-	SessionStatusListener {
+	SessionLifecycleListener, SessionStatusListener {
 
     private static final Logger logger =
             Logger.getLogger(PhoneClientPlugin.class.getName());
     
-    public void initialize(WonderlandSession session) {
-	session.addSessionStatusListener(this);
+    public void initialize(LoginManager manager) {
+        manager.addLifecycleListener(this);
+    }
 
-	logger.warning("Phone initialized, session " + session);
+    public void sessionCreated(WonderlandSession session) {
+    }
+
+    public void primarySession(WonderlandSession session) {
+        session.addSessionStatusListener(this);
+
+        logger.warning("Phone initialized, session " + session);
     }
     
     public void sessionStatusChanged(WonderlandSession session, 

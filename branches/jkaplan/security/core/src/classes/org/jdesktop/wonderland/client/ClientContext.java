@@ -25,8 +25,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 
@@ -43,7 +43,6 @@ public class ClientContext {
 
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
     private static InputManager inputManager=null;
-    private static WonderlandSessionManager sessionManager = new WonderlandSessionManager();
     private static File userDir;
     
     /**
@@ -99,8 +98,10 @@ public class ClientContext {
         return inputManager;
     }
 
-    public static WonderlandSessionManager getWonderlandSessionManager() {
-        return sessionManager;
+    public static LoginManager getLoginManager(String serverURL)
+        throws IOException
+    {
+        return LoginManager.getInstance(serverURL);
     }
 
     /**
