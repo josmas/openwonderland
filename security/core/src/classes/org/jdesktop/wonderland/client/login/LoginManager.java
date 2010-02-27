@@ -22,20 +22,26 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.AssetURI;
@@ -54,13 +60,19 @@ public class LoginManager {
     private static final String DETAILS_URL =
             "wonderland-web-front/resources/ServerDetails";
 
-    /** the UI to prompt the user */
+    /** the UI to prompt the user for login information */
     private static LoginUI ui;
 
+    /** the default object to use when creating sessions */
+    private static SessionCreator<?> defaultSessionCreator =
+            new DefaultSessionCreator();
 
-    /** the singleton instance */
+    /** the managers we have created, mapped by server URL */
     private static final Map<String, LoginManager> managers =
             Collections.synchronizedMap(new HashMap<String, LoginManager>());
+
+    /** the primary manager */
+    private static LoginManager primaryLoginManager;
 
     /** the server this manager represents */
     private String serverURL;
@@ -69,13 +81,18 @@ public class LoginManager {
     private ServerDetails details;
 
     /** whether or not we are authenticated to the server */
-    private boolean authenticated = false;
-
-    /** the classloader for this manager */
-    private ClassLoader loader;
+    private LoginControl loginControl;
 
     /** the session for this login */
-    private WonderlandSession session;
+    private final Set<WonderlandSession> sessions =
+            Collections.synchronizedSet(new HashSet<WonderlandSession>());
+
+    /** the primary session */
+    private WonderlandSession primarySession;
+
+    /** session lifecycle listeners */
+    private Set<SessionLifecycleListener> lifecycleListeners =
+            new CopyOnWriteArraySet<SessionLifecycleListener>();
 
     /**
      * Constructor is private, use getInstance() instead.
@@ -103,11 +120,16 @@ public class LoginManager {
      * @param ui the user interface to login with
      */
     public synchronized static void setLoginUI(LoginUI ui) {
-        if (ui != null && LoginManager.ui != null) {
-            throw new IllegalStateException("Login manager already set");
-        }
-
         LoginManager.ui = ui;
+    }
+
+    /**
+     * Set the default session creator.
+     * @param creator the session creator to use for all session requests
+     * where no creator is otherwise specified
+     */
+    public synchronized static void setDefaultSessionCreator(SessionCreator<?> c) {
+        LoginManager.defaultSessionCreator = c;
     }
 
     /**
@@ -132,21 +154,47 @@ public class LoginManager {
     }
 
     /**
+     * Get all login managers
+     * @return a list of all known login manager
+     */
+    public static Collection<LoginManager> getAll() {
+        return managers.values();
+    }
+
+    /**
      * Get the login manager that is responsible for a particular session.
      * @param session the session to find a login manager for.
      * @return the LoginManager associated with the given session, or null
      * if no login manager is associated with the given session.
      */
-    public static LoginManager findLoginManager(WonderlandSession session) {
+    public static LoginManager find(WonderlandSession session) {
         synchronized (managers) {
             for (LoginManager lm : managers.values()) {
-                if (lm.getSession().equals(session)) {
-                    return lm;
+                for (WonderlandSession lmSession : lm.getAllSessions()) {
+                    if (lmSession.equals(session)) {
+                        return lm;
+                    }
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Get the primary login manager
+     * @return the primary login manager, if one has been set
+     */
+    public synchronized static LoginManager getPrimary() {
+        return primaryLoginManager;
+    }
+
+    /**
+     * Get the primary login manager
+     * @return the primary login manager, if one has been set
+     */
+    public synchronized static void setPrimary(LoginManager primary) {
+        LoginManager.primaryLoginManager = primary;
     }
 
     /**
@@ -168,123 +216,197 @@ public class LoginManager {
     }
 
     /**
-     * Return whether or not we are authenticated
-     * @return true if we have successfully authenticated to this
-     * server, or false if not
+     * Create a new WonderlandSession using the default session creator
+     * @return the newly created session
+     * @throws LoginFailureException if there is a problem creating the
+     * session with the login credentials from this manager
      */
-    public synchronized boolean isAuthenicated() {
-        return authenticated;
+    public WonderlandSession createSession()
+        throws LoginFailureException
+    {
+        return createSession(defaultSessionCreator);
     }
 
     /**
-     * Authenticate to the server.  This will request authentication details
-     * from the LoginUI, and set up the connection on success.
-     * @return true if the authentication succeeded, or false if not
-     * @throws IllegalStateException if the LoginUI is not set.
+     * Create a new WonderlandSession using a custom session creator
+     * @param creator the SessionCreator to use when creating the session
+     * @return the newly created session
+     * @throws LoginFailureException if there is a problem creating the
+     * session with the login credentials from this manager
      */
-    public boolean authenticate() {
-        // make sure we aren't already authenticated
-        synchronized (this) {
-            if (authenticated) {
-                return true;
+    public synchronized <T extends WonderlandSession> T
+            createSession(SessionCreator<T> creator)
+        throws LoginFailureException
+    {
+        AuthenticationInfo authInfo = getDetails().getAuthInfo();
+
+        // create the login control if necessary
+        if (loginControl == null) {
+            loginControl = createLoginControl(authInfo);
+        }
+
+        // see if we are already logged in
+        if (!loginControl.isAuthenticated()) {
+            requestLogin(loginControl);
+        }
+
+        // choose a Darkstar server to connect to
+        DarkstarServer ds = getDetails().getDarkstarServers()[0];
+        WonderlandServerInfo serverInfo =
+                new WonderlandServerInfo(ds.getHostname(), ds.getPort());
+
+        // use the session creator to create a new session
+        T session = creator.createSession(serverInfo,
+                                          loginControl.getClassLoader());
+
+        // log in to the session
+        session.login(loginControl.getLoginParameters());
+
+        // the session was created successfully.  Add it to our list of
+        // sessions, and add a listener to remove it when it disconnects
+        session.addSessionStatusListener(new SessionStatusListener() {
+            public void sessionStatusChanged(WonderlandSession session,
+                                             Status status)
+            {
+                if (status.equals(Status.DISCONNECTED)) {
+                    sessions.remove(session);
+                }
             }
-        }
 
-        // make sure there is a LoginUI
-        if (ui == null) {
-            throw new IllegalStateException("No login UI");
-        }
+        });
+        sessions.add(session);
+        fireSessionCreated(session);
 
-        // figure out what type of authentication it is, and then request
-        // that type of login from the UI
-        BaseLoginControl lc = null;
-        AuthenticationInfo info = getDetails().getAuthInfo();
-        switch (info.getType()) {
-            case NONE:
-                lc = new NoAuthLoginControl();
-                ui.requestLogin((NoAuthLoginControl) lc);
-                break;
-            case WEB_SERVICE:
-                lc = new UserPasswordLoginControl();
-                ui.requestLogin((UserPasswordLoginControl) lc);
-                break;
-            case WEB:
-                lc = new WebURLLoginControl(info.getAuthURL());
-                ui.requestLogin((WebURLLoginControl) lc);
-                break;
-            default:
-                throw new IllegalStateException("Unknown login type " +
-                                                info.getType());
-        }
-
-        // wait for success or cancel
-        try {
-            boolean loggedIn = lc.waitForLoginResult();
-        
-            // make sure we logged in successfully
-            if (!loggedIn) {
-                return false;
-            }
-        } catch (InterruptedException ie) {
-            logger.log(Level.WARNING, "Login interrupted", ie);
-            return false;
-        }
-        
-        // at this point, we have logged in, so we shouldn't attempt any more
-        // logins until we disconnect
-        synchronized (this) {
-            authenticated = true;
-        }
-
-        // At this point, we have successfully logged in to the server,
-        // and the session should be connected.
-        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
-                                                      loader);
-        while (it.hasNext()) {
-            ClientPlugin plugin = it.next();
-            try {
-                plugin.initialize(session);
-            } catch(Exception e) {
-                logger.log(Level.WARNING, "Error initializing plugin " +
-                           plugin.getClass().getName(), e);
-            } catch(Error e) {
-                logger.log(Level.WARNING, "Error initializing plugin " +
-                           plugin.getClass().getName(), e);
-            }
-        }
-
-        ClientContext.getWonderlandSessionManager().registerSession(session);
-        return true;
-    }
-
-    /**
-     * Return the session for this login
-     * @return the session
-     */
-    public WonderlandSession getSession() {
+        // returnh the session
         return session;
     }
 
     /**
-     * Create a Wonderland session with the given login parameters
-     * @param loginParams the parameters to login with
-     * @throws LoginFailureException if there is an error logging in
-     * to the Darkstar server
+     * Get all sessions
+     * @return a list of all sessions
      */
-    private synchronized void createSession(LoginParameters loginParams)
-            throws LoginFailureException
+    public Collection<WonderlandSession> getAllSessions() {
+        return new ArrayList(sessions);
+    }
+
+    /**
+     * Get all sessions that implement the given type
+     * @param clazz the class of session to get
+     */
+    public <T extends WonderlandSession> Collection<T>
+            getAllSession(Class<T> clazz)
     {
-        // set up a classloader with the module jars
-        loader = setupClassLoader(getDetails().getServerURL());
+        Collection<T> out = new ArrayList<T>();
+        synchronized (sessions) {
+            for (WonderlandSession session : sessions) {
+                if (clazz.isAssignableFrom(session.getClass())) {
+                    out.add((T) session);
+                }
+            }
+        }
 
-        // request the UI create an appropriate session
-        DarkstarServer ds = getDetails().getDarkstarServers()[0];
-        WonderlandServerInfo serverInfo =
-                new WonderlandServerInfo(ds.getHostname(), ds.getPort());
-        session = ui.createSession(serverInfo, loader);
+        return out;
+    }
 
-        // now log in to the session
-        session.login(loginParams);
+    /**
+     * Get the primary session
+     * @return the primary session
+     */
+    public synchronized WonderlandSession getPrimarySession() {
+        return primarySession;
+    }
+
+    /**
+     * Set the primary session
+     * @param primary the primary session
+     */
+    public void setPrimarySession(WonderlandSession primarySession) {
+        synchronized (this) {
+            this.primarySession = primarySession;
+        }
+
+        firePrimarySession(primarySession);
+    }
+
+    /**
+     * Add a lifecycle listener.  This will receive messages for all
+     * clients that are created or change status
+     * @param listener the listener to add
+     */
+    public void addLifecycleListener(SessionLifecycleListener listener) {
+        lifecycleListeners.add(listener);
+    }
+
+    /**
+     * Remove a lifecycle listener.
+     * @param listener the listener to remove
+     */
+    public void removeLifecycleListener(SessionLifecycleListener listener) {
+        lifecycleListeners.remove(listener);
+    }
+
+    /**
+     * Create a new LoginControl of the appropriate type
+     * @param authInfo the authentication info
+     * @return a new LoginControl for the given type
+     */
+    protected LoginControl createLoginControl(AuthenticationInfo info) {
+         switch (info.getType()) {
+            case NONE:
+                return new NoAuthLoginControl();
+            case WEB_SERVICE:
+                return new UserPasswordLoginControl();
+            case WEB:
+                return new WebURLLoginControl(info.getAuthURL());
+            default:
+                throw new IllegalStateException("Unknown login type " +
+                                                info.getType());
+        }
+    }
+
+    /**
+     * Request login from the given login control object
+     * @param loginControl the login control object to get login info from
+     * throws LoginFailureException if the login fails or is cancelled
+     */
+    protected void requestLogin(LoginControl control)
+        throws LoginFailureException
+    {
+        // see if we already have a login in progress
+        if (!control.isAuthenticating()) {
+            control.requestLogin(ui);
+        }
+
+        // wait for the login to complete
+        try {
+            boolean result = control.waitForLogin();
+            if (!result) {
+                throw new LoginFailureException("Login cancelled");
+            }
+        } catch (InterruptedException ie) {
+            throw new LoginFailureException(ie);
+        }
+    }
+
+    /**
+     * Notify any registered lifecycle listeners that a new session was created
+     * @param session the client that was created
+     */
+    private void fireSessionCreated(WonderlandSession session) {
+        for (SessionLifecycleListener listener : lifecycleListeners) {
+            listener.sessionCreated(session);
+        }
+    }
+
+    /**
+     * Notify any registered lifecycle listeners that a session was declared
+     * the primary session
+     * @param session the client that was declared primary
+     */
+    private void firePrimarySession(WonderlandSession session) {
+        for (SessionLifecycleListener listener : lifecycleListeners) {
+            listener.primarySession(session);
+        }
     }
 
     /**
@@ -315,12 +437,38 @@ public class LoginManager {
                                   getClass().getClassLoader());
     }
 
-    public abstract class BaseLoginControl {
+    /**
+     * Initialize plugins
+     */
+    private void initPlugins(ClassLoader loader) {
+        // At this point, we have successfully logged in to the server,
+        // and the session should be connected.
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next();
+            try {
+                plugin.initialize(this);
+            } catch(Exception e) {
+                logger.log(Level.WARNING, "Error initializing plugin " +
+                           plugin.getClass().getName(), e);
+            } catch(Error e) {
+                logger.log(Level.WARNING, "Error initializing plugin " +
+                           plugin.getClass().getName(), e);
+            }
+        }
+    }
+
+    public abstract class LoginControl {
+        private boolean started = false;
         private boolean finished = false;
         private boolean success = false;
 
+        private LoginParameters params;
+        private ClassLoader classLoader;
+
         /**
-         * Get the server URL
+         * Get the server URL for this login control object
          * @return the server URL to connect to
          */
         public String getServerURL() {
@@ -328,70 +476,128 @@ public class LoginManager {
         }
 
         /**
-         * Cancel the login in progress
+         * Determine if login is complete and successful.
+         * @return true of the login is complete and successful, false
+         * if the login is in progress or failed.
          */
-        public synchronized void cancel() {
-            finished = true;
-            success = false;
+        public synchronized boolean isAuthenticated() {
+            return finished && success;
+        }
 
+        /**
+         * Determine if login is in progress.  This will return true
+         * if a login has been requested from the client, but they
+         * have not yet responded.
+         * @return true if a login is in progress, or false if not
+         */
+        public synchronized boolean isAuthenticating() {
+            return started && !finished;
+        }
+
+        /**
+         * Request a login from the given login UI
+         */
+        public void requestLogin(LoginUI ui) {
+            synchronized (this) {
+                started = true;
+            }
+        }
+
+        /**
+         * Get the classloader to use when connecting to the Darkstar server.
+         * This method is only valid when isAuthenticated() returns true.
+         * @return the classloader to use
+         */
+        public synchronized ClassLoader getClassLoader() {
+            if (!isAuthenticated()) {
+                throw new IllegalStateException("Not authenticated");
+            }
+
+            return classLoader;
+        }
+
+        /**
+         * Get the LoginParameters to use when connecting to the Darkstar
+         * server.
+         * This method is only valid when isAuthenticated() returns true.
+         * @return the LoginParameters to use
+         */
+        public synchronized LoginParameters getLoginParameters() {
+            if (!isAuthenticated()) {
+                throw new IllegalStateException("Not authenticated");
+            }
+
+            return params;
+        }
+
+        /**
+         * Indicate that the login attempt was successful, and pass in
+         * the LoginParameters that should be sent to the Darkstar server
+         * to create a session.
+         * <p>
+         * This method indicates that login has been successful, so
+         * sets up the plugin classloader for use in session creation. Once
+         * the classloader is setup, it notifies any listeners that login
+         * is complete.
+         *
+         * @param loginParams the parameters to login with. A null
+         * LoginParameters object indicates that the login attempt has failed.
+         */
+        protected synchronized void loginComplete(LoginParameters params) {
+            this.params = params;
+            if (params != null) {
+                // setup the classloader
+                this.classLoader = setupClassLoader(getServerURL());
+
+                // initialize plugins
+                initPlugins(classLoader);
+
+                this.success = true;
+            }
+
+            this.started = false;
+            this.finished = true;
             notify();
         }
 
         /**
-         * This method should be called after the web service or external login
-         * is complete.  It then continues the login process by initializing
-         * the client plugins and logging in to the Darkstar server with the
-         * credentials it is given.  If the Darkstar login succeeds, the login
-         * is finished and the rest of the system will proceed normally.  If
-         * the login fails, it is up to the caller to notify the user.
-         * @param loginParams the parameters to login with
-         * @throws LoginFailureException if the darkstar login fails for
-         * any reason
+         * Cancel the login in progress
          */
-        protected void createSession(LoginParameters params) 
-                throws LoginFailureException
-        {
-            // create the session and log in
-            LoginManager.this.createSession(params);
-            
-            // if there was no exception, we've succeeded.  Notify any
-            // listeners
-            synchronized (this) {
-                finished = true;
-                success = true;
-
-                notify();
-            }
+        public synchronized void cancel() {
+            loginComplete(null);
         }
 
         /**
-         * Wait for the login to finish.  This method returns the status
-         * of the login on completion, either success or cancel.
-         * @return true if the login succeeded, or false if the login was
-         * cancelled
+         * Wait for the current login in progress to end
+         * @return true if the login is successful, or false if not
          * @throws InterruptedException if the thread is interrupted before
-         * the
+         * the login parameters are determined
          */
-        protected synchronized boolean waitForLoginResult()
+        protected synchronized boolean waitForLogin()
             throws InterruptedException
         {
-            while (!finished) {
+            while (isAuthenticating()) {
                 wait();
             }
 
-            return success;
+            return isAuthenticated();
         }
-
     }
 
-    public class NoAuthLoginControl extends BaseLoginControl {
+    public class NoAuthLoginControl extends LoginControl {
+        @Override
+        public void requestLogin(LoginUI ui) {
+            super.requestLogin(ui);
+            ui.requestLogin(this);
+        }
+
         public void authenticate(String username, String fullname)
             throws LoginFailureException
         {
             // no other authentication to do, just do the Darkstar login
             // with all the data packed into the username
             String packed = formatUsername(username, fullname);
-            createSession(new LoginParameters(packed, new char[0]));
+            loginComplete(new LoginParameters(packed, new char[0]));
         }
         
         /**
@@ -406,13 +612,19 @@ public class LoginManager {
         }
     }
 
-    public class UserPasswordLoginControl extends BaseLoginControl {
+    public class UserPasswordLoginControl extends LoginControl {
+        @Override
+        public void requestLogin(LoginUI ui) {
+            super.requestLogin(ui);
+            ui.requestLogin(this);
+        }
+
         public boolean authenticate(String username, char[] password) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
-    public class WebURLLoginControl extends BaseLoginControl {
+    public class WebURLLoginControl extends LoginControl {
         private String url;
 
         public WebURLLoginControl(String url) {
@@ -421,6 +633,22 @@ public class LoginManager {
 
         public String getURL() {
             return url;
+        }
+
+        @Override
+        public void requestLogin(LoginUI ui) {
+            super.requestLogin(ui);
+            ui.requestLogin(this);
+        }
+    }
+
+    public static class DefaultSessionCreator
+            implements SessionCreator<WonderlandSession>
+    {
+        public WonderlandSession createSession(WonderlandServerInfo serverInfo,
+                                               ClassLoader loader)
+        {
+            return new WonderlandSessionImpl(serverInfo, loader);
         }
     }
 }

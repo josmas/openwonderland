@@ -57,15 +57,4 @@ public interface LoginUI {
      * @param control the login control
      */
     public void requestLogin(WebURLLoginControl control);
-
-    /**
-     * Create a new WonderlandSession for the given server and classloader.
-     * This gives the user-interface a hook to listen for session-related
-     * events.
-     * @param serverInfo the information about the server to connect to
-     * @param loader the classloader with all modules loaded
-     * @return the newly created Wonderland session
-     */
-    public WonderlandSession createSession(WonderlandServerInfo serverInfo,
-                                           ClassLoader loader);
 }

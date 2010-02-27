@@ -19,11 +19,8 @@ package org.jdesktop.wonderland.client.jme.login;
 
 import java.io.IOException;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.comms.CellClientSession;
+import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.JmeCellCache;
 import org.jdesktop.wonderland.client.jme.JmeClientSession;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
@@ -32,6 +29,7 @@ import org.jdesktop.wonderland.client.login.LoginManager.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.LoginManager.UserPasswordLoginControl;
 import org.jdesktop.wonderland.client.login.LoginManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.LoginUI;
+import org.jdesktop.wonderland.client.login.SessionCreator;
 
 
 /**
@@ -41,20 +39,11 @@ import org.jdesktop.wonderland.client.login.LoginUI;
  *
  * @author paulby
  */
-public class JmeLoginUI implements LoginUI {
+public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
     private MainFrame parent;
 
     public JmeLoginUI(MainFrame parent) {
         this.parent = parent;
-    }
-
-    public JmeClientSession doLogin(String serverURL) throws IOException {
-        LoginManager lm = LoginManager.getInstance(serverURL);
-        if (!lm.isAuthenicated()) {
-            lm.authenticate();
-        }
-
-        return (JmeClientSession) lm.getSession();
     }
 
     public void requestLogin(final NoAuthLoginControl control) {

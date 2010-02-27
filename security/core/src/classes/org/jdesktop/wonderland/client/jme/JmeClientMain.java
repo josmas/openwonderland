@@ -33,6 +33,7 @@ import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
@@ -139,15 +140,29 @@ public class JmeClientMain {
             curSession.logout();
         }
 
-        curSession = login.doLogin(serverURL);
-        if (curSession == null) {
-            logger.log(Level.WARNING, "Unable to connect to session");
-        } else {
-            frame.setServerURL(serverURL);
+        // get the login manager for the given server
+        LoginManager lm = LoginManager.getInstance(serverURL);
+
+        // create a new session
+        try {
+            curSession = lm.createSession(login);
+        } catch (LoginFailureException lfe) {
+            IOException ioe = new IOException("Error connecting to " +
+                                              serverURL);
+            ioe.initCause(lfe);
+            throw ioe;
         }
 
-        ClientContext.getWonderlandSessionManager().setPrimaryServer(
-                                                    curSession.getServerInfo());
+        // make sure we logged in successfully
+        if (curSession == null) {
+            logger.log(Level.WARNING, "Unable to connect to session");
+            return;
+        }
+
+        // set the primary login manager and session
+        LoginManager.setPrimary(lm);
+        lm.setPrimarySession(curSession);
+        frame.setServerURL(serverURL);
     }
 
     /**

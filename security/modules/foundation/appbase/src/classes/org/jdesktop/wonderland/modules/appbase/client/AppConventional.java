@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -80,8 +81,14 @@ public abstract class AppConventional extends App2D {
     static public void initializeConnection () throws ConnectionFailureException {
 	if (connection != null) {
 	    connection = new AppConventionalConnection();
-	    WonderlandServerInfo serverInfo = ClientContext.getWonderlandSessionManager().getPrimaryServer();
-	    session = ClientContext.getWonderlandSessionManager().getSession(serverInfo);
+
+        // JK: updated to use new interfaces.
+        // XXX This may break in the multiple-server case XXX
+        LoginManager primary = LoginManager.getPrimary();
+        session = primary.getPrimarySession();
+
+        //WonderlandServerInfo serverInfo = ClientContext.getWonderlandSessionManager().getPrimaryServer();
+	    //session = ClientContext.getWonderlandSessionManager().getSession(serverInfo);
 	    connection.connect(session);
 	}
     }

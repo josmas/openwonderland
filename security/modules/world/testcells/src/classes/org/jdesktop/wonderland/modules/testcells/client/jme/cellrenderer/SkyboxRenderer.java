@@ -65,7 +65,7 @@ public class SkyboxRenderer implements CellRendererJME {
         try {
             /* Form the asset URIs */
             WonderlandSession session = cell.getCellCache().getSession();
-            LoginManager manager = LoginManager.findLoginManager(session);
+            LoginManager manager = LoginManager.find(session);
             String serverURL = manager.getServerURL();
             
             AssetURI northURI = new AssetURI("wla://testcells/art/skybox1/1.jpg", serverURL);
