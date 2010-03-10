@@ -90,7 +90,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This tutorial provides an introduction for all developers: how to download and compile the source code, configure the Wonderland distribution, and run both the server and client.</td>
 </tr>
 <tr>
-  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDownloadBuildModules05 Download, Build, and Deploy Optional Modules from the Source Code]</td>
+  <td class="left">[DownloadBuildModules05 Download, Build, and Deploy Optional Modules from the Source Code]</td>
   <td class="right">This tutorial describes how developers can download and compile the source code, and deploy the optional add-on modules.</td>
 </tr>
 <tr>
