@@ -1,8 +1,8 @@
-==Open Wonderland Documentation Wiki==
-
+#labels Featured
 _This material is distributed under the <a href="http://www.gnu.org/licenses/gpl-2.0.html">GNU General Public License Version 2</a>_.   
 _To obtain a copy of the original source code, make a request on the <a href="http://groups.google.com/group/openwonderland">Wonderland Forum</a>_.
 
+==Open Wonderland Documentation Wiki==
 
 <table cellpadding="5">
 
@@ -15,15 +15,15 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandResources Multimedia Resources]</td>
-  <td>This page has a collection of videos, presentations, screenshots, and web resources on Project Wonderland.</td>
+  <td>This page has a collection of videos, presentations, screenshots, and web resources on Open Wonderland.</td>
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandProposals Proposals]</td>
-  <td>This page has a collection of proposals for new large-scale features in Project Wonderland, suggested both by the core team and the community.</td>
+  <td>This page has a collection of proposals for new large-scale features in Open Wonderland, suggested both by the core team and the community.</td>
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFeatureWishList Feature Wish List]</td>
-  <td>This page has a collection of proposals for new small-scale features in Project Wonderland, suggested both by the core team and the community.</td>
+  <td>This page has a collection of proposals for new small-scale features in Open Wonderland, suggested both by the core team and the community.</td>
 </tr>
 <tr><td></td></tr>
 
@@ -32,11 +32,11 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWebStart05 Launching the Client]</td>
-  <td>This tutorial describes how users launch the Project Wonderland client using Java(TM) Web Start.</td>
+  <td>This tutorial describes how users launch the Open Wonderland client using Java(TM) Web Start.</td>
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandClientSpecs05 Client Hardware Performance]</td>
-  <td>This page lists the reported performance of various hardware and software configurations with Project Wonderland</td>
+  <td>This page lists the reported performance of various hardware and software configurations with Open Wonderland</td>
 </tr>
 <tr><td></td></tr>
 
@@ -45,19 +45,19 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td>[http://openwonderland.org/index.php?option=com_content&view=article&id=70&Itemid=64 Download and Install Wonderland]</td>
-  <td>Leads you step-by-step to download, install, configure, and run Project Wonderland.</td>
+  <td>Leads you step-by-step to download, install, configure, and run Open Wonderland.</td>
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandServerAdministration05 Web-based Server Administration]</td>
-  <td>A reference guide for configuring and administering the Project Wonderland server via a web-based interface.</td>
+  <td>A reference guide for configuring and administering the Open Wonderland server via a web-based interface.</td>
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandConfigureFirewall05 Firewall Configuration]</td>
-  <td>This tutorial describes how to configure Project Wonderland if your server is behind a firewall or NAT.</td>
+  <td>This tutorial describes how to configure Open Wonderland if your server is behind a firewall or NAT.</td>
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandAuthentication05 Configuring Authentication]</td>
-  <td>This tutorial describes how to configure authentication for Project Wonderland</td>
+  <td>This tutorial describes how to configure authentication for Open Wonderland</td>
 </tr>
 <tr><td></td></tr>
 
@@ -66,14 +66,14 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandArtImport05 Importing 3D Models]</td>
-  <td>This tutorial provides an introduction to importing existing 3D models into Project Wonderland.</td>
+  <td>This tutorial provides an introduction to importing existing 3D models into Open Wonderland.</td>
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorldAssembly05 Assembling Worlds]</td>
   <td>This tutorial provides an introduction to assembling worlds. You may insert new Components into your world and move, rotate, and resize them.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorldFromScratch05 Building a Project Wonderland World From Scratch]</td>
+  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorldFromScratch05 Building an Open Wonderland World From Scratch]</td>
   <td>This tutorial explains how to start with an empty world, populate it with content, and save a snapshot.</td>
 </tr>
 <tr>
@@ -86,7 +86,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td><h3>For Developers</h3></td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDownloadBuildSource05 Download, Build, Configure, and Run from the Source Code]</td>
+  <td>[DownloadBuildSource05 Download, Build, Configure, and Run from the Source Code]</td>
   <td>This tutorial provides an introduction for all developers: how to download and compile the source code, configure the Wonderland distribution, and run both the server and client.</td>
 </tr>
 <tr>
@@ -95,15 +95,15 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorkingWithModules05 Working with Modules]</td>
-  <td class="right">This tutorial describes the basics of the Project Wonderland module system and how to install modules. Modules allow developers to extend the functionality of the platform by providing custom code and/or content.</td>
+  <td class="right">This tutorial describes the basics of the Open Wonderland module system and how to install modules. Modules allow developers to extend the functionality of the platform by providing custom code and/or content.</td>
 </tr>
 <tr>
   <td class="left">[https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_01.pdf Tutorial for Beginners]</td>
-  <td class="right">These two tutorials ([https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_01.pdf Part 1], [https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_02.pdf Part 2]) by Douglas Finnigan provide a high-level introduction to Project Wonderland for developers, describing basic concepts for all of its technologies.</td>
+  <td class="right">These two tutorials ([https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_01.pdf Part 1], [https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_02.pdf Part 2]) by Douglas Finnigan provide a high-level introduction to Open Wonderland for developers, describing basic concepts for all of its technologies.</td>
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05 Developing a New Cell]</td>
-  <td class="right">The primary means to extend Project Wonderland is by developing a new kind of Cell. There are a number of tutorials, from basic and advanced on this page. The following four-part tutorial series goes in-depth for developers on how to create a new Cell: [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part1 Part 1], [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part2 Part 2], [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part3 Part 3], [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part4 Part 4].</td>
+  <td class="right">The primary means to extend Open Wonderland is by developing a new kind of Cell. There are a number of tutorials, from basic and advanced on this page. The following four-part tutorial series goes in-depth for developers on how to create a new Cell: [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part1 Part 1], [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part2 Part 2], [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part3 Part 3], [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandDevelopingNewCell05Part4 Part 4].</td>
 </tr>
 <tr>
   <td class="left">[http://docs.google.com/Doc?docid=0Adt0T7CUKzB9ZGNrODdxOXBfMjhncmZkM3doYg&hl=en Writing 2D Applications]</td>
@@ -111,7 +111,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandJMETips05 Links to jMonkeyEngine Documentation]</td>
-  <td class="right">This page provides a collection of web links to tutorials and documentation for jMonkeyEngine, the 3D rendering API used by Project Wonderland.</td>
+  <td class="right">This page provides a collection of web links to tutorials and documentation for jMonkeyEngine, the 3D rendering API used by Open Wonderland.</td>
 </tr>
 <tr>
   <td class="left">[http://wonderland.dev.java.net/mtgame/MTGameProgGuide.pdf MT-Game Programming Guide]</td>
@@ -119,7 +119,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWritingPlugin05 Writing a Client or Server "Plugin"]</td>
-  <td class="right">This tutorial describes how to write client and server plugins for Project Wonderland. Plugins are code that runs when either the client or server is first initialized.</td>
+  <td class="right">This tutorial describes how to write client and server plugins for Open Wonderland. Plugins are code that runs when either the client or server is first initialized.</td>
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCreatingHUD05 Developing a HUD-enabled module]</td>
@@ -135,7 +135,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/WonderlandReleasepoint5 Version 0.5 Technical Documents]</td>
-  <td class="right">A wiki containing technical documents and plans for Project Wonderland v0.5</td>
+  <td class="right">A wiki containing technical documents and plans for Open Wonderland v0.5</td>
 </tr>
 <tr><td></td></tr>
 
