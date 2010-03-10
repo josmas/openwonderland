@@ -1,5 +1,3 @@
-#summary One-sentence summary of this page.
-
 _This material is distributed under the <a href="http://www.gnu.org/licenses/gpl-2.0.html">GNU General Public License Version 2</a>_.   
 _To obtain a copy of the original source code, make a request on the <a href="http://groups.google.com/group/openwonderland">Wonderland Forum</a>_.
 
@@ -21,7 +19,7 @@ If you wish to use the command-line in addition to Netbeans, be aware that Netbe
 If you are using Netbeans, the _wonderland_ workspace is setup as a Netbeans project. The Netbeans community has published tutorials on using Subversion ([http://www.netbeans.org/kb/60/ide/subversion.html here]). You may invoke
 the *ant* targets (specified below) directly from Netbeans.
 
-*NOTE:* In general, you will need to set the *ANT_OPTS* environment variable to *-XX:MaxPermSize=900m* (otherwise you will likely get an !OutOfMemoryError when trying to compile and run). For example, if you are using Bash, you can set the *ANT_OPTS* environment variable using *export ANT_OPTS="-XX:MaxPermSize=900m"*.
+*NOTE:* In general, you will need to set the *ANT_OPTS* environment variable to *-XX:!MaxPermSize=900m -Xmx900m* (otherwise you will likely get an !OutOfMemoryError when trying to compile and run). For example, if you are using Bash, you can set the *ANT_OPTS* environment variable using *export ANT_OPTS="-XX:!MaxPermSize=900m -Xmx900m"*.
 
 ===Download the _wonderland_ workspace===
 
@@ -70,3 +68,7 @@ To run wonderland, in the _wonderland_ directory:
 Once you start Wonderland, you can administer the server via a web-based user interface. Please visit the following tutorial for more details:
 
    * [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandServerAdministration05 ProjectWonderlandWebAdministration05]
+
+===Including optional modules===
+
+You may also wish to include optional modules in your Wonderland build. For instructions on downloading and including the optional modules, see DownloadBuildModules05.
