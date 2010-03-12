@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -53,12 +71,12 @@ public class HelpClientPlugin extends BaseClientPlugin {
     // An array of Help menu item (String key names in resource Bundle files)
     // and the URLs to launch
     private static final String HELP_ITEMS[][] = {
-        {"User_Guide", "http://wonderland.dev.java.net/user-guide-05/index.html"},
-        {"Blog", "http://blogs.sun.com/wonderland"},
-        {"Forum", "http://forums.java.net/jive/forum.jspa?forumID=112"},
+        {"User_Guide", "http://openwonderland.org/index.php?option=com_content&view=article&id=95&Itemid=94"},
+        {"Blog", "http://blogs.openwonderland.org/"},
+        {"Forum", "http://groups.google.com/group/openwonderland"},
         {"Tutorials", "http://wiki.java.net/bin/view/Javadesktop/ProjectWonderland"},
-        {"Report_Bug", "https://wonderland.dev.java.net/servlets/ProjectIssues"},
-        {"About", "http://www.projectwonderland.com"}
+        {"Report_Bug", "http://code.google.com/p/openwonderland/issues/list"},
+        {"About", "http://www.openwonderland.org"}
     };
 
     /**
