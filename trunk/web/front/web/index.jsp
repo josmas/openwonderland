@@ -24,9 +24,9 @@
   <body>
     <div id="page">
       <div id="head">
-        <a href="http://projectwonderland.com"><img alt="Project Wonderland logo" src="images/idy_launch.png" /></a>
+        <a href="http://openwonderland.org"><img alt="Open Wonderland logo" src="images/idy_launch.png" /></a>
 
-        <h1>Project Wonderland</h1>
+        <h1>Open Wonderland</h1>
       </div>
 
       <div id="content">
@@ -35,25 +35,25 @@
         </div>
 
         <div id="launch">
-          <h2>Welcome to Project Wonderland</h2>
+          <h2>Welcome to Open Wonderland</h2>
 
           <div class="btn">
             <a href="app/Wonderland.jnlp"><img alt="Launch. Requires Java" src="images/btn_launch.png" /></a><br />
             <p><a href="http://www.java.com/en/download/index.jsp">Get Java...</a></p>
           </div>
 
-          <p>The Project Wonderland Client launches using Java Web Start, which automatically downloads the latest version of the software when you click the launch button below. To get started, all you need is a current version of Java installed on your system.</p>
+          <p>The Open Wonderland Client launches using Java Web Start, which automatically downloads the latest version of the software when you click the launch button below. To get started, all you need is a current version of Java installed on your system.</p>
 
           <h3>For more information:</h3>
 
           <ul>
-            <li>Project Wonderland v0.5 User's Guide [coming soon]</li>
+            <li>Open Wonderland v0.5 User's Guide [coming soon]</li>
 
-            <li><a href="http://ProjectWonderland.com">Project Wonderland Web Site</a></li>
+            <li><a href="http://openwonderland.org">Open Wonderland Web Site</a></li>
 
-            <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderland">Documentation Wiki</a></li>
+            <li><a href="http://code.google.com/p/openwonderland/wiki/OpenWonderland?tm=6">Documentation Wiki</a></li>
 
-            <li><a href="http://forums.java.net/jive/forum.jspa?forumID=112">Help Forum</a></li>
+            <li><a href="http://groups.google.com/group/openwonderland">Help Forum</a></li>
           </ul>
         </div>
 
