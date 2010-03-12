@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -166,19 +184,16 @@ public class CellUtils {
         
         logger.info("Final adjusted origin " + transform.getTranslation(null).toString());
         
-        // Create a position component that will set the initial origin. We
-        // only use the computed state if an existing position component does
-        // not already exist.
+        // Create a position component that will set the initial origin
         PositionComponentServerState position = (PositionComponentServerState)
                 state.getComponentServerState(PositionComponentServerState.class);
         if (position == null) {
             position = new PositionComponentServerState();
             state.addComponentServerState(position);
-
-            position.setTranslation(transform.getTranslation(null));
-            position.setRotation(transform.getRotation(null));
-            position.setScaling(transform.getScaling(null));
         }
+        position.setTranslation(transform.getTranslation(null));
+        position.setRotation(transform.getRotation(null));
+        position.setScaling(transform.getScaling(null));
 
         // Always pass in the view transform to the Cell's server state
         state.addComponentServerState(new ViewComponentServerState(viewTransform));
