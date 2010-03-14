@@ -871,6 +871,14 @@ This is a list of potential projects for students or anyone else interested in e
 || *Keywords* || tool, web-integration, sensors ||
 || *Comments* || comments  ||
 
+===  Improved Snapshot / Module Creation Mechanism (medium)===
+
+|| *Description* || Create a feature such that users can easily export entire Wonderland worlds or portions of Wonderland worlds for backup purposes and for sharing with others. Users should be able to create a multiple selection of objects and export these into a single file that can be imported into the same or a different Wonderland server.  ||
+|| *Proposer* || Nicole Yankelovich ||
+|| *Volunteers* || Unassigned ||
+|| *Keywords* || tool, web-integration ||
+|| *Comments* || comments  ||
+
 
 == Keywords==
 
