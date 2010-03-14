@@ -8,56 +8,6 @@ Anyone in the community is invited to add projects to this list by commenting on
 *Projects By Category and Level-of-Effort*
 <wiki:toc max_depth="3"/>
 
-=Desired Features=
-
-This is a list of potential new features to add to Project Wonderland. If you are thinking of contributing to the project, please review this list and see if you might be able to build any of these features. Please feel free to add to this list as you think of new ideas that would enhance the Wonderland environment.
-
-==Larger Projects==
-
-==Smaller Projects==
-
-===Teleport with Approach===
-|| *Proposer* || Nicole Yankelovich ||
-|| *Volunteers* || Unassigned ||
-|| *Description* || Add the ability to teleport to different locations in the world. Care must be taken to include visual and auditory "approach" indicators so that people in world know when someone is about to enter the space. This is important so that the person teleporting in does not accidentally overhear any current conversation.  ||
-|| *Comments* || _What about being able to lock the space, like you would lock a door for privacy? So this would sound like a knock at the door perhaps, and maybe an "aura" for visual approach_  ||
-
-===Walk Together===
-|| *Proposer* || Nicole Yankelovich ||
-|| *Volunteers* || Unassigned ||
-|| *Description* || Add a command that allows you to temporarily attach your avatar to another (willing) avatar so that you go whereever the other person goes. This would make it easier for two or more people to have an ongoing conversation with only one person having to focus attention on navigation. This might be helpful for applications like guided tours. Pressing any navigation key would unattach your avatar and allow you to navigate on your own. ||
-|| *Comments* || _comments go here_  ||
-
-===Commercial-friendly license===
-|| *Proposer* || Endre Stølsvik ||
-|| *Volunteers* || Unassigned ||
-|| *Description* || *Change license from GPL til something "business-friendly", BSD-style or at least LGPL.* It would be fantastic if this could be used as a basis for other commercial products. If one made it into LGPL, then any changes to the actual platform would have to be collaborated back. BSD-style would allow a bit more "rip-offish" code-use by commercial products - but why not? I believe in the end most such changes would come back one way or the other - look at Apache.  ||
-|| *Comments* || I couldn't agree more. Is this a possibility. I am currently in the design phase of a project that I could use this for but it is a commercial project. ||
-|| || I couldn't disagree more regarding BSD licensing. I have seen projects with BSD and MIT licenses get ripped off and commercially extended with no changes given back to the project. In one specific case, the commercial product became an award winning industry tool whereas the open-source project from which the commercial product was built went extinct. I have no problems with the LGPL license and if that would encourage more adoption, then I'm all for it. ||
-
-===Desktop Sharing===
-|| *Proposer* || Arthur Stanek ||
-|| *Volunteers* || Unassigned ||
-|| *Description* || Ability to share whole desktop (screen, mouse and keyboard) will open Wonderland for help desk and e-learning markets. It also helps in collaboration and presentations - like application sharing feature. First avatar can ask second one to share its desktop inside world. This feature requires make use of java.awt.Robot or platform specific desktop sharing software to be available (javax.jnlp.DownloadService ?) from Wonderland clients.  ||
-|| *Comments* || I'd love this one  ||
-
-===Improved Movement of Avatar (like in ego-shooter)===
-|| *Proposer* || Christian Beer ||
-|| *Volunteers* || Unassigned ||
-|| *Description* || Movement in Wonderland is quite unintuitive. In first-person ego-shooter the avatar is moved using the mouse + wasd-keys (where a and d are step left/right instead of turn). This movement would a lot easier than it is now, I think.  ||
-|| *Comments* || _comments go here_  ||
-
-===Provide a laser pointer for in-world presentations and cooperation===
-|| *Proposer* || Volker Gaessler ||
-|| *Volunteers* || Unassigned ||
-|| *Description* || Create a pointing device that makes it possible to point at the screens and whitboards. Ideally this would be a laser pointer an avatar can hold in his/her hand. It should be possible to switch the color so that a number of people can point at the same time. In order to make it effective, it shall be possible to use the mouse for controlling the spot the laser pointer points at. The laser pointer shall follow the the mouse movement.  ||
-|| *Comments* || _comments go here_  ||
-
-===Applet version of the client===
-|| *Proposer* || Davide P ||
-|| *Volunteers* || Unassigned ||
-|| *Description* || Create an applet version of the wonderland client in order to use a web browser to navigate in wonderland  ||
-|| *Comments* || _comments go here_  ||
 
 =Student Project Ideas=
 
@@ -912,4 +862,58 @@ This is a list of potential projects for students or anyone else interested in e
 || *Proposer* || Name ||
 || *Volunteers* || Unassigned ||
 || *Keywords* || _see-list-below_ ||
+|| *Comments* || _comments go here_  ||
+
+
+=Desired Features=
+
+This is a list of potential new features to add to Project Wonderland. If you are thinking of contributing to the project, please review this list and see if you might be able to build any of these features. Please feel free to add to this list as you think of new ideas that would enhance the Wonderland environment.
+
+==Larger Projects==
+
+See <a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandProposals">Project Proposals</a>
+
+==Smaller Projects==
+
+===Teleport with Approach===
+|| *Proposer* || Nicole Yankelovich ||
+|| *Volunteers* || Unassigned ||
+|| *Description* || Add the ability to teleport to different locations in the world. Care must be taken to include visual and auditory "approach" indicators so that people in world know when someone is about to enter the space. This is important so that the person teleporting in does not accidentally overhear any current conversation.  ||
+|| *Comments* || _What about being able to lock the space, like you would lock a door for privacy? So this would sound like a knock at the door perhaps, and maybe an "aura" for visual approach_  ||
+
+===Walk Together===
+|| *Proposer* || Nicole Yankelovich ||
+|| *Volunteers* || Unassigned ||
+|| *Description* || Add a command that allows you to temporarily attach your avatar to another (willing) avatar so that you go whereever the other person goes. This would make it easier for two or more people to have an ongoing conversation with only one person having to focus attention on navigation. This might be helpful for applications like guided tours. Pressing any navigation key would unattach your avatar and allow you to navigate on your own. ||
+|| *Comments* || _comments go here_  ||
+
+===Commercial-friendly license===
+|| *Proposer* || Endre Stølsvik ||
+|| *Volunteers* || Unassigned ||
+|| *Description* || *Change license from GPL til something "business-friendly", BSD-style or at least LGPL.* It would be fantastic if this could be used as a basis for other commercial products. If one made it into LGPL, then any changes to the actual platform would have to be collaborated back. BSD-style would allow a bit more "rip-offish" code-use by commercial products - but why not? I believe in the end most such changes would come back one way or the other - look at Apache.  ||
+|| *Comments* || I couldn't agree more. Is this a possibility. I am currently in the design phase of a project that I could use this for but it is a commercial project. ||
+|| || I couldn't disagree more regarding BSD licensing. I have seen projects with BSD and MIT licenses get ripped off and commercially extended with no changes given back to the project. In one specific case, the commercial product became an award winning industry tool whereas the open-source project from which the commercial product was built went extinct. I have no problems with the LGPL license and if that would encourage more adoption, then I'm all for it. ||
+
+===Desktop Sharing===
+|| *Proposer* || Arthur Stanek ||
+|| *Volunteers* || Unassigned ||
+|| *Description* || Ability to share whole desktop (screen, mouse and keyboard) will open Wonderland for help desk and e-learning markets. It also helps in collaboration and presentations - like application sharing feature. First avatar can ask second one to share its desktop inside world. This feature requires make use of java.awt.Robot or platform specific desktop sharing software to be available (javax.jnlp.DownloadService ?) from Wonderland clients.  ||
+|| *Comments* || I'd love this one  ||
+
+===Improved Movement of Avatar (like in ego-shooter)===
+|| *Proposer* || Christian Beer ||
+|| *Volunteers* || Unassigned ||
+|| *Description* || Movement in Wonderland is quite unintuitive. In first-person ego-shooter the avatar is moved using the mouse + wasd-keys (where a and d are step left/right instead of turn). This movement would a lot easier than it is now, I think.  ||
+|| *Comments* || _comments go here_  ||
+
+===Provide a laser pointer for in-world presentations and cooperation===
+|| *Proposer* || Volker Gaessler ||
+|| *Volunteers* || Unassigned ||
+|| *Description* || Create a pointing device that makes it possible to point at the screens and whitboards. Ideally this would be a laser pointer an avatar can hold in his/her hand. It should be possible to switch the color so that a number of people can point at the same time. In order to make it effective, it shall be possible to use the mouse for controlling the spot the laser pointer points at. The laser pointer shall follow the the mouse movement.  ||
+|| *Comments* || _comments go here_  ||
+
+===Applet version of the client===
+|| *Proposer* || Davide P ||
+|| *Volunteers* || Unassigned ||
+|| *Description* || Create an applet version of the wonderland client in order to use a web browser to navigate in wonderland  ||
 || *Comments* || _comments go here_  ||
