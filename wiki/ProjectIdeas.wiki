@@ -756,6 +756,14 @@ This is a list of potential projects for students or anyone else interested in e
 || *Keywords* || tool, web-integration ||
 || *Comments* || comments  ||
 
+===  Server Monitoring Tools (medium)===
+
+|| *Description* || The web-based Wonderland server administration console currently provides only a very minimal amount of real-time information. This project would involve instrumenting the Wonderland server in order to collect real-time data such as the number of users currently on the server, the amount of bandwidth each client is consuming, how audio is being used, and answers to other real-time questions that will help Wonderland system administrators better understand how their Wonderland server is being used and the resources it is consuming at any given time.  ||
+|| *Proposer* || Nicole Yankelovich ||
+|| *Volunteers* || Unassigned ||
+|| *Keywords* || tool, web-integration ||
+|| *Comments* || comments  ||
+
 ===  Smartphone Client (large)===
 
 || *Description* || Prototype a Wonderland client that can run on a smartphone such as the iPhone or an Android phone. This project involves figuring out a way to create a simplified version of the 3D geometry and avatars.  ||
