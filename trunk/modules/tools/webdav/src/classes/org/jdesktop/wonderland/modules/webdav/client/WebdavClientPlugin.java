@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -23,9 +41,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.httpclient.HttpException;
 import org.jdesktop.wonderland.common.login.AuthenticationException;
 import org.jdesktop.wonderland.modules.webdav.common.WebdavContentCollection;
 import org.apache.commons.httpclient.HttpURL;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -64,9 +84,9 @@ public class WebdavClientPlugin extends BaseClientPlugin {
             String authCookieName = as.getCookieName();
             String authCookieValue = as.getAuthenticationToken();
             AuthenticatedWebdavResource wdr =
-                    new AuthenticatedWebdavResource(baseURL,
-                                                    authCookieName,
-                                                    authCookieValue);
+                    new RootWebdavResource(baseURL,
+                                           authCookieName,
+                                           authCookieValue);
             WebdavContentCollection root =
                     new WebdavContentCollection(wdr, null)
             {
@@ -128,5 +148,15 @@ public class WebdavClientPlugin extends BaseClientPlugin {
         }
 
         super.cleanup();
+    }
+
+    private static class RootWebdavResource extends AuthenticatedWebdavResource {
+        public RootWebdavResource(HttpURL url, String authCookieName,
+                                  String authCookieValue)
+                 throws HttpException, IOException
+        {
+            super (url, authCookieName, authCookieValue);
+            connectionManager = new MultiThreadedHttpConnectionManager();
+        }
     }
 }

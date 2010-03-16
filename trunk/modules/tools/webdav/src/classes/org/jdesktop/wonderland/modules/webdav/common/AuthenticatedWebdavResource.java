@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -23,6 +41,8 @@ import java.net.URLEncoder;
 import java.util.logging.Logger;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpURL;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.webdav.lib.WebdavResource;
@@ -40,8 +60,17 @@ public class AuthenticatedWebdavResource extends WebdavResource {
 
     private TokenCredentials tokenCredentials;
 
-    public AuthenticatedWebdavResource(HttpURL url, String authCookieName,
-                                       String authCookieValue)
+    public AuthenticatedWebdavResource(AuthenticatedWebdavResource parent,
+                                       HttpURL url)
+            throws HttpException, IOException
+    {
+        super (parent.connectionManager);
+        setupResource(this, url, parent.getAuthCookieName(),
+                      parent.getAuthCookieValue());
+    }
+
+    protected AuthenticatedWebdavResource(HttpURL url, String authCookieName,
+                                          String authCookieValue)
             throws HttpException, IOException
     {
         super (URIUtil.decode(url.getEscapedURI()),
@@ -49,12 +78,9 @@ public class AuthenticatedWebdavResource extends WebdavResource {
                true);
     }
 
-    public AuthenticatedWebdavResource(WebdavResource resource,
-                                       String authCookieName,
-                                       String authCookieValue)
-            throws HttpException, IOException
+    protected AuthenticatedWebdavResource(HttpConnectionManager connectionManager)
     {
-        this (resource.getHttpURL(), authCookieName, authCookieValue);
+        super (connectionManager);
     }
 
     public String getAuthCookieName() {
@@ -92,9 +118,7 @@ public class AuthenticatedWebdavResource extends WebdavResource {
         WebdavResources resources = super.getChildResources();
         WebdavResources out = new WebdavResources();
         for (WebdavResource resource : resources.listResources()) {
-            out.addResource(new AuthenticatedWebdavResource(resource,
-                                              getAuthCookieName(),
-                                              getAuthCookieValue()));
+            out.addResource(createResource(resource));
         }
 
         return out;
@@ -108,12 +132,31 @@ public class AuthenticatedWebdavResource extends WebdavResource {
         AuthenticatedWebdavResource[] out =
                 new AuthenticatedWebdavResource[resources.length];
         for (int i = 0; i < resources.length; i++) {
-            out[i] = new AuthenticatedWebdavResource(resources[i],
-                                               getAuthCookieName(),
-                                               getAuthCookieValue());
+            out[i] = createResource(resources[i]);
         }
 
         return out;
+    }
+
+    protected AuthenticatedWebdavResource createResource(WebdavResource resource)
+            throws HttpException, IOException
+    {
+        AuthenticatedWebdavResource out = new AuthenticatedWebdavResource(connectionManager);
+        setupResource(out, resource.getHttpURL(), getAuthCookieName(),
+                      getAuthCookieValue());
+        return out;
+    }
+
+    protected static void setupResource(AuthenticatedWebdavResource resource,
+                                        HttpURL url,
+                                        String authCookieName,
+                                        String authCookieValue)
+            throws HttpException, IOException
+    {
+        resource.setFollowRedirects(true);
+        resource.setCredentials(new TokenCredentials(authCookieName,
+                                                     authCookieValue));
+        resource.setHttpURL(url);
     }
 
     static class TokenCredentials implements Credentials {
