@@ -24,7 +24,7 @@
         if (create == "true") {
             group = new Object();
             group.id = groupId;
-            group.membersInternal = [];
+            group.members = [];
             refresh();
         } else {
             new Ajax.Request('resources/groups/' + groupId, {
