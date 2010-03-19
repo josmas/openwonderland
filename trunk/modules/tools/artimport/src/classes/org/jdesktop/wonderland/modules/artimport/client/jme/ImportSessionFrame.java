@@ -664,8 +664,8 @@ public class ImportSessionFrame extends javax.swing.JFrame {
                     // XXX TODO: we should fix this so that upload writes to
                     // the content repository, so that non-admin users can
                     // upload art when authenication is turned on XXX
-                    if (targetServer.getDetails().getAuthInfo().getType() ==
-                            AuthenticationInfo.Type.WEB_SERVICE)
+                    if (targetServer.getDetails().getAuthInfo().getType() !=
+                            AuthenticationInfo.Type.NONE)
                     {
                         uploader.setAuthURL(targetServer.getCredentialManager().getAuthenticationURL());
                     }
