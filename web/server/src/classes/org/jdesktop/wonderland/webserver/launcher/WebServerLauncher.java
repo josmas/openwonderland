@@ -121,8 +121,9 @@ public class WebServerLauncher {
                 String filePattern = p.getProperty(
                         "java.util.logging.FileHandler.pattern");
                 if (filePattern != null && filePattern.contains("%w")) {
+                    String quoted = logDir.getPath().replace('\\', '/');
                     p.setProperty("java.util.logging.FileHandler.pattern",
-                            filePattern.replaceAll("%w", logDir.getPath()));
+                            filePattern.replaceAll("%w", quoted));
                     File tmpLog = File.createTempFile(
                             "wonderlandlog", ".properties");
                     p.store(new FileOutputStream(tmpLog), null);
