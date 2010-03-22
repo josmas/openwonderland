@@ -38,6 +38,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandClientSpecs05 Client Hardware Performance]</td>
   <td>This page lists the reported performance of various hardware and software configurations with Open Wonderland</td>
 </tr>
+<tr>
+  <td>TroubleshootingTips</td>
+  <td>Tips for handling a variety of problems new users might encountered running Wonderland.</td>
+</tr>
 <tr><td></td></tr>
 
 <tr colspan="2">
