@@ -1,23 +1,5 @@
 #summary This page contains tips for overcoming problems new users might encounter when running Wonderland.
 
-= Introduction =
+This page has moved here:
 
-Here are some tips for dealing with common problems new users may encounter when running Open Wonderland.
-
-
-= Login Problems =
-
-If you are having trouble logging in and you have successfully logged in before, it may mean that there is a problem with the Wonderland data stored on your computer. One solution to try is removing the hidden *.wonderland* folder in your home folder and trying to connect to Wonderland again. 
-
-== Finding and removing the .wonderland folder on Mac OSX ==
-
-   * In the Finder, open your Applications folder
-   * Open the Utilities sub-folder
-   * Double-click on "Terminal" to open a UNIX terminal window and type:
-<code>ls -a</code>
-   * Press the Return key
-   * Look through the list of files and folders that prints out to confirm that the .wonderland directory is listed. You may need to scroll up to find it. If it is listed, type:
-<code>rm -r .wonderland</code>   
-   * Press the Return key
-   * Quit the Terminal application
-   * Try Wonderland again
+<a href="http://groups.google.com/group/openwonderland/web/troubleshooting-tips">http://groups.google.com/group/openwonderland/web/troubleshooting-tips</a>
