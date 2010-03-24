@@ -39,7 +39,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This page lists the reported performance of various hardware and software configurations with Open Wonderland</td>
 </tr>
 <tr>
-  <td>TroubleshootingTips</td>
+  <td>[http://groups.google.com/group/openwonderland/edit/troubleshooting-tips Troubleshooting Tips]</td>
   <td>Tips for handling a variety of problems new users might encountered running Wonderland.</td>
 </tr>
 <tr><td></td></tr>
