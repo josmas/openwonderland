@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import com.jme.math.Vector2f;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -26,9 +27,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDButton;
@@ -67,12 +69,35 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
     private static final int HUD_DEFAULT_Y = 0;
     private static final int HUD_DEFAULT_WIDTH = 800;
     private static final int HUD_DEFAULT_HEIGHT = 600;
+    private Preferences hudPreferences;
+    public static final float HUD_SCALE_DEFAULT = 0.75f;
+    public static final float HUD_WORLD_SCALE_DEFAULT = 0.013f;
+    public static Vector2f HUD_SCALE = new Vector2f(HUD_SCALE_DEFAULT, HUD_SCALE_DEFAULT);
+    public static Vector2f HUD_WORLD_SCALE = new Vector2f(HUD_WORLD_SCALE_DEFAULT, HUD_WORLD_SCALE_DEFAULT);
 
     public WonderlandHUD() {
         super();
+        hudPreferences = Preferences.userNodeForPackage(WonderlandHUD.class);
+
         components = Collections.synchronizedList(new ArrayList());
         bounds = new Rectangle(HUD_DEFAULT_X, HUD_DEFAULT_Y,
                 HUD_DEFAULT_WIDTH, HUD_DEFAULT_HEIGHT);
+
+        Float hudScale = hudPreferences.getFloat("HUD_SCALE", HUD_SCALE_DEFAULT);
+        hudPreferences.put("HUD_SCALE", String.valueOf(hudScale));
+        logger.info("HUD_SCALE: " + hudScale);
+        HUD_SCALE.x = HUD_SCALE.y = hudScale;
+
+        Float hudWorldScale = hudPreferences.getFloat("HUD_WORLD_SCALE", HUD_WORLD_SCALE_DEFAULT);
+        hudPreferences.put("HUD_WORLD_SCALE", String.valueOf(hudWorldScale));
+        logger.info("HUD_WORLD_SCALE: " + hudWorldScale);
+        HUD_WORLD_SCALE.x = HUD_WORLD_SCALE.y = hudWorldScale;
+
+        try {
+            hudPreferences.flush();
+        } catch (BackingStoreException e) {
+            logger.warning("failed to store HUD preferences: " + e);
+        }
     }
 
     /**
@@ -301,7 +326,7 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
         // Note: commented out code as a temporary workaround for various Apps-in-HUD bugs
         //SwingUtilities.invokeLater(new Runnable() {
         //    public void run() {
-                notifyEventListeners(event);
+        notifyEventListeners(event);
         //    }
         //});
     }

@@ -80,8 +80,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     protected HUDView2DDisplayer hudDisplayer;
     //
     protected HUDApp2D hudApp;
-    protected Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
-    protected Vector2f worldPixelScale = new Vector2f(0.013f, 0.013f);
     protected boolean dragging = false;
     protected int dragX = 0;
     protected int dragY = 0;
@@ -110,12 +108,12 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         Window2D window = null;
 
         //if (hudApp == null) {
-        hudApp = new HUDApp2D("HUD", new ControlArbHUD(), worldPixelScale);
+        hudApp = new HUDApp2D("HUD", new ControlArbHUD(), WonderlandHUD.HUD_WORLD_SCALE);
         //}
         try {
             // TODO: pixel scale doesn't match
             window = hudApp.createWindow(component.getWidth(), component.getHeight(), Type.PRIMARY,
-                    false, hudPixelScale, "HUD component");
+                    false, WonderlandHUD.HUD_SCALE, "HUD component");
 
             JComponent comp = ((HUDComponent2D) component).getComponent();
             ((WindowSwing) window).setComponent(comp);
@@ -266,13 +264,13 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
                 // calculate new location of HUD component
                 Point location = hudComponent.getLocation();
-                float xDelta = hudPixelScale.x * (float) (e.getX() - dragX);
-                float yDelta = hudPixelScale.y * (float) (e.getY() - dragY);
+                float xDelta = WonderlandHUD.HUD_SCALE.x * (float) (e.getX() - dragX);
+                float yDelta = WonderlandHUD.HUD_SCALE.y * (float) (e.getY() - dragY);
                 location.setLocation(location.getX() + xDelta, location.getY() - yDelta);
 
                 // move the HUD component
                 hudComponent.setLocation(location);
-
+                //System.err.println("--- setting location to: " + location);
                 dragX = e.getX();
                 dragY = e.getY();
             }
@@ -311,7 +309,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         // move the component to the screen
         view.setOrtho(true, false);
-        view.setPixelScaleOrtho(hudPixelScale, false);
+        view.setPixelScaleOrtho(WonderlandHUD.HUD_SCALE, false);
 
         // position the component on the screen.
         if ((view.getType() == View2D.Type.PRIMARY) || (view.getType() == View2D.Type.UNKNOWN)) {
@@ -461,13 +459,13 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
                     logger.fine("creating new in-world view");
                     worldView = worldDisplayer.createView(state.getWindow());
-                    worldView.setPixelScale(worldPixelScale);
+                    worldView.setPixelScale(WonderlandHUD.HUD_WORLD_SCALE);
                     state.setWorldView(worldView);
                 }
 
                 logger.fine("displaying in-world view");
                 worldView.setOrtho(false, false);
-                worldView.setPixelScale(worldPixelScale);
+                worldView.setPixelScale(WonderlandHUD.HUD_WORLD_SCALE);
                 worldView.setVisibleApp(true, false);
                 worldView.setVisibleUser(true, false);
                 componentMovedWorld(component);

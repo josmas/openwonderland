@@ -51,7 +51,6 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
     private HUDView2DDisplayer hudDisplayer;
     private HUDFrameHeader2D frame;
     private HUDView2D frameView;
-    private Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
     private List<ActionListener> actionListeners;
     private List<MouseMotionListener> mouseMotionListeners;
     private List<HUDViewListener> viewListeners;
@@ -85,7 +84,7 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
             logger.finest("creating frame header for: " + this);
         }
 
-        HUDApp2D app = new HUDApp2D("HUD", new ControlArbHUD(), hudPixelScale);
+        HUDApp2D app = new HUDApp2D("HUD", new ControlArbHUD(), WonderlandHUD.HUD_SCALE);
         if (hudDisplayer == null) {
             hudDisplayer = new HUDView2DDisplayer();
         }
@@ -105,7 +104,7 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
 
         try {
             // create a window
-            WindowSwing frameWindow = app.createWindow(frameSize.width, frameSize.height, Window2D.Type.PRIMARY, false, hudPixelScale, name);
+            WindowSwing frameWindow = app.createWindow(frameSize.width, frameSize.height, Window2D.Type.PRIMARY, false, WonderlandHUD.HUD_SCALE, name);
             frameWindow.setComponent(frameImpl);
             frame.setWindow(frameWindow);
             frame.setTitle(getTitle());
@@ -115,9 +114,9 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
             frameWindow.addView(frameView);
 
             // set view properties
-            frameView.setPixelScaleOrtho(hudPixelScale, false);
+            frameView.setPixelScaleOrtho(WonderlandHUD.HUD_SCALE, false);
             frameView.setSizeApp(new Dimension((int) (frameWindow.getWidth()), frameWindow.getHeight()), false);
-            frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * getWindow().getHeight() / 2 + 0.75f * frameImpl.getPreferredSize().height / 2)), false);
+            frameView.setLocationOrtho(new Vector2f(0.0f, (float) (WonderlandHUD.HUD_SCALE.y * getWindow().getHeight() / 2 + WonderlandHUD.HUD_SCALE.y * frameImpl.getPreferredSize().height / 2)), false);
             frameView.setOrtho(true, false);
 
             // register listeners for events on the frame
