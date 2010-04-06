@@ -13,10 +13,10 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Project Wonderland Server Administration</title>
+    <title>Open Wonderland Server Administration</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="keywords" content="Project Wonderland, Virtual World, Open Source" />
-    <meta name="description" content="Project Wonderland Server Administration" />
+    <meta name="keywords" content="Open Wonderland, Virtual World, Open Source" />
+    <meta name="description" content="Open Wonderland Server Administration" />
     <link href="css/base.css" rel="stylesheet" type="text/css" media="screen" />
     <link href="css/admin.css" rel="stylesheet" type="text/css" media="screen" />
     <script type="text/javascript">
@@ -39,7 +39,7 @@
   <body onload="resizeIframe()">
     <div id="page">
       <div id="head">
-        <a href="http://projectwonderland.com"><img alt="Project Wonderland logo" src="images/idy_admin.png" /></a><h1>Server Admin</h1>
+        <a href="http://openwonderland.org"><img alt="Open Wonderland logo" src="images/idy_admin.png" /></a><h1>Server Admin</h1>
       </div>
 
         <div id="moduleMenu">
