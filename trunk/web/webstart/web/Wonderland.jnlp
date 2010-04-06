@@ -6,10 +6,10 @@
   href="Wonderland.jnlp">
 
   <information>
-    <title>Project Wonderland 0.5</title>
-    <vendor>Sun Microsystems Inc.</vendor>
-    <homepage href="http://wonderland.dev.java.net/"/>
-    <description>Project Wonderland 0.5</description>
+    <title>Open Wonderland 0.5</title>
+    <vendor>Open Wonderland Foundation</vendor>
+    <homepage href="http://openwonderland.org/"/>
+    <description>Open Wonderland 0.5</description>
     <description kind="short">Toolkit for building collaborative, immersive environments</description>
   </information>
 

@@ -10,10 +10,10 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Project Wonderland 0.5 Launch Page</title>
+    <title>Open Wonderland 0.5 Launch Page</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="keywords" content="Project Wonderland, Virtual World, Open Source" />
-    <meta name="description" content="Project Wonderland Start Page" />
+    <meta name="keywords" content="Open Wonderland, Virtual World, Open Source" />
+    <meta name="description" content="Open Wonderland Start Page" />
     <link href="css/base.css" rel="stylesheet" type="text/css" media="screen" />
     <!--[if lt IE 7]>
 	<link href="css/patch.css" rel="stylesheet" type="text/css" />
@@ -69,9 +69,9 @@
           <ul>
             <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandServerAdministration">Web-Based Administration Guide</a></li>
 
-            <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWebstartPoint5">Launching Wonderland Clients using Java Webstart</a></li>
+            <li><a href="http://code.google.com/p/openwonderland/wiki/WebStart05">Launching Wonderland Clients using Java Webstart</a></li>
 
-            <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFirewallPoint5">Configuring Project Wonderland for Firewalls, NATs, and Proxies</a></li>
+            <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFirewallPoint5">Configuring Open Wonderland for Firewalls, NATs, and Proxies</a></li>
           </ul>
         </div>
       </div>
