@@ -111,6 +111,10 @@ public class PendingManager {
         /* Re-open the module in the new directory */
         try {
             module = ModuleFactory.open(file);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Add pending module " + module);
+            }
         } catch (java.lang.Exception excp) {
             /* Log the error and return false */
             logger.log(Level.WARNING, "[MODULES] PENDING Failed to Open Module "
@@ -182,6 +186,7 @@ public class PendingManager {
      * @return An map of unique module names and their Module objects
      */
     private Map<String, Module> fetchModules() {
+        Logger logger = ModuleManager.getLogger();
         Map<String, Module> map = new HashMap<String, Module>();
         
         /*
@@ -194,6 +199,10 @@ public class PendingManager {
             try {
                 Module module = ModuleFactory.open(file);
                 map.put(module.getName(), module);
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Load pending module " + module);
+                }
             } catch (java.lang.Exception excp) {
                 ModuleManager.getLogger().log(Level.WARNING,
                         "[MODULES] Invalid module " + file, excp);

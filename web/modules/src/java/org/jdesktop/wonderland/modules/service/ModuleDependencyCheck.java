@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -17,9 +35,12 @@
  */
 package org.jdesktop.wonderland.modules.service;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 
@@ -33,7 +54,6 @@ import org.jdesktop.wonderland.common.modules.ModuleInfo;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModuleDependencyCheck {
-
     /* A list of module requirements, removed as the dependencies are met. */
     private List<ModuleInfo> requirements = new LinkedList<ModuleInfo>();
     
@@ -86,6 +106,14 @@ public class ModuleDependencyCheck {
     }
 
     /**
+     * Get the unmet dependencies declared by this module.
+     * @return the unmet dependencies for this module
+     */
+    public List<ModuleInfo> getUnmetDependencies() {
+        return new ArrayList<ModuleInfo>(requirements);
+    }
+
+    /**
      * Takes two ModuleInfo class and checks whether the first (provider) is
      * satisfied as a requirement of the second (requirer). Returns true if the
      * requirement is satisfied, false if not.
@@ -95,6 +123,12 @@ public class ModuleDependencyCheck {
      * @return True is the requirement is satisfied, false if not
      */
     private boolean isSatisfied(ModuleInfo provider, ModuleInfo requirer) {
+        Logger logger = ModuleManager.getLogger();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Checking whether provider " + provider + 
+                        " satisfies the requirements of " + requirer);
+        }
+
         /*
          * First check that both modules have the same name
          */

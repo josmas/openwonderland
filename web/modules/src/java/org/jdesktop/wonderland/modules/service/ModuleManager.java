@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -22,14 +40,18 @@ import java.io.FileWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleRequires;
+import org.jdesktop.wonderland.modules.service.DeployManager.DeploymentQueryResult;
+import org.jdesktop.wonderland.modules.service.ModuleOverwriteUtils.OverwriteQueryResult;
 import org.jdesktop.wonderland.utils.RunUtil;
 
 
@@ -304,7 +326,14 @@ public class ModuleManager {
         while (it.hasNext() == true) {
             Map.Entry<String, Module> entry = it.next();
             Module module = entry.getValue();
-            if (this.deployManager.canDeploy(module) == false) {
+            DeploymentQueryResult res = this.deployManager.canDeploy(module);
+            if (res.getResult() == false) {
+                StringBuffer message = new StringBuffer("[MODULES] Unable to install " +
+                                                        module.getName() + ":\n");
+                for (String reason : res.getReasons()) {
+                    message.append(reason + "\n");
+                }
+                logger.warning(message.toString());
                 it.remove();
             }
         }
@@ -313,8 +342,28 @@ public class ModuleManager {
          * Check to see that the module can be safely installed by making sure
          * that first its dependencies are met.
          */
-        Map<String, Module> passed = this.checkDependencies(pending);
-        
+        Map<Module, List<ModuleInfo>> failures =
+                new LinkedHashMap<Module, List<ModuleInfo>>();
+        Map<String, Module> passed = this.checkDependencies(pending, failures);
+
+        /* Format a message to describe any failures */
+        if (failures.isEmpty() == false) {
+            StringBuffer failureMessage = new StringBuffer("[MODULES] Module dependency failures: \n");
+            for (Map.Entry<Module, List<ModuleInfo>> e : failures.entrySet()) {
+                failureMessage.append("Module " + e.getKey().getName() +
+                                      " depends on ");
+                for (ModuleInfo depend : e.getValue()) {
+                    failureMessage.append(depend.getName() + " ");
+                    failureMessage.append(" v. " + depend.getMajor() + ".");
+                    failureMessage.append(depend.getMinor() + ".");
+                    failureMessage.append(depend.getMini() + " ");
+                }
+                failureMessage.append("\n");
+            }
+            logger.warning(failureMessage.toString());
+        }
+
+
         /*
          * Next check whether the module is overwriting an existing installed
          * module. Make sure that the new version of the module does not
@@ -324,8 +373,16 @@ public class ModuleManager {
         while (it1.hasNext() == true) {
             Map.Entry<String, Module> entry = it1.next();
             ModuleInfo info = entry.getValue().getInfo();
-            if (ModuleOverwriteUtils.canOverwrite(info) == false) {
-                // log info message
+            
+            OverwriteQueryResult res = ModuleOverwriteUtils.canOverwrite(info);
+            if (res.getResult() == false) {
+                StringBuffer message = new StringBuffer("[MODULES] Unable to replace module " +
+                                                        info.getName() + ":\n");
+                for (String reason : res.getReasons()) {
+                    message.append(reason + "\n");
+                }
+                logger.warning(message.toString());
+
                 it1.remove();
             }
         }
@@ -396,9 +453,14 @@ public class ModuleManager {
             Map.Entry<String, ModuleInfo> entry = it.next();
             String moduleName = entry.getKey();
             Module module = installed.get(moduleName);
-            logger.warning("CAN UNINSTALL? " + moduleName + " " +
-                    deployManager.canUndeploy(module));
-            if (this.deployManager.canUndeploy(module) == false) {
+            DeploymentQueryResult res = this.deployManager.canUndeploy(module);
+            if (res.getResult() == false) {
+                StringBuffer message = new StringBuffer("[MODULES] Unable to uninstall " +
+                                                        module.getName() + ":\n");
+                for (String reason : res.getReasons()) {
+                    message.append(reason + "\n");
+                }
+                logger.warning(message.toString());
                 it.remove();
             }
         }
@@ -407,8 +469,22 @@ public class ModuleManager {
          * Check to see that the module can be safely removed by making sure that
          * first it is no longer required
          */
-        Map<String, ModuleInfo> checked = this.checkRequired(uninstall);       
-        
+        Map<String, Set<ModuleInfo>> failures = new LinkedHashMap<String, Set<ModuleInfo>>();
+        Map<String, ModuleInfo> checked = this.checkRequired(uninstall, failures);
+
+        /* Format a message to describe any failures */
+        if (failures.isEmpty() == false) {
+            StringBuffer failureMessage = new StringBuffer("[MODULES] Module dependency failures: \n");
+            for (Map.Entry<String, Set<ModuleInfo>> e : failures.entrySet()) {
+                failureMessage.append("Modules that depend on " + e.getKey() + " ");
+                for (ModuleInfo depend : e.getValue()) {
+                    failureMessage.append(depend.getName() + " ");
+                }
+                failureMessage.append("\n");
+            }
+            logger.warning(failureMessage.toString());
+        }
+
         /*
          * For all of the modules that can be uninstalled, undeploy them and
          * uninstall them
@@ -488,9 +564,14 @@ public class ModuleManager {
      * longer required.
      * 
      * @param removedModules A collection of module infos to check
+     * @param failures if non-null, this list will be filled in with
+     * a list of modules for which the dependency check fails and the
+     * unsatisfied dependencies
      * @return A collection of modules that are no longer required
      */
-    private Map<String, ModuleInfo> checkRequired(Map<String, ModuleInfo> removedModules) {
+    private Map<String, ModuleInfo> checkRequired(Map<String, ModuleInfo> removedModules,
+                                                  Map<String, Set<ModuleInfo>> failures)
+    {
         Map<String, ModuleInfo> satisfied = new HashMap<String, ModuleInfo>();
         
         /*
@@ -581,7 +662,14 @@ public class ModuleManager {
             if (required.isEmpty() == true) {
                 break;
             }
-        }       
+        }
+
+        if (failures != null) {
+            for (Map.Entry<String, ModuleRequiredCheck> e : required.entrySet()) {
+                failures.put(e.getKey(), e.getValue().getRequires());
+            }
+        }
+
         return satisfied;
     }
     
@@ -591,9 +679,14 @@ public class ModuleManager {
      * iterates until it can satify the requirements of added modules no longer. 
      *
      * @param modules A collection of modules to check dependencies
+     * @param failures if non-null, this map will be filled in with
+     * a list of modules for which the dependency check fails and the
+     * unsatisfied dependencies
      * @return A collection of moduels with satified dependencies
      */
-    private Map<String, Module> checkDependencies(Map<String, Module> modules) {
+    private Map<String, Module> checkDependencies(Map<String, Module> modules,
+                                        Map<Module, List<ModuleInfo>> failures)
+    {
         Map<String, Module> satisfied = new HashMap<String, Module>();
         
         /*
@@ -675,6 +768,13 @@ public class ModuleManager {
             /* If there are no more modules left, then we are done */
             if (dependencies.isEmpty() == true) {
                 break;
+            }
+        }
+
+        /* Populate the list of failed modules */
+        if (failures != null) {
+            for (Map.Entry<Module, ModuleDependencyCheck> e : dependencies.entrySet()) {
+                failures.put(e.getKey(), e.getValue().getUnmetDependencies());
             }
         }
         
