@@ -107,40 +107,46 @@ public class WebServerLauncher {
             System.err.println("[WebServerLauncher] error creating log " +
                     "directory " + logDir + ".  Logging may not work.");
         }
-        // now load in the logging configuration
-        if (System.getProperty("java.util.logging.config.file") == null &&
-                System.getProperty("java.util.logging.config.class") == null) {
-            try {
-                InputStream logConfig;
-
-                // substitute the wonderland log directory for the token
-                // %w in the FileHandler path
-                Properties p = new Properties();
-                p.load(WebServerLauncher.class.getResourceAsStream(
-                        "/web-logging.properties"));
-                String filePattern = p.getProperty(
-                        "java.util.logging.FileHandler.pattern");
-                if (filePattern != null && filePattern.contains("%w")) {
-                    String quoted = logDir.getPath().replace('\\', '/');
-                    p.setProperty("java.util.logging.FileHandler.pattern",
-                            filePattern.replaceAll("%w", quoted));
-                    File tmpLog = File.createTempFile(
-                            "wonderlandlog", ".properties");
-                    p.store(new FileOutputStream(tmpLog), null);
-
-                    logConfig = new FileInputStream(tmpLog);
-                } else {
-                    // nothing to substitute, just read the file directly
-                    logConfig = WebServerLauncher.class.getResourceAsStream(
-                            "/web-logging.properties");
-                }
-
-                LogManager.getLogManager().readConfiguration(logConfig);
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "Error setting up log config", ioe);
+        
+        // now load in the logging configuration -- first see if the user has
+        // specified a custom configuration
+        InputStream logConfig;
+        String logConfigFileName =
+                System.getProperty("wonderland.webserver.logging.config.file");
+        
+        try {
+            if (logConfigFileName == null) {
+                logConfig = WebServerLauncher.class.getResourceAsStream(
+                                                     "/web-logging.properties");
+            } else {
+                File logConfigFile = new File(logConfigFileName);
+                logConfig = new FileInputStream(logConfigFile);
+                System.err.println("Using custom logging properties: " +
+                                   logConfigFile.getPath());
             }
-        }
 
+            // substitute the wonderland log directory for the token
+            // %w in the FileHandler path
+            Properties p = new Properties();
+            p.load(logConfig);
+            String filePattern = p.getProperty("java.util.logging.FileHandler.pattern");
+            if (filePattern != null && filePattern.contains("%w")) {
+                // make sure to use the correct path on Windows
+                String quoted = logDir.getPath().replace('\\', '/');
+                p.setProperty("java.util.logging.FileHandler.pattern",
+                              filePattern.replaceAll("%w", quoted));
+                File tmpLog = File.createTempFile("wonderlandlog", ".properties");
+                p.store(new FileOutputStream(tmpLog), null);
+
+                logConfig = new FileInputStream(tmpLog);
+            }
+            
+            // read in the configuration
+            LogManager.getLogManager().readConfiguration(logConfig);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, "Error setting up log config", ioe);
+        }
+   
         // If the web server port property has not been set at this point, then
         // set it to the default
         if (System.getProperty(Constants.WEBSERVER_PORT_PROP) == null) {

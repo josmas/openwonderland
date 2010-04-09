@@ -124,6 +124,10 @@ public class InstallManager {
         try {
             module = ModuleFactory.open(file);
             this.installedModules.put(moduleName, module);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Add installed module " + module);
+            }
         } catch (java.lang.Exception excp) {
             /* Log the error and return false */
             logger.log(Level.WARNING, "[MODULES] PENDING Failed to Open Module", excp);
@@ -139,6 +143,7 @@ public class InstallManager {
      * @return An map of unique module names and their Module objects
      */
     private Map<String, Module> fetchModules() {
+        Logger logger = ModuleManager.getLogger();
         Map<String, Module> map = new HashMap<String, Module>();
         
         /*
@@ -151,6 +156,10 @@ public class InstallManager {
             try {
                 Module module = ModuleFactory.open(file);
                 map.put(module.getName(), module);
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Load installed module " + module);
+                }
             } catch (java.lang.Exception excp) {
                 ModuleManager.getLogger().log(Level.WARNING,
                         "[MODULES] Invalid module " + file, excp);

@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -190,7 +208,9 @@ public class DeployManager {
      * Returns true if all of the deployers can deploy the parts of the module,
      * false if not
      */
-    public boolean canDeploy(Module module) {
+    public DeploymentQueryResult canDeploy(Module module) {
+        DeploymentQueryResult res = new DeploymentQueryResult();
+
         /*
          * Fetch all of the deployers and iterate through them. For each of
          * the parts they support, find whether the module contains such a
@@ -209,19 +229,27 @@ public class DeployManager {
             for (String partType : partTypes) {
                 if (parts.containsKey(partType) == true) {
                     if (deployer.isDeployable(partType, module, parts.get(partType)) == false) {
-                        return false;
+                        res.addReason("Unable to deploy part " + partType +
+                                      " with deployer " + deployer.getName() + 
+                                      " class " + deployer.getClass().getName());
+                        res.setResult(false);
+                        return res;
                     }
                 }
             }
         }
-        return true;
+
+        res.setResult(true);
+        return res;
     }
     
     /**
      * Returns true if all of the deployers can undeploy the parts of the module,
      * false if not
      */
-    public boolean canUndeploy(Module module) {
+    public DeploymentQueryResult canUndeploy(Module module) {
+        DeploymentQueryResult res = new DeploymentQueryResult();
+
         /*
          * Fetch all of the deployers and iterate through them. For each of
          * the parts they support, find whether the module contains such a
@@ -243,12 +271,18 @@ public class DeployManager {
                             "undeploy part " + partType + " with deployer " +
                             deployer.getName() + " class " + deployer.getClass().getName());
                     if (deployer.isUndeployable(partType, module, parts.get(partType)) == false) {
-                        return false;
+                        res.addReason("Unable to undeploy part " + partType +
+                                      " with deployer " + deployer.getName() +
+                                      " class " + deployer.getClass().getName());
+                        res.setResult(false);
+                        return res;
                     }
                 }
             }
         }
-        return true;
+
+        res.setResult(true);
+        return res;
     }
 
     /**
@@ -388,5 +422,32 @@ public class DeployManager {
         }
 
         return names.toArray(new Class[]{} );
+    }
+
+    /**
+     * The result of a deployment query about whether a module can be
+     * deployed or undeployed, along with the reason it can or cannot
+     * be deployed.
+     */
+    public static class DeploymentQueryResult {
+        private boolean result;
+        private final List<String> reasons =
+                new ArrayList<String>();
+
+        public boolean getResult() {
+            return result;
+        }
+
+        public void setResult(boolean result) {
+            this.result = result;
+        }
+
+        public void addReason(String reason) {
+            this.reasons.add(reason);
+        }
+
+        public List<String> getReasons() {
+            return reasons;
+        }
     }
 }
