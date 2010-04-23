@@ -33,7 +33,9 @@
                 onSuccess: function(response) {
                     group = response.responseText.evalJSON(true);
 
-                    if (group.members.length == 1) {
+                    if (group.members.length == undefined || 
+                        group.members.length == 1)
+                    {
                         var member = group.members;
                         group.members = [ member ];
                     }
