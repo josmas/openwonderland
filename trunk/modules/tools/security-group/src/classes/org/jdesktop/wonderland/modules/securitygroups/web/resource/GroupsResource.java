@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.modules.securitygroups.weblib.db.GroupEntity;
  *
  * @author jkaplan
  */
-@Path("/groups/")
+@Path("/groups")
 public class GroupsResource {
     @Context
     private SecurityContext security;
