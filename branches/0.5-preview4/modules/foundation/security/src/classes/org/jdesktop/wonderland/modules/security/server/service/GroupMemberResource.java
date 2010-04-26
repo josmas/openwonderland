@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.security.server.service;
 import com.sun.sgs.kernel.ComponentRegistry;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.modules.security.common.Principal;
@@ -32,6 +33,9 @@ import org.jdesktop.wonderland.server.security.Resource;
  * @author jkaplan
  */
 public class GroupMemberResource implements Resource, Serializable {
+    public static final Logger logger =
+            Logger.getLogger(GroupMemberResource.class.getName());
+
     private final String group;
 
     public GroupMemberResource(String group) {
@@ -49,8 +53,8 @@ public class GroupMemberResource implements Resource, Serializable {
         // if there was no result from the resolver, force the task to be
         // rescheduled to a time when we can block
         if (principals == null) {
-            System.out.println("Principals for " + identity.getUsername() +
-                               " not in cache.");
+            logger.fine("Principals for " + identity.getUsername() +
+                        " not in cache.");
             return Result.SCHEDULE;
         }
         
@@ -70,13 +74,18 @@ public class GroupMemberResource implements Resource, Serializable {
     }
 
     private boolean isInGroup(Set<Principal> principals) {
+        logger.fine("Testing " + principals.size() + " principals for " +
+                    group);
+
         for (Principal p : principals) {
-            System.out.println("Testing principal " + p  + " for group " + group);
+            logger.fine("Testing principal " + p  + " for group " + group);
 
             if (p.getType() == Type.GROUP) {
                 String name = p.getId();
 
                 if (name.equals(group) || name.equals("admin")) {
+                    logger.fine("Principal " + p + " is a member of " +
+                                group);
                     return true;
                 }
             }

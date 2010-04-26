@@ -17,7 +17,7 @@
 <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
 <script type="text/javascript">
     function updateGroups() {
-        new Ajax.Request('resources/groups/?members=false', {
+        new Ajax.Request('resources/groups?members=false', {
             method:'get', 
             requestHeaders: { Accept:'application/json' },
             onSuccess: function(response) {
