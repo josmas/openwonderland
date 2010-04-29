@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -213,14 +231,11 @@ public class ViewManager implements ViewPropertiesListener {
                 logger.info("RENDERER IS READY !");
                 waitForReady.release();
 
-                // issue #1047: ignore repaints after the first to avoid
+                // OWL issue #14: ignore repaints after the first to avoid
                 // flickering on Windows. The first paint is necessary to
                 // setup the canvas.  Once we get to this point, the canvas
                 // is initialized, and we can ignore further repaints.
-
-                // issue #1079: temporarily remove fix for issue #1047
-                // since this causes scaling problems in the HUD
-                //canvas.setIgnoreRepaint(true);
+                canvas.setIgnoreRepaint(true);
             }
         });
 
