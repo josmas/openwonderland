@@ -668,6 +668,15 @@ This is a list of potential projects for students or anyone else interested in e
 
 == Tools & Utilities==
 
+=== Improved Audio (medium)===
+
+
+|| *Description* || High-fidelity, spatialized audio is critical for the type of collaboration Open Wonderland enables. The Wonderland audio system uses a custom softphone that connects to the Wonderland voice bridge. Currently, audio is sent as unencoded PCM data, which results in high quality, but also requires significant bandwidth. A major improvement to the audio system would be to investigate various audio encodings that could transmit the same high quality audio using much less bandwidth. A second critical improvement would be the addition of an acoustic echo canceler into the Wonderland softphone, allowing people to use Wonderland with open microphones and speakers. We have done some investigation into alternate audio encodings, in particular using the SPEEX codec, but this work is incomplete. Potential projects include updating the SPEEX integration to work with Wonderland, integrating newer versions of SPEEX (which include echo cancellation), or investigating and implementing alternate audio encodings in the Wonderland softphone and voice bridge. ||
+|| *Proposer* || Jonathan Kaplan ||
+|| *Volunteers* || Unassigned ||
+|| *Keywords* || tool, business, education, audio ||
+|| *Comments* || _comments go here_  ||
+
 === Follow-me Navigation (small)===
 
 
