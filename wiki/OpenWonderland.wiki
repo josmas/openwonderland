@@ -63,6 +63,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandAuthentication05 Configuring Authentication]</td>
   <td>This tutorial describes how to configure authentication for Open Wonderland</td>
 </tr>
+<tr>
+  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandPhoneSetup Wonderland Phone Setup Guide]</td>
+  <td>This guide explains how to connect a Wonderland installation to the telephone network.</td>
+</tr>
 <tr><td></td></tr>
 
 <tr colspan="2">
@@ -128,6 +132,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCreatingHUD05 Developing a HUD-enabled module]</td>
   <td class="right">This tutorial describes how to develop a module that displays a window on the HUD (Heads-up display).</td>
+</tr>
+<tr>
+  <td class="left">[http://wiki.java.net/bin/view/Communications/JVoiceBridge jVoiceBridge Developer's Guide]</td>
+  <td class="right">This guide covers topics such as building and running the voice bridge, configuring a VoIP to PSTN gateway, parameters for call setup, technical specs, and troubleshooting help.</td>
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/WonderlandTesting101 Wonderland Testing 101]</td>
