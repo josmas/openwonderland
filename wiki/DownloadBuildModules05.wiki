@@ -21,7 +21,7 @@ The *wonderland-modules* workspace contains all of the source code for the Open 
 
 The build system of Open Wonderland is designed so that you may compile and deploy each module individually. It is also designed so that if you place your *wonderland-modules* workspace alongside your *wonderland* workspace, the "stable" modules will also be compiled and certain ones appearing on a "white list" will also be deployed to the server when it is started.
 
-This tutorial assumes you will place the modules workspace under a base directory named *~/src*, although you are free to place it anywhere. It also assumes you have further placed the core Open Wonderland workspace under the *0.5-preview3/* subdirectory (for User Preview 3) or under the *trunk/* subdirectory (for the latest source code).
+This tutorial assumes you will place the modules workspace under a base directory named *~/src*, although you are free to place it anywhere. It also assumes you have further placed the core Open Wonderland workspace under the *0.5-preview4/* subdirectory (for User Preview 4) or under the *trunk/* subdirectory (for the latest source code).
 
 Below, you will place the *wonderland-modules* workspace as a sibling of the core *wonderland* workspace (that is, both directories have the same parent directory in the file system).
 
