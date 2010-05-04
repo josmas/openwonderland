@@ -36,15 +36,15 @@ The most recent version of the code is called the _trunk_. To download the sourc
 % svn checkout http://openwonderland.googlecode.com/svn/trunk wonderland
 }}}
 
-====Download User Preview 3====
+====Download User Preview 4====
 
-If you wish to work with a more stable version of Open Wonderland, you may download the most recent "preview" release. To download the User Preview 3, inside a terminal window from your home directory, after you have created the _src/0.5/_ subdirectory:
+If you wish to work with a more stable version of Open Wonderland, you may download the most recent "preview" release. To download the User Preview 4, inside a terminal window from your home directory, after you have created the _src/0.5/_ subdirectory:
 
 {{{
 % cd ~/src/0.5
-% mkdir 0.5-preview3
-% cd 0.5-preview3
-% svn checkout https://openwonderland.googlecode.com/svn/branches/0.5-preview3 wonderland
+% mkdir 0.5-preview4
+% cd 0.5-preview4
+% svn checkout https://openwonderland.googlecode.com/svn/branches/0.5-preview4 wonderland
 }}}
 
 ===Building Open Wonderland===
