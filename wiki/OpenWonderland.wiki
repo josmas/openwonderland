@@ -117,14 +117,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="left">[http://docs.google.com/Doc?docid=0Adt0T7CUKzB9ZGNrODdxOXBfMjhncmZkM3doYg&hl=en Writing 2D Applications]</td>
   <td class="right">This tutorial describes how to develop 2D applications in-world that use the Java Swing GUI toolkit.</td>
 </tr>
-<tr>
-  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandJMETips05 Links to jMonkeyEngine Documentation]</td>
-  <td class="right">This page provides a collection of web links to tutorials and documentation for jMonkeyEngine, the 3D rendering API used by Open Wonderland.</td>
-</tr>
-<tr>
-  <td class="left">[http://wonderland.dev.java.net/mtgame/MTGameProgGuide.pdf MT-Game Programming Guide]</td>
-  <td class="right">Programming guide for the MT (Multi-Threaded) Game layer on top of jMonkeyEngine</td>
-</tr>
+
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWritingPlugin05 Writing a Client or Server "Plugin"]</td>
   <td class="right">This tutorial describes how to write client and server plugins for Open Wonderland. Plugins are code that runs when either the client or server is first initialized.</td>
@@ -132,6 +125,20 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCreatingHUD05 Developing a HUD-enabled module]</td>
   <td class="right">This tutorial describes how to develop a module that displays a window on the HUD (Heads-up display).</td>
+</tr>
+
+<tr>
+  <td class="left">[http://groups.google.com/group/open-wonderland-scripting Scripting]</td>
+  <td class="right">The Open Wonderland Scripting sub-group maintains a Google Group to discuss scripting related issues. On the Google Group page, you will also find a series of scripting tutorials, including [http://open-wonderland-scripting.googlegroups.com/web/scriptingClass.pdf?gda=UANKwUUAAAC0SPP6b41m61vUu5t3A0K0_APJB5vRD6j-ilX82tVLaa7jo90qI208etRtw3zzXZocn8WIbWh5zqeDKtDBmq67Gu1iLHeqhw4ZZRj3RjJ_-A Class 1 - Getting Started], [http://open-wonderland-scripting.googlegroups.com/web/ScriptingClass%232.pdf?gda=ZEXAwUkAAAC0SPP6b41m61vUu5t3A0K0kDqqg3rm0T0G8v3dKb_WQhmRhpaopfVLwRJ1Z3wFPU1pTWz3JQifnGlHQZ8k-JLqhAioEG5q2hncZWbpWmJ7IQ Class 2 - Cell Creation], and [http://open-wonderland-scripting.googlegroups.com/web/ScriptingClass%233.pdf?gda=iuH1WUkAAAC0SPP6b41m61vUu5t3A0K0kDqqg3rm0T0G8v3dKb_WQhmRhpaopfVLwRJ1Z3wFPU0EUPLV7eQK8Usuq0a1ReYghAioEG5q2hncZWbpWmJ7IQ Class 3 - Using the Internal Servlet].</td>
+</tr>
+
+<tr>
+  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandJMETips05 Links to jMonkeyEngine Documentation]</td>
+  <td class="right">This page provides a collection of web links to tutorials and documentation for jMonkeyEngine, the 3D rendering API used by Open Wonderland.</td>
+</tr>
+<tr>
+  <td class="left">[http://wonderland.dev.java.net/mtgame/MTGameProgGuide.pdf MT-Game Programming Guide]</td>
+  <td class="right">Programming guide for the MT (Multi-Threaded) Game layer on top of jMonkeyEngine</td>
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Communications/JVoiceBridge jVoiceBridge Developer's Guide]</td>
