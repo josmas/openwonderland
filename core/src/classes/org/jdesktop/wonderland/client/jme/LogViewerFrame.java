@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -18,6 +36,7 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.renderer.jogl.JOGLContextCapabilities;
+import com.jme.system.DisplaySystem;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.StringSelection;
@@ -31,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -57,6 +77,7 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 
 /**
  * A log viewer.
@@ -643,7 +664,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_levelTableMinusActionPerformed
 
     protected String generateErrorReport() {
-        StringBuffer out = new StringBuffer();
+        final StringBuffer out = new StringBuffer();
         out.append("Error report generated " +
                    DateFormat.getDateTimeInstance().format(new Date()) + "\n");
         out.append("\n");
@@ -663,6 +684,32 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
         // graphics
         out.append("-------- Graphics Information --------\n");
+
+        // grab display information from the renderer
+        final Semaphore gs = new Semaphore(0);        
+        SceneWorker.addWorker(new WorkCommit() {
+            public void commit() {
+                try {
+                    DisplaySystem ds = DisplaySystem.getDisplaySystem("JOGL");
+                    out.append("Display adapter:  " + ds.getAdapter() + "\n");
+                    out.append("Display vendor:   " + ds.getDisplayVendor() + "\n");
+                    out.append("Driver version:   " + ds.getDriverVersion() + "\n");
+                    out.append("Display renderer: " + ds.getDisplayRenderer() + "\n");
+                    out.append("API Version:      " + ds.getDisplayAPIVersion() + "\n");
+                    out.append("\n\n");
+                } finally {
+                    gs.release();
+                } 
+            }
+        });
+        
+        // wait for the renderer to run the worker
+        try {
+            gs.acquire();
+        } catch (InterruptedException ie) {
+            // ignore
+        }
+        
         RenderManager rm = WorldManager.getDefaultWorldManager().getRenderManager();
         JOGLContextCapabilities cap = rm.getContextCaps();
         out.append("GL_ARB_fragment_program..." + cap.GL_ARB_fragment_program + "\n");
