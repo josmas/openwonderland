@@ -33,6 +33,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.WorldManager;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -79,10 +80,15 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private String serverURL;
     private ServerURLListener serverListener;
 
+    // user preferences
+    private Preferences userPreferences;
+
     /** Creates new form MainFrame */
     public MainFrameImpl(WorldManager wm, int width, int height) {
         this.wm = wm;
 
+        // load user preferences for client
+        userPreferences = Preferences.userNodeForPackage(JmeClientMain.class);
 
         GUIUtils.initLookAndFeel();
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
@@ -324,6 +330,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         removeFrameRateListener(frameRateListener);
         frameRateListener = addFrameRateListener(desiredFrameRate);
 
+        // update user preference
+        userPreferences.put("fps", String.valueOf(desiredFrameRate));
+        
         if (chart != null) {
             chart.setMaxValue(desiredFrameRate);
         }
