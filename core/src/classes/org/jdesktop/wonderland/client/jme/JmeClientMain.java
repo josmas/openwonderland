@@ -35,6 +35,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -77,6 +79,8 @@ public class JmeClientMain {
             "org/jdesktop/wonderland/client/jme/resources/Bundle");
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
+    // user preferences
+    private Preferences userPreferences;
     // standard properties
     private static final String PROPS_URL_PROP = "run.properties.file";
     private static final String CONFIG_DIR_PROP =
@@ -122,6 +126,9 @@ public class JmeClientMain {
         URL propsURL = getPropsURL();
         loadProperties(propsURL);
 
+        // load user preferences for client
+        userPreferences = Preferences.userNodeForPackage(JmeClientMain.class);
+
         // Check whether there is another JVM processing running that is
         // attached to the database. Note we need to do this check AFTER the
         // client properties are loaded, otherwise, the wrong user directory
@@ -154,9 +161,9 @@ public class JmeClientMain {
                 height = Integer.parseInt(sizeHeight);
             }
         } catch (Exception e) {
-            LOGGER.warning(WINDOW_SIZE_PROP +
-                    " error, should be of the form 640x480 (or fullscreen), " +
-                    "instead of the current " + windowSize);
+            LOGGER.warning(WINDOW_SIZE_PROP
+                    + " error, should be of the form 640x480 (or fullscreen), "
+                    + "instead of the current " + windowSize);
         }
 
         // make sure the server URL is set
@@ -189,19 +196,26 @@ public class JmeClientMain {
         clip2.start();
         // End HUGE HACK.
 
-
         WorldManager worldManager = ClientContextJME.getWorldManager();
 
-        String requestedFPS = System.getProperty(
-                DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
+        String requestedFPS = null;
+        try {
+            if (userPreferences.node(userPreferences.absolutePath()).get("fps", null) != null) {
+                requestedFPS = userPreferences.get("fps", DESIRED_FPS_DEFAULT);
+            } else {
+                requestedFPS = System.getProperty(DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
+            }
+        } catch (Exception e) {
+        }
+
         if (requestedFPS != null) {
             try {
                 desiredFrameRate = Integer.parseInt(requestedFPS);
             } catch (NumberFormatException e) {
                 // No action required, the default has already been set.
-                LOGGER.warning(DESIRED_FPS_PROP +
-                        " property format error for '" + requestedFPS +
-                        "', using default");
+                LOGGER.warning(DESIRED_FPS_PROP
+                        + " property format error for '" + requestedFPS
+                        + "', using default");
             }
         }
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
@@ -224,8 +238,8 @@ public class JmeClientMain {
                         try {
                             loadServer(serverURL);
                         } catch (IOException ioe) {
-                            LOGGER.log(Level.WARNING, "Error connecting to " +
-                                    serverURL, ioe);
+                            LOGGER.log(Level.WARNING, "Error connecting to "
+                                    + serverURL, ioe);
                         }
                     }
                 }).start();
@@ -264,8 +278,8 @@ public class JmeClientMain {
         try {
             loadServer(serverURL);
         } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Error connecting to default server " +
-                    serverURL, ioe);
+            LOGGER.log(Level.WARNING, "Error connecting to default server "
+                    + serverURL, ioe);
         }
 
     }
@@ -365,8 +379,8 @@ public class JmeClientMain {
         try {
             curSession = lm.createSession(login);
         } catch (LoginFailureException lfe) {
-            IOException ioe = new IOException("Error connecting to " +
-                    serverURL);
+            IOException ioe = new IOException("Error connecting to "
+                    + serverURL);
             ioe.initCause(lfe);
             throw ioe;
         }
@@ -472,13 +486,13 @@ public class JmeClientMain {
             URL u1 = new URL(url1);
             URL u2 = new URL(url2);
 
-            System.out.println("Compare " + url1 + " to " + url2 + ": " +
-                    u1.equals(u2));
+            System.out.println("Compare " + url1 + " to " + url2 + ": "
+                    + u1.equals(u2));
 
             return u1.equals(u2);
         } catch (MalformedURLException mue) {
-            LOGGER.log(Level.WARNING, "Comparing non URL: " + url1 + ", " +
-                    url2, mue);
+            LOGGER.log(Level.WARNING, "Comparing non URL: " + url1 + ", "
+                    + url2, mue);
             return url1.equalsIgnoreCase(url2);
         }
     }
@@ -527,15 +541,15 @@ public class JmeClientMain {
 
         // set up logging
         new LogControl(JmeClientMain.class,
-                "/org/jdesktop/wonderland/client/jme/resources/" +
-                "logging.properties");
+                "/org/jdesktop/wonderland/client/jme/resources/"
+                + "logging.properties");
 
         // set up our custom log handler to pipe messages to the LogViewerFrame.
         // We need to do this to work around the fact that Web Start won't
         // load loggers not on the system classpath
         Logger rootLogger = Logger.getLogger("");
         rootLogger.addHandler(new LogViewerHandler());
-        
+
         if (Webstart.isWebstart()) {
             Webstart.webstartSetup();
         }
@@ -660,8 +674,8 @@ public class JmeClientMain {
             try {
                 System.getProperties().load(propsURL.openStream());
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "Error reading properties from " +
-                        propsURL, ioe);
+                LOGGER.log(Level.WARNING, "Error reading properties from "
+                        + propsURL, ioe);
             }
         }
     }
@@ -688,8 +702,8 @@ public class JmeClientMain {
         if (tokens.length > 2) {
             if (Integer.parseInt(tokens[1]) < 6) {
                 LOGGER.severe("Java Version is older than 6");
-                String errorMessage = BUNDLE.getString("JAVA_VERSION_ERROR") +
-                        "\n\n" + BUNDLE.getString(os == OS.OSX
+                String errorMessage = BUNDLE.getString("JAVA_VERSION_ERROR")
+                        + "\n\n" + BUNDLE.getString(os == OS.OSX
                         ? "JAVA_VERSION_ERROR_OSX"
                         : "JAVA_VERSION_ERROR_OTHER");
                 JOptionPane.showMessageDialog(null, errorMessage,
