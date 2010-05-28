@@ -670,7 +670,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 // create fps Swing control
                 chart = new Chart(BUNDLE.getString("fps:"));
                 chart.setSampleSize(200);
-                chart.setMaxValue(30);
+                chart.setMaxValue(desiredFrameRate);
                 chart.setPreferredSize(new Dimension(200, 34));
 
                 // create HUD control panel
