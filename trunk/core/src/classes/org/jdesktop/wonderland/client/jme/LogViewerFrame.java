@@ -40,6 +40,8 @@ import com.jme.system.DisplaySystem;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
@@ -131,7 +133,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
         // make sure the logPane starts scrolled to the bottom
         ((ManualScrollEditorPane) logPane).scrollToEnd();
-
+        
         levelCB.setModel(new DefaultComboBoxModel(LOG_LEVELS));
 
         // reload the preferred log levels
@@ -890,6 +892,16 @@ public class LogViewerFrame extends javax.swing.JFrame {
      * otherwise stays in the same relative position.
      */
     private class ManualScrollEditorPane extends JEditorPane {
+        public ManualScrollEditorPane() {
+            addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    Rectangle r = new Rectangle(e.getX(), e.getY(), 1, 1);
+                    forceScroll(r);
+                }
+            });
+        }
+
         @Override
         public void scrollRectToVisible(Rectangle r) {
             // ignore any scroll requests from the system
@@ -975,6 +987,10 @@ public class LogViewerFrame extends javax.swing.JFrame {
             } catch (BadLocationException ble) {
                 logger.log(Level.WARNING, "Bad location", ble);
             }
+        }
+
+        private void forceScroll(Rectangle r) {
+            super.scrollRectToVisible(r);
         }
     }
 
