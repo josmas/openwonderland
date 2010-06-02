@@ -30,6 +30,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -48,6 +49,7 @@ import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsManager;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.assetmgr.AssetDB;
 import org.jdesktop.wonderland.client.assetmgr.AssetDBException;
@@ -103,6 +105,15 @@ public class JmeClientMain {
     private JmeClientSession curSession;
     // keep tack of whether we are currently logging out
     private boolean loggingOut;
+
+    // log uncaught exceptions
+    private static final UncaughtExceptionHandler ueh =
+            new UncaughtExceptionHandler()
+    {
+        public void uncaughtException(Thread t, Throwable e) {
+            LOGGER.log(Level.WARNING, "Uncaught exception", e);
+        }
+    };
 
     private enum OS {
 
@@ -644,6 +655,13 @@ public class JmeClientMain {
         }
         });
          */
+
+        // make sure we don't miss any MT-Game exceptions
+        SceneWorker.addWorker(new WorkCommit() {
+            public void commit() {
+                Thread.currentThread().setUncaughtExceptionHandler(ueh);
+            }
+        });
 
         frame.setDesiredFrameRate(desiredFrameRate);
     }
