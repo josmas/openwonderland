@@ -42,7 +42,7 @@
             <p><a href="http://www.java.com/en/download/index.jsp">Get Java...</a></p>
           </div>
 
-          <p>The Open Wonderland Client launches using Java Web Start, which automatically downloads the latest version of the software when you click the launch button below. To get started, all you need is a current version of Java installed on your system.</p>
+          <p>The Open Wonderland Client launches using Java Web Start, which automatically downloads the latest version of the software when you click the launch button. To get started, all you need is a current version of Java installed on your system.</p>
 
           <h3>For more information:</h3>
 
@@ -69,9 +69,9 @@
           <ul>
             <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandServerAdministration">Web-Based Administration Guide</a></li>
 
-            <li><a href="http://code.google.com/p/openwonderland/wiki/WebStart05">Launching Wonderland Clients using Java Webstart</a></li>
+            <li><a href="http://code.google.com/p/openwonderland/wiki/WebStart05">Launching Wonderland Clients using Java Web Start</a></li>
 
-            <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFirewallPoint5">Configuring Open Wonderland for Firewalls, NATs, and Proxies</a></li>
+            <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandConfigureFirewall05">Configuring Open Wonderland for Firewalls, NATs, and Proxies</a></li>
           </ul>
         </div>
       </div>
