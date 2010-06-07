@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -19,15 +37,11 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -36,6 +50,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.CellStatistics.LongCellStat;
+import org.jdesktop.wonderland.client.cell.CellStatistics.TimeCellStat;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -78,6 +94,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     /** listeners */
     private final Set<CellCacheListener> listeners =
             new CopyOnWriteArraySet<CellCacheListener>();
+
+    /** statistics */
+    private final CellStatistics stats = new CellStatistics();
 
     /**
      * Create a new cache implementation
@@ -129,6 +148,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          CellTransform cellTransform, 
                          CellClientState setup,
                          String cellName) {
+
+        long startTime = System.currentTimeMillis();
 
         try {
             if (cells.containsKey(cellId)) {
@@ -186,6 +207,13 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             } else if (cell instanceof ViewCell) {
                 changeCellStatus(cell, CellStatus.ACTIVE);
             }
+
+            // record loading time statistic
+            long time = System.currentTimeMillis() - startTime;
+            TimeCellStat loadStat =
+                    new TimeCellStat("LoadTime", "Cell Load Time");
+            loadStat.setValue(time);
+            getStatistics().add(cell, loadStat);
 
             return cell;
         } catch(Exception e) {
@@ -348,10 +376,35 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
             while(currentStatus!=requiredStatus) {
                 currentStatus += dir;
-                cell.setStatus(CellStatus.values()[currentStatus], increasing);
-                cell.fireCellStatusChanged(CellStatus.values()[currentStatus]);
+
+                CellStatus nextStatus = CellStatus.values()[currentStatus];
+                long startTime = System.currentTimeMillis();
+                TimeCellStat loadStat = getLoadStat(cell, nextStatus);
+                try {
+                    cell.setStatus(nextStatus, increasing);
+                } finally {
+                    long time = System.currentTimeMillis() - startTime;
+                    loadStat.changeValue(time);
+                }
+
+                cell.fireCellStatusChanged(nextStatus);
             }
         }
+    }
+
+    private TimeCellStat getLoadStat(Cell cell, CellStatus status) {
+        String statId = status.name() + "-time";
+        TimeCellStat loadStat;
+
+        synchronized (getStatistics()) {
+            loadStat = (TimeCellStat) getStatistics().get(cell, statId);
+            if (loadStat == null) {
+                loadStat = new TimeCellStat(statId);
+                getStatistics().add(cell, loadStat);
+            }
+        }
+
+        return loadStat;
     }
 
     /**
@@ -447,6 +500,13 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public CellStatistics getStatistics() {
+        return stats;
+    }
+
+    /**
      * Notify listeners that a cell is loaded
      * @param cell the cell that was loaded
      */
@@ -491,9 +551,6 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     private void changeCellStatus(Cell cell, CellStatus status) {
         cacheExecutor.submit(new CellStatusChanger(cell, status));
     }
-
-
-
 
     private class CellStatusChanger implements Runnable {
 
