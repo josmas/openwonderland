@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -30,12 +48,12 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellStatistics.TimeCellStat;
 import org.jdesktop.wonderland.client.cell.ModelCellComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
-import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 
@@ -86,33 +104,41 @@ public class ModelRenderer extends BasicRenderer {
 
     @Override
     protected Node createSceneGraph(Entity entity) {
-        if (modelComponent!=null) {
-            return modelComponent.loadModel(entity);
-        }
+        long startTime = System.currentTimeMillis();
+        TimeCellStat loadTime = new TimeCellStat("loadtime", "Model Load Time");
+        
+        try {
+            if (modelComponent!=null) {
+                return modelComponent.loadModel(entity);
+            }
 
-        if (deployedModel!=null) {
-            ModelLoader loader = deployedModel.getModelLoader();
+            if (deployedModel!=null) {
+                ModelLoader loader = deployedModel.getModelLoader();
+                if (loader==null) {
+                    logger.warning("No loader for model "+deployedModel.getModelURL());
+                    return new Node("No Loader");
+                }
+                Node ret = loader.loadDeployedModel(deployedModel, entity);
+                return ret;
+            }
+
+            ModelLoader loader = LoaderManager.getLoaderManager().getLoader(deployedModelURL);
             if (loader==null) {
                 logger.warning("No loader for model "+deployedModel.getModelURL());
                 return new Node("No Loader");
             }
-            Node ret = loader.loadDeployedModel(deployedModel, entity);
-            return ret;
-        }
+            deployedModel = new DeployedModel(deployedModelURL, loader);
+            deployedModel.setModelTranslation(modelTranslation);
+            deployedModel.setModelRotation(modelRotation);
+            deployedModel.setModelScale(modelScale);
 
-        ModelLoader loader = LoaderManager.getLoaderManager().getLoader(deployedModelURL);
-        if (loader==null) {
-            logger.warning("No loader for model "+deployedModel.getModelURL());
-            return new Node("No Loader");
+            return loader.loadDeployedModel(deployedModel, entity);
+        } finally {
+            // record statistics
+            loadTime.setValue(System.currentTimeMillis() - startTime);
+            getCell().getCellCache().getStatistics().add(getCell(), loadTime);
         }
-        deployedModel = new DeployedModel(deployedModelURL, loader);
-        deployedModel.setModelTranslation(modelTranslation);
-        deployedModel.setModelRotation(modelRotation);
-        deployedModel.setModelScale(modelScale);
-
-        return loader.loadDeployedModel(deployedModel, entity);
     }
-
     /**
      * For the renderer to reload the scene graph. This is required if the user
      * changes properties of the graph, such as optimization levels. The detach of
