@@ -304,7 +304,13 @@ public class WindowSwing extends Window2D {
 
         addEventListener(new MySwingEnterExitListener());
 
-        embeddedPeer.validate();
+        // OWL issue #47: be sure to call validate from the AWT event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                embeddedPeer.validate();
+            }
+        });
+
         embeddedPeer.repaint();
     }
 
