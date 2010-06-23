@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -50,6 +68,7 @@ public class UniverseImpl implements Universe {
     private TransactionProxy transactionProxy;
     private DataService dataService;
     private TransactionScheduler transactionScheduler;
+    private Identity defaultTaskOwner;
 
     private static final Logger logger = Logger.getLogger(UniverseImpl.class.getName());
     private final HashMap<Object, TaskQueue> taskQueues = new HashMap();
@@ -59,10 +78,15 @@ public class UniverseImpl implements Universe {
     private final Map<ViewUpdateListener, Set<CellID>> updateListeners =
             new HashMap<ViewUpdateListener, Set<CellID>>();
 
-    public UniverseImpl(ComponentRegistry componentRegistry, TransactionProxy transactionProxy) {
+    public UniverseImpl(ComponentRegistry componentRegistry,
+                        TransactionProxy transactionProxy,
+                        Identity defaultTaskOwner)
+    {
         this.transactionProxy = transactionProxy;
         this.dataService = transactionProxy.getService(DataService.class);
         this.transactionScheduler = componentRegistry.getComponent(TransactionScheduler.class);
+        this.defaultTaskOwner = defaultTaskOwner;
+
         universe = this;
         logger.setLevel(Level.ALL);
     }
@@ -84,10 +108,18 @@ public class UniverseImpl implements Universe {
     }
 
     public void scheduleTransaction(KernelRunnable transaction, Identity identity) {
+        if (identity == null) {
+            identity = defaultTaskOwner;
+        }
+
         transactionScheduler.scheduleTask(transaction, identity);
     }
 
     public void scheduleQueuedTransaction(KernelRunnable task, Identity identity, Object queueOwner) {
+        if (identity == null) {
+            identity = defaultTaskOwner;
+        }
+
         // TODO this implementation will not work in multinode
         synchronized(taskQueues) {
             TaskQueue queue = taskQueues.get(queueOwner);
