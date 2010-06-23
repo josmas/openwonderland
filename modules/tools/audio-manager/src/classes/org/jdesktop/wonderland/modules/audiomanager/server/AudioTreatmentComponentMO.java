@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -91,6 +109,7 @@ import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
+import com.sun.sgs.app.Task;
 
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -130,7 +149,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
     private BoundingVolume audioBounds;
 
-    private boolean treatmentCreated;
+    private boolean treatmentCreated = false;
 
     /** the channel from that cell */
     @UsesCellComponentMO(ChannelComponentMO.class)
@@ -300,6 +319,14 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     }
 
     private void initialize() {
+        // make sure this isn't a duplicate start
+        if (!isLive() || treatmentCreated) {
+            logger.warning("Not initializing treatment. isLive: " + isLive() +
+                           " created: " + treatmentCreated);
+            return;
+        }
+
+        // make sure there is a treatment to start
 	if (treatments.length == 0) {
 	    /*
 	     * The AudioTreatmentComponent hasn't been configured yet.
@@ -309,6 +336,16 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
 	    return;
 	}
+
+        // OWL issue #60: if the world bounds for this object haven't been
+        // calculated yet, schedule a task to retry the initialization in a bit.
+        if (cellRef.get().getWorldTransform(null) == null) {
+            logger.warning("Not initializing treatment: world bounds not set");
+            AppContext.getTaskManager().scheduleTask(new TreatmentRetryTask(this),
+                                                     1000);
+
+            return;
+        }
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -397,7 +434,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
                 continue;
             }
 
-            Vector3f location = cellRef.get().getLocalTransform(null).getTranslation(null);
+            // OWL issue #60: make sure to use world location, not local
+            // location
+            Vector3f location = cellRef.get().getWorldTransform(null).getTranslation(null);
 
             setup.x = location.getX();
             setup.y = location.getY();
@@ -423,10 +462,24 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	        if (playWhen.equals(PlayWhen.FIRST_IN_RANGE)) {
 	            addProximityListener(t);
 	        }
+
+                treatmentCreated = true;
             } catch (IOException e) {
                 logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
             }
+        }
+    }
+
+    static class TreatmentRetryTask implements Task, Serializable {
+        private final ManagedReference<AudioTreatmentComponentMO> componentRef;
+
+        TreatmentRetryTask(AudioTreatmentComponentMO component) {
+            componentRef = AppContext.getDataManager().createReference(component);
+        }
+
+        public void run() throws Exception {
+            componentRef.get().initialize();
         }
     }
 
