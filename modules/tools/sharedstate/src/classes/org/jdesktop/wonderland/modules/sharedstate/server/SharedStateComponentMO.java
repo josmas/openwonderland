@@ -166,6 +166,9 @@ public class SharedStateComponentMO extends CellComponentMO {
 
     @Override
     public void setLive(boolean live) {
+        // OWL issue #65: make sure to call super.setLive()
+        super.setLive(live);
+        
         this.live = live;
 
         if (live) {
