@@ -999,7 +999,8 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         }
         else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog
-            LOGGER.log(Level.WARNING, "Unable to add component to the server",
+            LOGGER.log(Level.WARNING, "Unable to add component to the server: " +
+                    ((ErrorMessage) response).getErrorMessage(),
                     ((ErrorMessage) response).getErrorCause());
         }
     }
@@ -1059,7 +1060,8 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         }
         else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog
-            LOGGER.log(Level.WARNING, "Unable to add component to the server",
+            LOGGER.log(Level.WARNING, "Unable to add component to the server: " +
+                    ((ErrorMessage) response).getErrorMessage(),
                     ((ErrorMessage) response).getErrorCause());
         }
     }
