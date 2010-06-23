@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.server.spatial.impl.UniverseImpl;
  */
 public class SpatialTest {
 
-    private UniverseImpl universe = new UniverseImpl(null, null);
+    private UniverseImpl universe = new UniverseImpl(null, null, null);
     private long id = CellID.getFirstCellID();
 
 //    public SpatialTest() {
