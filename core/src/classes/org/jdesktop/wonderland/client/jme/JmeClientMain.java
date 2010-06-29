@@ -579,6 +579,13 @@ public class JmeClientMain {
         Logger rootLogger = Logger.getLogger("");
         rootLogger.addHandler(new LogViewerHandler());
 
+        // make sure Swing exceptions are captured in the log
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Thread.currentThread().setUncaughtExceptionHandler(ueh);
+            }
+        });
+
         if (Webstart.isWebstart()) {
             Webstart.webstartSetup();
         }
