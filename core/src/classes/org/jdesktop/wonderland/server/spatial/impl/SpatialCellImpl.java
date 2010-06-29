@@ -188,10 +188,13 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
             transformChangeListeners.add(listener);
 
             // OWL issue #61: notify the listener immediately on
-            // addition, to make sure that no updates are missed
-            Collection<TransformChangeListenerSrv> listeners =
-                    Collections.singleton(listener);
-            UniverseImpl.getUniverse().scheduleTransaction(new TransformChangeNotificationTask(listeners, cellID, localTransform, worldTransform), null);
+            // addition, to make sure that no updates are missed.
+            // Only do this if the world root has already been set
+            if (worldTransform != null) {
+                Collection<TransformChangeListenerSrv> listeners =
+                        Collections.singleton(listener);
+                UniverseImpl.getUniverse().scheduleTransaction(new TransformChangeNotificationTask(listeners, cellID, localTransform, worldTransform), null);
+            }
         }
     }
 
