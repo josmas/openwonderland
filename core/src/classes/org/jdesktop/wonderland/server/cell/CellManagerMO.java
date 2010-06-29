@@ -53,6 +53,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.state.CellComponentUtils;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -137,7 +138,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
             return null;
         }
     }
-    
+
     /**
      * Insert the cell into the world. 
      */
@@ -205,13 +206,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
     CellID createCellID(CellMO cell) {
         DataManager dm = AppContext.getDataManager();
 
-        CellCounter counter;
-        try {
-            counter = (CellCounter) dm.getBindingForUpdate(COUNTER_BINDING_NAME);
-        } catch (NameNotBoundException nnbe) {
-            counter = new CellCounter();
-            dm.setBinding(COUNTER_BINDING_NAME, counter);
-        }
+            CellCounter counter;
+            try {
+                counter = (CellCounter) dm.getBindingForUpdate(COUNTER_BINDING_NAME);
+            } catch (NameNotBoundException nnbe) {
+                counter = new CellCounter();
+                dm.setBinding(COUNTER_BINDING_NAME, counter);
+            }
 
         CellID cellID = new CellID(counter.nextCellID());
         dm.setBinding(getCellBinding(cellID), cell);
@@ -334,7 +335,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
             // instantiate each component
             for(Class<? extends CellComponentMO> c : components) {
                 // OWL issue #64: make sure component isn't a duplicate
-                if (cell.getComponent(CellComponentMO.getLookupClass(c)) != null) {
+                if (cell.getComponent(CellComponentUtils.getLookupClass(c)) != null) {
                     continue;
                 }
 

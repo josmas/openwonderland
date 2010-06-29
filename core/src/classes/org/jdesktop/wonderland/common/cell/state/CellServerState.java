@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -135,7 +153,8 @@ public abstract class CellServerState implements Serializable {
      * @param serverState The component server state to add
      */
     public void addComponentServerState(CellComponentServerState serverState) {
-        internalComponentMap.put(serverState.getClass(), serverState);
+        Class lookupClass = CellComponentUtils.getLookupClass(serverState.getClass());
+        internalComponentMap.put(lookupClass, serverState);
     }
 
     /**
@@ -147,7 +166,8 @@ public abstract class CellServerState implements Serializable {
      * @return The component server state object if it exist, null otherwise
      */
     public CellComponentServerState getComponentServerState(Class clazz) {
-        return internalComponentMap.get(clazz);
+        Class lookupClass = CellComponentUtils.getLookupClass(clazz);
+        return internalComponentMap.get(lookupClass);
     }
 
     /**
@@ -166,7 +186,8 @@ public abstract class CellServerState implements Serializable {
      * @param clazz The Class of the component server-state object
      */
     public void removeComponentServerState(Class clazz) {
-        internalComponentMap.remove(clazz);
+        Class lookupClass = CellComponentUtils.getLookupClass(clazz);
+        internalComponentMap.remove(lookupClass);
     }
 
     /**
@@ -279,7 +300,8 @@ public abstract class CellServerState implements Serializable {
         if (setup.components != null) {
             setup.internalComponentMap = new HashMap();
             for (CellComponentServerState state : setup.components) {
-                setup.internalComponentMap.put(state.getClass(), state);
+                Class lookupClass = CellComponentUtils.getLookupClass(state.getClass());
+                setup.internalComponentMap.put(lookupClass, state);
             }
         }
         else {

@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -27,6 +45,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.messages.CellClientComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentUtils;
 
 /**
  * A listener on a cell's channel to handle updates to its state sent from the
@@ -83,7 +102,7 @@ public class CellComponentMessageReceiver implements ComponentMessageReceiver {
 
             // Find out the Class used to lookup the component in the list
             // of components
-            Class lookupClazz = CellComponent.getLookupClass(compClazz);
+            Class lookupClazz = CellComponentUtils.getLookupClass(compClazz);
 
             // Attempt to fetch the component using the lookup class. If
             // it does not exist, then create and add the component.
@@ -95,7 +114,7 @@ public class CellComponentMessageReceiver implements ComponentMessageReceiver {
                 Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
                 component = constructor.newInstance(cell);
                 component.setClientState(clientState);
-                cell.addComponent(component, CellComponent.getLookupClass(component.getClass()));
+                cell.addComponent(component, CellComponentUtils.getLookupClass(component.getClass()));
             }
             else {
                 component.setClientState(clientState);
@@ -133,7 +152,7 @@ public class CellComponentMessageReceiver implements ComponentMessageReceiver {
         try {
             // us the classloader we found to load the component class
             Class compClazz = cl.loadClass(className);
-            Class clazz = CellComponent.getLookupClass(compClazz);
+            Class clazz = CellComponentUtils.getLookupClass(compClazz);
             cell.removeComponent(clazz);
         } catch (java.lang.ClassNotFoundException excp) {
             logger.log(Level.WARNING, "Cannot remove component", excp);

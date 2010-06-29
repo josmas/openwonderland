@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -69,6 +87,7 @@ import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.common.cell.security.ModifyAction;
 import org.jdesktop.wonderland.common.cell.security.MoveAction;
 import org.jdesktop.wonderland.common.cell.security.ViewAction;
+import org.jdesktop.wonderland.common.cell.state.CellComponentUtils;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -786,7 +805,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             Class clazz=null;
             try {
                 clazz = Class.forName(className);
-                Class lookupClazz = CellComponentMO.getLookupClass(clazz);
+                Class lookupClazz = CellComponentUtils.getLookupClass(clazz);
                 CellComponentMO comp = this.getComponent(lookupClazz);
                 if (comp == null) {
                     Constructor<CellComponentMO> constructor = clazz.getConstructor(CellMO.class);
@@ -925,7 +944,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     public void addComponent(CellComponentMO component) {
         addComponent(component,
-                CellComponentMO.getLookupClass(component.getClass()));
+                CellComponentUtils.getLookupClass(component.getClass()));
     }
 
     public void addComponent(CellComponentMO component, Class componentClass) {
@@ -972,7 +991,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         component.setLive(false);
 
         // Remove the component from the map of components
-        Class clazz = CellComponentMO.getLookupClass(component.getClass());
+        Class clazz = CellComponentUtils.getLookupClass(component.getClass());
         components.remove(clazz);
 
         // Notify listeners
@@ -1270,7 +1289,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
                     try {
                         String className = compState.getServerComponentClassName();
                         Class clazz = Class.forName(className);
-                        componentMO = cellMO.getComponent(clazz);
+
+                        // OWL issue #66: be sure to use the lookup class
+                        Class lookupClass = CellComponentUtils.getLookupClass(clazz);
+                        componentMO = cellMO.getComponent(lookupClass);
                     } catch (ClassNotFoundException ex) {
                         Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -1338,7 +1360,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // Try to create the cmponent class and add it if the component
                 // does not exist. Upon success, return a message
                 Class clazz = Class.forName(className);
-                Class lookupClazz = CellComponentMO.getLookupClass(clazz);
+                Class lookupClazz = CellComponentUtils.getLookupClass(clazz);
                 CellComponentMO comp = cellMO.getComponent(lookupClazz);
                 if (comp == null) {
                     // Create the component class, set its state, and add it
@@ -1403,7 +1425,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // send back an error message.
                 CellMO cellMO = getCell();
                 String className = message.getCellComponentServerClassName();
-                Class clazz = CellComponentMO.getLookupClass(Class.forName(className));
+                Class clazz = CellComponentUtils.getLookupClass(Class.forName(className));
                 CellComponentMO component = cellMO.getComponent(clazz);
                 if (component == null) {
                     logger.warning("Cannot find component for class " + className);
