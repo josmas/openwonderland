@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -45,6 +63,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellClientComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentUtils;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
@@ -220,7 +239,7 @@ public class Cell {
      */
     public void addComponent(CellComponent component) {
         addComponent(component,
-                CellComponent.getLookupClass(component.getClass()));
+                CellComponentUtils.getLookupClass(component.getClass()));
     }
 
     /**
@@ -748,7 +767,7 @@ public class Cell {
                 }
 
                 Class componentClazz = f.getType();
-                CellComponent comp = getComponent(CellComponent.getLookupClass(componentClazz));
+                CellComponent comp = getComponent(CellComponentUtils.getLookupClass(componentClazz));
                 if (comp == null) {
                     try {
                         comp = (CellComponent) componentClazz.getConstructor(Cell.class).newInstance(this);
@@ -807,7 +826,7 @@ public class Cell {
 
                 // Find out the Class used to lookup the component in the list
                 // of components
-                Class lookupClazz = CellComponent.getLookupClass(compClazz);
+                Class lookupClazz = CellComponentUtils.getLookupClass(compClazz);
 
                 // Attempt to fetch the component using the lookup class. If
                 // it does not exist, then create and add the component.
@@ -822,7 +841,7 @@ public class Cell {
                     if (clientState != null) {
                         component.setClientState(clientState);
                     }
-                    addComponent(component, CellComponent.getLookupClass(component.getClass()));
+                    addComponent(component, CellComponentUtils.getLookupClass(component.getClass()));
                 } else {
                     CellComponentClientState clientState = configData.getCellComponentClientState(compClassname);
                     if (clientState != null) {
