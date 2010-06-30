@@ -70,7 +70,7 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class CellServerState implements Serializable {
+public abstract class CellServerState implements CellState, Serializable {
 
     /* The name of the cell */
     @XmlElement(name="name")

@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -140,9 +158,9 @@ public class CellServerStateFactory {
         Set<Class> setupClasses = new LinkedHashSet<Class>(Arrays.asList(coreSetupClasses));
 
         /* Attempt to load the class names using annotations */
-        Iterator<CellServerState> it = classLoader.getInstances(
+        Iterator<CellState> it = classLoader.getInstances(
                 ServerState.class,
-                CellServerState.class);
+                CellState.class);
 
         while (it.hasNext()) {
             setupClasses.add(it.next().getClass());
@@ -157,16 +175,7 @@ public class CellServerStateFactory {
         while (it2.hasNext()) {
             setupClasses.add(it2.next().getClass());
         }
-
-        /* Attempt to load the component class names using annotations */
-        Iterator<CellComponentServerState> it3 = classLoader.getInstances(
-                ServerState.class,
-                CellComponentServerState.class);
-
-        while (it3.hasNext()) {
-            setupClasses.add(it3.next().getClass());
-        }
-
+        
         return setupClasses.toArray(new Class[0]);
     }
 }
