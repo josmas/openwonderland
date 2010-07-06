@@ -368,7 +368,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         add(micMeterPanel);
         micMeterPanel.setBounds(20, 10, 20, 160);
 
-        micMuteButton.setFont(new java.awt.Font("Arial", 1, 8));
+        micMuteButton.setFont(new java.awt.Font("SansSerif", 1, 8));
         micMuteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMicMuteOff24x24.png"))); // NOI18N
         micMuteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -394,7 +394,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         add(speakerMeterPanel);
         speakerMeterPanel.setBounds(65, 10, 20, 160);
 
-        speakerMuteButton.setFont(new java.awt.Font("Arial", 1, 8));
+        speakerMuteButton.setFont(new java.awt.Font("SansSerif", 1, 8));
         speakerMuteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListSpeakerMuteOff24x24.png"))); // NOI18N
         speakerMuteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
