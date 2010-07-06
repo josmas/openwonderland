@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -211,16 +229,16 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
 
         userPasswordPanel.setOpaque(false);
 
-        upServerLabel.setFont(new java.awt.Font("Arial", 1, 13));
+        upServerLabel.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
         upServerLabel.setForeground(new java.awt.Color(87, 101, 115));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         upServerLabel.setText(bundle.getString("WonderlandLoginDialog.upServerLabel.text")); // NOI18N
 
-        upPasswordLabel.setFont(new java.awt.Font("Arial", 1, 13));
+        upPasswordLabel.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
         upPasswordLabel.setForeground(new java.awt.Color(87, 101, 115));
         upPasswordLabel.setText(bundle.getString("WonderlandLoginDialog.upPasswordLabel.text")); // NOI18N
 
-        upUsernameLabel.setFont(new java.awt.Font("Arial", 1, 13));
+        upUsernameLabel.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
         upUsernameLabel.setForeground(new java.awt.Color(87, 101, 115));
         upUsernameLabel.setText(bundle.getString("WonderlandLoginDialog.upUsernameLabel.text")); // NOI18N
 
@@ -229,7 +247,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         upPasswordField.setFont(new java.awt.Font("Dialog", 0, 13));
         upPasswordField.setMinimumSize(new java.awt.Dimension(98, 22));
 
-        upUsernameField.setFont(new java.awt.Font("Dialog", 0, 13));
+        upUsernameField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         upUsernameField.setMinimumSize(new java.awt.Dimension(98, 22));
 
         org.jdesktop.layout.GroupLayout userPasswordPanelLayout = new org.jdesktop.layout.GroupLayout(userPasswordPanel);
@@ -320,7 +338,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         jLabel2.setAlignmentY(0.0F);
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        tagLineLabel.setFont(new java.awt.Font("Arial", 0, 22)); // NOI18N
+        tagLineLabel.setFont(new java.awt.Font("SansSerif", 0, 22)); // NOI18N
         tagLineLabel.setForeground(new java.awt.Color(87, 101, 115));
         tagLineLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         tagLineLabel.setText(bundle.getString("WonderlandLoginDialog.tagLineLabel.text")); // NOI18N
@@ -368,7 +386,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         buttonPanel.setPreferredSize(new java.awt.Dimension(370, 60));
 
         cancelButton.setBackground(new java.awt.Color(255, 255, 255));
-        cancelButton.setFont(new java.awt.Font("Arial", 1, 13));
+        cancelButton.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
         cancelButton.setText(bundle.getString("WonderlandLoginDialog.cancelButton.text")); // NOI18N
         cancelButton.setAlignmentX(0.5F);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -378,7 +396,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         });
 
         loginButton.setBackground(new java.awt.Color(255, 255, 255));
-        loginButton.setFont(new java.awt.Font("Arial", 1, 13));
+        loginButton.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
         loginButton.setText(bundle.getString("WonderlandLoginDialog.loginButton.text")); // NOI18N
         loginButton.setAlignmentX(0.5F);
         loginButton.addActionListener(new java.awt.event.ActionListener() {
@@ -387,12 +405,12 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             }
         });
 
-        statusLabel.setFont(new java.awt.Font("Arial", 0, 12));
+        statusLabel.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         statusLabel.setForeground(new java.awt.Color(87, 101, 115));
         statusLabel.setText(bundle.getString("WonderlandLoginDialog.statusLabel.text")); // NOI18N
         statusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 
-        advancedButton.setFont(new java.awt.Font("Arial", 0, 13));
+        advancedButton.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
         advancedButton.setText(bundle.getString("WonderlandLoginDialog.advancedButton.text")); // NOI18N
         advancedButton.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         advancedButton.addActionListener(new java.awt.event.ActionListener() {
@@ -408,10 +426,10 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             .add(buttonPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
                     .add(buttonPanelLayout.createSequentialGroup()
                         .add(advancedButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 60, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 43, Short.MAX_VALUE)
                         .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(loginButton)))
@@ -424,7 +442,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
                 .add(statusLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(advancedButton)
                     .add(loginButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -438,7 +456,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
+            .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
             .add(gradientPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(

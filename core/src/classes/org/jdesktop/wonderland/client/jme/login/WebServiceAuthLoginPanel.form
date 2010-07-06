@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -38,9 +38,9 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="naServerField" alignment="1" pref="277" max="32767" attributes="2"/>
-                  <Component id="wsPasswordField" alignment="1" pref="277" max="32767" attributes="2"/>
-                  <Component id="wsUsernameField" alignment="1" pref="277" max="32767" attributes="2"/>
+                  <Component id="naServerField" alignment="1" pref="267" max="32767" attributes="2"/>
+                  <Component id="wsPasswordField" alignment="1" pref="267" max="32767" attributes="2"/>
+                  <Component id="wsUsernameField" alignment="1" pref="267" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -64,7 +64,7 @@
                   <Component id="naServerField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="naServerLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="12" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -73,7 +73,7 @@
     <Component class="javax.swing.JLabel" name="naServerLabel">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="12" style="0"/>
+          <Font name="SansSerif" size="12" style="0"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="73" green="65" red="57" type="rgb"/>
@@ -90,7 +90,7 @@
     <Component class="javax.swing.JLabel" name="naFullNameLabel">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="12" style="0"/>
+          <Font name="SansSerif" size="12" style="0"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="73" green="65" red="57" type="rgb"/>
@@ -107,7 +107,7 @@
     <Component class="javax.swing.JLabel" name="naUsernameLabel">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="12" style="0"/>
+          <Font name="SansSerif" size="12" style="0"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="73" green="65" red="57" type="rgb"/>
@@ -125,7 +125,7 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="12" style="0"/>
+          <Font name="SansSerif" size="12" style="0"/>
         </Property>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[98, 22]"/>
@@ -135,7 +135,7 @@
     <Component class="javax.swing.JTextField" name="wsUsernameField">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="12" style="0"/>
+          <Font name="SansSerif" size="12" style="0"/>
         </Property>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[98, 22]"/>
@@ -148,7 +148,7 @@
     <Component class="javax.swing.JPasswordField" name="wsPasswordField">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="12" style="0"/>
+          <Font name="SansSerif" size="12" style="0"/>
         </Property>
       </Properties>
     </Component>

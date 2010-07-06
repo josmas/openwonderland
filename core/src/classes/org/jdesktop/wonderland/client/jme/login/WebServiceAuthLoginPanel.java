@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -195,30 +213,30 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         setOpaque(false);
         setPreferredSize(new java.awt.Dimension(360, 114));
 
-        naServerLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naServerLabel.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naServerLabel.setForeground(new java.awt.Color(87, 101, 115));
         naServerLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         naServerLabel.setText(bundle.getString("WebServiceAuthLoginPanel.naServerLabel.text")); // NOI18N
         naServerLabel.setMaximumSize(new java.awt.Dimension(100, 14));
 
-        naFullNameLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naFullNameLabel.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naFullNameLabel.setForeground(new java.awt.Color(87, 101, 115));
         naFullNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         naFullNameLabel.setText(bundle.getString("WebServiceAuthLoginPanel.naFullNameLabel.text")); // NOI18N
         naFullNameLabel.setMaximumSize(new java.awt.Dimension(100, 14));
 
-        naUsernameLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naUsernameLabel.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naUsernameLabel.setForeground(new java.awt.Color(87, 101, 115));
         naUsernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         naUsernameLabel.setText(bundle.getString("WebServiceAuthLoginPanel.naUsernameLabel.text")); // NOI18N
         naUsernameLabel.setMaximumSize(new java.awt.Dimension(100, 14));
 
         naServerField.setEditable(false);
-        naServerField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naServerField.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naServerField.setMinimumSize(new java.awt.Dimension(98, 22));
 
-        wsUsernameField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        wsUsernameField.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         wsUsernameField.setMinimumSize(new java.awt.Dimension(98, 22));
         wsUsernameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -226,7 +244,7 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
             }
         });
 
-        wsPasswordField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        wsPasswordField.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -239,9 +257,9 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
                     .add(naUsernameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, naServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, wsPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, wsUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, naServerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, wsPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, wsUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -259,7 +277,7 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(naServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(naServerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

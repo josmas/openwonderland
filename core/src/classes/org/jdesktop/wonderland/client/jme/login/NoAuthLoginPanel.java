@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -196,33 +214,33 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         setOpaque(false);
         setPreferredSize(new java.awt.Dimension(360, 114));
 
-        naServerLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naServerLabel.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naServerLabel.setForeground(new java.awt.Color(87, 101, 115));
         naServerLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         naServerLabel.setText(bundle.getString("NoAuthLoginPanel.naServerLabel.text")); // NOI18N
 
-        naFullNameLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naFullNameLabel.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naFullNameLabel.setForeground(new java.awt.Color(87, 101, 115));
         naFullNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         naFullNameLabel.setText(bundle.getString("NoAuthLoginPanel.naFullNameLabel.text")); // NOI18N
 
-        naUsernameLabel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naUsernameLabel.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naUsernameLabel.setForeground(new java.awt.Color(87, 101, 115));
         naUsernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         naUsernameLabel.setText(bundle.getString("NoAuthLoginPanel.naUsernameLabel.text")); // NOI18N
 
         naServerField.setEditable(false);
-        naServerField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naServerField.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
 
-        naUsernameField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naUsernameField.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         naUsernameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 naUsernameFieldKeyReleased(evt);
             }
         });
 
-        naFullNameField.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        naFullNameField.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -259,13 +277,14 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(naServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(naServerLabel))
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void naUsernameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_naUsernameFieldKeyReleased
         notifyValidityListeners();
     }//GEN-LAST:event_naUsernameFieldKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField naFullNameField;
     private javax.swing.JLabel naFullNameLabel;

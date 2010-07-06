@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -31,7 +31,7 @@
               <Component id="guestLoginRB" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="authLoginRB" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="80" max="32767" attributes="0"/>
+              <EmptySpace pref="82" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -57,7 +57,7 @@
           <ComponentRef name="loginTypeBG"/>
         </Property>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="11" style="1"/>
+          <Font name="SansSerif" size="11" style="1"/>
         </Property>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -74,7 +74,7 @@
           <ComponentRef name="loginTypeBG"/>
         </Property>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="11" style="1"/>
+          <Font name="SansSerif" size="11" style="1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/jdesktop/wonderland/client/jme/login/Bundle.properties" key="EitherLoginPanel.authLoginRB.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -94,7 +94,7 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="11" style="1"/>
+          <Font name="SansSerif" size="11" style="1"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="73" green="65" red="57" type="rgb"/>
