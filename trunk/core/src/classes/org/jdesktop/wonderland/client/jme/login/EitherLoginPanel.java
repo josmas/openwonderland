@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -156,7 +174,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
         setOpaque(false);
 
         loginTypeBG.add(guestLoginRB);
-        guestLoginRB.setFont(new java.awt.Font("Arial", 1, 11));
+        guestLoginRB.setFont(new java.awt.Font("SansSerif", 1, 11)); // NOI18N
         guestLoginRB.setSelected(true);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle"); // NOI18N
         guestLoginRB.setText(bundle.getString("EitherLoginPanel.guestLoginRB.text")); // NOI18N
@@ -167,7 +185,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
         });
 
         loginTypeBG.add(authLoginRB);
-        authLoginRB.setFont(new java.awt.Font("Arial", 1, 11));
+        authLoginRB.setFont(new java.awt.Font("SansSerif", 1, 11)); // NOI18N
         authLoginRB.setText(bundle.getString("EitherLoginPanel.authLoginRB.text")); // NOI18N
         authLoginRB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -178,7 +196,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
         loginPanel.setOpaque(false);
         loginPanel.setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("SansSerif", 1, 11)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(87, 101, 115));
         jLabel1.setText(bundle.getString("EitherLoginPanel.jLabel1.text")); // NOI18N
 
@@ -194,7 +212,7 @@ public class EitherLoginPanel extends JPanel implements LoginPanel {
                 .add(guestLoginRB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(authLoginRB)
-                .addContainerGap(80, Short.MAX_VALUE))
+                .addContainerGap(82, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
