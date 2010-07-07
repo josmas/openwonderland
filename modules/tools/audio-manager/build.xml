@@ -50,6 +50,7 @@
 
             <requires name="presencemanager" version="0" minorVersion="5"/>
             <requires name="content-repository" version="0" minorVersion="5"/>
+            <requires name="avatarbase" version="0" minorVersion="5" miniVersion="1"/>
 
             <client dir="${current.dir}/lib">
                 <clientjar name="audiomanager-client" basedir="${build.classes.dir}">

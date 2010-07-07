@@ -1,3 +1,21 @@
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
 /*
  * Project Wonderland
  * 
@@ -84,6 +102,7 @@ public class UserListHUDPanel
     private Cell cell;
     private ChannelComponent channelComp;
     private PresenceManager pm;
+    private PresenceControls pc;
     private PresenceInfo presenceInfo;
     private Map<PresenceInfo, HUDComponent> changeNameMap =
             Collections.synchronizedMap(
@@ -108,13 +127,13 @@ public class UserListHUDPanel
 
     private VolumeConverter volumeConverter;
 
-    public UserListHUDPanel(AudioManagerClient client,
-            WonderlandSession session, PresenceManager pm, Cell cell) {
+    public UserListHUDPanel(PresenceControls pc, Cell cell) {
+        this.pc = pc;
 
-        this.client = client;
-        this.session = session;
+        this.client = pc.getClient();
+        this.session = pc.getSession();
+        this.pm = pc.getPresenceManager();
 
-        this.pm = pm;
         this.cell = cell;
 
         initComponents();
@@ -676,9 +695,6 @@ public class UserListHUDPanel
         namePropertiesHUDComponent.setVisible(true);
 }//GEN-LAST:event_propertiesButtonActionPerformed
 
-    private ConcurrentHashMap<PresenceInfo, Integer> volumeChangeMap =
-            new ConcurrentHashMap();
-
     private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
         Object[] selectedValues = userList.getSelectedValues();
 
@@ -728,7 +744,7 @@ public class UserListHUDPanel
             }
 
             if (info != null) {
-                Integer v = volumeChangeMap.get(info);
+                Integer v = volumeConverter.getVolume(pc.getVolume(info));
 
 		int volume;
 
@@ -770,9 +786,7 @@ private void textChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         return;
     }
 
-    ChatManager chatManager = ChatManager.getChatManager();
-    String remoteUser = id.getUsername();
-    chatManager.startChat(remoteUser);
+    pc.startTextChat(id);
 }//GEN-LAST:event_textChatButtonActionPerformed
 
 private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_voiceChatButtonActionPerformed
@@ -798,45 +812,7 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         usersToInvite.add(info);
     }
 
-    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo,
-            presenceInfo, Mode.IN_PROGRESS);
-
-    addHUDPanel.inviteUsers(usersToInvite);
-
-    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    final HUDComponent hudComponent = mainHUD.createComponent(addHUDPanel);
-    addHUDPanel.setHUDComponent(hudComponent);
-    hudComponent.setName(BUNDLE.getString("Voice_Chat"));
-    hudComponent.setIcon(new ImageIcon(getClass().getResource(
-            "/org/jdesktop/wonderland/modules/audiomanager/client/" +
-            "resources/UserListChatVoice32x32.png")));
-    mainHUD.addComponent(hudComponent);
-    hudComponent.addEventListener(new HUDEventListener() {
-
-        public void HUDObjectChanged(HUDEvent e) {
-            if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
-            }
-        }
-    });
-
-    PropertyChangeListener plistener = new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent pe) {
-            String name = pe.getPropertyName();
-            if (name.equals("ok") || name.equals("cancel")) {
-                hudComponent.setVisible(false);
-            }
-        }
-    };
-
-    addHUDPanel.addPropertyChangeListener(plistener);
-    hudComponent.setPreferredLocation(Layout.CENTER);
-    hudComponent.setVisible(true);
-
-    addHUDPanel.setLocation(
-            userListHUDComponent.getX() + userListHUDComponent.getWidth(),
-            userListHUDComponent.getY() + userListHUDComponent.getHeight() -
-            hudComponent.getHeight());
+    pc.startVoiceChat(usersToInvite, userListHUDComponent);
 }//GEN-LAST:event_voiceChatButtonActionPerformed
 
 private void muteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteButtonActionPerformed
@@ -941,14 +917,7 @@ private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-
                     continue;
                 }
 
-                LOGGER.info("changing volume for " + username + " to: " + volume);
-
-                volumeChangeMap.put(info, v);
-
-                SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-                session.send(client, new AudioVolumeMessage(info.getCellID(), sc.getCallID(), 
-		    info.getCallID(), volume, true));
+                pc.setVolume(info, volume);
             }
 	}
 }//GEN-LAST:event_volumeSliderStateChanged

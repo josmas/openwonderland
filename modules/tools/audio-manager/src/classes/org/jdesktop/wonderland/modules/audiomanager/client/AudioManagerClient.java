@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -26,7 +44,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,12 +54,22 @@ import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuInvocationSettings;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -53,6 +80,8 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
@@ -77,7 +106,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.UDPPortTestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatBusyMessage;
@@ -93,6 +121,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+import org.jdesktop.wonderland.modules.avatarbase.client.ui.AvatarConfigFrame;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
@@ -114,6 +143,10 @@ public class AudioManagerClient extends BaseConnection implements
     private PresenceManager pm;
     private PresenceInfo presenceInfo;
     private Cell cell;
+    
+    private PresenceControls controls;
+    private ContextMenuListener ctxListener;
+
     private JMenuItem userListJMenuItem;
     private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
     private HashMap<String, ArrayList<MemberChangeListener>> memberChangeListeners =
@@ -157,6 +190,25 @@ public class AudioManagerClient extends BaseConnection implements
             }
         });
         userListJMenuItem.setEnabled(false);
+
+        ctxListener = new ContextMenuListener() {
+            public void contextMenuDisplayed(ContextMenuEvent event) {
+                // only deal with invocations on AvatarCell
+                if (!(event.getPrimaryCell() instanceof AvatarCell)) {
+                    return;
+                }
+
+                ContextMenuInvocationSettings settings = event.getSettings();
+                AvatarCell cell = (AvatarCell) event.getPrimaryCell();
+
+                // if this is our avatar, add the configuration menu
+                if (cell != ViewManager.getViewManager().getPrimaryViewCell()) {
+                    settings.addTempFactory(new AudioContextMenuFactory(cell));
+                }
+            }
+        };
+
+
         logger.fine("Starting AudioManagerCLient");
     }
 
@@ -265,7 +317,7 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (userListHUDComponent == null) {
-            userListHUDPanel = new UserListHUDPanel(this, session, pm, cell);
+            userListHUDPanel = new UserListHUDPanel(controls, cell);
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
             userListHUDPanel.setHUDComponent(userListHUDComponent);
@@ -370,6 +422,8 @@ public class AudioManagerClient extends BaseConnection implements
         mainFrame.addToWindowMenu(userListJMenuItem, 5);
 
         AudioMenu.getAudioMenu(this).addMenus();
+
+        ContextMenuManager.getContextMenuManager().addContextMenuListener(ctxListener);
     }
 
     public void removeMenus() {
@@ -378,6 +432,61 @@ public class AudioManagerClient extends BaseConnection implements
         mainFrame.removeFromWindowMenu(userListJMenuItem);
 
         AudioMenu.getAudioMenu(this).removeMenus();
+
+        ContextMenuManager.getContextMenuManager().removeContextMenuListener(ctxListener);
+    }
+
+    // Context menu factory for avatar context menus
+    private class AudioContextMenuFactory
+            implements ContextMenuFactorySPI
+    {
+        private final AvatarCell remote;
+        private final PresenceInfo remotePI;
+
+        public AudioContextMenuFactory(AvatarCell remote) {
+            this.remote = remote;
+
+            remotePI = pm.getPresenceInfo(remote.getCellID());
+        }
+
+        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+            return new ContextMenuItem[] {
+                new SimpleContextMenuItem(BUNDLE.getString("Volume..."),
+                        new ContextMenuActionListener()
+                {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        VolumeControlJFrame vcjf = 
+                                new VolumeControlJFrame(new VolumeChangeListener() 
+                        {
+                            public void volumeChanged(float volume) {
+                                controls.setVolume(remotePI, volume);
+                            }
+                        }, remote.getIdentity().getUsername() + " " +
+                           BUNDLE.getString("Volume"));
+                        
+                        vcjf.pack();
+                        vcjf.setVisible(true);
+                    }
+                }),
+
+                new SimpleContextMenuItem(BUNDLE.getString("Text_Chat..."),
+                        new ContextMenuActionListener()
+                {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        controls.startTextChat(remote.getIdentity());
+                    }
+                }),
+
+                new SimpleContextMenuItem(BUNDLE.getString("Voice_Chat..."),
+                        new ContextMenuActionListener()
+                {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        controls.startVoiceChat(Collections.singletonList(remotePI),
+                                                null);
+                    }
+                }),
+            };
+        }
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
@@ -393,6 +502,12 @@ public class AudioManagerClient extends BaseConnection implements
              * our presenceInfo has to be available.
              */
             presenceInfo = pm.getPresenceInfo(cellID);
+
+            /*
+             * Now we have everything we need to create the presence
+             * controls.
+             */
+            controls = new PresenceControls(this, session, pm, presenceInfo);
 
             logger.fine("[AudioManagerClient] view configured for cell " +
                     cellID + " presence: " + presenceInfo + " from " + pm);
