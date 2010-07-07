@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -62,6 +80,7 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -75,12 +94,14 @@ import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent.AvatarConfigChangeListener;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.loader.AvatarLoaderRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderFactorySPI;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
@@ -109,6 +130,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private float positionMaxDistanceForPull = 3.0f;
     private String username;
     private DefaultCharacterControls controlScheme = null;
+
+    private boolean pickable = true;
+    private PickGeometry pickGeometry;
 
     private ProcessorComponent cameraChainedProcessor = null;  // The processor to which the camera is chained
 
@@ -398,7 +422,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (cell instanceof AvatarCell) {
             selectForInput(((AvatarCell) cell).isSelectedForInput());
         }
-        
+
         // Notify listeners that the avatar has changed.
         for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
             AvatarChangedListener listener = listenerRef.get();
@@ -418,8 +442,50 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             avatarCharacter.getJScene().updateWorldBound();
         }
 
+        // Update pick geometry
+        updatePickGeometry();
+
         // Turn off the indication that we have finished loading
         LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
+    }
+
+    public boolean isPickable() {
+        return pickable;
+    }
+
+    public void setPickable(boolean pickable) {
+        this.pickable = pickable;
+
+        // schedule a task to update the pick geometry
+        SceneWorker.addWorker(new WorkCommit() {
+            public void commit() {
+                updatePickGeometry();
+            }
+        });
+    }
+
+    public PickGeometry getPickGeometry() {
+        return pickGeometry;
+    }
+
+    protected void updatePickGeometry() {
+        boolean isMale = avatarCharacter.getCharacterParams().isMale();
+        PickBox[] pickBoxes = getPickBoxes(isMale);
+
+        // XXX TODO: pick geometry for basic avatars?
+        if (isPickable() && avatarCharacter.getJScene() != null &&
+            avatarCharacter.getSkeleton() != null)
+        {
+            pickGeometry = new PickGeometry(cell.getName(), cell,
+                                            AvatarImiJME.this, pickBoxes);
+        } else if (!isPickable() && pickGeometry != null) {
+            pickGeometry.detach();
+            pickGeometry = null;
+        }
+    }
+
+    protected PickBox[] getPickBoxes(boolean isMale) {
+        return PickGeometry.getDefaultGeometry(isMale);
     }
 
     @Override
