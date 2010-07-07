@@ -472,15 +472,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         boolean isMale = avatarCharacter.getCharacterParams().isMale();
         PickBox[] pickBoxes = getPickBoxes(isMale);
 
+        // clean up any existing pick geometry
+        if (pickGeometry != null) {
+            pickGeometry.detach();
+            pickGeometry = null;
+        }
+
         // XXX TODO: pick geometry for basic avatars?
         if (isPickable() && avatarCharacter.getJScene() != null &&
             avatarCharacter.getSkeleton() != null)
         {
             pickGeometry = new PickGeometry(cell.getName(), cell,
                                             AvatarImiJME.this, pickBoxes);
-        } else if (!isPickable() && pickGeometry != null) {
-            pickGeometry.detach();
-            pickGeometry = null;
         }
     }
 
