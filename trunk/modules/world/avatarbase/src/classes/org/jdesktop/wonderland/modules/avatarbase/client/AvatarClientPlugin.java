@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -49,7 +67,17 @@ import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuInvocationSettings;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
@@ -57,6 +85,7 @@ import org.jdesktop.wonderland.client.jme.MainFrameImpl;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarSessionLoader.AvatarLoaderStateListener;
@@ -136,6 +165,9 @@ public class AvatarClientPlugin extends BaseClientPlugin
     // on the mutex
     private Lock isAvatarSetMutex = new ReentrantLock();
     private Boolean isAvatarSet = false;
+
+    // Context menu listener
+    private ContextMenuListener ctxListener;
 
     /**
      * {@inheritDoc]
@@ -294,6 +326,27 @@ public class AvatarClientPlugin extends BaseClientPlugin
             }
         });
 
+        ctxListener = new ContextMenuListener() {
+            public void contextMenuDisplayed(ContextMenuEvent event) {
+                // only deal with invocations on AvatarCell
+                if (!(event.getPrimaryCell() instanceof AvatarCell)) {
+                    return;
+                }
+
+                ContextMenuInvocationSettings settings = event.getSettings();
+                settings.setDisplayStandard(false);
+                settings.setDisplayCellStandard(false);
+
+                AvatarCell cell = (AvatarCell) event.getPrimaryCell();
+                settings.setMenuName(cell.getIdentity().getUsername());
+
+                // if this is our avatar, add the configuration menu
+                if (cell == ViewManager.getViewManager().getPrimaryViewCell()) {
+                    settings.addTempFactory(new ConfigureContextMenuFactory());
+                }
+            }
+        };
+
         // register the renderer for this session
         ClientContextJME.getAvatarRenderManager().registerRenderer(manager,
                 AvatarImiJME.class, AvatarControls.class);
@@ -349,6 +402,10 @@ public class AvatarClientPlugin extends BaseClientPlugin
         loaderMap.put(manager, loader);
         loader.addAvatarLoaderStateListener(this);
         loader.load();
+
+        // set up our custom context menu listener to disable the standard
+        // menus on avatar cells
+        ContextMenuManager.getContextMenuManager().addContextMenuListener(ctxListener);
     }
 
     /**
@@ -356,6 +413,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
      */
     @Override
     protected void deactivate() {
+        ContextMenuManager.getContextMenuManager().removeContextMenuListener(ctxListener);
 
         // First remove the menus. This will prevent users from taking action
         // upon the avatar in the (small) chance they do while the session is
@@ -584,6 +642,26 @@ public class AvatarClientPlugin extends BaseClientPlugin
             ServerSessionManager session = viewCell.getCellCache().getSession().getSessionManager();
             AvatarConfigInfo configInfo = avatar.getAvatarConfigInfo(session);
             configComponent.requestAvatarConfigInfo(configInfo, isLocal);
+        }
+    }
+
+    /**
+     * Context menu factory for configuring your avatar
+     */
+    private static class ConfigureContextMenuFactory
+            implements ContextMenuFactorySPI
+    {
+        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+            return new ContextMenuItem[] {
+                new SimpleContextMenuItem(bundle.getString("Configure..."),
+                        new ContextMenuActionListener()
+                {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        AvatarConfigFrame f = new AvatarConfigFrame();
+                        f.setVisible(true);
+                    }
+                })
+            };
         }
     }
 }
