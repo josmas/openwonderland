@@ -166,7 +166,7 @@ public class PresenceControls {
 
     public float getVolume(PresenceInfo info) {
         synchronized (volumeChangeMap) {
-            return volumeChangeMap.get(info);
+            return volumeChangeMap.containsKey(info) ? volumeChangeMap.get(info) : 1.0f;
         }
     }
 }
