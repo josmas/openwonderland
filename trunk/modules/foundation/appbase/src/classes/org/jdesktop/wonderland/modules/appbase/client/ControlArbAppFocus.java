@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -32,6 +50,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
  * A control arb which maintains app input focus. When an control is taken for
@@ -96,6 +115,10 @@ public abstract class ControlArbAppFocus extends ControlArb {
             inputManager.removeKeyMouseFocus(
                     inputManager.getGlobalFocusEntity());
 
+            // Also disable focus on the global canvas, so it doesn't
+            // steal focus from our app.
+            JmeClientMain.getFrame().getCanvas().setFocusable(false);
+
             // Display a button to allow the user to release control
             App2D.invokeLater(new Runnable() {
                 public void run () {
@@ -139,8 +162,10 @@ public abstract class ControlArbAppFocus extends ControlArb {
             // No more apps have control. Reenable global (world) listeners.
             inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
 
-            // Also need to make sure that the main canvas has keyboard focus
+            // Also need to make sure that the main canvas is focusable and
+            // has keyboard focus
             Canvas canvas = JmeClientMain.getFrame().getCanvas();
+            canvas.setFocusable(true);
             if (!canvas.requestFocusInWindow()) {
                 logger.info("Focus request for main canvas rejected.");
             }
