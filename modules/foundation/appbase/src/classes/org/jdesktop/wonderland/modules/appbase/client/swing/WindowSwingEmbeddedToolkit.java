@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -58,6 +76,7 @@ class WindowSwingEmbeddedToolkit
     private static final WindowSwingEmbeddedToolkit embeddedToolkit = new WindowSwingEmbeddedToolkit();
     private Point lastPressPointScreen;
     private WindowSwing.EventHook lastPressEventHook;
+    private WindowSwing lastWindow;
 
     public static WindowSwingEmbeddedToolkit getWindowSwingEmbeddedToolkit() {
         return embeddedToolkit;
@@ -85,7 +104,35 @@ class WindowSwingEmbeddedToolkit
         if (ret == null || ret.entity == null || ret.destPickDetails == null) {
             logger.fine("WindowSwing miss");
             e.translatePoint(-(canvasPoint.x - framePoint.x), -(canvasPoint.y - framePoint.y));
-            return null;
+
+            // OWL issue #71: if the previous event was on a swing window and
+            // this one is not, generate a fake mouse event outside of the
+            // last swing window to ensure that a MouseExit event is generated.
+            if (lastWindow != null) {
+                logger.fine("Exit swing");
+
+                // send a fake mouse event to generate an exit
+                final EmbeddedPeer targetEmbeddedPeer = lastWindow.getEmbeddedPeer();
+                lastWindow = null;
+                return new CoordinateHandler() {
+                    public EmbeddedPeer getEmbeddedPeer() {
+                        return targetEmbeddedPeer;
+                    }
+
+                    public Point2D transform(Point2D src, Point2D dst, 
+                                             MouseEvent event) 
+                    {
+                        if (dst == null) {
+                            dst = new Point2D.Float();
+                        }
+                        
+                        dst.setLocation(-1, -1);
+                        return dst;
+                    }
+                };
+            } else {
+                return null;
+            }
         }
         logger.fine("WindowSwing hit");
         logger.fine("Pick hit entity = " + ret.entity);
@@ -94,6 +141,12 @@ class WindowSwingEmbeddedToolkit
         assert comp != null;
         final View2D view = ((WindowSwing.WindowSwingViewReference) comp).getView();
         WindowSwing windowSwing = (WindowSwing) view.getWindow();
+
+        // Keep track of the last window we hit
+        if (lastWindow == null) {
+            logger.fine("Enter swing");
+        }
+        lastWindow = windowSwing;
 
         // TODO: someday: I don't think we need to set this anymore for drag events. But it doesn't hurt.
         final Vector3f intersectionPointWorld = ret.destPickDetails.getPosition();
