@@ -49,8 +49,6 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
  * A control arb which maintains app input focus. When an control is taken for
@@ -115,9 +113,8 @@ public abstract class ControlArbAppFocus extends ControlArb {
             inputManager.removeKeyMouseFocus(
                     inputManager.getGlobalFocusEntity());
 
-            // Also disable focus on the global canvas, so it doesn't
-            // steal focus from our app.
-            JmeClientMain.getFrame().getCanvas().setFocusable(false);
+            // Update key focus for root canvas
+            updateKeyFocus(true);
 
             // Display a button to allow the user to release control
             App2D.invokeLater(new Runnable() {
@@ -162,13 +159,31 @@ public abstract class ControlArbAppFocus extends ControlArb {
             // No more apps have control. Reenable global (world) listeners.
             inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
 
-            // Also need to make sure that the main canvas is focusable and
-            // has keyboard focus
+            // Make sure the main canvas gets keyboard focus
+            updateKeyFocus(false);
             Canvas canvas = JmeClientMain.getFrame().getCanvas();
-            canvas.setFocusable(true);
             if (!canvas.requestFocusInWindow()) {
                 logger.info("Focus request for main canvas rejected.");
             }
+        }
+    }
+
+    /**
+     * By default, the control arb makes it so the main canvas is not focusable
+     * when an app has control. Subclasses may override this method to change
+     * this behavior.
+     * @param hasControl true if the app has just gained control, or false if
+     * not
+     */
+    protected void updateKeyFocus(boolean hasControl) {
+        Canvas canvas = JmeClientMain.getFrame().getCanvas();
+
+        if (!hasControl) {
+            // Make sure that the main canvas is focusable
+            canvas.setFocusable(true);
+        } else {
+            // Prevent the main canvas for gaining focus while an app has focus
+            canvas.setFocusable(false);
         }
     }
 
