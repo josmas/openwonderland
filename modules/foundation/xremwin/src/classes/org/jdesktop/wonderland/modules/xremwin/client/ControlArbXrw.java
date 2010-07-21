@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -21,6 +39,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
@@ -97,6 +116,16 @@ public class ControlArbXrw extends ControlArbSingle {
             release();
             super.releaseControlPerform();
         }
+    }
+
+    /**
+     * Make sure the main canvas always has focus. The main canvas needs focus
+     * for key presses to be delivered to the Xrw windows.
+     * @param hasControl whether or not we have control.
+     */
+    @Override
+    protected void updateKeyFocus(boolean hasControl) {
+        JmeClientMain.getFrame().getCanvas().setFocusable(true);
     }
 
     /**
