@@ -101,6 +101,13 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="left">[DownloadBuildModules05 Download, Build, and Deploy Optional Modules from the Source Code]</td>
   <td class="right">This tutorial describes how developers can download and compile the source code, and deploy the optional add-on modules.</td>
 </tr>
+
+<tr>
+  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/DevelopingWithNetBeansPoint5 Developing With NetBeans]</td>
+  <td class="right"> _Needs Updating_ This page describes how to use NetBeans to develop, run and debug Wonderland 0.5.</td>
+</tr>
+
+
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorkingWithModules05 Working with Modules]</td>
   <td class="right">This tutorial describes the basics of the Open Wonderland module system and how to install modules. Modules allow developers to extend the functionality of the platform by providing custom code and/or content.</td>
