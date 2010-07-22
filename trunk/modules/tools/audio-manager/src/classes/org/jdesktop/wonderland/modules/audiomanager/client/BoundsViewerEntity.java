@@ -112,13 +112,15 @@ public class BoundsViewerEntity extends Entity {
         // box. Add to the scene graph of this Entity.
         if (bounds instanceof BoundingSphere) {
             float radius = ((BoundingSphere) bounds).radius;
-            Sphere sphere = new Sphere("Sphere", 30, 30, radius);
+            Vector3f center = ((BoundingSphere) bounds).getCenter();
+            Sphere sphere = new Sphere("Sphere", center, 30, 30, radius);
             rootNode.attachChild(sphere);
         } else if (bounds instanceof BoundingBox) {
             float xExtent = ((BoundingBox)bounds).xExtent;
             float yExtent = ((BoundingBox)bounds).yExtent;
             float zExtent = ((BoundingBox)bounds).zExtent;
-            Box box = new Box("Box", Vector3f.ZERO, xExtent, yExtent, zExtent);
+            Vector3f origin = ((BoundingBox)bounds).getCenter();
+            Box box = new Box("Box", origin, xExtent, yExtent, zExtent);
             rootNode.attachChild(box);
         }
 
@@ -126,9 +128,7 @@ public class BoundsViewerEntity extends Entity {
         // the translation for this entity root node
 	CellTransform transform = cell.getWorldTransform();
 
-        Vector3f translation = transform.getTranslation(null);
-	translation = translation.add(bounds.getCenter());
-        rootNode.setLocalTranslation(translation);
+        rootNode.setLocalTranslation(transform.getTranslation(null));
 	rootNode.setLocalRotation(transform.getRotation(null));
         // OWL issue #61: make sure to take scale into account
         rootNode.setLocalScale(transform.getScaling(null));
@@ -146,10 +146,9 @@ public class BoundsViewerEntity extends Entity {
                 RenderUpdater u = new RenderUpdater() {
                     public void update(Object obj) {
                         CellTransform transform = cell.getWorldTransform();
-                        Vector3f translation = transform.getTranslation(null);
-		        translation = translation.add(bounds.getCenter());
-                        rootNode.setLocalTranslation(translation);
+                        rootNode.setLocalTranslation(transform.getTranslation(null));
 			rootNode.setLocalRotation(transform.getRotation(null));
+                        rootNode.setLocalScale(transform.getScaling(null));
                         wm.addToUpdateList(rootNode);
                     }
                 };
