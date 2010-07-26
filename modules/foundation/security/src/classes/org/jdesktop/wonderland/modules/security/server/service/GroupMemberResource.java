@@ -61,7 +61,11 @@ public class GroupMemberResource implements Resource, Serializable {
     }
 
     public String getId() {
-        return GroupMemberResource.class.getName();
+        return GroupMemberResource.class.getName() + "-" + group;
+    }
+
+    public String getGroupName() {
+        return group;
     }
 
     public Result request(WonderlandIdentity identity, Action action) {
@@ -98,7 +102,9 @@ public class GroupMemberResource implements Resource, Serializable {
         for (Principal p : principals) {
             logger.fine("Testing principal " + p  + " for group " + group);
 
-            if (p.getType() == Type.GROUP) {
+            // OWL issue #78: be sure to include EVERYBODY groups as well
+            // as regular groups in this test
+            if (p.getType() == Type.GROUP || p.getType() == Type.EVERYBODY) {
                 String name = p.getId();
 
                 if (name.equals(group) || name.equals("admin")) {
