@@ -21,6 +21,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.ExceptionRetryStatus;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
@@ -170,24 +171,36 @@ public class ProtocolSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
-        // notify the user that logout has started.
-        // TODO: is this the right thing to do, or should we only
-        // do this automatically from the Wonderland protocol?
-        WonderlandClientID clientID = new WonderlandClientID(getSession());
-        WonderlandContext.getUserManager().startLogout(clientID);
+        try {
+            // notify the user that logout has started.
+            // TODO: is this the right thing to do, or should we only
+            // do this automatically from the Wonderland protocol?
+            WonderlandClientID clientID = new WonderlandClientID(sessionRef);
+            WonderlandContext.getUserManager().startLogout(clientID);
 
-        // notify the wrapped session that we were disconnected
-        if (wrapped != null) {
-            wrapped.disconnected(forced);
-        }
+            // notify the wrapped session that we were disconnected
+            if (wrapped != null) {
+                wrapped.disconnected(forced);
+            }
             
-        // notify the user that logout is now complete.  This will start
-        // running the logout tasks
-        WonderlandContext.getUserManager().finishLogout(clientID);
+            // notify the user that logout is now complete.  This will start
+            // running the logout tasks
+            WonderlandContext.getUserManager().finishLogout(clientID);
         
-        // record client disconnect
-        if (protocol != null) {
-            recordDisconnect(protocol, getSession());
+            // record client disconnect
+            if (protocol != null) {
+                recordDisconnect(protocol, sessionRef);
+            }
+        } catch (RuntimeException re) {
+            // Darkstar silently swallows exceptions in this code. Make sure
+            // to log any errors that aren't retryable
+            if (!(re instanceof ExceptionRetryStatus) ||
+                    !((ExceptionRetryStatus) re).shouldRetry())
+            {
+                logger.log(Level.WARNING, "Disconnected error", re);
+            }
+
+            throw re;
         }
 
         // XXX acording to the Darkstar docs, this is our responsibility,
@@ -281,17 +294,17 @@ public class ProtocolSessionListener
     /**
      * Record a client of the given type disconnecting
      * @param protocol the protocol the session connected with
-     * @param session the session that connected
+     * @param sessionRef a reference to the session that connected
      */
     protected void recordDisconnect(CommunicationsProtocol protocol,
-                                    ClientSession session)
+                                    ManagedReference<ClientSession> sessionRef)
     {
         ProtocolClientMap pcm = getProtocolClientMap();
         
         DataManager dm = AppContext.getDataManager();
         dm.markForUpdate(pcm);
         
-        pcm.remove(protocol, session);
+        pcm.remove(protocol, sessionRef);
     }
       
     /**
@@ -350,12 +363,12 @@ public class ProtocolSessionListener
         /**
          * Remove a session from a communications protocol
          * @param protocol the communications protocol
-         * @param session the client session associated with the given protocol
+         * @param sessionRef a reference to the client session associated with
+         * the given protocol
          */
-        public void remove(CommunicationsProtocol protocol, ClientSession session) {
-            DataManager dm = AppContext.getDataManager();
-            ManagedReference sessionRef = dm.createReference(session);
-            
+        public void remove(CommunicationsProtocol protocol, 
+                           ManagedReference<ClientSession> sessionRef)
+        {
             // Remove the reference to thei client in the set of client for
             // the given protocol.  If the set is empty, remove the set
             // altogether.
