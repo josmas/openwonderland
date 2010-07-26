@@ -123,6 +123,9 @@ public class JmeClientMain {
     private JmeClientSession curSession;
     // keep tack of whether we are currently logging out
     private boolean loggingOut;
+    // whether we should try to auto-reconnect
+    private boolean autoReconnect = true;
+
 
     // log uncaught exceptions
     private static final UncaughtExceptionHandler ueh =
@@ -314,6 +317,22 @@ public class JmeClientMain {
     }
 
     /**
+     * Return whether or not we should auto-reconnect on disconnect
+     * @return true if auto reconnect is enabled, or false if not
+     */
+    public synchronized boolean getAutoReconnect() {
+        return autoReconnect;
+    }
+
+    /**
+     * Set whether or not we should auto-reconnect on disconnect
+     * @param autoReconnect true to reconnect automatically, or false not to
+     */
+    public synchronized void setAutoReconnect(boolean autoReconnect) {
+        this.autoReconnect = autoReconnect;
+    }
+
+    /**
      * Move the client to the given location
      * @param serverURL the url of the server to go to, or null to stay
      * on the current server
@@ -455,14 +474,19 @@ public class JmeClientMain {
 
                         logout();
 
-                        SwingUtilities.invokeLater(new Runnable() {
+                        if (getAutoReconnect()) {
+                            SwingUtilities.invokeLater(new Runnable() {
 
-                            public void run() {
-                                ReconnectDialog rf = new ReconnectDialog(
-                                        JmeClientMain.this, mgr);
-                                rf.setVisible(true);
-                            }
-                        });
+                                public void run() {
+                                    ReconnectDialog rf = new ReconnectDialog(
+                                            JmeClientMain.this, mgr);
+                                    rf.setVisible(true);
+                                }
+                            });
+                        } else {
+                            // reset auto reconnect
+                            setAutoReconnect(true);
+                        }
 
                     } else {
                         synchronized (JmeClientMain.this) {
