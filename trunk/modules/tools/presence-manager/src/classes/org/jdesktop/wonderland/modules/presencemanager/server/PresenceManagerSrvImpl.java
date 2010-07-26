@@ -432,6 +432,10 @@ public class PresenceManagerSrvImpl implements PresenceManagerSrv {
                 logger.log(Level.WARNING, "Object not found for binding " +
                            bindingName);
                 player.removePlayerInRangeListener(this);
+            } catch (NameNotBoundException nnbe) {
+                logger.log(Level.WARNING, "Object not found for binding " +
+                           bindingName);
+                player.removePlayerInRangeListener(this);
             }
         }
 
