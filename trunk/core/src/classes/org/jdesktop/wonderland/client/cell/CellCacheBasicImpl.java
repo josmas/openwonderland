@@ -129,7 +129,14 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     public Cell getCell(CellID cellId) {
         return cells.get(cellId);
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    public EnvironmentCell getEnvironmentCell() {
+        return (EnvironmentCell) getCell(CellID.getEnvironmentCellID());
+    }
+
     /**
      * Return the set of cells in this cache
      * @return
@@ -180,7 +187,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
             // record the set of root cells
             logger.fine("LOADING CELL " + cell.getName());
-            if (parent == null) {
+            if (parent == null && !cellId.equals(CellID.getEnvironmentCellID())) {
                 logger.fine("LOADING ROOT CELL " + cell.getName());
                 rootCells.add(cell);
             }
@@ -204,7 +211,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 // The changeCellStatus actually changes the status on another thread
                 // so we don't perform geometry load operations on the DS listener thread
                 changeCellStatus(cell, CellStatus.VISIBLE);
-            } else if (cell instanceof ViewCell) {
+            } else if (cell instanceof ViewCell || 
+                       cellId.equals(CellID.getEnvironmentCellID()))
+            {
                 changeCellStatus(cell, CellStatus.ACTIVE);
             }
 
@@ -343,7 +352,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                         " with ID " + cellID, excp);
             }
         }
-        else {
+        else if (!cellID.equals(CellID.getEnvironmentCellID())) {
             logger.warning("Adding the Cell to the root");
             rootCells.add(cell);
         }

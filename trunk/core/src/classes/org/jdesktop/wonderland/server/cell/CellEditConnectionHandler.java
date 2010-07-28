@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -44,13 +62,11 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.security.Action;
-import org.jdesktop.wonderland.common.wfs.CellPath;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.security.Resource;
-import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
 /**
  * Handles CellEditMessages sent by the Wonderland client
@@ -105,7 +121,9 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                     // deleted and the parent cell
                     CellDeleteMessage cdm = (CellDeleteMessage) editMessage;
                     CellMO deleteMO = CellManagerMO.getCell(cdm.getCellID());
-                    if (deleteMO == null) {
+                    if (deleteMO == null || 
+                            deleteMO.getCellID().equals(CellID.getEnvironmentCellID()))
+                    {
                         break;
                     }
                     Resource child = crm.getCellResource(cdm.getCellID());
