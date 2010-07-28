@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -41,6 +59,7 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
@@ -132,23 +151,25 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
             request.put(resource.getId(), am);
 
             // perform the security check
-            security.doSecure(request, new CellEnteredTask(resource.getId(), cellID, 
-		callId));
+            security.doSecure(request, new CellEnteredTask(this, resource.getId(),
+                              callId));
         } else {
             // no security, just make the call directly
             cellEntered(callId);
         }
     }
 
-    private class CellEnteredTask implements SecureTask, Serializable {
-        private String resourceID;
-        private CellID viewCellID;
-	private String callId;
+    private static class CellEnteredTask implements SecureTask, Serializable {
+        private final ManagedReference<ConeOfSilenceProximityListener> listenerRef;
+        private final String resourceID;
+        private final String callId;
 
-        public CellEnteredTask(String resourceID, CellID viewCellID, String callId) {
+        public CellEnteredTask(ConeOfSilenceProximityListener listener,
+                               String resourceID, String callId)
+        {
+            this.listenerRef = AppContext.getDataManager().createReference(listener);
             this.resourceID = resourceID;
-            this.viewCellID = viewCellID;
-	    this.callId = callId;
+            this.callId = callId;
         }
 
         public void run(ResourceMap granted) {
@@ -156,7 +177,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
             if (am != null && !am.isEmpty()) {
                 // request was granted -- the user has permission to
                 // enter the COS
-                cellEntered(callId);
+                listenerRef.get().cellEntered(callId);
             } else {
                 logger.warning("Access denied to enter Cone of Silence");
             }
