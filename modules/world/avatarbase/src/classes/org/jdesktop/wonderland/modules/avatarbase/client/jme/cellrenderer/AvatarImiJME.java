@@ -901,13 +901,23 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         }
     }
 
-    public void triggerGoto(Vector3f position, Quaternion look) {
-        CellTransform transform = new CellTransform();
-        transform.setRotation(look);
-        transform.setTranslation(position);
-        cell.getComponent(MovableComponent.class).localMoveRequest(transform);
-        if (avatarCharacter!=null)
-            avatarCharacter.getModelInst().setTransform(new PTransform(look, position, new Vector3f(1, 1, 1)));
+    public void triggerGoto(final Vector3f position, final Quaternion look) {
+
+        if (avatarCharacter != null) {
+            SceneWorker.addWorker(new WorkCommit() {
+                public void commit() {
+                    PTransform xform = new PTransform(look, position,
+                                                      new Vector3f(1, 1, 1));
+                    avatarCharacter.getModelInst().setTransform(xform);
+                }
+            });
+        } else {
+            CellTransform transform = new CellTransform();
+            transform.setRotation(look);
+            transform.setTranslation(position);
+        
+            cell.getComponent(MovableComponent.class).localMoveRequest(transform);
+        }
     }
 
     /**
