@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -32,6 +50,7 @@ import com.sun.sgs.app.ObjectNotFoundException;
 import com.sun.sgs.app.PeriodicTaskHandle;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
+import com.sun.sgs.app.util.ScalableList;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -301,11 +320,23 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
      public WonderlandClientID getClientID() {
          return this.clientID;
      }
-
-        
-    private static class ManagedHashMap<K, V> extends HashMap<K, V> implements ManagedObject {}
-    private static class ManagedLinkedList<E> extends LinkedList<E> implements ManagedObject {}
             
+
+    private static class OpsList extends ScalableList<CellOp> {
+        // whether or not there is already a worker task in progress
+        private boolean taskRunning = false;
+
+        public boolean isTaskRunning() {
+            return taskRunning;
+        }
+
+        public void setTaskRunning(boolean taskRunning) {
+            this.taskRunning = taskRunning;
+
+            AppContext.getDataManager().markForUpdate(this);
+        }
+    }
+
     /**
      * Superclass of operations to modify the list of cached cells.  Operations
      * include adding, removing or updating the list of cells.
@@ -513,13 +544,13 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
             implements RevalidateScheduler, Serializable 
     {
         // the sender to send to
-        private WonderlandClientSender sender;
+        private final WonderlandClientSender sender;
         
         // the number of tasks to consume during each run
-        private int count;
+        private final int count;
         
         // a reference to the shared list of operations
-        private ManagedReference<List<CellOp>> opsRef;
+        private final ManagedReference<OpsList> opsRef;
         
         public SharedListRevalidateScheduler(WonderlandClientSender sender,
                                              int count)
@@ -529,8 +560,7 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
             
             // create managed references
             DataManager dm = AppContext.getDataManager();
-            List<CellOp> opsList = new ManagedLinkedList<CellOp>();
-            opsRef = dm.createReference(opsList);
+            opsRef = dm.createReference(new OpsList());
         }
         
         public void startRevalidate() {    
@@ -541,8 +571,14 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
         }
 
         public void endRevalidate() {            
+            logger.fine("Schedule " + opsRef.get().size() + " tasks " +
+                        " with count " + count + " running: " +
+                        opsRef.get().isTaskRunning());
+
             // schedule tasks to handle up to count operations
-            if (opsRef.get().size() > 0) {
+            if (!(opsRef.get().isTaskRunning())) {
+                opsRef.get().setTaskRunning(true);
+
                 TaskManager tm = AppContext.getTaskManager();
                 tm.scheduleTask(new SharedListRevalidateTask(sender, clientID,
                                                              count, opsRef));
@@ -557,16 +593,16 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
     private static class SharedListRevalidateTask
             implements Task, Serializable
     {
-        private WonderlandClientSender sender;
-        private WonderlandClientID clientID;
-        private ManagedReference<List<CellOp>> opsRef;
-        private int count;
+        private final WonderlandClientSender sender;
+        private final WonderlandClientID clientID;
+        private final ManagedReference<OpsList> opsRef;
+        private final int count;
         private MessageList messageList;
         
         public SharedListRevalidateTask(WonderlandClientSender sender,
                                         WonderlandClientID clientID,
                                         int count, 
-                                        ManagedReference<List<CellOp>> opsRef)
+                                        ManagedReference<OpsList> opsRef)
         {
             this.sender = sender;
             this.clientID = clientID;
@@ -580,8 +616,9 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
             if (AGGREGATE_MESSAGES) {
                 messageList = new MessageList();
             }
-            
-            int num = Math.min(ops.size(), count);
+
+            int size = ops.size();
+            int num = Math.min(size, count);
             for (int i = 0; i < num; i++) {
                 CellOp op = ops.remove(0);
                 
@@ -600,10 +637,16 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
             }
             
             // schedule a task to handle more
-            if (num > 0) {
+            if (size - num > 0) {
+                logger.fine("Continue " + (size - num) + " remaining tasks " +
+                            " with count " + count);
+
                 TaskManager tm = AppContext.getTaskManager();
                 tm.scheduleTask(new SharedListRevalidateTask(sender, clientID,
                                                              count, opsRef));
+            } else {
+                logger.fine("Done running task");
+                opsRef.get().setTaskRunning(false);
             }
         }
     }
