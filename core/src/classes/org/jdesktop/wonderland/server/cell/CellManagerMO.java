@@ -77,6 +77,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
     private static final String COUNTER_BINDING_NAME = NAME + ".CellCounter";
     private static final String ROOTCELLS_BINDING_NAME = NAME + ".RootCells";
     private static final String COMPONENTS_BINDING_NAME = NAME + ".Components";
+    private static final String ENV_CREATOR_BINDING_NAME = NAME + ".EnvCreator";
 
     /**
      * Creates a new instance of CellManagerMO.  Use the singleton
@@ -140,10 +141,56 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
 
     /**
+     * Get the singleton environment cell
+     * @return the environment cell
+     */
+    public static EnvironmentCellMO getEnvironmentCell() {
+        return (EnvironmentCellMO) getCell(CellID.getEnvironmentCellID());
+    }
+
+    /**
+     * Register to create the environment cell. This object will be called if
+     * a WFS is loaded that does not define an environment cell.
+     * @param creator the creator to register
+     */
+    public void registerEnvironmentCellCreator(EnvironmentCellCreator creator) {
+        AppContext.getDataManager().setBinding(ENV_CREATOR_BINDING_NAME, creator);
+    }
+
+    /**
+     * Create an environment cell using the default creator.
+     * @param creator the cell creator
+     */
+    protected EnvironmentCellMO createEnvironmentCell() {
+        DataManager dm = AppContext.getDataManager();
+        EnvironmentCellCreator creator =
+                (EnvironmentCellCreator) dm.getBinding(ENV_CREATOR_BINDING_NAME);
+        EnvironmentCellMO env = creator.createEnvironmentCell();
+        
+        try {
+            insertCellInWorld(env);
+        } catch (MultipleParentException mpe) {
+            // should never happen
+            logger.log(Level.WARNING, "Error adding environment cell", mpe);
+        }
+        
+        return env;
+    }
+    
+    /**
      * Insert the cell into the world. 
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
         cell.setLive(true);
+
+        if (cell instanceof EnvironmentCellMO) {
+            // don't add environment cells to the world. Instead, just update
+            // registrations
+            new CellCreationListener().cellAdded(cell);
+            return;
+        }
+
+        // add the cell to the universe
         UniverseManagerFactory.getUniverseManager().addRootToUniverse(cell);
         getRootCellsForUpdate().add(cell.cellID);
     }
@@ -193,6 +240,12 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     public void loadWorld() {
         new CellImporter().load();
+
+
+        // make sure there is an environment cell. If there isn't, create one.
+        if (getEnvironmentCell() == null) {
+            createEnvironmentCell();
+        }
     }
 
     public void saveWorld() {
@@ -205,7 +258,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     CellID createCellID(CellMO cell) {
         DataManager dm = AppContext.getDataManager();
+        CellID cellID;
 
+        if (cell instanceof EnvironmentCellMO) {
+            // special case: environment cell is a singleton that has a fixed id
+            cellID = CellID.getEnvironmentCellID();
+        } else {
+            // default case: assign a new cell ID
             CellCounter counter;
             try {
                 counter = (CellCounter) dm.getBindingForUpdate(COUNTER_BINDING_NAME);
@@ -214,7 +273,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
                 dm.setBinding(COUNTER_BINDING_NAME, counter);
             }
 
-        CellID cellID = new CellID(counter.nextCellID());
+            cellID = new CellID(counter.nextCellID());
+        }
+
         dm.setBinding(getCellBinding(cellID), cell);
         return cellID;
     }
@@ -300,6 +361,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
         }
 
         return out;
+    }
+
+    /**
+     * Interface for the environment cell creator.
+     */
+    public interface EnvironmentCellCreator extends ManagedObject {
+        public EnvironmentCellMO createEnvironmentCell();
     }
 
     private static final class CellCounter

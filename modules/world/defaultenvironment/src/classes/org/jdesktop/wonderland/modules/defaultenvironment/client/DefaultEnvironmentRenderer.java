@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -15,7 +33,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.defaultenvironment.client.jme;
+package org.jdesktop.wonderland.modules.defaultenvironment.client;
 
 import com.jme.image.Texture;
 import com.jme.light.LightNode;
@@ -44,22 +62,32 @@ import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.SkyboxComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.EnvironmentCell;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.Environment;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- *
+ * Renders the default environment, including lights and skybox. Adapted from
+ * DefaultEnvironment.
  * @author paulby
+ * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
-public class DefaultEnvironment implements Environment, ViewManagerListener, TransformChangeListener {
+public class DefaultEnvironmentRenderer implements CellRendererJME,
+        ViewManagerListener, TransformChangeListener
+{
     private static final Logger logger =
-            Logger.getLogger(DefaultEnvironment.class.getName());
+            Logger.getLogger(DefaultEnvironmentRenderer.class.getName());
+
+    private final EnvironmentCell cell;
+
+    private CellStatus status = CellStatus.DISK;
 
     private Skybox skybox = null;
     private Entity skyboxEntity = null;
@@ -67,17 +95,44 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
     private Vector3f translation = new Vector3f();
 
     private ViewCell curViewCell = null;
-    private ServerSessionManager loginManager;
     private SkyboxProcessor skyboxProcessor;
 
-    public DefaultEnvironment(ServerSessionManager loginManager) {
-        this.loginManager = loginManager;
+    public DefaultEnvironmentRenderer(Cell cell) {
+        this.cell = (EnvironmentCell) cell;
+    }
+
+    public synchronized Entity getEntity() {
+        if (skyboxEntity == null) {
+            addGlobalLights();
+            createSkybox();
+        }
+        
+        return skyboxEntity;
+    }
+
+    public void cellTransformUpdate(CellTransform localTransform) {
+        // ignore -- shouldn't happen
+    }
+
+    public void setStatus(CellStatus status, boolean increasing) {
+        this.status = status;
+
+        if (status == CellStatus.INACTIVE && increasing) {
+            ClientContextJME.getWorldManager().addEntity(getEntity());
+        } else if (status == CellStatus.INACTIVE && !increasing) {
+            removeGlobalLights();
+            removeSkybox();
+        }
+    }
+
+    public CellStatus getStatus() {
+        return status;
     }
 
     /**
-     * @{@inheritDoc}
+     * Add global lights
      */
-    public void addGlobalLights() {
+    protected void addGlobalLights() {
         LightNode globalLight1 = null;
         LightNode globalLight2 = null;
         LightNode globalLight3 = null;
@@ -119,7 +174,7 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
     /**
      * @{inheritDoc}
      */
-    public void removeGlobalLights() {
+    protected void removeGlobalLights() {
         for (LightNode node : globalLights) {
             ClientContextJME.getWorldManager().getRenderManager().removeLight(node);
         }
@@ -130,12 +185,11 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
     /**
      * @{@inheritDoc}
      */
-    public void addSkybox() {
+    protected void createSkybox() {
         logger.fine("[DefaultEnvironment] add skybox to " + this);
 
         if (skyboxEntity == null) {
             skyboxEntity = createSkyboxEntity();
-            ClientContextJME.getWorldManager().addEntity(skyboxEntity);
         }
 
         ViewManager.getViewManager().addViewManagerListener(this);
@@ -188,14 +242,12 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
     private Entity createSkyboxEntity() {
         try {
             /* Form the asset URIs */
-            String server = loginManager.getServerNameAndPort();
-
-            URL northURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/1.jpg", server);
-            URL southURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/3.jpg", server);
-            URL eastURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/2.jpg", server);
-            URL westURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/4.jpg", server);
-            URL downURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/5.jpg", server);
-            URL upURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/6.jpg", server);
+            URL northURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/1.jpg", cell);
+            URL southURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/3.jpg", cell);
+            URL eastURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/2.jpg", cell);
+            URL westURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/4.jpg", cell);
+            URL downURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/5.jpg", cell);
+            URL upURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/6.jpg", cell);
 
             WorldManager wm = ClientContextJME.getWorldManager();
             skybox = new Skybox("skybox", 1000, 1000, 1000);
@@ -238,40 +290,10 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
             return e;
 
         } catch (MalformedURLException ex) {
-            Logger.getLogger(DefaultEnvironment.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DefaultEnvironmentRenderer.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-
-//    class TextureAnimationProcessor extends ProcessorComponent {
-//
-//        private Texture top;
-//
-//        public TextureAnimationProcessor(Texture top) {
-//            this.top = top;
-//            top.setTranslation(new Vector3f());
-//        }
-//
-//        @Override
-//        public void compute(ProcessorArmingCollection arg0) {
-//            // Do nothing
-//        }
-//
-//        @Override
-//        public void commit(ProcessorArmingCollection arg0) {
-//            Vector3f v3f = top.getTranslation();
-//            v3f.y += 0.1f;
-//            if (v3f.y>1)
-//                v3f.y = 0;
-//            top.setTranslation(v3f);
-//        }
-//
-//        @Override
-//        public void initialize() {
-//            setArmingCondition(new NewFrameCondition(this));
-//        }
-//
-//    }
 
     class SkyboxProcessor extends ProcessorComponent {
 

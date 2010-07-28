@@ -56,7 +56,15 @@ public interface CellCache {
      * @return the cell with the specified ID.
      */
     public Cell getCell(CellID cellId);
-    
+
+    /**
+     * Get the singleton environment cell for the world represented by
+     * this cache
+     *
+     * @return the environment cell, or null if there is no environment cell
+     */
+    public EnvironmentCell getEnvironmentCell();
+
     /**
      * Return the session with which this cell cache is associated. 
      * 

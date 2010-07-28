@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -27,6 +45,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -124,6 +143,9 @@ class ViewCache {
     }
 
     void login() {
+        // Send an initial load of the environment cell
+        sendEnvironmentCell();
+
         // Trigger a revalidation
         cellMoved(viewCell, viewCell.getWorldTransform());
 
@@ -229,6 +251,16 @@ class ViewCache {
         synchronized(pendingCacheUpdates) {
             pendingCacheUpdates.add(new CacheUpdate(spaces));
         }
+    }
+
+    void sendEnvironmentCell() {
+        Collection<CellDescription> envCell =
+                Collections.singleton((CellDescription)
+                                      new CellDesc(CellID.getEnvironmentCellID()));
+
+        UniverseImpl.getUniverse().scheduleQueuedTransaction(
+                        new ViewCacheUpdateTask(envCell, ViewCacheUpdateType.LOAD),
+                        identity, ViewCache.this);
     }
 
     void childCellAdded(SpatialCellImpl child) {

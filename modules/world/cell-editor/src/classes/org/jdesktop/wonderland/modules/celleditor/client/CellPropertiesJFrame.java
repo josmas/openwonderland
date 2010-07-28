@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -339,7 +357,10 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 
         // Turn on the "add" capability button and the "remove" Cell button
         addCapabilityButton.setEnabled(true);
-        removeCellButton.setEnabled(true);
+
+        // Disable the remove button for the environment cell, enable it
+        // otherwise
+        removeCellButton.setEnabled(!cell.getCellID().equals(CellID.getEnvironmentCellID()));
 
         // Update the panel set based upon the elements in the server state
         updatePanelSet();
@@ -1094,6 +1115,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
      * the nodes are sorted.
      */
     class SortedTreeNode extends DefaultMutableTreeNode implements Comparable {
+        private String displayName;
 
         /**
          * Constructor, takes a display name, use for the root of the world.
@@ -1102,6 +1124,19 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         public SortedTreeNode(String name) {
             super(name);
         }
+
+
+        /**
+         * Constructor, takes a display name and a cell, use for cells with
+         * a different display name than the cell name.
+         * @param cell the cell to represent
+         * @param name The visual name of the node
+         */
+        public SortedTreeNode(Cell cell, String name) {
+            super((cell == null) ? name : cell);
+
+            this.displayName = name;
+        }
         
         /**
          * Constructor, takes the Cell to use as the 'user object'
@@ -1109,6 +1144,14 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
          */
         public SortedTreeNode(Cell cell) {
             super(cell);
+        }
+
+        /**
+         * Get a user-visible name to use. If null, use the cell's name
+         * @return the user-visible name
+         */
+        public String getDisplayName() {
+            return displayName;
         }
 
         /**
@@ -1145,13 +1188,17 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         public void nameChanged() {
             // Tell the parent to restore its children
             SortedTreeNode parentNode = (SortedTreeNode)getParent();
-            Collections.sort(parentNode.children);
+            if (parentNode != null) {
+                Collections.sort(parentNode.children);
+            }
 
             // Redraw this node, so that the entire name appears, necessary if
             // the name is made longer and to avoid the "..." that would be
             // drawn as a result.
             DefaultTreeModel model = (DefaultTreeModel)cellHierarchyTree.getModel();
-            model.nodeStructureChanged(parentNode);
+            if (parentNode != null) {
+                model.nodeStructureChanged(parentNode);
+            }
             model.nodeChanged(this);
 
             // Make sure selected node is still selected
@@ -1194,8 +1241,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             }
 
             // Using the name of the Cell to set the name of the tree node.
-            Object userObject = treeNode.getUserObject();
-            if (userObject instanceof Cell) {
+            if (treeNode.getDisplayName() != null) {
+                setText(treeNode.getDisplayName());
+            } else if (treeNode.getUserObject() instanceof Cell) {
                 Cell cell = (Cell) treeNode.getUserObject();
                 setText(cell.getName() + " (" + cell.getCellID().toString() + ")");
             }
@@ -1356,10 +1404,12 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 
         // Clear out any existing Cells from the tree. We do this by creating a
         // new tree model
-        treeRoot = new SortedTreeNode(BUNDLE.getString("World_Root"));
+        treeRoot = new SortedTreeNode(cache.getEnvironmentCell(),
+                                      BUNDLE.getString("World_Root"));
         DefaultTreeModel treeModel = new DefaultTreeModel(treeRoot);
         cellHierarchyTree.setModel(treeModel);
         cellNodes.clear();
+        cellNodes.put(cache.getEnvironmentCell(), treeRoot);
 
         // Loop through all of the root cells and add into the world
         Collection<Cell> rootCells = cache.getRootCells();
