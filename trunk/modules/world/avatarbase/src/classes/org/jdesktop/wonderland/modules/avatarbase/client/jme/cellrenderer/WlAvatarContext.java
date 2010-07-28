@@ -41,6 +41,8 @@ import imi.character.statemachine.corestates.ActionInfo;
 import imi.character.statemachine.corestates.ActionState;
 import imi.character.statemachine.corestates.CycleActionState;
 import imi.character.statemachine.corestates.IdleState;
+import imi.character.statemachine.corestates.TurnState;
+import imi.character.statemachine.corestates.WalkState;
 import imi.scene.animation.AnimationListener.AnimationMessageType;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -68,6 +70,27 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
                 actionMap.put(actionInfo.getAnimationName(), actionInfo);
             }
     }
+/*
+    @Override
+    public void notifyAnimationMessage(AnimationMessageType message, int stateID)
+        {
+        // DO SOMETHING WITH MESSAGE IF stateID is 0
+        System.out.println("XXX message: " + message + " StateID: " + stateID);
+
+        // switch (message)
+            {
+        //    case EndOfCycle:
+        //        break;
+        //    case PlayOnceComplete:
+        //        break;
+        //    case TransitionComplete:
+        //        break;
+        //
+            }
+
+        super.notifyAnimationMessage(message, stateID);
+        }
+*/
 
     /**
      * Return the names of the animations available to this character
@@ -106,13 +129,17 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
         AvatarAnimationEvent.EventType type = null;
         String animationName = null;
 
-        if (cur instanceof IdleState && currentAnimationName != null) {
+        if (cur instanceof IdleState && currentAnimationName != null) 
+	    {
             // transition out of the current state
             type = AvatarAnimationEvent.EventType.STOPPED;
             animationName = currentAnimationName;
             currentAnimationName = null;
-        } else if (cur instanceof CycleActionState) {
-            switch (message) {
+            } 
+	else if (cur instanceof CycleActionState) 
+	    {
+            switch (message) 
+		{
                 case TransitionComplete:
                     type = AvatarAnimationEvent.EventType.STARTED;
                     animationName = cur.getAnimationName();
@@ -123,12 +150,29 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
                     animationName = cur.getAnimationName();
                     currentAnimationName = null;
                     break;
+                }
             }
-        }
+	else if (cur instanceof TurnState)
+	    {
+	    type = AvatarAnimationEvent.EventType.STARTED;
+	    currentAnimationName = "Turn";
+	    animationName = currentAnimationName;
+	    }
+	else if (cur instanceof WalkState)
+	    {
+	    type = AvatarAnimationEvent.EventType.STARTED;
+	    currentAnimationName = "Walk";
+	    animationName = currentAnimationName;
+	    }
+	else if (cur instanceof IdleState)
+	    {
+            type = AvatarAnimationEvent.EventType.STOPPED;
+	    }
 
-        if (type == null) {
+        if (type == null) 
+	    {
             return;
-        }
+            }
 
         AvatarAnimationEvent aee = new AvatarAnimationEvent(type, getavatar(),
                                                             animationName);
