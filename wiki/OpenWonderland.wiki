@@ -151,7 +151,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td class="left">[http://wonderland.dev.java.net/mtgame/MTGameProgGuide.pdf MT-Game Programming Guide]</td>
-  <td class="right">Programming guide for the MT (Multi-Threaded) Game layer on top of jMonkeyEngine</td>
+  <td class="right">Programming guide for the MT (Multi-Threaded) Game layer on top of jMonkeyEngine ([http://groups.google.com/group/openwonderland/web/MTGameProgGuide.odt document source])</td>
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Communications/JVoiceBridge jVoiceBridge Developer's Guide]</td>
