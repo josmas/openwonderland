@@ -289,6 +289,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             if (cell.getParent() == null) {
                 logger.fine("UNLOADING ROOT CELL " + cell.getName());
                 rootCells.remove(cell);
+            } else {
+                cell.getParent().removeChild(cell);
             }
         } else {
             logger.log(Level.WARNING, "Unloading unknown cell " + cellId);
