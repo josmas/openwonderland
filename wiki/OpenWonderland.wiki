@@ -35,6 +35,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This tutorial describes how users launch the Open Wonderland client using Java(TM) Web Start.</td>
 </tr>
 <tr>
+  <td class="left">[http://sites.google.com/site/openwonderland/tutorials/learning-the-basics-tutorial Learning the Basics]</td>
+  <td class="right">Introductory user-focused tutorial explaining how to start Wonderland and use the basic features.</td>
+</tr>
+<tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandClientSpecs05 Client Hardware Performance]</td>
   <td>This page lists the reported performance of various hardware and software configurations with Open Wonderland</td>
 </tr>
@@ -182,8 +186,4 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 
 <tr colspan="2">
   <td><h3>Under Construction</h3></td>
-</tr>
-<tr>
-  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandLearningBasics05 Learning the Basics]</td>
-  <td class="right">Introductory user-focused tutorial explaining how to start Wonderland and use the basic features.</td>
 </tr>
