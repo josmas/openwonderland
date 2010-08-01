@@ -49,6 +49,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -178,8 +179,8 @@ public class CellUtils {
                     parentTransform.getTranslation(null).toString() + ", rotation=" +
                     parentTransform.getRotation(null).toString());
 
-            transform = CellPlacementUtils.transform(transform, worldTransform,
-                    parentTransform);
+            transform = ScenegraphUtils.computeChildTransform(parentTransform,
+                                                              transform);
         }
         
         logger.info("Final adjusted origin " + transform.getTranslation(null).toString());
