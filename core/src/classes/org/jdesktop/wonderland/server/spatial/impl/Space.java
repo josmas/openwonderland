@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -20,6 +38,7 @@ package org.jdesktop.wonderland.server.spatial.impl;
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
@@ -85,11 +104,10 @@ class Space {
     public void addViewCache(ViewCache cache) {
         synchronized(viewCaches) {
             viewCaches.add(cache);
-            ArrayList<ViewCache> tmp = new ArrayList();
-            tmp.add(cache);
+           
             synchronized(rootCells) {
                 for(SpatialCellImpl rootCell : rootCells) {
-                    rootCell.addViewCache(tmp, this);
+                    rootCell.addViewCache(Collections.singletonList(cache), this);
                 }
             }
         }
@@ -98,6 +116,12 @@ class Space {
     public void removeViewCache(ViewCache cache) {
         synchronized(viewCaches) {
             viewCaches.remove(cache);
+
+            synchronized(rootCells) {
+                for(SpatialCellImpl rootCell : rootCells) {
+                    rootCell.removeViewCache(Collections.singletonList(cache), this);
+                }
+            }
         }
     }
 
