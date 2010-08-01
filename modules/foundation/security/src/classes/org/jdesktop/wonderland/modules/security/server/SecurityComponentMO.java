@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -37,7 +55,6 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.security.Action;
-import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.modules.security.common.ActionDTO;
 import org.jdesktop.wonderland.modules.security.common.CellPermissions;
 import org.jdesktop.wonderland.modules.security.common.Permission;
@@ -52,10 +69,7 @@ import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellParentChangeListenerSrv;
-import org.jdesktop.wonderland.server.cell.CellResourceManager;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ComponentChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -333,6 +347,13 @@ public class SecurityComponentMO extends CellComponentMO {
         boolean isOwner(Set<Principal> userPrincipals) {
             for (Principal p : userPrincipals) {
                 if (owners.contains(p)) {
+                    return true;
+                }
+
+                // admins can also change security
+                if (p.getType() == Principal.Type.GROUP &&
+                        p.getId().equals("admin"))
+                {
                     return true;
                 }
             }
