@@ -206,8 +206,16 @@ class ViewCache {
     }
 
     void removeViewUpdateListener(CellID cellID, ViewUpdateListener listener) {
+        ViewUpdateListenerContainer container;
+
         synchronized(viewUpdateListeners) {
-            viewUpdateListeners.remove(cellID);
+            container = viewUpdateListeners.remove(cellID);
+        }
+
+        // OWL issue #86: send a last notification of the position (now out of
+        // range) so that proximity listeners will update properly
+        if (container != null) {
+            sendLastTransformEvent(container);
         }
     }
 
@@ -261,6 +269,19 @@ class ViewCache {
         UniverseImpl.getUniverse().scheduleQueuedTransaction(
                         new ViewCacheUpdateTask(envCell, ViewCacheUpdateType.LOAD),
                         identity, ViewCache.this);
+    }
+
+    void sendLastTransformEvent(final ViewUpdateListenerContainer cont)
+    {
+        UniverseImpl.getUniverse().scheduleTransaction(new KernelRunnable() {
+            public String getBaseTaskType() {
+                return ViewCache.class.getName() + ".MoveNotifier";
+            }
+
+            public void run() throws Exception {
+                cont.notifyListeners(getViewCell().getWorldTransform());
+            }
+        }, identity);
     }
 
     void childCellAdded(SpatialCellImpl child) {
