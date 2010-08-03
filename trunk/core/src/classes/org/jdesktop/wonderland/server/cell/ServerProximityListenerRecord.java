@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -23,7 +41,12 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.util.ScalableHashMap;
+import com.sun.sgs.service.NonDurableTransactionParticipant;
+import com.sun.sgs.service.Transaction;
+import com.sun.sgs.service.TransactionProxy;
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +54,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
+import org.jdesktop.wonderland.server.spatial.UniverseTxnRunnable;
 import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 /**
@@ -46,6 +70,10 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
     private static final String BINDING_NAME = ServerProximityListenerRecord.class.getName();
     private ServerProximityListenerWrapper wrapper;
     private String id;
+
+    private final Map<CellID, Integer> indexMap = new HashMap<CellID, Integer>();
+    private static final ThreadLocal<MapUpdateTransactionParticipant> mutp =
+            new ThreadLocal<MapUpdateTransactionParticipant>();
 
     ServerProximityListenerRecord(ServerProximityListenerWrapper proximityListener, BoundingVolume[] localBounds, String id) {
         super(proximityListener, localBounds);        
@@ -116,6 +144,167 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
                 // setLive is called, the binding hasn't been created
                 logger.log(Level.FINE, null, nnbe);
             }
+        }
+    }
+
+    /**
+     * Override to use a transactional version of this map.
+     * @return the transactional map
+     */
+    @Override
+    protected Map<CellID, Integer> getIndexMap() {
+        // OWL issue #93: the map returned here must be transactional:
+        // if a transaction updates an index and then aborts, that update
+        // must get undone before the transaction retries. We use a
+        // simple transaction participant stored in a thread-local
+        // variable to do that.
+
+        MapUpdateTransactionParticipant p = mutp.get();
+        if (p == null) {
+            // this is the first time we are accessing the thread-local
+            // variable, so create it and join the transaction currently
+            // in progress. After the join(), we are guaranteed to get
+            // either a commit or an abort.
+            final MapUpdateTransactionParticipant fp =
+                    new MapUpdateTransactionParticipant(indexMap);
+
+            AppContext.getManager(UniverseManager.class).runTxnRunnable(
+                    new UniverseTxnRunnable()
+            {
+                public void run(TransactionProxy txnProxy) {
+                    txnProxy.getCurrentTransaction().join(fp);
+                }
+            });
+
+            mutp.set(fp);
+            p = fp;
+        }
+
+        return p;
+    }
+
+    /**
+     * A simple implementation of a Map that stores puts and gets
+     * conditionally until the transaction is committed. The participant
+     * starts with a copy of the current global map, and updates that map
+     * only if the transaction commits.
+     * <p>
+     * This is meant to be a fast operation, since it is done on every move.
+     * Using a ManagedObject (with the potential for conflict) would likely
+     * be too slow.
+     * <p>
+     * Note this only implements a subset of map: put(), get(), containsKey()
+     * and remove().
+     */
+    private static class MapUpdateTransactionParticipant 
+            extends HashMap<CellID, Integer> 
+            implements NonDurableTransactionParticipant, Serializable
+    {
+        private final Map<CellID, Integer> globalMap;
+        private final Map<CellID, MapChange> changes = 
+                new HashMap<CellID, MapChange>();
+        
+        public MapUpdateTransactionParticipant(Map<CellID, Integer> globalMap) {
+            this.globalMap = globalMap;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            MapChange change = changes.get(key);
+            if (change == null) {
+                return globalMap.containsKey(key);
+            }
+            
+            return (change.type == MapChange.Type.ADD);
+        }
+
+        @Override
+        public Integer get(Object key) {
+            MapChange change = changes.get(key);
+            if (change == null) {
+                return globalMap.get(key);
+            }
+            
+            if (change.type == MapChange.Type.ADD) {
+                return change.value;
+            } else {
+                return null;
+            }
+        }
+        
+        @Override
+        public Integer put(CellID key, Integer value) {
+            Integer cur = super.get(key);
+            changes.put(key, new MapChange(MapChange.Type.ADD, value));
+            return cur;
+        }
+
+        @Override
+        public Integer remove(Object key) {
+            Integer cur = super.get(key);
+            changes.put((CellID) key, new MapChange(MapChange.Type.REMOVE, cur));
+            return cur;
+        }
+        
+        public String getTypeName() {
+            return MapUpdateTransactionParticipant.class.getName();
+        }
+        
+        public boolean prepare(Transaction t) throws Exception {
+            return false;
+        }
+
+        public void commit(Transaction t) {
+            synchronized (globalMap) {
+                for (Map.Entry<CellID, MapChange> e : changes.entrySet()) {
+                    e.getValue().apply(globalMap, e.getKey());
+                }
+            }
+
+            mutp.remove();
+        }
+
+        public void abort(Transaction t) {
+            // make no changes to the global map
+            mutp.remove();
+        }
+        
+        public void prepareAndCommit(Transaction t) throws Exception {
+            prepare(t);
+            commit(t);
+        }
+    }
+
+    /**
+     * Record a provisional change to a map
+     */
+    private static class MapChange {
+        enum Type { ADD, REMOVE };
+        
+        final Type type;
+        final Integer value;
+        
+        public MapChange(Type type, Integer value) {
+            this.type = type;
+            this.value = value;
+        }
+        
+        public void apply(Map<CellID, Integer> map, CellID key) {
+            switch (type) {
+                case ADD:
+                    logger.warning("Global put " + key + " " + value);
+                    map.put(key, value);
+                    break;
+                case REMOVE:
+                    logger.warning("Global remove " + key);
+                    map.remove(key);
+                    break;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "{Change: " + type + " value: " + value + "}";
         }
     }
 

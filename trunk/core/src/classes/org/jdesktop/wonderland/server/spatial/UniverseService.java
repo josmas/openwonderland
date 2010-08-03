@@ -574,6 +574,10 @@ public class UniverseService extends AbstractService implements UniverseManager 
         }
     }
 
+    public void runTxnRunnable(UniverseTxnRunnable runnable) {
+        runnable.run(txnProxy);
+    }
+
     /**
      * A change to apply to the cell.  This change will be applied when
      * the current transaction commits.  The run() method of subclasses
