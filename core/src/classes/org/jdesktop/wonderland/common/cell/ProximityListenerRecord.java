@@ -189,6 +189,11 @@ public class ProximityListenerRecord implements Serializable {
                 return;
             }
 
+            logger.warning("View cell " + viewCellID + " lastContainerIndex: " +
+                           lastContainerIndex + " currentContainerIndex: " +
+                           currentContainerIndex + " on " + this);
+
+
             // Loop through the bounds to make sure we properly give all
             // updates to the listener.  This ensures that enters and exits
             // will always match up for any view.

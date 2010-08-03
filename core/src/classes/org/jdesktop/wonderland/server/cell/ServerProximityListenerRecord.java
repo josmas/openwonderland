@@ -72,7 +72,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
     private String id;
 
     private final Map<CellID, Integer> indexMap = new HashMap<CellID, Integer>();
-    private static final ThreadLocal<MapUpdateTransactionParticipant> mutp =
+    private transient final ThreadLocal<MapUpdateTransactionParticipant> mutp =
             new ThreadLocal<MapUpdateTransactionParticipant>();
 
     ServerProximityListenerRecord(ServerProximityListenerWrapper proximityListener, BoundingVolume[] localBounds, String id) {
@@ -166,7 +166,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             // in progress. After the join(), we are guaranteed to get
             // either a commit or an abort.
             final MapUpdateTransactionParticipant fp =
-                    new MapUpdateTransactionParticipant(indexMap);
+                    new MapUpdateTransactionParticipant(indexMap, mutp);
 
             AppContext.getManager(UniverseManager.class).runTxnRunnable(
                     new UniverseTxnRunnable()
@@ -201,11 +201,16 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             implements NonDurableTransactionParticipant, Serializable
     {
         private final Map<CellID, Integer> globalMap;
+        private final ThreadLocal<MapUpdateTransactionParticipant> tl;
+
         private final Map<CellID, MapChange> changes = 
                 new HashMap<CellID, MapChange>();
         
-        public MapUpdateTransactionParticipant(Map<CellID, Integer> globalMap) {
+        public MapUpdateTransactionParticipant(Map<CellID, Integer> globalMap,
+            ThreadLocal<MapUpdateTransactionParticipant> tl)
+        {
             this.globalMap = globalMap;
+            this.tl = tl;
         }
 
         @Override
@@ -261,12 +266,12 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
                 }
             }
 
-            mutp.remove();
+            tl.remove();
         }
 
         public void abort(Transaction t) {
             // make no changes to the global map
-            mutp.remove();
+            tl.remove();
         }
         
         public void prepareAndCommit(Transaction t) throws Exception {
@@ -292,11 +297,9 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         public void apply(Map<CellID, Integer> map, CellID key) {
             switch (type) {
                 case ADD:
-                    logger.warning("Global put " + key + " " + value);
                     map.put(key, value);
                     break;
                 case REMOVE:
-                    logger.warning("Global remove " + key);
                     map.remove(key);
                     break;
             }
