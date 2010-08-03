@@ -64,6 +64,7 @@ import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
 import java.io.Serializable;
+import java.util.logging.Level;
 
 import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.common.security.Action;
@@ -118,9 +119,6 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
 	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
-
-	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
-	    + " viewCellID " + viewCellID + " " + proximityVolume);
 
 	this.entered = entered;
 
@@ -198,7 +196,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
         Player player = vm.getPlayer(callId);
 
-        System.out.println(callId + " entered cone " + name + " player " + player);
+        logger.info(callId + " entered cone " + name + " player " + player);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
@@ -226,8 +224,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	boolean isSpeaking = (inPrivateChat(audioGroup, player) == false);
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(isSpeaking,
-       	    AudioGroupPlayerInfo.ChatType.PRIVATE));
-
+                AudioGroupPlayerInfo.ChatType.PRIVATE));
+        
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
@@ -272,7 +270,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     private void cellExited(String callId) {
         logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
 
-        System.out.println(callId + " exited cone " + name + " avatar cell ID " + callId);
+        logger.warning(callId + " exited cone " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
