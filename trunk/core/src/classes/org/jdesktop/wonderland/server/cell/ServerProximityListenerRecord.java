@@ -71,7 +71,8 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
     private ServerProximityListenerWrapper wrapper;
     private String id;
 
-    private final Map<CellID, Integer> indexMap = new HashMap<CellID, Integer>();
+    private final Map<CellID, Integer> indexMap = 
+            Collections.synchronizedMap(new HashMap<CellID, Integer>());
     private transient final ThreadLocal<MapUpdateTransactionParticipant> mutp =
             new ThreadLocal<MapUpdateTransactionParticipant>();
 
@@ -172,6 +173,9 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
                     new UniverseTxnRunnable()
             {
                 public void run(TransactionProxy txnProxy) {
+                    logger.fine("Join transaction " + txnProxy.getCurrentTransaction() +
+                                " on " + ServerProximityListenerRecord.this +
+                                " participant: " + fp);
                     txnProxy.getCurrentTransaction().join(fp);
                 }
             });
@@ -205,6 +209,10 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
 
         private final Map<CellID, MapChange> changes = 
                 new HashMap<CellID, MapChange>();
+
+        // generate a unique id, since HashMap does funny stuff with
+        // equals() and hashcode()
+        private final Object id = new Object();
         
         public MapUpdateTransactionParticipant(Map<CellID, Integer> globalMap,
             ThreadLocal<MapUpdateTransactionParticipant> tl)
@@ -217,6 +225,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         public boolean containsKey(Object key) {
             MapChange change = changes.get(key);
             if (change == null) {
+                logger.fine(this + " contains " + key + " from global map");
                 return globalMap.containsKey(key);
             }
             
@@ -227,6 +236,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         public Integer get(Object key) {
             MapChange change = changes.get(key);
             if (change == null) {
+                logger.fine(this + " get " + key + " from global map");
                 return globalMap.get(key);
             }
             
@@ -239,14 +249,16 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         
         @Override
         public Integer put(CellID key, Integer value) {
-            Integer cur = super.get(key);
+            Integer cur = globalMap.get(key);
+            logger.fine(this + " put " + key + " = " + value);
             changes.put(key, new MapChange(MapChange.Type.ADD, value));
             return cur;
         }
 
         @Override
         public Integer remove(Object key) {
-            Integer cur = super.get(key);
+            Integer cur = globalMap.get(key);
+            logger.fine(this + " remove " + key);
             changes.put((CellID) key, new MapChange(MapChange.Type.REMOVE, cur));
             return cur;
         }
@@ -260,6 +272,9 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         }
 
         public void commit(Transaction t) {
+            logger.fine(this + " commit " + t + " to " + globalMap + "; " +
+                        changes.size() + " changes");
+
             synchronized (globalMap) {
                 for (Map.Entry<CellID, MapChange> e : changes.entrySet()) {
                     e.getValue().apply(globalMap, e.getKey());
@@ -270,14 +285,45 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         }
 
         public void abort(Transaction t) {
+            logger.fine(this + " abort " + t + " on " + globalMap);
+
             // make no changes to the global map
             tl.remove();
         }
         
         public void prepareAndCommit(Transaction t) throws Exception {
+            logger.fine(this + " prepare and commit " + t);
             prepare(t);
             commit(t);
         }
+
+        @Override
+        public String toString() {
+            return id.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MapUpdateTransactionParticipant other = (MapUpdateTransactionParticipant) obj;
+            if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 17 * hash + (this.id != null ? this.id.hashCode() : 0);
+            return hash;
+        }
+
     }
 
     /**
@@ -297,9 +343,13 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         public void apply(Map<CellID, Integer> map, CellID key) {
             switch (type) {
                 case ADD:
+                    logger.fine("Commit add " + key + ":" + value + " to " +
+                                   map);
                     map.put(key, value);
                     break;
                 case REMOVE:
+                    logger.fine("Commit remove " + key + ":" + value + " from " +
+                                   map);
                     map.remove(key);
                     break;
             }
