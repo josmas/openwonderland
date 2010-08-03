@@ -84,6 +84,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
+import org.jdesktop.wonderland.client.cell.EnvironmentCell;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.PropertiesManager;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
@@ -1356,7 +1357,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             SortedTreeNode treeNode = (SortedTreeNode) path.getLastPathComponent();
             Object userObject = treeNode.getUserObject();
             Cell newParent = null;
-            if (userObject instanceof Cell) {
+            if (userObject instanceof Cell && !(userObject instanceof EnvironmentCell)) {
                 parentCellID = ((Cell) userObject).getCellID();
                 newParent = (Cell) userObject;
                 if (draggedCell.equals(newParent) == true) {
