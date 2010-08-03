@@ -196,7 +196,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
         Player player = vm.getPlayer(callId);
 
-        logger.info(callId + " entered cone " + name + " player " + player);
+        logger.warning(callId + " entered cone " + name + " player " + player);
 
         if (player == null) {
             logger.warning("Can't find player for " + callId);
@@ -268,8 +268,6 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     }
 
     private void cellExited(String callId) {
-        logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
-
         logger.warning(callId + " exited cone " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
