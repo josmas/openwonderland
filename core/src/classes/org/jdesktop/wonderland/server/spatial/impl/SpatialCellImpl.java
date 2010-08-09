@@ -52,12 +52,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
@@ -174,7 +171,10 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
             }
 
             notifyCacheChildAddedOrRemoved(this, (SpatialCellImpl)child, true);
-            revalidate(); // Security revalidation, optimize this
+
+            // No need to revalidate the parent here -- adding a child can't
+            // change security parameters
+            // revalidate(); // Security revalidation, optimize this
         } finally {
             releaseRootWriteLock();
         }
@@ -435,7 +435,7 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
     
     private void releaseRootWriteLock() {
         if (rootNode!=null)
-            rootNode.readWriteLock.writeLock().unlock();;
+            rootNode.readWriteLock.writeLock().unlock();
     }
 
     public void acquireRootReadLock() {
