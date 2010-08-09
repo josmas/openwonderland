@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -27,10 +45,9 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -98,31 +115,33 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         SecurityManager security = AppContext.getManager(SecurityManager.class);
         ResourceMap rm = new ResourceMap();
 
-        // cells we have permission for (since they don't have a resource)
-        Map<CellID, CellDescription> granted = new HashMap<CellID, CellDescription>();
+        // a map of all the cells. The cells that we don't have permission
+        // to see wil be removed by the LoadCellsTask below.
+        // OWL issue #95: this map must maintain the ordering of the original
+        // set in order to guarantee that parent cells are loaded before their
+        // children.
+        Map<CellID, CellDescription> cellsMap =
+                new LinkedHashMap<CellID, CellDescription>();
 
-        // cells we need to check for permission
-        Map<CellID, CellDescription> check = new HashMap<CellID, CellDescription>();
-
-        // get the resource for each cell and add it to the appropriate map
+        // check if each cell has an associated resource, and if so, add
+        // it to the list of cells to check
         for (CellDescription cell : cells) {
+            // add to the map of cells
+            cellsMap.put(cell.getCellID(), cell);
+
             Resource resource = crm.getCellResource(cell.getCellID());
-            if (resource == null) {
-                // don't need to check this cell
-                granted.put(cell.getCellID(), cell);
-            } else {
+            if (resource != null) {
+                // if there is a resource associated with this cell, add it
+                // to the resource map to check
                 Resource r = new CellIDResource(cell.getCellID(), resource);
                 rm.put(r.getId(), new ActionMap(r, new ViewAction()));
-
-                // do check this cell
-                check.put(cell.getCellID(), cell);
             }
         }
 
         // see if we need to check any of the cells
-        if (check.size() > 0) {
+        if (!rm.isEmpty()) {
             // we do need to do this securely -- start a task
-            SecureTask checkLoad = new LoadCellsTask(check, granted, this);
+            SecureTask checkLoad = new LoadCellsTask(cellsMap, this);
             security.doSecure(rm, checkLoad);
         } else {
             // just send the messages directly
@@ -145,26 +164,29 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         ResourceMap rm = new ResourceMap();
 
         // cells we need to check for permission
-        Map<CellID, CellDescription> check = new HashMap<CellID, CellDescription>();
+        // OWL issue #95: this map must maintain the ordering of the original
+        // set in order to guarantee that parent cells are loaded before their
+        // children. We include all cells on this map to ensure we will see
+        // cells where security has been removed.
+        Map<CellID, CellDescription> cellsMap =
+                new LinkedHashMap<CellID, CellDescription>();
 
-        // get the resource for each cell and add it to the appropriate map
+        // get the resource for each cell and add it to the security check
         for (CellDescription cell : cells) {
+            // add to the map of cells
+            cellsMap.put(cell.getCellID(), cell);
+
             Resource resource = crm.getCellResource(cell.getCellID());
             if (resource != null) {
+                // add the resource to the security check
                 Resource r = new CellIDResource(cell.getCellID(), resource);
                 rm.put(r.getId(), new ActionMap(r, new ViewAction()));
-
-                // do check this cell
-                check.put(cell.getCellID(), cell);
             } 
         }
 
-        // see if we need to check any of the cells
-        if (check.size() > 0) {
-            // we do need to do this securely -- start a task
-            SecureTask checkCells = new RevalidateCellsTask(check, this);
-            security.doSecure(rm, checkCells);
-        }
+        // start a task to perform the checks
+        SecureTask checkCells = new RevalidateCellsTask(cellsMap, this);
+        security.doSecure(rm, checkCells);
     }
 
     /**
@@ -270,16 +292,13 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
     }
 
     private static final class LoadCellsTask implements SecureTask, Serializable {
-        private Map<CellID, CellDescription> check;
-        private Map<CellID, CellDescription> granted;
-        private ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+        private final Map<CellID, CellDescription> cells;
+        private final ManagedReference<ViewCellCacheMO> viewCellCacheRef;
 
-        public LoadCellsTask(Map<CellID, CellDescription> check,
-                             Map<CellID, CellDescription> granted,
+        public LoadCellsTask(Map<CellID, CellDescription> cells,
                              ViewCellCacheMO viewCellCache)
         {
-            this.check = check;
-            this.granted = granted;
+            this.cells = cells;
 
             viewCellCacheRef = AppContext.getDataManager().createReference(viewCellCache);
         }
@@ -288,52 +307,88 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
             // go through and move any cells that have been ok'd into the
             // granted list
             for (ActionMap am : grants.values()) {
-                // the resource is OK'dif the view action is granted
-                if (am.size() == 1) {
+                // the resource is OK'd if the view action is granted. If
+                // the action map is empty, it means permission was denied.
+                if (am.isEmpty()) {
                     CellID id = ((CellIDResource) am.getResource()).getCellID();
-                    CellDescription desc = check.get(id);
-                    granted.put(id, desc);
+                    cells.remove(id);
                 }
             }
 
-            // now send a load message with all the granted cells
+            // now send a load message with all the granted cells.
+            // OWL issue #95: these are sent in the order of the original
+            // list, so order is preserved
             ViewCellCacheMO cache = viewCellCacheRef.getForUpdate();
-            cache.sendLoadMessages(granted.values());
+            cache.sendLoadMessages(cells.values());
         }
     }
 
     private static final class RevalidateCellsTask implements SecureTask, Serializable {
-        private Map<CellID, CellDescription> check;
-        private ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+        private final Map<CellID, CellDescription> cells;
+        private final ManagedReference<ViewCellCacheMO> viewCellCacheRef;
 
-        public RevalidateCellsTask(Map<CellID, CellDescription> check,
+        public RevalidateCellsTask(Map<CellID, CellDescription> cells,
                                   ViewCellCacheMO viewCellCache)
         {
-            this.check = check;
+            this.cells = cells;
             viewCellCacheRef = AppContext.getDataManager().createReference(viewCellCache);
         }
 
         public void run(ResourceMap grants) {
-            List<CellDescription> load = new LinkedList<CellDescription>();
-            List<CellDescription> unload = new LinkedList<CellDescription>();
+            Map<CellID, CellDescription> unloadCells =
+                    new LinkedHashMap<CellID, CellDescription>(cells);
             ViewCellCacheMO cache = viewCellCacheRef.get();
 
             // go through and look at each cell to see if its granted or denied
             for (ActionMap am : grants.values()) {
                 CellID id = ((CellIDResource) am.getResource()).getCellID();
-                CellDescription desc = check.get(id);
-
+                
                 // the resource is OK'd if the view action is granted
-                if (am.size() == 1 && !cache.isLoaded(id)) {
-                    load.add(desc);
-                } else if (am.size() == 0 && cache.isLoaded(id)) {
-                    unload.add(desc);
+                if (am.size() == 0) {
+                    // cell is removed -- keep on the unload list only
+                    cells.remove(id);
+                } else {
+                    // cell is added -- keep on the load list only
+                    unloadCells.remove(id);
+                } 
+            }
+
+            // go through the load list and remove any cells that are
+            // already in the cache.
+            for (Iterator<CellID> loadCells = cells.keySet().iterator();
+                 loadCells.hasNext();)
+            {
+                CellID loadID = loadCells.next();
+
+                // remove this id if it is already loaded
+                if (cache.isLoaded(loadID)) {
+                    loadCells.remove();
+                }
+
+                // remove this id from the unload list. This will take
+                // care of any cells that don't have a security resource
+                // and therefore were not checked above
+                unloadCells.remove(loadID);
+            }
+
+            // now go through the unload list and remove any cells that
+            // are already unloaded
+            for (Iterator<CellID> unloads = unloadCells.keySet().iterator();
+                 unloads.hasNext();)
+            {
+                CellID unloadID = unloads.next();
+
+                // remove this id if it is already unloaded
+                if (!cache.isLoaded(unloadID)) {
+                    unloads.remove();
                 }
             }
 
-            // now send any messages
-            cache.sendLoadMessages(load);
-            cache.sendUnloadMessages(unload);
+            // now send any messages if there has been a change. 
+            // OWL issue #95: These are sent based on the original lists, so
+            // order is preserved
+            cache.sendLoadMessages(cells.values());
+            cache.sendUnloadMessages(unloadCells.values());
         }
     }
 }

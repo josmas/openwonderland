@@ -222,7 +222,14 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
     
 
     protected void sendLoadMessages(Collection<CellDescription> cells) {
-
+        if (logger.isLoggable(Level.FINE)) {
+            StringBuffer logBuf = new StringBuffer(getViewCell().getCellID() +
+                                                   " send load messages: ");
+            for (CellDescription desc : cells) {
+                logBuf.append(desc.getCellID() + " ");
+            }
+            logger.fine(logBuf.toString());
+        }
 
         ManagedReference<AvatarCellCacheMO> viewCellCacheRef =
                 AppContext.getDataManager().createReference(this);
@@ -247,6 +254,15 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
 
 
     protected void sendUnloadMessages(Collection<CellDescription> removeCells) {
+        if (logger.isLoggable(Level.FINE)) {
+            StringBuffer logBuf = new StringBuffer(getViewCell().getCellID() +
+                                                   " send unload messages: ");
+            for (CellDescription desc : removeCells) {
+                logBuf.append(desc.getCellID() + " ");
+            }
+            logger.fine(logBuf.toString());
+        }
+
         ManagedReference<AvatarCellCacheMO> viewCellCacheRef =
                 AppContext.getDataManager().createReference(this);
 
