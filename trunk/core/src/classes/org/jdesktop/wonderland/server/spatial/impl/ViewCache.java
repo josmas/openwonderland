@@ -46,12 +46,16 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
@@ -96,6 +100,10 @@ class ViewCache {
     private final LinkedHashMap<CellID, ViewUpdateListenerContainer> viewUpdateListeners = new LinkedHashMap();
 
     private Vector3f v3f = new Vector3f();      // Temporary vector
+
+    private enum CacheUpdateOp { VIEW_MOVED, CELL_MOVED, SPACES_CHANGED,
+                                 CELL_ADDED, CELL_REMOVED, CELL_REVALIDATED,
+                                 CACHE_REVALIDATED };
 
     public ViewCache(SpatialCellImpl cell, SpaceManager spaceManager, Identity identity, BigInteger cellCacheId) {
         this.viewCell = cell;
@@ -241,6 +249,9 @@ class ViewCache {
      * @param cell
      */
     void cellRevalidated(SpatialCellImpl cell) {
+        logger.log(Level.WARNING, getViewCell().getCellID() + " Schedule revalidate cell " +
+                   cell.getCellID(), new Throwable("Stack trace"));
+
         synchronized(pendingCacheUpdates) {
             pendingCacheUpdates.add(new CacheUpdate(cell));
         }
@@ -256,6 +267,8 @@ class ViewCache {
      * has changed.
      */
     void revalidate() {
+        logger.fine(getViewCell().getCellID() + " Schedule revalidate");
+
         synchronized(pendingCacheUpdates) {
             pendingCacheUpdates.add(new CacheUpdate(spaces));
         }
@@ -285,6 +298,9 @@ class ViewCache {
     }
 
     void childCellAdded(SpatialCellImpl child) {
+        logger.fine(getViewCell().getCellID() + " child cell added " +
+                       child.getCellID());
+
         viewCell.acquireRootReadLock();
 
         try {
@@ -299,6 +315,9 @@ class ViewCache {
     }
 
     void childCellRemoved(SpatialCellImpl parent, SpatialCellImpl child) {
+        logger.fine(getViewCell().getCellID() + " child cell removed " +
+                       child.getCellID());
+
         viewCell.acquireRootReadLock();
 
         try {
@@ -318,6 +337,9 @@ class ViewCache {
      * @param rootCell
      */
     void rootCellAdded(SpatialCellImpl rootCell) {
+        logger.fine(getViewCell().getCellID() + " root cell added " +
+                       rootCell.getCellID());
+
         viewCell.acquireRootReadLock();
 
         try {
@@ -331,6 +353,9 @@ class ViewCache {
     }
 
     void rootCellRemoved(SpatialCellImpl rootCell) {
+        logger.fine(getViewCell().getCellID() + " root cell removed " +
+                    rootCell.getCellID());
+
         // Don't remove the caches view cell
         if (rootCell==viewCell) {
             // If we are called with our ViewCell then we have warped and
@@ -357,11 +382,14 @@ class ViewCache {
         viewCell.acquireRootReadLock();
 
         try {
-            HashSet<Space> oldSpaces = (HashSet<Space>) spaces.clone();
+            Set<Space> oldSpaces = (Set<Space>) spaces.clone();
+            Set<Space> newSpaces = new HashSet<Space>();
 
             proximityBounds.setCenter(viewCell.getWorldTransform().getTranslation(null));
 
-            Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(proximityBounds);
+            Iterable<Space> allSpaces = spaceManager.getEnclosingSpace(proximityBounds);
+
+
 //            System.err.println("ViewCell Bounds "+proximityBounds);
 //            StringBuffer buf = new StringBuffer("View in spaces ");
 
@@ -369,22 +397,28 @@ class ViewCache {
             if (logger.isLoggable(Level.FINE))
                 logBuf = new StringBuffer();
 
-            for(Space sp : newSpaces) {
+            for(Space sp : allSpaces) {
 //                buf.append(sp.getName()+", ");
                 if (spaces.add(sp)) {
+                    // the space is new
+                    newSpaces.add(sp);
+
                     if (logBuf!=null)
                         logBuf.append(sp.getName()+":"+sp.getRootCells().size()+" ");
+                    
                     // Entered a new space
-                    synchronized(pendingCacheUpdates) {
-                        pendingCacheUpdates.add(new CacheUpdate(sp, true));
-                    }
-                    sp.addViewCache(this);
+                    // OWL issue #96: we need to do this in a single atomic
+                    // action on the cache update thread to ensure consistency
+                    // synchronized(pendingCacheUpdates) {
+                    //    pendingCacheUpdates.add(new CacheUpdate(sp, true));
+                    //}
+                    //sp.addViewCache(this);
                 }
                 oldSpaces.remove(sp);
             }
 
             if (logBuf!=null && logBuf.length()>0) {
-                logBuf.insert(0,"View Entering spaces ");
+                logBuf.insert(0, getViewCell().getCellID() + " view Entering spaces ");
                 logger.fine(logBuf.toString());
                 logBuf.setLength(0);
             }
@@ -395,7 +429,7 @@ class ViewCache {
 //            buf = new StringBuffer("View leavoing spaces ");
             for(Space sp : oldSpaces) {
 //                buf.append(sp.getName()+", ");
-                sp.removeViewCache(this);
+                //sp.removeViewCache(this);
                 spaces.remove(sp);
 
                 if (logBuf!=null) {
@@ -411,14 +445,28 @@ class ViewCache {
     //            spaceLeftProcessor.schedule(new CacheUpdate(sp, false), 30, TimeUnit.SECONDS);
 
                 // In the meantime update the cache immediately
-                synchronized(pendingCacheUpdates) {
-                    pendingCacheUpdates.add(new CacheUpdate(sp,false));
-                }
+                // OWL issue #96: we need to do this in a single atomic
+                // action on the cache update thread to ensure consistency
+                //synchronized(pendingCacheUpdates) {
+                //    pendingCacheUpdates.add(new CacheUpdate(sp,false));
+                //}
             }
 
             if (logBuf!=null && logBuf.length()>0) {
-                logBuf.insert(0, "View Leaving spaces ");
+                logBuf.insert(0, getViewCell().getCellID() + " view Leaving spaces ");
                 logger.fine(logBuf.toString());
+            }
+
+            if (!newSpaces.isEmpty() || !oldSpaces.isEmpty()) {
+                logger.fine(getViewCell().getCellID() + " schedule space update: "
+                        + newSpaces.size() + " new spaces, " + oldSpaces.size() +
+                        " old spaces.");
+
+                // OWL issue #96: schedule a single transaction to add and remove
+                // spaces, with spaces locked. This guarantees that if two cells
+                // are moving around the same time, they will have a consistent
+                // view of the set of cells
+                pendingCacheUpdates.add(new CacheUpdate(newSpaces, oldSpaces));
             }
 
         } finally {
@@ -466,19 +514,10 @@ class ViewCache {
         private SpatialCellImpl cell;
         private SpatialCellImpl parentCell;
         private CellTransform worldTransform;
-        private Space space;
-        private Set<Space> spaces;
-
-        private static final int VIEW_MOVED = 0;
-        private static final int CELL_MOVED = 1;
-        private static final int EXIT_SPACE = 2;
-        private static final int ENTER_SPACE = 3;
-        private static final int CELL_ADDED = 4;
-        private static final int CELL_REMOVED = 5;
-        private static final int CELL_REVALIDATED = 6;
-        private static final int CACHE_REVALIDATED = 7;
-
-        private int jobType;
+        private Iterable<Space> spaces;
+        private Iterable<Space> oldSpaces;
+        
+        private final CacheUpdateOp op;
 
         /**
          * A cacheUpdate caused by a cell updating it's worldTransform
@@ -489,9 +528,9 @@ class ViewCache {
             this.cell = cell;
             this.worldTransform = worldTransform;
             if (cell==viewCell)
-                jobType = VIEW_MOVED;
+                op = CacheUpdateOp.VIEW_MOVED;
             else
-                jobType = CELL_MOVED;
+                op = CacheUpdateOp.CELL_MOVED;
         }
 
         /**
@@ -499,13 +538,11 @@ class ViewCache {
          * @param space
          * @param enter
          */
-        public CacheUpdate(Space space, boolean enter) {
-            if (enter) {
-                jobType = ENTER_SPACE;
-            } else {
-                jobType = EXIT_SPACE;
-            }
-            this.space = space;
+        public CacheUpdate(Iterable<Space> newSpaces, Iterable<Space> oldSpaces) {
+            op = CacheUpdateOp.SPACES_CHANGED;
+
+            this.spaces = newSpaces;
+            this.oldSpaces = oldSpaces;
         }
 
         /**
@@ -514,7 +551,7 @@ class ViewCache {
          * @param add
          */
         public CacheUpdate(SpatialCellImpl rootCell, SpatialCellImpl parent, boolean add) {
-            jobType = (add) ? CELL_ADDED : CELL_REMOVED;
+            op = (add) ? CacheUpdateOp.CELL_ADDED : CacheUpdateOp.CELL_REMOVED;
             this.cell = rootCell;
             this.parentCell = parent;
         }
@@ -523,107 +560,229 @@ class ViewCache {
          * Cell revalidated
          */
         public CacheUpdate(SpatialCellImpl cell) {
-            jobType = CELL_REVALIDATED;
+            op = CacheUpdateOp.CELL_REVALIDATED;
             this.cell = cell;
         }
 
         /**
          * Cache revalidated
          */
-        public CacheUpdate(Set<Space> spaces) {
-            jobType = CACHE_REVALIDATED;
+        public CacheUpdate(Iterable<Space> spaces) {
+            op = CacheUpdateOp.CACHE_REVALIDATED;
             this.spaces = spaces;
         }
 
         public void run() {
-            Collection<SpatialCellImpl> spaceRoots;
-            List<CellDescription> cells = new ArrayList<CellDescription>();
-            ViewCacheUpdateType type = null;
+            List<CellDescription> loadCells = new ArrayList<CellDescription>();
+            List<CellDescription> unloadCells = new ArrayList<CellDescription>();
+            List<CellDescription> revalidateCells = new ArrayList<CellDescription>();
 
-            switch(jobType) {
+            switch(op) {
                 case VIEW_MOVED:
                     viewCellMoved(worldTransform);
                     break;
                 case CELL_MOVED:
                     // Check for cache enter/exit
                     break;
-                case EXIT_SPACE:
-                    type = ViewCacheUpdateType.UNLOAD;
-                    spaceRoots = space.getRootCells();
-
-                    synchronized(rootCells) {
-                        for(SpatialCellImpl root : spaceRoots) {
-                            removeRootCellImpl(root, cells);
-                        }
-                    }
-                    break;
-                case ENTER_SPACE:
-                    type = ViewCacheUpdateType.LOAD;
-                    spaceRoots = space.getRootCells();
-
-//                    System.err.println("EnteringSpace "+space.getName()+"  roots "+spaceRoots.size());
-
-                    synchronized(rootCells) {
-                        for(SpatialCellImpl root : spaceRoots) {
-                            addRootCellImpl(root, cells);
-                        }
-                    }
+                case SPACES_CHANGED:
+                    processSpacesChanged(spaces, oldSpaces, loadCells, unloadCells);
                     break;
                 case CELL_ADDED:
+                    logger.fine(getViewCell().getCellID() +
+                                   " cell " + cell.getCellID() + " added");
+
                     if (parentCell==null) {
-                        type = ViewCacheUpdateType.LOAD;
                         synchronized(rootCells) {
-                            addRootCellImpl(cell, cells);
+                            addRootCellImpl(cell, loadCells);
                         }
                     } else {
-                        type = ViewCacheUpdateType.LOAD;
-                        addOrRemoveSubgraphCellImpl(cell, cells);
+                        addOrRemoveSubgraphCellImpl(cell, loadCells, true);
                     }
                     break;
                 case CELL_REMOVED:
+                    logger.fine(getViewCell().getCellID() +
+                                   " cell " + cell.getCellID() + " removed");
+
 //                    System.err.println("REMOVED from parent "+parentCell);
                     if (parentCell==null) {
-                        type = ViewCacheUpdateType.UNLOAD;
                         synchronized(rootCells) {
-                            removeRootCellImpl(cell, cells);
+                            removeRootCellImpl(cell, unloadCells);
                         }
                     } else {
-                        type = ViewCacheUpdateType.UNLOAD;
-                        addOrRemoveSubgraphCellImpl(cell, cells);
+                        addOrRemoveSubgraphCellImpl(cell, unloadCells, false);
                     }
                     break;
                 case CELL_REVALIDATED:
-                    type = ViewCacheUpdateType.REVALIDATE;
-                    cells.add(new CellDesc(cell.getCellID()));
+                    // OWL issue #97: don't revalidate child cells unless the
+                    // root is in the cache. See addOrRemoveSubgraphImpl()
+                    // below for details.
+                    synchronized (rootCells) {
+                        if (rootCells.containsKey(cell)) {
+                            revalidateCells.add(new CellDesc(cell.getCellID()));
+                        }
+                    }
                     break;
                 case CACHE_REVALIDATED:
-                    type = ViewCacheUpdateType.REVALIDATE;
-
                     // find *all* the cells in this cache.  Yikes!
                     synchronized(rootCells) {
-                        for (Space s : spaces) {
-                            for (SpatialCellImpl root : s.getRootCells()) {
-                                root.acquireRootReadLock();
-                                try {
-                                    cells.add(new CellDesc(root.getCellID()));
-                                    processChildCells(cells, root, CellStatus.ACTIVE);
-                                } finally {
-                                    root.releaseRootReadLock();
-                                }
+                        // revalidate all root cells we know about.
+                        for (SpatialCell sc : rootCells.keySet()) {
+                            SpatialCellImpl root = (SpatialCellImpl) sc;
+                            root.acquireRootReadLock();
+                            try {
+                                revalidateCells.add(new CellDesc(root.getCellID()));
+                                processChildCells(revalidateCells, root, CellStatus.ACTIVE);
+                            } finally {
+                                root.releaseRootReadLock();
                             }
                         }
                     }
                     break;
             }
 
-            if (cells.size() > 0 && type != null) {
-//                System.err.println("Scheduling "+type);
-//                for(CellDescription c : cells) {
-//                    System.err.print(c.getCellID()+", ");
-//                }
-//                System.err.println();
+            // schedule unload operations
+            if (!unloadCells.isEmpty()) {
+                if (logger.isLoggable(Level.FINE)) {
+                    StringBuffer logBuf = new StringBuffer(getViewCell().getCellID() +
+                                                           " unload: ");
+                    for (CellDescription desc : unloadCells) {
+                        logBuf.append(desc.getCellID() + " ");
+                    }
+                    logger.fine(logBuf.toString());
+                }
+
                 UniverseImpl.getUniverse().scheduleQueuedTransaction(
-                        new ViewCacheUpdateTask(cells, type), identity, ViewCache.this);
+                        new ViewCacheUpdateTask(unloadCells, ViewCacheUpdateType.UNLOAD),
+                        identity, ViewCache.this);
+            }
+
+            if (!loadCells.isEmpty()) {
+                if (logger.isLoggable(Level.FINE)) {
+                    StringBuffer logBuf = new StringBuffer(getViewCell().getCellID() +
+                                                           " load: ");
+                    for (CellDescription desc : loadCells) {
+                        logBuf.append(desc.getCellID() + " ");
+                    }
+                    logger.fine(logBuf.toString());
+                }
+
+                UniverseImpl.getUniverse().scheduleQueuedTransaction(
+                        new ViewCacheUpdateTask(loadCells, ViewCacheUpdateType.LOAD),
+                        identity, ViewCache.this);
+            }
+
+            if (!revalidateCells.isEmpty()) {
+                if (logger.isLoggable(Level.FINE)) {
+                    StringBuffer logBuf = new StringBuffer(getViewCell().getCellID() +
+                                                           " revalidate: ");
+                    for (CellDescription desc : revalidateCells) {
+                        logBuf.append(desc.getCellID() + " ");
+                    }
+                    logger.fine(logBuf.toString());
+                }
+
+                UniverseImpl.getUniverse().scheduleQueuedTransaction(
+                        new ViewCacheUpdateTask(revalidateCells, ViewCacheUpdateType.REVALIDATE),
+                        identity, ViewCache.this);
+            }
+        }
+
+        /**
+         * Atomically handle a change in spaces from oldSpaces to newSpaces.
+         * For each space, we collect the current set of root cells, and add
+         * ourselves as a listener so we will be updated about any future
+         * changes.
+         * <p>
+         * This method collects the total set of cells to notify the clients
+         * about.
+         *
+         * @param newSpaces the list of spaces entered
+         * @param oldSpaces the list of spaces exited
+         * @param loadCells the list of new cells to load, which this method
+         * will add to
+         * @param unloadCells the list of old cells to unload, which this method
+         * will remove from
+         */
+        private void processSpacesChanged(Iterable<Space> newCells,
+                                          Iterable<Space> oldCells,
+                                          List<CellDescription> loadCells,
+                                          List<CellDescription> unloadCells)
+        {
+            // OWL issue #96: make sure to make these changes atomically
+            // so we don't miss changes that happen while we are changing
+            // spaces
+            
+            // first, we need to lock all spaces so there are no changes while
+            // we are collecting roots.  To prevent deadlock, it is critical 
+            // that we sort the list of spaces to lock to guarantee everybody 
+            // tries to take locks in the same order.  We sort spaces by
+            // name in this case.
+            SortedMap<Space, Boolean> sortedSpaces = 
+                    new TreeMap<Space, Boolean>(SPACE_COMPARATOR);
+
+            // now add all spaces to the list, tracking whether they are added
+            // or removed.
+            for (Space space : newCells) {
+                sortedSpaces.put(space, true);
+            }
+            for (Space space : oldCells) {
+                sortedSpaces.put(space, false);
+            }
+
+            // next, we iterate through the sorted spaces, grabbing the
+            // lock for each space and -- once we have the lock -- adding
+            // ourselves as a listener
+            List<Space> lockedSpaces = new LinkedList<Space>();
+            try {
+                for (Map.Entry<Space, Boolean> e : sortedSpaces.entrySet()) {
+                    Space space = e.getKey();
+                    space.acquireRootCellReadLock();
+                    lockedSpaces.add(space);
+
+                    // now that the space is locked, we can add or remove 
+                    // ourself as a listener
+                    if (e.getValue()) {
+                        space.addViewCache(ViewCache.this);
+                    } else {
+                        space.removeViewCache(ViewCache.this);
+                    }
+                }
+
+                // ok, we now hold the locks on all spaces we are going to
+                // read, so it is safe to process the cells.
+                synchronized (rootCells) {
+                    for (Map.Entry<Space, Boolean> e : sortedSpaces.entrySet()) {
+                        Space space = e.getKey();
+                        boolean add = e.getValue();
+
+                        if (space.getRootCells().size() > 0) {
+                            logger.fine(getViewCell().getCellID() +
+                                        (add?" Adding":" Removing") +
+                                        " space " + space.getName() +
+                                        " with " + space.getRootCells().size() +
+                                        " cells");
+                        }
+
+                        // add or remove each root to our list of roots
+                        for (SpatialCellImpl root : space.getRootCells()) {
+                            logger.fine(getViewCell().getCellID() +
+                                        (add?" Add":" Remove") +
+                                        " root " + root.getCellID() +
+                                        " from space " + space.getName());
+
+                            if (add) {
+                                addRootCellImpl(root, loadCells);
+                            } else {
+                                removeRootCellImpl(root, unloadCells);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                // be sure to release all locks
+                for (Space space : lockedSpaces) {
+                    space.releaseRootCellReadLock();
+                }
             }
         }
 
@@ -633,10 +792,35 @@ class ViewCache {
          * 
          * @param child the root of the subgraph
          * @param newCells the set of cells in the subgraph (including child)
+         * @param add true if we are adding, or false if we are removing
          */
-        private void addOrRemoveSubgraphCellImpl(SpatialCellImpl child, List<CellDescription> newCells) {
+        private void addOrRemoveSubgraphCellImpl(SpatialCellImpl child,
+                                                 List<CellDescription> newCells,
+                                                 boolean add)
+        {
             child.acquireRootReadLock();
             try {
+                // OWL issue #97: special case -- if we get an add notification
+                // interleaved with a change spaces notification, we may be
+                // notified of the addition of a child for which we no longer
+                // have the parent. In that case, simply ignore the addition.
+                // If the child is removed, we do need to process the removal
+                // here, because we would not have been notified when changing
+                // spaces (since the child was no longer in the space at the
+                // time we revalidated).
+                if (add) {
+                    synchronized (rootCells) {
+                        if (!rootCells.containsKey(child.getRoot())) {
+                            logger.warning(getViewCell().getCellID() +
+                                          " Attempting to add child " + 
+                                           child.getCellID().toString() +
+                                           " to unloaded root " +
+                                           ((SpatialCellImpl) child.getRoot()).getCellID());
+                            return;
+                        }
+                    }
+                }
+
                 newCells.add(new CellDesc(child.getCellID()));
                 processChildCells(newCells, child, null);       // The status field is not used, so set it to null
             } finally {
@@ -647,10 +831,14 @@ class ViewCache {
         /**
          * Callers must be synchronized on rootCells
          * @param root the root of the graph
-         * @param newCells the cummalative set of new cells that have been added
+         * @param newCells the cumulative set of new cells that have been added
          */
         private void addRootCellImpl(SpatialCellImpl root, List<CellDescription> newCells) {
             Integer refCountI = rootCells.get(root);
+            
+            logger.fine(getViewCell().getCellID() + " add root " +
+                        root.getCellID() + " refcount = " + refCountI);
+
             int refCount;
             if (refCountI==null) {
                 root.acquireRootReadLock();
@@ -678,6 +866,9 @@ class ViewCache {
          */
         private void removeRootCellImpl(SpatialCellImpl root, List<CellDescription> oldCells) {
             Integer refCountI = rootCells.get(root);
+
+            logger.fine(getViewCell().getCellID() + " remove root " +
+                        root.getCellID() + " refcount = " + refCountI);
 
             if (refCountI==null)
                 return;
@@ -716,16 +907,24 @@ class ViewCache {
 
     }
 
+    private static final Comparator<Space> SPACE_COMPARATOR =
+            new Comparator<Space>()
+    {
+        public int compare(Space o1, Space o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
+
     private enum ViewCacheUpdateType { LOAD, REVALIDATE, UNLOAD };
     class ViewCacheUpdateTask implements KernelRunnable {
 
-        private Collection<CellDescription> cells;
-        private ViewCacheUpdateType type;
+        private final Collection<CellDescription> cells;
+        private final ViewCacheUpdateType type;
 
         public ViewCacheUpdateTask(Collection<CellDescription> newCells,
                                    ViewCacheUpdateType type)
         {
-            cells = newCells;
+            this.cells = newCells;
             this.type = type;
         }
 
@@ -746,6 +945,7 @@ class ViewCache {
                 case UNLOAD:
                     // No need to check security, just generate unload messages
                     cacheMO.generateUnloadMessagesService(cells);
+                    break;
             }
 
 //            StringBuffer buf = new StringBuffer();

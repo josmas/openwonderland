@@ -36,10 +36,11 @@
 package org.jdesktop.wonderland.server.spatial.impl;
 
 import com.jme.bounding.BoundingVolume;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 /**
@@ -53,6 +54,8 @@ class Space {
     private final HashSet<SpatialCellImpl> rootCells = new HashSet();
     private final HashSet<ViewCache> viewCaches = new HashSet();
     private String name;
+
+    private final ReadWriteLock rootCellsLock = new ReentrantReadWriteLock();
 
     private static final Logger logger = Logger.getLogger(Space.class.getName());
 
@@ -71,8 +74,12 @@ class Space {
 
     public void addRootSpatialCell(SpatialCellImpl cell) {
         logger.fine("Adding cell "+cell.getCellID()+" to space "+getName());
-        synchronized(rootCells) {
+
+        try {
+            acquireRootCellWriteLock();
             rootCells.add(cell);
+        } finally {
+            releaseRootCellWriteLock();
         }
         
         synchronized(viewCaches) {
@@ -87,8 +94,12 @@ class Space {
 
     public void removeRootSpatialCell(SpatialCellImpl cell) {
         logger.fine("Removing cell "+cell.getCellID()+" from space "+getName());
-        synchronized(rootCells) {
+
+        try {
+            acquireRootCellWriteLock();
             rootCells.remove(cell);
+        } finally {
+            releaseRootCellWriteLock();
         }
         
         synchronized(viewCaches) {
@@ -102,26 +113,38 @@ class Space {
     }
 
     public void addViewCache(ViewCache cache) {
-        synchronized(viewCaches) {
-            viewCaches.add(cache);
-           
-            synchronized(rootCells) {
-                for(SpatialCellImpl rootCell : rootCells) {
+        // make sure we have the roots lock before we go any further
+        try {
+            acquireRootCellReadLock();
+
+            // now go ahead and add the cache
+            synchronized(viewCaches) {
+                viewCaches.add(cache);
+
+                for (SpatialCellImpl rootCell : rootCells) {
                     rootCell.addViewCache(Collections.singletonList(cache), this);
                 }
             }
+        } finally {
+            releaseRootCellReadLock();
         }
     }
 
     public void removeViewCache(ViewCache cache) {
-        synchronized(viewCaches) {
-            viewCaches.remove(cache);
+         // make sure we have the roots lock before we go any further
+        try {
+            acquireRootCellReadLock();
+            
+            // now go ahead and remove the cache
+            synchronized(viewCaches) {
+                viewCaches.remove(cache);
 
-            synchronized(rootCells) {
                 for(SpatialCellImpl rootCell : rootCells) {
                     rootCell.removeViewCache(Collections.singletonList(cache), this);
                 }
             }
+        } finally {
+            releaseRootCellReadLock();
         }
     }
 
@@ -131,9 +154,27 @@ class Space {
      * @return
      */
     public Collection<SpatialCellImpl> getRootCells() {
-        synchronized(rootCells) {
+        try {
+            acquireRootCellReadLock();
             return (Collection<SpatialCellImpl>) rootCells.clone();
+        } finally {
+            releaseRootCellReadLock();
         }
     }
 
+    void acquireRootCellReadLock() {
+        rootCellsLock.readLock().lock();
+    }
+
+    void releaseRootCellReadLock() {
+        rootCellsLock.readLock().unlock();
+    }
+
+    void acquireRootCellWriteLock() {
+        rootCellsLock.writeLock().lock();
+    }
+
+    void releaseRootCellWriteLock() {
+        rootCellsLock.writeLock().unlock();
+    }
 }
