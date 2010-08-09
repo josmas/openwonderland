@@ -171,12 +171,15 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
             cell.setName(cellName);
             Cell parent = cells.get(parentCellID);
-            if (parent!=null) {
+            if (parent != null) {
                 try {
                     parent.addChild(cell);
                 } catch (MultipleParentException ex) {
                     logger.log(Level.SEVERE, "Failed to load cell", ex);
                 }
+            } else if (parentCellID != null) {
+                logger.warning("Failed to find parent " + parentCellID +
+                               " for child " + cellId);
             }
 
             cell.setLocalBounds(localBounds);
@@ -283,8 +286,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             // notify listeners
             fireCellUnloaded(cell);
 
-            // update the status
-            setCellStatus(cell, CellStatus.DISK);
+            // OWL issue #37: make sure to update the status on a separate
+            // thread to prevent deadlocks waiting for update messages and
+            // races with loading the cell
+            changeCellStatus(cell, CellStatus.DISK);
 
             if (cell.getParent() == null) {
                 logger.fine("UNLOADING ROOT CELL " + cell.getName());
