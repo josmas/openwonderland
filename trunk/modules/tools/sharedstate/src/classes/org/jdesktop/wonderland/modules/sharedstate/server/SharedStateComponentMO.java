@@ -234,8 +234,8 @@ public class SharedStateComponentMO extends CellComponentMO {
         {
             ResponseMessage response;
 
-            logger.warning("[SharedStateComponentMO]: Received message: " +
-                           message.getClass().getSimpleName());
+            logger.fine("[SharedStateComponentMO]: Received message: " +
+                        message.getClass().getSimpleName());
 
             if (message instanceof MapRequestMessage) {
                 response = handleMapRequest(clientID, (MapRequestMessage) message);
@@ -259,8 +259,8 @@ public class SharedStateComponentMO extends CellComponentMO {
         private MapResponseMessage handleMapRequest(WonderlandClientID clientID,
                                                     MapRequestMessage message)
         {
-            logger.warning("[SharedStateComponentMO]: Handle map req: " +
-                           message.getName());
+            logger.fine("[SharedStateComponentMO]: Handle map req: " +
+                        message.getName());
 
             // find the appropriate map
             SharedMapImpl map = getMap(message.getName(), false);
@@ -274,8 +274,8 @@ public class SharedStateComponentMO extends CellComponentMO {
             // create a list of all keys
             Collection<String> keys = new ArrayList<String>(map.keySet());
 
-            logger.warning("[SharedStateComponentMO]: Respond to map req: " +
-                           keys.size() + " keys");
+            logger.fine("[SharedStateComponentMO]: Respond to map req: " +
+                        keys.size() + " keys");
 
             // return the response
             return new MapResponseMessage(message.getMessageID(),
@@ -286,8 +286,8 @@ public class SharedStateComponentMO extends CellComponentMO {
         private GetResponseMessage handleGetRequest(WonderlandClientID clientID,
                                                     GetRequestMessage message)
         {
-            logger.warning("[SharedStateComponentMO]: Handle get req: " +
-                           message.getMapName() + " " + message.getPropertyName());
+            logger.fine("[SharedStateComponentMO]: Handle get req: " +
+                        message.getMapName() + " " + message.getPropertyName());
 
             // find the appropriate map
             SharedMapImpl map = getMap(message.getMapName(), false);
@@ -298,8 +298,8 @@ public class SharedStateComponentMO extends CellComponentMO {
                                               0, null);
             }
 
-            logger.warning("[SharedStateComponentMO]: Respond to get req: " +
-                           map.get(message.getPropertyName()));
+            logger.fine("[SharedStateComponentMO]: Respond to get req: " +
+                        map.get(message.getPropertyName()));
 
             return new GetResponseMessage(message.getMessageID(), 
                                           map.getVersion(), 
@@ -309,10 +309,9 @@ public class SharedStateComponentMO extends CellComponentMO {
         private ResponseMessage handlePutRequest(WonderlandClientID clientID,
                                                  PutRequestMessage message)
         {
-            logger.warning("[SharedStateComponentMO]: Handle put req: " +
-                           message.getMapName() + " " +
-                           message.getPropertyName() + " " +
-                           message.getPropertyValue().toString());
+            logger.fine("[SharedStateComponentMO]: Handle put req: " +
+                        message.getMapName() + " " +
+                        message.getPropertyName());
 
             // find the appropriate map
             SharedMapImpl map = getMap(message.getMapName(), true);
@@ -328,9 +327,9 @@ public class SharedStateComponentMO extends CellComponentMO {
         private ResponseMessage handleRemoveRequest(WonderlandClientID clientID,
                                                     RemoveRequestMessage message)
         {
-            logger.warning("[SharedStateComponentMO]: Handle remove req: " +
-                           message.getMapName() + " " +
-                           message.getPropertyName());
+            logger.fine("[SharedStateComponentMO]: Handle remove req: " +
+                        message.getMapName() + " " +
+                        message.getPropertyName());
 
             // find the appropriate map
             SharedMapImpl map = getMap(message.getMapName(), false);
@@ -359,7 +358,7 @@ public class SharedStateComponentMO extends CellComponentMO {
         }
 
         private ManagedReference<SharedMapImpl> addMap(String mapName, SharedMapImpl map) {
-            logger.warning("[SharedStateComponentMO]: creating map " + mapName);
+            logger.fine("[SharedStateComponentMO]: creating map " + mapName);
 
             MapOfMaps maps = mapsRef.get();
 
@@ -371,7 +370,7 @@ public class SharedStateComponentMO extends CellComponentMO {
         }
 
         private void removeMap(String mapName) {
-            logger.warning("[SharedStateComponentMO]: removing map " + mapName);
+            logger.fine("[SharedStateComponentMO]: removing map " + mapName);
 
             MapOfMaps maps = mapsRef.get();
             ManagedReference<SharedMapImpl> mapRef = maps.remove(mapName);
