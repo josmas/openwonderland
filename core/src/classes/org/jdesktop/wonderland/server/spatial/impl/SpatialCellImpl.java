@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
@@ -137,14 +138,22 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
     public void setLocalTransform(CellTransform transform, Identity identity) {
         acquireRootWriteLock();
 
+        BoundingVolume newWorldBounds = null;
+
         try {
             this.localTransform = transform;
 
             if (rootNode!=null) {
-                updateWorldTransform(identity);
+                newWorldBounds = updateWorldTransform(identity);
             }
         } finally {
             releaseRootWriteLock();
+        }
+
+        // OWL issue #96: to avoid deadlock, call after releasing the root
+        // lock.
+        if (isRoot && newWorldBounds != null) {
+            computeSpaces(newWorldBounds);
         }
     }
 
@@ -304,11 +313,22 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
     private void computeWorldBounds() {
         worldBounds = localBounds.clone(worldBounds);
         worldTransform.transform(worldBounds);
+    }
 
-        if (isRoot) {
+    /**
+     * Update the set of spaces this cell is a part of. Only called on root
+     * cells.
+     */
+     private void computeSpaces(BoundingVolume worldBounds) {
+        if (!isRoot) {
+            return;
+        }
+
+        // OWL issue #96: to avoid deadlock, make sure the root lock is
+        // not held while calling this method.
+        synchronized (spaces) {
             HashSet<Space> oldSpaces = (HashSet<Space>) spaces.clone();
 
-            // Root cell
             // Check which spaces the bounds intersect with
             Iterable<Space> it = UniverseImpl.getUniverse().getSpaceManager().getEnclosingSpace(worldBounds);
             for(Space s : it) {
@@ -325,7 +345,6 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
                 s.removeRootSpatialCell(this);
                 spaces.remove(s);
             }
-
         }
     }
 
@@ -374,54 +393,61 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
     void setRoot(SpatialCell root, ViewCacheSet viewCacheSet, Identity identity) {
         this.rootNode = (SpatialCellImpl) root;
 
-        try {
-            if (isRoot) {
-                if (root==null) {
-                    // We are a root node and we are being removed
-                    for(Space s : spaces) {
-                        s.removeRootSpatialCell(this);
-                    }
-                    spaces.clear();
-                    isRoot=false;
-                    readWriteLock = null;
-                    this.viewCacheSet = null;
-                    spaces = null;
-                    return;
+        if (isRoot && root == null) {
+            // We are a root node and we are being removed
+            synchronized (spaces) {
+                for(Space s : spaces) {
+                    s.removeRootSpatialCell(this);
                 }
+                spaces.clear();
+                spaces = null;
             }
+                    
+            isRoot = false;
+            readWriteLock = null;
+            this.viewCacheSet = null;
+            return;
+        }
 
-            if (root==this) {
-                // Adding a new root cell to the universe
-                if (!isRoot) {
-                    // Fisrt time, so setup internal root cell structures
-                    readWriteLock = new ReentrantReadWriteLock(true);
-                    this.viewCacheSet = new ViewCacheSet();
-                    isRoot = true;
-                    spaces = new HashSet();
-                }
+        if (root == this) {
+            // Adding a new root cell to the universe
+            if (!isRoot) {
+                // Fisrt time, so setup internal root cell structures
+                readWriteLock = new ReentrantReadWriteLock(true);
+                this.viewCacheSet = new ViewCacheSet();
+                isRoot = true;
+                spaces = new HashSet();
+            }
+                
+            BoundingVolume newWorldBounds;
+            try {
                 acquireRootWriteLock();
 
                 // This node is the root of a graph, so set the world transform & bounds
-                updateWorldTransform(identity);
-            } else {
-                this.viewCacheSet = viewCacheSet;
+                newWorldBounds = updateWorldTransform(identity);
+            } finally {
+                releaseRootWriteLock();
             }
 
-            if (children!=null) {
-                for(SpatialCellImpl s : children)
-                    s.setRoot(root, this.viewCacheSet, identity);
-            }
-        } finally {
-            if (root==this) {
-                releaseRootWriteLock();
+            // OWL issue #96: make sure to release the root lock before
+            // updating the spaces
+            computeSpaces(newWorldBounds);
+        } else {
+            this.viewCacheSet = viewCacheSet;
+        }
+
+        if (children != null) {
+            for(SpatialCellImpl s : children) {
+                s.setRoot(root, this.viewCacheSet, identity);
             }
         }
     }
 
     void setParent(SpatialCellImpl parent) {
         this.parent = parent;
-        if (parent!=null)
+        if (parent != null) {
             setRoot(parent.getRoot(), parent.viewCacheSet, null);
+        }
     }
 
     SpatialCell getParent() {
@@ -546,27 +572,37 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
 
     public void destroy() {
         acquireRootWriteLock();
+        
+        boolean wasRoot = isRoot;
 
         try {
             SpatialCellImpl root = (SpatialCellImpl) getRoot();
-            if (root==null)
+            if (root == null) {
                 return;
+            }
 
             viewCacheSet.destroy(this);
             viewCacheSet = null;
 
             if (isRoot) {
+                isRoot = false;
+                this.viewCacheSet = null;
+            }
+        } finally {
+            releaseRootWriteLock();
+        }
+
+        // OWL issue #96: be sure to all after we release the root lock
+        // to avoid deadlock
+        if (wasRoot) {
+            synchronized (spaces) {
                 // This is a root node
                 for(Space space : spaces) {
                     space.removeRootSpatialCell(this);
                 }
                 spaces.clear();
-                isRoot=false;
-                this.viewCacheSet = null;
                 spaces = null;
             }
-        } finally {
-            releaseRootWriteLock();
         }
     }
 
@@ -641,7 +677,7 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
      * root node have the same ViewCacheSet object
      */
     class ViewCacheSet {
-        private final HashMap<ViewCache, HashSet<Space>> viewCache = new HashMap();
+        private final Map<ViewCache, HashSet<Space>> viewCache = new HashMap();
 
         public ViewCacheSet() {
         }
@@ -697,7 +733,12 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
          * @param worldTransform
          */
         void notifyViewCaches(SpatialCellImpl cell, CellTransform worldTransform) {
-            Iterable<ViewCache> caches = viewCache.keySet();
+            // make a copy to avoid concurrent modification
+            ViewCache[] caches;
+            synchronized (viewCache) {
+                caches = viewCache.keySet().toArray(new ViewCache[viewCache.size()]);
+            }
+
             for(ViewCache cache : caches) {
                 cache.cellMoved(cell, worldTransform);
             }
@@ -707,14 +748,24 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
          * Notify the view caches that this cell needs to be revalidated
          */
         void revalidate(SpatialCellImpl cell) {
-            Iterable<ViewCache> caches = viewCache.keySet();
+            // make a copy to avoid concurrent modification
+            ViewCache[] caches;
+            synchronized (viewCache) {
+                caches = viewCache.keySet().toArray(new ViewCache[viewCache.size()]);
+            }
+
             for(ViewCache cache : caches) {
                 cache.cellRevalidated(cell);
             }
         }
 
         void notifyCacheChildAddedOrRemoved(SpatialCellImpl parent, SpatialCellImpl child, boolean added) {
-            Iterable<ViewCache> caches = viewCache.keySet();
+            // make a copy to avoid concurrent modification
+            ViewCache[] caches;
+            synchronized (viewCache) {
+                caches = viewCache.keySet().toArray(new ViewCache[viewCache.size()]);
+            }
+
             for(ViewCache cache : caches) {
                 if (added)
                     cache.childCellAdded(child);
@@ -725,7 +776,12 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
         }
 
         void destroy(SpatialCellImpl cell) {
-            Iterable<ViewCache> caches = viewCache.keySet();
+            // make a copy to avoid concurrent modification
+            ViewCache[] caches;
+            synchronized (viewCache) {
+                caches = viewCache.keySet().toArray(new ViewCache[viewCache.size()]);
+            }
+
             for(ViewCache cache : caches) {
                 cache.cellDestroyed(cell);
             }
