@@ -224,11 +224,18 @@ public class WebServerLauncher {
             System.out.println("Log files are in " +
                     SystemPropertyUtil.getProperty("wonderland.log.dir"));
 
-            // get the port the web server is running on
-            // TODO: get the host too
-            System.out.println("Web server running on " +
-                    SystemPropertyUtil.getProperty(
-                    Constants.WEBSERVER_URL_PROP));
+            // get web server URL
+            String url = SystemPropertyUtil.getProperty(
+                                Constants.WEBSERVER_URL_PROP);
+            System.out.println("Web server running on " + url);
+
+            // get the internal host and print it if different
+            String internalUrl = SystemPropertyUtil.getProperty(
+                                Constants.WEBSERVER_URL_INTERNAL_PROP);
+            if (!internalUrl.equals(url)) {
+                System.out.println("Web server internal address " + internalUrl);
+            }
+
             System.out.println("-----------------------------------------------------------");
 
         } catch (Exception ex) {

@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -28,6 +46,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.jdesktop.wonderland.client.login.ServerDetails;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
+import org.jdesktop.wonderland.utils.Constants;
 
 /**
  * The ServletDetailsResource class is a Jersey RESTful service that returns
@@ -48,7 +67,21 @@ public class ServerDetailsResource {
      */
     @GET
     public Response getServerDetails() {
-        ServerDetails out = ServerInfo.getServerDetails().clone();
+        ServerDetails out;
+        
+        // if this is a request to the internal address, return the internal
+        // host details
+        String requestHost = uriInfo.getRequestUri().getHost();
+        String externalHost = System.getProperty(Constants.WEBSERVER_HOST_PROP);
+        String internalHost = System.getProperty(Constants.WEBSERVER_HOST_INTERNAL_PROP);
+        
+        if (!internalHost.equalsIgnoreCase(externalHost) &&
+                requestHost.equalsIgnoreCase(internalHost)) 
+        {
+            out = ServerInfo.getInternalServerDetails().clone();
+        } else {
+            out = ServerInfo.getServerDetails().clone();
+        }
 
         // replace the URL in the default with one based on the client's
         // request
