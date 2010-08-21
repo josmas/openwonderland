@@ -25,4 +25,18 @@ Index: modules/http/src/main/java/com/sun/grizzly/http/SelectorThread.java
 +    }
      
      // ---------------------------------------------------- Constructor --//
+
+Index: modules/grizzly/src/main/java/com/sun/grizzly/SelectorHandlerRunner.java
+===================================================================
+--- modules/grizzly/src/main/java/com/sun/grizzly/SelectorHandlerRunner.java	(revision 4477)
++++ modules/grizzly/src/main/java/com/sun/grizzly/SelectorHandlerRunner.java	(working copy)
+@@ -272,7 +272,7 @@
+             Object attachment = key.attachment();
+             if (attachment instanceof SelectedKeyAttachmentLogic) {
+                 ((SelectedKeyAttachmentLogic) attachment).handleSelectedKey(key);
+-                return true;
++                //return true;
+             }
+ 
+             if (!key.isValid()) {
      
