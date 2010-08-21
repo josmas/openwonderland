@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -164,14 +182,18 @@ public abstract class BaseRunner implements Runner {
             setLocation(props.getProperty("runner.location"));
         }
         
-        // the server URL should always be set in the system properties
-        serverURL = System.getProperty(Constants.WEBSERVER_URL_PROP);
+        // see if the serverURL was set in the properties
+        serverURL = props.getProperty(Constants.WEBSERVER_URL_PROP);
+        if (serverURL == null) {
+            // the server URL should always be set in the system properties
+            serverURL = System.getProperty(Constants.WEBSERVER_URL_PROP);
+        }
 
         // XXX find a better way to get the local URL XXX
         // in some cases, like a remote runner, the local URL may be
         // different than the serverURL.  In that case, make sure we know
         // the localURL as well
-        localURL = "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP).trim() +
+        localURL = "http://" + System.getProperty(Constants.WEBSERVER_HOST_INTERNAL_PROP).trim() +
                    ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP).trim() + "/";
     }
 

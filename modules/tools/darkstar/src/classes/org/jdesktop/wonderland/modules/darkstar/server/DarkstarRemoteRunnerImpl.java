@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -44,6 +62,7 @@ public class DarkstarRemoteRunnerImpl extends BaseRemoteRunner
     private static final String SERVICE = "darkstar/darkstarserver-remote/services/";
 
     private String hostname;
+    private String hostnameInternal;
     private int port;
     private String wfsName;
 
@@ -68,6 +87,19 @@ public class DarkstarRemoteRunnerImpl extends BaseRemoteRunner
 
         return hostname;
     }
+
+    /**
+     * Get the internal hostname for the darkstar server
+     * @return the internal hostname of the darkstar server
+     */
+    public String getInternalHostname() {
+        if (getStatus() == Status.NOT_CONNECTED) {
+            throw new IllegalStateException("Darkstar server not connected");
+        }
+
+        return hostnameInternal;
+    }
+
 
     /**
      * Get the Darkstar port
@@ -102,6 +134,7 @@ public class DarkstarRemoteRunnerImpl extends BaseRemoteRunner
     @Override
     public void setRunnerInfo(RunnerInfo info) {
         this.hostname = info.getProperty(DarkstarRunnerImpl.HOSTNAME_PROP);
+        this.hostnameInternal = info.getProperty(DarkstarRunnerImpl.HOSTNAME_INTERNAL_PROP);
         this.port = Integer.parseInt(info.getProperty(DarkstarRunnerImpl.PORT_PROP));
         this.wfsName = info.getProperty(DarkstarRunnerImpl.WFSNAME_PROP);
 
