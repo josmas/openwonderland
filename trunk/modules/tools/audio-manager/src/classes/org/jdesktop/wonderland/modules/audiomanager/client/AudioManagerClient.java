@@ -121,7 +121,6 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
-import org.jdesktop.wonderland.modules.avatarbase.client.ui.AvatarConfigFrame;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
@@ -132,7 +131,10 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AudioManagerClient extends BaseConnection implements
-        AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener {
+        AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener
+{
+    public static final String TABBED_PANEL_PROP =
+            "AudioManagerClient.Tabbed.Panel";
 
     private static final Logger logger =
             Logger.getLogger(AudioManagerClient.class.getName());
@@ -154,7 +156,7 @@ public class AudioManagerClient extends BaseConnection implements
     private List<UserInRangeListener> userInRangeListeners =
             Collections.synchronizedList(new ArrayList());
     private HUDComponent userListHUDComponent;
-    private UserListHUDPanel userListHUDPanel;
+    private UserListPanel userListPanel;
     private boolean usersMenuSelected = false;
     private HUDComponent vuMeterComponent;
     private ImageIcon voiceChatIcon;
@@ -317,14 +319,25 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (userListHUDComponent == null) {
-            userListHUDPanel = new UserListHUDPanel(controls, cell);
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
-            userListHUDPanel.setHUDComponent(userListHUDComponent);
+            
+            if (Boolean.parseBoolean(System.getProperty(TABBED_PANEL_PROP))) {
+                HUDTabbedPanel tabbedPanel = HUDTabbedPanel.getInstance();
+                tabbedPanel.configInstance(controls, cell);
+                userListHUDComponent = mainHUD.createComponent(tabbedPanel);
+                tabbedPanel.setHUDComponent(userListHUDComponent);
+                userListPanel = tabbedPanel;
+            } else {
+                UserListHUDPanel userListHUDPanel = new UserListHUDPanel(controls, cell);
+                userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
+                userListHUDPanel.setHUDComponent(userListHUDComponent);
+                userListPanel = userListHUDPanel;
+            }
+
             userListHUDComponent.setPreferredLocation(Layout.NORTHWEST);
             userListHUDComponent.setName(BUNDLE.getString("Users") + " (0)");
             userListHUDComponent.setIcon(userListIcon);
-
+            
             mainHUD.addComponent(userListHUDComponent);
             userListHUDComponent.addEventListener(new HUDEventListener() {
 
@@ -337,7 +350,7 @@ public class AudioManagerClient extends BaseConnection implements
             });
         }
 
-        userListHUDPanel.setUserList();
+        userListPanel.setUserList();
         userListHUDComponent.setVisible(usersMenuSelected);
     }
 
@@ -390,7 +403,7 @@ public class AudioManagerClient extends BaseConnection implements
     @Override
     public void disconnected() {
         super.disconnected();
-
+        HUDTabbedPanel.getInstance().uninitialize();
 	connected = false;
 
         // remove open dialogs
