@@ -22,7 +22,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="textchat" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="textchat" majorVersion="0" minorVersion="5" miniVersion="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Text chat API and library" builddir="${build.dir}">
                     
             <client>

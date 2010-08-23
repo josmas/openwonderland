@@ -93,7 +93,8 @@ import org.jdesktop.wonderland.modules.textchat.client.ChatManager;
  */
 public class UserListHUDPanel
         extends javax.swing.JPanel implements PresenceManagerListener,
-        UsernameAliasChangeListener {
+        UsernameAliasChangeListener, UserListPanel
+{
 
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
