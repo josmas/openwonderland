@@ -266,9 +266,15 @@ public class WindowSwing extends Window2D {
         cleanupViews();
         super.cleanup();
         if (embeddedPeer != null) {
-            embeddedPeer.dispose();
+            final EmbeddedPeer e = embeddedPeer;
             embeddedPeer = null;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    e.dispose();
         }
+            });
+    }
     }
 
     /** Initialize all existing views. */
