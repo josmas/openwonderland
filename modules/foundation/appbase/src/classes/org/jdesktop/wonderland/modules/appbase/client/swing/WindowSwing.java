@@ -268,13 +268,14 @@ public class WindowSwing extends Window2D {
         if (embeddedPeer != null) {
             final EmbeddedPeer e = embeddedPeer;
             embeddedPeer = null;
-            SwingUtilities.invokeLater(new Runnable() {
 
+            // OWL issue #74 - be sure to dispose on the AWT event thread
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     e.dispose();
-        }
+                }
             });
-    }
+        }
     }
 
     /** Initialize all existing views. */
@@ -443,12 +444,20 @@ public class WindowSwing extends Window2D {
      * the window is switched into "preferred size" mode--the window will size will be determined
      * by the size and layout of the embedded Swing component.
      */
-    public void setSize (Dimension dims) {
+    public void setSize (final Dimension dims) {
         if (embeddedPeer == null) {
             throw new RuntimeException("You must first set a component for this WindowSwing.");
         }
-        embeddedPeer.setSize(dims);
-        embeddedPeer.validate();
+
+        // OWL issue #74 - make sure to call validate and setSize on the AWT
+        // event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                embeddedPeer.setSize(dims);
+                embeddedPeer.validate();
+            }
+        });
+
         embeddedPeer.repaint();
     }
 
@@ -458,7 +467,14 @@ public class WindowSwing extends Window2D {
      */
     public void validate () {
         if (embeddedPeer != null) {
-            embeddedPeer.validate();
+            // OWL issue #74 - make sure to call validate on the AWT event
+            // thread
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    embeddedPeer.validate();
+                }
+            });
+
             embeddedPeer.repaint();
         }
     }
