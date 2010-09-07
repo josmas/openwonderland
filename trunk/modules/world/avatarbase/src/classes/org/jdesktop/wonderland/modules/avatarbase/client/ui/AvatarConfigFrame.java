@@ -38,6 +38,7 @@ import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatar;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry.AvatarInUseListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry.AvatarListener;
@@ -394,16 +395,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             return;
         }
 
-        // Next check to see whether OpenGL 2.0 is supported on the system. If
-        // not, then display a dialog saying you cannot use the avatar.
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        String shaderCheck = System.getProperty("avatar.shaderCheck");
-        boolean shaderPass = true;
-
-        if (shaderCheck != null && shaderCheck.equals("true")) {
-            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
-        }
-        if (rm.supportsOpenGL20() == false || !shaderPass) {
+        if (!AvatarImiJME.supportsHighQualityAvatars()) {
             String msg = "Unfortunately your system graphics does not" +
                     " support the shaders which are required to use" +
                     " this avatar";
@@ -451,16 +443,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             return;
         }
 
-        // Next check to see whether OpenGL 2.0 is supported on the system. If
-        // not, then display a dialog saying you cannot configure the avatar.
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        String shaderCheck = System.getProperty("avatar.shaderCheck");
-        boolean shaderPass = true;
-
-        if (shaderCheck != null && shaderCheck.equals("true")) {
-            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
-        }
-        if (rm.supportsOpenGL20() == false || !shaderPass) {
+        if (!AvatarImiJME.supportsHighQualityAvatars()) {
             String msg = "Unfortunately your system graphics does not" +
                     " support the shaders which are required to configure" +
                     " this avatar";
@@ -480,16 +463,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
 
-        // First check to see whether OpenGL 2.0 is supported on the system. If
-        // not, then display a dialog saying you cannot create an avatar.
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        String shaderCheck = System.getProperty("avatar.shaderCheck");
-        boolean shaderPass = true;
-
-        if (shaderCheck != null && shaderCheck.equals("true")) {
-            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
-        }
-        if (rm.supportsOpenGL20() == false || !shaderPass) {
+        if (!AvatarImiJME.supportsHighQualityAvatars()) {
             String msg = "Unfortunately your system graphics does not" +
                     " support the shaders which are required to create" +
                     " an avatar";

@@ -579,25 +579,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         // Create the character
         String avatarDetail = System.getProperty("avatar.detail", "high");
-        String shaderCheck = System.getProperty("avatar.shaderCheck");
-        boolean shaderPass = true;
-
-        // Check to see if the system supports OpenGL 2.0. If not, then
-        // always use the low-detail avatar character
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        if (shaderCheck != null && shaderCheck.equals("true")) {
-            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
-        }
-
-        // Issue 1114: make sure the system is telling the truth about what
-        // it supports by trying a mock shader program
-        boolean uniformsPass = shaderPass && ShaderTest.getInstance().testShaders();
-
-        logger.warning("Checking avatar detail level.  OpenGL20: " +
-                       rm.supportsOpenGL20() + " ShaderCheck: " + shaderPass +
-                       " UniformsCheck: " + uniformsPass);
-
-        if (rm.supportsOpenGL20() == false || !shaderPass || !uniformsPass) {
+        
+        // check if we support high-quality avatars
+        if (!supportsHighQualityAvatars()) {
             logger.warning("Forcing low detail.");
             avatarDetail = "low";
         }
@@ -678,6 +662,36 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
 
         return ret;
+    }
+
+    /**
+     * Return true if we support high-quality avatars
+     */
+    public static boolean supportsHighQualityAvatars() {
+        String shaderCheck = System.getProperty("avatar.shaderCheck");
+        boolean shaderPass = true;
+
+        // Check to see if the system supports OpenGL 2.0. If not, then
+        // always use the low-detail avatar character
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        if (shaderCheck != null && shaderCheck.equals("true")) {
+            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
+        }
+
+        // Issue 1114: make sure the system is telling the truth about what
+        // it supports by trying a mock shader program
+        boolean uniformsPass = shaderPass && ShaderTest.getInstance().testShaders();
+
+        logger.warning("Checking avatar detail level.  OpenGL20: " +
+                       rm.supportsOpenGL20() + " ShaderCheck: " + shaderPass +
+                       " UniformsCheck: " + uniformsPass);
+
+        // OWL issue #110 -- ignore the value of supportsOpenGL20() here. This
+        // is known to report false negatives on at least one graphics card.
+        // Our shader test should do an adequate job determining whether a
+        // graphics card supports the OpenGL 2.0 features we use.
+
+        return shaderPass && uniformsPass;
     }
 
     /**
