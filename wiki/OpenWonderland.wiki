@@ -143,6 +143,11 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">This tutorial describes how to add entries to the right-click context menu.</td>
 </tr>
 
+<tr>
+  <td class="left">ChangingTheSkybox</td>
+  <td class="right">This brief tutorial explains how, as a developer building from source, you can easily change the skybox.</td>
+</tr>
+
 
 <tr>
   <td class="left">[http://groups.google.com/group/open-wonderland-scripting Scripting]</td>
