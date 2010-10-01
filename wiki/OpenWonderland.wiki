@@ -5,11 +5,11 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 ==Open Wonderland Documentation Wiki==
 
 [OpenWonderland#For_Everyone Everyone] |
-[OpenWonderland#For_Users] |
-[For_System_Administrators] |
-[For_Content_Developers] |
-[For_Developers] |
-[For_Students] 
+[OpenWonderland#For_Users Users] |
+[OpenWonderland#For_System_Administrators Sys Admins] |
+[OpenWonderland#For_Content_Developers Content Developers] |
+[OpenWonderland#For_Developers Developers] |
+[OpenWonderland#For_Students Students] 
 
 <table cellpadding="5">
 
