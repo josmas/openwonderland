@@ -11,13 +11,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 [OpenWonderland#For_Developers Developers] |
 [OpenWonderland#For_Students Students] 
 
-<table cellpadding="5">
-
-<tr colspan="2">
-  <td><h3>For Everyone</h3></td>
-</tr>
+==For Everyone==
+<table cellpadding="5" width="100%">
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/WonderlandRoadmap Project Roadmap and Release Plan Estimates]</td>
+  <td width="25%">[http://wiki.java.net/bin/view/Javadesktop/WonderlandRoadmap Project Roadmap and Release Plan Estimates]</td>
   <td>Our best guess at the timeframes for the upcoming releases and what will be included in them</td>
 </tr>
 <tr>
@@ -33,12 +30,12 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This page has a collection of proposals for new small-scale features in Open Wonderland, suggested both by the core team and the community.</td>
 </tr>
 <tr><td></td></tr>
+</table>
 
-<tr colspan="2">
-  <td><h3>For Users</h3></td>
-</tr>
+==For Users==
+<table cellpadding="5" width="100%">
 <tr>
-  <td>[WebStart05 Launching the Client]</td>
+  <td width="25%">[WebStart05 Launching the Client]</td>
   <td>This tutorial describes how users launch the Open Wonderland client using Java(TM) Web Start.</td>
 </tr>
 <tr>
@@ -54,12 +51,12 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>Tips for handling a variety of problems new users might encountered running Wonderland.</td>
 </tr>
 <tr><td></td></tr>
+</table>
 
-<tr colspan="2">
-  <td><h3>For System Administrators</h3></td>
-</tr>
+==For System Administrators==
+<table cellpadding="5" width="100%">
 <tr>
-  <td>[http://openwonderland.org/index.php?option=com_content&view=article&id=70&Itemid=64 Download and Install Wonderland]</td>
+  <td width="25%">[http://openwonderland.org/index.php?option=com_content&view=article&id=70&Itemid=64 Download and Install Wonderland]</td>
   <td>Leads you step-by-step to download, install, configure, and run Open Wonderland.</td>
 </tr>
 <tr>
@@ -79,12 +76,12 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This guide explains how to connect a Wonderland installation to the telephone network.</td>
 </tr>
 <tr><td></td></tr>
+</table>
 
-<tr colspan="2">
-  <td><h3>For Content Developers</h3></td>
-</tr>
+==For Content Developers==
+<table cellpadding="5" width="100%">
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandArtImport05 Importing 3D Models]</td>
+  <td width="25%">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandArtImport05 Importing 3D Models]</td>
   <td>This tutorial provides an introduction to importing existing 3D models into Open Wonderland.</td>
 </tr>
 <tr>
@@ -104,12 +101,12 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>Matthew Schmidt provides advice on how to export models from Blender to import into Wonderland.</td>
 </tr>
 <tr><td></td></tr>
+</table>
 
-<tr colspan="2">
-  <td><a name="For_Developers"></a><h3>For Developers</h3></td>
-</tr>
+==For Developers==
+<table cellpadding="5" width="100%">
 <tr>
-  <td>[DownloadBuildSource05 Download, Build, Configure, and Run from the Source Code]</td>
+  <td width="25%">[DownloadBuildSource05 Download, Build, Configure, and Run from the Source Code]</td>
   <td>This tutorial provides an introduction for all developers: how to download and compile the source code, configure the Wonderland distribution, and run both the server and client.</td>
 </tr>
 <tr>
@@ -190,16 +187,15 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">A wiki containing technical documents and plans for Open Wonderland v0.5</td>
 </tr>
 <tr><td></td></tr>
+</table>
 
-<tr colspan="2">
-  <td><h3>For Students</h3></td>
-</tr>
+==For Students==
+<table cellpadding="5" width="100%">
 <tr>
-  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/StudentProjects Project Ideas for Students (and others)]</td>
+  <td class="left" width="25%">[http://wiki.java.net/bin/view/Javadesktop/StudentProjects Project Ideas for Students (and others)]</td>
   <td class="right">An ever-growing list of Wonderland projects, organized by level-of-effort, suitable for students or others interesting in extending Wonderland.</td>
 </tr>
 <tr><td></td></tr>
+</table>
 
-<tr colspan="2">
-  <td><h3>Under Construction</h3></td>
-</tr>
+
