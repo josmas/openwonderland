@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -51,7 +69,6 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
-import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
@@ -1347,7 +1364,7 @@ public abstract class View2DEntity implements View2D {
             if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP)) != 0) {
                 logger.fine("Update texture for view " + this);
                 if (geometryNode != null) {
-                    DrawingSurfaceBufferedImage surface = (DrawingSurfaceBufferedImage)getWindow().getSurface();
+                    DrawingSurface surface = getWindow().getSurface();
                     if (surface != null) {
                         sgChangeGeometryTextureSet(geometryNode, getWindow().getTexture(), surface);
                         windowNeedsValidate = true;
@@ -1857,9 +1874,9 @@ public abstract class View2DEntity implements View2D {
     private static class SGChangeGeometryTextureSet extends SGChange {
         private GeometryNode geometryNode;
         private Texture2D texture;
-        private DrawingSurfaceBufferedImage surface;
+        private DrawingSurface surface;
         private SGChangeGeometryTextureSet (GeometryNode geometryNode, Texture2D texture,
-                                            DrawingSurfaceBufferedImage surface) {
+                                            DrawingSurface surface) {
             super(SGChangeOp.GEOMETRY_TEXTURE_SET);
             this.geometryNode = geometryNode;
             this.texture = texture;
@@ -1955,7 +1972,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     private synchronized void sgChangeGeometryTextureSet(GeometryNode geometryNode, Texture2D texture,
-                                                         DrawingSurfaceBufferedImage surface) {
+                                                         DrawingSurface surface) {
         sgChanges.add(new SGChangeGeometryTextureSet(geometryNode, texture, surface));
     }
 
@@ -2033,7 +2050,7 @@ public abstract class View2DEntity implements View2D {
                      case GEOMETRY_TEXTURE_SET: {
                          SGChangeGeometryTextureSet chg = (SGChangeGeometryTextureSet) sgChange;
 
-                         DrawingSurfaceBufferedImage surface = chg.surface;
+                         DrawingSurface surface = chg.surface;
                          boolean restoreUpdating = false;
                          if (surface.getUpdateEnable()) {
                              surface.setUpdateEnable(false);
