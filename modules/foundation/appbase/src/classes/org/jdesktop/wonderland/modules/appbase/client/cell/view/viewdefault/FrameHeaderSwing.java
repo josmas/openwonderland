@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -31,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -154,8 +173,13 @@ public class FrameHeaderSwing
         headerPanel.removeMouseListener(this);
         headerPanel.removeMouseMotionListener(this);
 
-        JmeClientMain.getFrame().getCanvas3DPanel().remove(headerPanel);
-        headerPanelAllocator.deallocate(headerPanel);
+        // issue #74: make sure to remove panels on the AWT event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JmeClientMain.getFrame().getCanvas3DPanel().remove(headerPanel);
+                headerPanelAllocator.deallocate(headerPanel);
+            }
+        });
 
         setVisible(false);
 
