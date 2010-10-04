@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -28,6 +46,7 @@ import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.client.assetmgr.AssetRepository;
 import org.jdesktop.wonderland.client.assetmgr.AssetStream;
 import org.jdesktop.wonderland.client.assetmgr.AssetStream.AssetResponse;
+import org.jdesktop.wonderland.client.assetmgr.http.WlHttpAssetRepositoryFactory.HttpChecksum;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.WlHttpURI;
@@ -41,18 +60,19 @@ import org.jdesktop.wonderland.common.WlHttpURI;
 @InternalAPI
 public class WlHttpAssetRepository implements AssetRepository {
 
-    private static Logger logger = Logger.getLogger(WlHttpAssetRepository.class.getName());
-    private String baseURL = null;
-    private long lastModified = -1;
+    private static final Logger logger =
+            Logger.getLogger(WlHttpAssetRepository.class.getName());
+    
+    private final String baseURL;
+    private final String checksum;
 
     /**
      * Constructor, takes the base URL associated with the repository. It also
-     * takes the last modified date of the checksum currently cached, -1 if
-     * not present.
+     * takes the checksum currently cached, or null if not present.
      */
-    public WlHttpAssetRepository(String baseURL, long lastModified) {
+    public WlHttpAssetRepository(String baseURL, String checksum) {
         this.baseURL = baseURL;
-        this.lastModified = lastModified;
+        this.checksum = checksum;
     }
 
     /*
@@ -61,7 +81,8 @@ public class WlHttpAssetRepository implements AssetRepository {
     public AssetStream openAssetStream(AssetURI assetURI) {
         // If there is no last modified date, then log a warning. We will
         // still fetch whatever asset we find on the server.
-        if (lastModified == -1) {
+        HttpChecksum cs = WlHttpAssetRepositoryFactory.getChecksumFor(checksum);
+        if (cs == null) {
             logger.fine("Opening asset stream, no last modified date for " +
                     "asset " + assetURI.toExternalForm());
         }
@@ -82,9 +103,12 @@ public class WlHttpAssetRepository implements AssetRepository {
         try {
             URL url = new URL(urlString);
             urlConnection = url.openConnection();
-            if (lastModified != -1) {
-                urlConnection.setIfModifiedSince(lastModified);
+
+            // apply the checksum
+            if (cs != null) {
+                cs.set((HttpURLConnection) urlConnection, checksum);
             }
+            
             urlConnection.connect();
             response = ((HttpURLConnection) urlConnection).getResponseCode();
         } catch (IOException excp) {
