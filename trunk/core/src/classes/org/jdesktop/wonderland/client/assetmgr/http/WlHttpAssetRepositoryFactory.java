@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -18,6 +36,8 @@
 
 package org.jdesktop.wonderland.client.assetmgr.http;
 
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.List;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetCache;
@@ -37,12 +57,18 @@ import org.jdesktop.wonderland.common.WlHttpURI;
  */
 @InternalAPI
 public class WlHttpAssetRepositoryFactory extends AssetRepositoryFactory {
+    private static final List<HttpChecksum> CHECKSUMS =
+            new ArrayList<HttpChecksum>();
+    static {
+       CHECKSUMS.add(new IfModifiedSinceHttpChecksum());
+       CHECKSUMS.add(new ETagHttpChecksum());
+    }
 
-    private long lastModified = 0;
+    private final String checksum;
 
     public WlHttpAssetRepositoryFactory(AssetURI assetURI) {
         super(assetURI);
-        lastModified = getAsLastModified(getChecksumFromDB(assetURI));
+        checksum = getChecksumFromDB(assetURI);
         isAlwaysDownload = true;
     }
 
@@ -51,7 +77,7 @@ public class WlHttpAssetRepositoryFactory extends AssetRepositoryFactory {
      */
     @Override
     public String getDesiredChecksum() {
-        return "" + lastModified;
+        return checksum;
     }
 
     /**
@@ -63,29 +89,41 @@ public class WlHttpAssetRepositoryFactory extends AssetRepositoryFactory {
         AssetRepository[] assetRepositories = new AssetRepository[1];
         WlHttpURI uri = (WlHttpURI)getAssetURI();
         String baseURL = uri.getBaseURL();
-        String checksum = getDesiredChecksum();
-        assetRepositories[0] = new WlHttpAssetRepository(baseURL, getAsLastModified(checksum));
+        assetRepositories[0] = new WlHttpAssetRepository(baseURL, getDesiredChecksum());
 
         return assetRepositories;
     }
 
     /**
-     * Convert a string checksum into a last modified date, returns 0 if the
-     * string is not properly formatted.
+     * Get an HttpChecksum from a String, or return null if the given String
+     * doesn't map to a checksum
      */
-    private long getAsLastModified(String checksum) {
-        // First check whether it is null or an empty string, return -1
-        if (checksum == null || checksum.equals("") == true) {
-            return 0;
+    static HttpChecksum getChecksumFor(String string) {
+        if (string == null || string.trim().length() == 0) {
+            return null;
         }
 
-        try {
-            return Long.parseLong(checksum);
-        } catch (java.lang.NumberFormatException excp) {
-            logger.warning("Checksum from asset is not a valid last modified" +
-                    " time " + checksum);
-            return 0;
+        for (HttpChecksum c : CHECKSUMS) {
+            if (string.trim().startsWith(c.getPrefix())) {
+                return c;
+            }
         }
+
+        return null;
+    }
+
+    /**
+     * Get a String checksum for the given connection
+     */
+    static String getChecksumFor(HttpURLConnection connection) {
+        for (HttpChecksum c : CHECKSUMS) {
+            String checksum = c.get(connection);
+            if (checksum != null) {
+                return checksum;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -114,5 +152,76 @@ public class WlHttpAssetRepositoryFactory extends AssetRepositoryFactory {
         }
         Asset asset = assetList.get(0);
         return asset.getChecksum();
+    }
+
+    /**
+     * Internal interface for handling checksums, which may be if-modified-since
+     * or etags.
+     */
+    interface HttpChecksum {
+        /**
+         * Get the prefix for this type. The return value from get() should
+         * start with prefix.
+         */
+        public String getPrefix();
+
+        /**
+         * Get the checksum from an HttpURLConnection, or return null if no
+         * checksum of this type exists on the given connection
+         */
+        public String get(HttpURLConnection connection);
+
+        /**
+         * Set the checksum in a request
+         */
+        public void set(HttpURLConnection connection, String checksum);
+    }
+
+    /**
+     * Implementation for if-modified-since headers
+     */
+    static class IfModifiedSinceHttpChecksum implements HttpChecksum {
+        private final String PREFIX = "If-Modified-Since:";
+
+        public String getPrefix() {
+            return PREFIX;
+        }
+
+        public String get(HttpURLConnection connection) {
+            if (connection.getIfModifiedSince() > 0) {
+                return PREFIX + connection.getIfModifiedSince();
+            }
+
+            return null;
+        }
+
+        public void set(HttpURLConnection connection, String checksum) {
+            long lastModified = Long.parseLong(checksum.substring(PREFIX.length()));
+            connection.setIfModifiedSince(lastModified);
+        }
+    }
+
+    /**
+     * Implementation for if-modified-since headers
+     */
+    static class ETagHttpChecksum implements HttpChecksum {
+        private final String PREFIX = "ETag:";
+
+        public String getPrefix() {
+            return PREFIX;
+        }
+
+        public String get(HttpURLConnection connection) {
+            if (connection.getHeaderField("ETag") != null) {
+                return PREFIX + connection.getHeaderField("ETag");
+            }
+
+            return null;
+        }
+
+        public void set(HttpURLConnection connection, String checksum) {
+            String etag = checksum.substring(PREFIX.length());
+            connection.setRequestProperty("If-None-Match", etag);
+        }
     }
 }
