@@ -351,6 +351,12 @@ public class JmeClientMain {
             }
 
             serverURL = curSession.getSessionManager().getServerURL();
+        } else {
+            URL fullServerURL = new URL(serverURL);
+            if (fullServerURL.getFile().isEmpty()) {
+                //Missing trailing '/' from server URL
+                serverURL = serverURL + '/';
+            }
         }
 
         // see if we need to change servers
