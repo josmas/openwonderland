@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -16,6 +34,8 @@
  * this code.
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
+import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import imi.character.CharacterParams;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarContext.TriggerNames;
@@ -31,11 +51,16 @@ import org.jdesktop.mtgame.WorldManager;
  * @author paulby
  */
 public class WlAvatarCharacter extends Avatar {
-    
+    /** for simple static models, the actual model data */
+    private Node simpleStaticGeometry = null;
+
     /**
      * Builder pattern impl
      */
     public static class WlAvatarCharacterBuilder extends AvatarBuilder {
+        /** for simple static models, the actual model data */
+        private Node simpleStaticGeometry = null;
+
         /**
          * Construct a new builder using the specified configuration file and
          * the provided world manager.
@@ -68,6 +93,11 @@ public class WlAvatarCharacter extends Avatar {
             return this;
         }
 
+        public WlAvatarCharacterBuilder setSimpleStaticGeometry(Node node) {
+            this.simpleStaticGeometry = node;
+            return this;
+        }
+
         /**
          * {@inheritDoc AvatarBuilder}
          */
@@ -84,6 +114,19 @@ public class WlAvatarCharacter extends Avatar {
      */
     protected WlAvatarCharacter(WlAvatarCharacterBuilder builder) {
         super(builder);
+
+        // if we are using static geometry, remember the geometry
+        if (builder.simpleStaticGeometry != null) {
+            this.simpleStaticGeometry = builder.simpleStaticGeometry;
+
+            // attach the node to our external kids so it gets rendered
+            getJScene().getExternalKidsRoot().attachChild(this.simpleStaticGeometry);
+            getJScene().setExternalKidsChanged(true);
+        }
+    }
+
+    public Node getSimpleStaticGeometry() {
+        return simpleStaticGeometry;
     }
 
     @Override

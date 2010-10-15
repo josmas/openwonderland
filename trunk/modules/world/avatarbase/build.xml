@@ -47,7 +47,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="avatarbase" majorVersion="0" minorVersion="5" miniVersion="1" jarfile="${module.dist.dir}/avatarbase.jar"
+        <module name="avatarbase" majorVersion="0" minorVersion="5" miniVersion="2" jarfile="${module.dist.dir}/avatarbase.jar"
                 moduleDescription="Avatar API and library" builddir="${build.dir}">
 
             <requires name="content-repository" version="0" minorVersion="5"/>

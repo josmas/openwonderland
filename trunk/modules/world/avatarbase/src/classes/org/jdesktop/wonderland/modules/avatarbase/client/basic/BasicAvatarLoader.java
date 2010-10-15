@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,7 +35,7 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.basic;
 
-import com.jme.scene.Spatial;
+import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocator;
 import imi.character.CharacterParams;
 import imi.character.MaleAvatarParams;
@@ -93,34 +111,14 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
         // Turn of animations for the simple avatar
         attributes.setAnimateBody(false);
         attributes.setAnimateFace(false);
-
-        // Create the avatar character, but don't add it to the world just yet.
-        WlAvatarCharacter avatar =
-                new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
-
-        // Load the avatar as a static Collada model.
-//        Spatial spatial = null;
-//        try {
-//            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-//            ResourceLocator resourceLocator = new RelativeResourceLocator(url, avatarCell);
-//
-//            ResourceLocatorTool.addThreadResourceLocator(
-//                    ResourceLocatorTool.TYPE_TEXTURE,
-//                    resourceLocator);
-//            spatial = (Spatial) BinaryImporter.getInstance().load(url);
-//            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
-//        } catch (IOException excp) {
-//            logger.log(Level.WARNING, "Unable to load avatar character", excp);
-//            return avatar;
-//        }
-
-//        // Load the avatar using the new collada loading manager
-        Spatial spatial = null;
+ 
+        // Load the avatar using the new collada loading manager
+        Node node = null;
         try {
             URL url = new URL(baseURL + avatarURL);
             DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
-            spatial = dm.getModelLoader().loadDeployedModel(dm, null);
-            spatial.setLocalScale(0.22f);
+            node = dm.getModelLoader().loadDeployedModel(dm, null);
+            node.setLocalScale(0.22f);
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to for .dep URL", excp);
             return null;
@@ -128,16 +126,14 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
             logger.log(Level.WARNING, "Error loading avatar model", excp);
             return null;
         }
-        
-        //checkBounds(placeHolder);
-        //placeHolder.updateModelBound();
-        //placeHolder.updateWorldBound();
 
-        //System.out.println("Default Model Bounds: " + placeHolder.getWorldBound());
-        //placeHolder.lockBounds();
-        avatar.getJScene().getExternalKidsRoot().attachChild(spatial);
-        avatar.getJScene().setExternalKidsChanged(true);
-        return avatar;
+        // Create the avatar character, but don't add it to the world just yet.
+        WlAvatarCharacter.WlAvatarCharacterBuilder builder =
+                new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm);
+        builder.addEntity(false);
+        builder.setSimpleStaticGeometry(node);
+
+        return builder.build();
     }
 
     /**
