@@ -101,7 +101,7 @@ import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent.AvatarConfigChangeListener;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry.PickBox;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.ImiPickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.loader.AvatarLoaderRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderFactorySPI;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
@@ -469,26 +469,32 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     protected void updatePickGeometry() {
-        boolean isMale = avatarCharacter.getCharacterParams().isMale();
-        PickBox[] pickBoxes = getPickBoxes(isMale);
-
         // clean up any existing pick geometry
         if (pickGeometry != null) {
             pickGeometry.detach();
             pickGeometry = null;
         }
 
-        // XXX TODO: pick geometry for basic avatars?
-        if (isPickable() && avatarCharacter.getJScene() != null &&
-            avatarCharacter.getSkeleton() != null)
-        {
-            pickGeometry = new PickGeometry(cell.getName(), cell,
-                                            AvatarImiJME.this, pickBoxes);
+        // make sure we are pickable and ready to add geometry
+        if (!isPickable() || avatarCharacter.getJScene() == null) {
+            return;
+        }
+
+        if (avatarCharacter.getSkeleton() != null) {
+            // use pick geometry for an IMI avatar
+            boolean isMale = avatarCharacter.getCharacterParams().isMale();
+            PickBox[] pickBoxes = getPickBoxes(isMale);
+
+            pickGeometry = new ImiPickGeometry(cell.getName(), cell,
+                                               AvatarImiJME.this, pickBoxes);
+        } else if (avatarCharacter.getSimpleStaticGeometry() != null) {
+            pickGeometry = new BasicPickGeometry(cell.getName(), cell, this,
+                                                 avatarCharacter.getSimpleStaticGeometry());
         }
     }
 
     protected PickBox[] getPickBoxes(boolean isMale) {
-        return PickGeometry.getDefaultGeometry(isMale);
+        return ImiPickGeometry.getDefaultGeometry(isMale);
     }
 
     @Override
