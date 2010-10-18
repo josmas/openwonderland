@@ -39,6 +39,7 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -55,14 +56,20 @@ import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
+import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
 
 /**
@@ -736,6 +743,35 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverListener = listener;
     }
 
+    /** 
+     * A custom menu bar that only passes on key accelerator events if the
+     * global focus entity has focus (ie it ignore keys when a app has control)
+     */
+    static class MainMenuBar extends JMenuBar {
+        @Override
+        protected boolean processKeyBinding(KeyStroke ks, KeyEvent e,
+                                            int condition, boolean pressed)
+        {
+            // OWL issue #124: ignore keyboard accelerators if anything but
+            // the global entity has keyboard focus
+            Event wlev = new MyKeyEvent(e);
+            Entity global = InputManager.inputManager().getGlobalFocusEntity();
+
+            if (!InputManager.entityHasFocus(wlev, global)) {
+                // if the global entity does not have focus, ignore the event
+                return false;
+            }
+
+            return super.processKeyBinding(ks, e, condition, pressed);
+        }
+
+        class MyKeyEvent extends KeyEvent3D {
+            public MyKeyEvent(KeyEvent e) {
+                this.awtEvent = e;
+            }
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -750,7 +786,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverField = new javax.swing.JTextField();
         goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
-        mainMenuBar = new javax.swing.JMenuBar();
+        mainMenuBar = new MainMenuBar();
         fileMenu = new javax.swing.JMenu();
         editMenu = new javax.swing.JMenu();
         viewMenu = new javax.swing.JMenu();
@@ -794,7 +830,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             .add(serverPanelLayout.createSequentialGroup()
                 .add(serverLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(serverField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                .add(serverField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(goButton))
         );
