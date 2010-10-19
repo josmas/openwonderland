@@ -98,6 +98,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.AvatarChangedListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarTestPanel;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.GestureHUD;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WonderlandAvatarCache;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry.AvatarInUseListener;
@@ -208,6 +209,16 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
                     // force an update
                     camState.setCameraPosition(translation.add(offset));
+                }
+
+                // OWL issue #125: Reinitialize the gesture HUD panel with the
+                // current avatar character.
+                if (gestureHUDRef != null && gestureHUDRef.get() != null) {
+                    if (newAvatar instanceof WlAvatarCharacter) {
+                        gestureHUDRef.get().setAvatarCharacter((WlAvatarCharacter) newAvatar);
+                    } else {
+                        gestureHUDRef.get().setVisible(false);
+                    }
                 }
             }
         };
