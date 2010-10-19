@@ -75,6 +75,7 @@ import org.jdesktop.mtgame.OnscreenRenderBuffer;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.wonderland.client.jme.ViewProperties.ViewPropertiesListener;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -103,6 +104,9 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 @ExperimentalAPI
 public class ViewManager implements ViewPropertiesListener {
+    private enum CameraSetting {
+        FIRST_PERSON, THIRD_PERSON, FRONT
+    }
 
     private static final Logger logger =
             Logger.getLogger(ViewManager.class.getName());
@@ -110,7 +114,7 @@ public class ViewManager implements ViewPropertiesListener {
     private CameraNode cameraNode;
     private CameraProcessor cameraProcessor = null;
     private CameraComponent cameraComponent = null;
-    private CameraController cameraController = new ThirdPersonCameraProcessor();
+    private CameraController cameraController;
     /**
      * The width and height of our 3D window
      */
@@ -135,7 +139,7 @@ public class ViewManager implements ViewPropertiesListener {
         this.width = width;
         this.height = height;
         this.aspect = (float) width / (float) height;
-
+        
 //        String avatarDetail = System.getProperty("avatar.detail", "high");
 //        if (avatarDetail.equalsIgnoreCase("high") || avatarDetail.equalsIgnoreCase("medium"))
         useAvatars = true;
@@ -156,6 +160,43 @@ public class ViewManager implements ViewPropertiesListener {
         }
 
         return viewManager;
+    }
+
+    /**
+     * Get the default camera controller based on the value of the
+     * wonderland.client.camera environment variable. If
+     * wonderland.client.camera is not set, the ThirdPersonCamera will
+     * be used as the default. If it is set, and its value is one of
+     * FIRST_PERSON, FRONT, or THIRD_PERSON, the corresponding camera will
+     * be used.
+     * @return the default camera
+     */
+    public static CameraController getDefaultCamera() {
+        String cameraSetting = System.getProperty("wonderland.client.camera");
+        if (cameraSetting == null) {
+            return new ThirdPersonCameraProcessor();
+        }
+
+        // XXX TODO: user defined cameras as default
+
+        try {
+            CameraSetting c = CameraSetting.valueOf(cameraSetting);
+            switch (c) {
+                case FIRST_PERSON:
+                    return new FirstPersonCameraProcessor();
+                case FRONT:
+                    return new FrontHackPersonCameraProcessor();
+                case THIRD_PERSON:
+                    return new ThirdPersonCameraProcessor();
+            }
+        } catch (Exception ex) {
+            // if there is an error, fall back to the default camera
+            logger.log(Level.WARNING, "Error processing camera " +
+                       cameraSetting, ex);
+        }
+
+        // if we got here for any reason, just return the default
+        return new ThirdPersonCameraProcessor();
     }
 
     /**
@@ -410,6 +451,7 @@ public class ViewManager implements ViewPropertiesListener {
      * Set the controller for the camera processor
      */
     public void setCameraController(CameraController cameraController) {
+        this.cameraController = cameraController;
         cameraProcessor.setCameraController(cameraController);
 //        Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
 //
@@ -431,6 +473,14 @@ public class ViewManager implements ViewPropertiesListener {
      */
     public CameraProcessor getCameraProcessor() {
         return cameraProcessor;
+    }
+
+    /**
+     * Return the current camera controller
+     * @return
+     */
+    public CameraController getCameraController() {
+        return cameraController;
     }
 
     /**
@@ -472,7 +522,7 @@ public class ViewManager implements ViewPropertiesListener {
         cameraComponent.setCameraNode(cameraNode);
         camera.addComponent(CameraComponent.class, cameraComponent);
 
-        cameraController = new ThirdPersonCameraProcessor();
+        cameraController = getDefaultCamera();
         cameraProcessor = new CameraProcessor(cameraNode, cameraController);
         camera.addComponent(ProcessorComponent.class, cameraProcessor);
 

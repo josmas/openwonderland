@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -61,6 +79,7 @@ public class ThirdPersonCameraProcessor implements CameraController {
     private int mouseX = 0;
     private int mouseY = 0;
     private float elevation = 0f;
+    private float angle = 0f;
 
     private Vector3f avatarPos = new Vector3f();
     private Quaternion avatarRot = new Quaternion();
@@ -139,13 +158,21 @@ public class ThirdPersonCameraProcessor implements CameraController {
                                 int diffX = mouse.getX() - mouseX;
                                 int diffY = mouse.getY() - mouseY;
 
-                                elevation += Math.toRadians(diffY)/4f;
+                                float scale =  mouse.isShiftDown()? 4f : 16f;
+
+                                elevation += Math.toRadians(diffY)/scale;
                                 if (elevation>Math.PI/2)
                                     elevation = (float)Math.PI/2;
                                 else if (elevation<-Math.PI/2)
                                     elevation = -(float)Math.PI/2;
 
-                                cameraLook.set(0, (float)Math.sin(elevation), 1);
+                                angle += Math.toRadians(diffX)/scale;
+                                if (angle>Math.PI/2)
+                                    angle = (float)Math.PI/2;
+                                else if (angle<-Math.PI/2)
+                                    angle = -(float)Math.PI/2;
+
+                                cameraLook.set((float)Math.sin(angle), (float)Math.sin(elevation), 1);
                                 cameraLook.normalize();
 
                                 mouseX = mouse.getX();

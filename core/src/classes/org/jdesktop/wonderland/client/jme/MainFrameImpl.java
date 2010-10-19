@@ -53,8 +53,13 @@ import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.WorldManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
+import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
@@ -86,7 +91,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             "org/jdesktop/wonderland/client/jme/resources/Bundle");
     private JMenuItem logoutMI;
     private JMenuItem exitMI;
-    private ButtonGroup cameraButtonGroup = new ButtonGroup();
+    private CameraButtonGroup cameraButtonGroup = new CameraButtonGroup();
     private JRadioButtonMenuItem firstPersonRB;
     private JRadioButtonMenuItem thirdPersonRB;
     private JRadioButtonMenuItem frontPersonRB;
@@ -184,6 +189,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 // View menu
                 firstPersonRB = new JRadioButtonMenuItem(
                         BUNDLE.getString("First Person Camera"));
+                firstPersonRB.setAccelerator(KeyStroke.getKeyStroke('f'));
                 firstPersonRB.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent evt) {
@@ -195,6 +201,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
                 thirdPersonRB = new JRadioButtonMenuItem(
                         BUNDLE.getString("Third Person Camera"));
+                thirdPersonRB.setAccelerator(KeyStroke.getKeyStroke('t'));
                 thirdPersonRB.setSelected(true);
                 thirdPersonRB.addActionListener(new ActionListener() {
 
@@ -217,6 +224,25 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 });
                 addToViewMenu(frontPersonRB, 2);
                 cameraButtonGroup.add(frontPersonRB);
+
+                // add custom accelerators for cycling and resetting the
+                // camera
+                InputMap im = mainMenuBar.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+                im.put(KeyStroke.getKeyStroke('c'), "cycleCamera");
+                im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "resetCamera");
+
+                ActionMap am = mainMenuBar.getActionMap();
+                am.put("cycleCamera", new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        cameraButtonGroup.next();
+                    }
+                });
+                am.put("resetCamera", new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        ViewManager.getViewManager().setCameraController(
+                                ViewManager.getDefaultCamera());
+                    }
+                });
 
                 // Frame Rate menu
                 frameRateMenu = new JMenu(BUNDLE.getString("Max Frame Rate"));
@@ -769,6 +795,28 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             public MyKeyEvent(KeyEvent e) {
                 this.awtEvent = e;
             }
+        }
+    }
+
+    /**
+     * An extension of ButtonGroup that allows for cycling.
+     */
+    static class CameraButtonGroup extends ButtonGroup {
+        public void next() {
+            int curIdx = 0;
+
+            // find the index of the current button
+            ButtonModel cur = getSelection();
+            for (int i = 0; i < buttons.size(); i++) {
+                if (buttons.get(i).getModel().equals(cur)) {
+                    curIdx = i;
+                    break;
+                }
+            }
+
+            // get the next index and select the corresponding button
+            int idx = (curIdx + 1) % buttons.size();
+            buttons.get(idx).doClick();
         }
     }
 
