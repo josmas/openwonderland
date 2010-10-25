@@ -45,6 +45,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -778,11 +779,14 @@ public class LogViewerFrame extends javax.swing.JFrame {
     private class LoggerTableModel extends DefaultTableModel {
 
         private Map<String, Level> origLevels;
+        private final List<Logger> createdLoggers;
 
         public LoggerTableModel() {
             super(new Object[]{
                         BUNDLE.getString("Logger"),
                         BUNDLE.getString("Level")}, 0);
+
+            createdLoggers = new ArrayList<Logger>();
         }
 
         public void reload() {
@@ -800,7 +804,11 @@ public class LogViewerFrame extends javax.swing.JFrame {
                     // skip loggers with empty names
                     continue;
                 }
-                Level level = logManager.getLogger(loggerName).getLevel();
+
+                // OWF issue #129: make sure the logger is not null
+                // by using Logger.getLogger(), which will create a logger
+                // if necessary
+                Level level = Logger.getLogger(loggerName).getLevel();
                 if (level == null) {
                     // skip loggers with undefined levels
                     continue;
@@ -838,7 +846,11 @@ public class LogViewerFrame extends javax.swing.JFrame {
             // any values left in origLevels need to be reset to the
             // default
             for (String loggerName : origLevels.keySet()) {
-                Logger.getLogger(loggerName).setLevel(null);
+                Logger removeLogger = Logger.getLogger(loggerName);
+                removeLogger.setLevel(null);
+
+                // remove the logger from our list of saved loggers
+                createdLoggers.remove(removeLogger);
             }
         }
 
@@ -849,7 +861,12 @@ public class LogViewerFrame extends javax.swing.JFrame {
             try {
                 for (String loggerName : prefs.keys()) {
                     Level level = Level.parse(prefs.get(loggerName, "WARNING"));
-                    Logger.getLogger(loggerName).setLevel(level);
+                    Logger createLogger = Logger.getLogger(loggerName);
+                    createLogger.setLevel(level);
+
+                    // OWF issue #130: hold a strong reference to the created
+                    // logger, to make sure it isn't garbage collected
+                    createdLoggers.add(createLogger);
                 }
             } catch (BackingStoreException ex) {
                 logger.log(Level.WARNING, "Error restoringing preferences", ex);
