@@ -201,8 +201,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
                 thirdPersonRB = new JRadioButtonMenuItem(
                         BUNDLE.getString("Third Person Camera"));
+
                 thirdPersonRB.setAccelerator(KeyStroke.getKeyStroke('t'));
-                thirdPersonRB.setSelected(true);
+                
                 thirdPersonRB.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent evt) {
@@ -673,6 +674,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     public void connected(boolean connected) {
         //showFPSMeter(connected);
+        //Select the appropriate camera in the menu
+        CameraController cameraController = ClientContextJME.getViewManager().getCameraController();
+        firstPersonRB.setSelected(cameraController.getClass() == FirstPersonCameraProcessor.class);
+        thirdPersonRB.setSelected(cameraController.getClass() == ThirdPersonCameraProcessor.class);
+        frontPersonRB.setSelected(cameraController.getClass() == FrontHackPersonCameraProcessor.class);
     }
 
     /**
