@@ -115,7 +115,7 @@
               <Group type="102" attributes="0">
                   <Component id="serverLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="serverField" pref="579" max="32767" attributes="0"/>
+                  <Component id="serverField" pref="530" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="goButton" min="-2" max="-2" attributes="0"/>
               </Group>
