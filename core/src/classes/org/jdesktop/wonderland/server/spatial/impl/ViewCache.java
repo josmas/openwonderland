@@ -249,8 +249,8 @@ class ViewCache {
      * @param cell
      */
     void cellRevalidated(SpatialCellImpl cell) {
-        logger.log(Level.WARNING, getViewCell().getCellID() + " Schedule revalidate cell " +
-                   cell.getCellID(), new Throwable("Stack trace"));
+        logger.fine(getViewCell().getCellID() + " Schedule revalidate cell " +
+                   cell.getCellID());
 
         synchronized(pendingCacheUpdates) {
             pendingCacheUpdates.add(new CacheUpdate(cell));
