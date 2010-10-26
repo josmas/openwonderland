@@ -221,8 +221,10 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
 
         //Keep the skybox centered on the view
         curViewCell = newViewCell;
-        if (curViewCell!=null)
+        if (curViewCell!=null) {
             curViewCell.addTransformChangeListener(this);
+            transformChanged(curViewCell, ChangeSource.LOCAL);
+        }
     }
 
     public void transformChanged(Cell cell, ChangeSource source) {

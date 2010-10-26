@@ -306,14 +306,23 @@ public class JmeClientMain {
 //        });
 //        frame.addToEditMenu(physicsMI, 3);
 
+        // load the starting coordinates and look direction
+        float startX = Float.parseFloat(System.getProperty("x", "0"));
+        float startY = Float.parseFloat(System.getProperty("y", "0"));
+        float startZ = Float.parseFloat(System.getProperty("z", "0"));
+        Vector3f startLoc = new Vector3f(startX, startY, startZ);
+
+        float look = Float.parseFloat(System.getProperty("look",  "0"));
+        Quaternion startLook = new Quaternion(
+                new float[] { 0f, (float) Math.toRadians(look), 0f });
+
         // connect to the default server
         try {
-            loadServer(serverURL);
+            loadServer(serverURL, startLoc, startLook);
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING, "Error connecting to default server "
                     + serverURL, ioe);
         }
-
     }
 
     /**
