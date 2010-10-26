@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,6 +35,7 @@
  */
 package org.jdesktop.wonderland.front.servlet;
 
+import java.util.Enumeration;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +62,7 @@ public class WonderlandSubstitutionHandler
         
         // apply default substitutions
         jnlpTemplate = super.specializeJnlpTemplate(request, respath, jnlpTemplate);
-        
+
         // get the servlet context
         ServletContext context = request.getSession().getServletContext();
                 
@@ -70,7 +89,34 @@ public class WonderlandSubstitutionHandler
         }
         jnlpTemplate = substitute(jnlpTemplate, "$$wonderland.client.config.dir", configDirURL);
 
+        // add in additional properties
+        StringBuilder props = new StringBuilder();
+        for (Enumeration<String> e = request.getParameterNames(); e.hasMoreElements();) {
+            String key = e.nextElement();
+            String value = request.getParameter(key);
+            
+            if (isValid(key) && isValid(value)) {
+                props.append("<property name=\"");
+                props.append(key);
+                props.append("\" value=\"");
+                props.append(value);
+                props.append("\"/>\n");
+            }
+        }
+        jnlpTemplate = substitute(jnlpTemplate, "$$url.props", props.toString());
+
         // return the result
         return jnlpTemplate;
+    }
+
+    private static final String[] INVALID = new String[] { "\"", "'", "\n", "\r" };
+    private boolean isValid(String prop) {
+        for (String s : INVALID) {
+            if (prop.contains(s)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -64,7 +64,7 @@
         <loadfile property="local.jars" srcfile="${build.dir}/jnlp.jars"/>
         
         <!-- copy the source .jnlp file and substitute the jar locations -->
-        <copy todir="${webstart.dist.dir}" file="${current.dir}/web/Wonderland.jnlp">
+        <copy todir="${webstart.dist.dir}" file="${current.dir}/web/Wonderland.jnlp" overwrite="true">
             <filterset begintoken="%" endtoken="%">
                 <filter token="LOCAL_JAR_FILES" value="${local.jars}"/>
                 <filter token="VERSION" value="${wonderland.version}"/>

@@ -18,7 +18,7 @@
   </security>
   
   <resources>
-    <j2se version="1.6+" initial-heap-size="128m" max-heap-size="512m" java-vm-args=""/>
+    <j2se version="1.6+" initial-heap-size="128m" max-heap-size="512m" java-vm-args="-Xincgc"/>
     
     <!-- jar files auto-populated by build script -->
     %LOCAL_JAR_FILES%
@@ -27,6 +27,9 @@
     <property name="wonderland.client.config.dir" value="$$wonderland.client.config.dir"/>
     <property name="wonderland.protocol.handler.pkgs" value="org.jdesktop.wonderland.client.protocols"/>
     <property name="wonderland.version" value="%VERSION%"/>
+
+    <!-- properties passed in via the URL -->
+    $$url.props
   </resources>
 
   <resources os="Windows" arch="x86">
