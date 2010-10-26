@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -18,7 +36,9 @@
 package org.jdesktop.wonderland.client.assetmgr;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -335,7 +355,7 @@ public class AssetDB {
      * @return True if the database exists, false if not
      */
     private boolean dbExists() {
-        return new File(this.getDatabaseLocation()).exists();
+        return getDatabaseLocation().exists();
     }
     
     /**
@@ -373,9 +393,8 @@ public class AssetDB {
      *
      * @return The full location to the database
      */
-    private String getDatabaseLocation() {
-        String dbLocation = System.getProperty("derby.system.home") + "/" + dbName;
-        return dbLocation;
+    private File getDatabaseLocation() {
+        return new File(System.getProperty("derby.system.home") + File.separator + dbName);
     }
 
     /**
@@ -384,7 +403,16 @@ public class AssetDB {
      * @return The URL representation of the database
      */
     private String getDatabaseUrl() {
-        String dbUrl = dbProperties.getProperty("derby.url") + dbName;
+        File path = getDatabaseLocation();
+        String dbUrl;
+        
+        try {
+            dbUrl = dbProperties.getProperty("derby.url") + path.getCanonicalPath();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error getting URL for " + path, ioe);
+            dbUrl = dbProperties.getProperty("derby.url") + dbName;
+        }
+
         return dbUrl;
     }
 

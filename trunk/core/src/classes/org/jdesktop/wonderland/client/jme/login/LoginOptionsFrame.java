@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -30,8 +48,10 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
@@ -48,6 +68,7 @@ public class LoginOptionsFrame extends JDialog {
             Logger.getLogger(LoginOptionsFrame.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/client/jme/login/Bundle");
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/login/Bundle");
 
     /**
      * creates a new LoginOptionsFrame
@@ -166,6 +187,9 @@ public class LoginOptionsFrame extends JDialog {
         jLabel2 = new javax.swing.JLabel();
         cacheLocation = new javax.swing.JTextField();
         clearCacheButton = new javax.swing.JButton();
+        browseButton = new javax.swing.JButton();
+        saveCB = new javax.swing.JCheckBox();
+        resetButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
@@ -181,7 +205,7 @@ public class LoginOptionsFrame extends JDialog {
         jTabbedPane1.setMaximumSize(new java.awt.Dimension(426, 287));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("LoginOptionsFrame.jPanel2.border.title"))); // NOI18N
-        jPanel2.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        jPanel2.setFont(jPanel2.getFont());
 
         proxyBG.add(noProxyRB);
         noProxyRB.setFont(noProxyRB.getFont());
@@ -239,7 +263,7 @@ public class LoginOptionsFrame extends JDialog {
         noProxyTFLabel.setFont(noProxyTFLabel.getFont());
         noProxyTFLabel.setText(bundle.getString("LoginOptionsFrame.noProxyTFLabel.text")); // NOI18N
 
-        noProxyTF.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        noProxyTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -252,11 +276,8 @@ public class LoginOptionsFrame extends JDialog {
                         .add(29, 29, 29)
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(httpProxyTFLabel)
-                            .add(jPanel2Layout.createSequentialGroup()
-                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(httpsProxyTFLabel)
-                                    .add(noProxyTFLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                            .add(httpsProxyTFLabel)
+                            .add(noProxyTFLabel))
                         .add(6, 6, 6)
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jPanel2Layout.createSequentialGroup()
@@ -277,7 +298,7 @@ public class LoginOptionsFrame extends JDialog {
                     .add(noProxyRB)
                     .add(systemProxyRB)
                     .add(wlProxyRB))
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -303,11 +324,11 @@ public class LoginOptionsFrame extends JDialog {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(noProxyTFLabel)
                     .add(noProxyTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("LoginOptionsFrame.jPanel1.border.title"))); // NOI18N
-        jPanel1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        jPanel1.setFont(jPanel1.getFont());
 
         jLabel1.setFont(jLabel1.getFont());
         jLabel1.setText(bundle.getString("LoginOptionsFrame.jLabel1.text")); // NOI18N
@@ -324,7 +345,7 @@ public class LoginOptionsFrame extends JDialog {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(ipAddressComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(162, Short.MAX_VALUE))
+                .addContainerGap(214, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -389,10 +410,10 @@ public class LoginOptionsFrame extends JDialog {
                 .add(audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel5)
                     .add(audioPanelLayout.createSequentialGroup()
-                        .add(phoneNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                        .add(phoneNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
                         .add(119, 119, 119))
                     .add(audioPanelLayout.createSequentialGroup()
-                        .add(audioQualityComboBox, 0, 237, Short.MAX_VALUE)
+                        .add(audioQualityComboBox, 0, 113, Short.MAX_VALUE)
                         .add(119, 119, 119)))
                 .add(200, 200, 200))
         );
@@ -409,7 +430,7 @@ public class LoginOptionsFrame extends JDialog {
                     .add(phoneNumber, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel5)
-                .addContainerGap(207, Short.MAX_VALUE))
+                .addContainerGap(216, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab(bundle.getString("LoginOptionsFrame.audioPanel.TabConstraints.tabTitle"), audioPanel); // NOI18N
@@ -428,6 +449,23 @@ public class LoginOptionsFrame extends JDialog {
             }
         });
 
+        browseButton.setText(bundle.getString("LoginOptionsFrame.browseButton.text")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
+        saveCB.setSelected(true);
+        saveCB.setText(bundle.getString("LoginOptionsFrame.saveCB.text")); // NOI18N
+
+        resetButton.setText(bundle.getString("LoginOptionsFrame.resetButton.text")); // NOI18N
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout cachePanelLayout = new org.jdesktop.layout.GroupLayout(cachePanel);
         cachePanel.setLayout(cachePanelLayout);
         cachePanelLayout.setHorizontalGroup(
@@ -438,7 +476,15 @@ public class LoginOptionsFrame extends JDialog {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cachePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(clearCacheButton)
-                    .add(cacheLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE))
+                    .add(cachePanelLayout.createSequentialGroup()
+                        .add(cachePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, cachePanelLayout.createSequentialGroup()
+                                .add(saveCB)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(resetButton))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, cacheLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseButton)))
                 .addContainerGap())
         );
         cachePanelLayout.setVerticalGroup(
@@ -447,10 +493,16 @@ public class LoginOptionsFrame extends JDialog {
                 .addContainerGap()
                 .add(cachePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(cacheLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(cacheLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(clearCacheButton)
-                .addContainerGap(228, Short.MAX_VALUE))
+                .add(cachePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cachePanelLayout.createSequentialGroup()
+                        .add(saveCB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(clearCacheButton))
+                    .add(resetButton))
+                .addContainerGap(206, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab(bundle.getString("LoginOptionsFrame.cachePanel.TabConstraints.tabTitle"), cachePanel); // NOI18N
@@ -473,9 +525,9 @@ public class LoginOptionsFrame extends JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(263, Short.MAX_VALUE)
+                .addContainerGap(349, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okButton)
@@ -583,6 +635,16 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         NetworkAddressManager.setDefaultNetworkAddress(na);
     }
 
+    // if the cache has changed, update the settings for the directory
+    File cacheDir = new File(cacheLocation.getText());
+    if (!cacheDir.equals(ClientContext.getUserDirectory())) {
+        // set the client directory to the desired value
+        ClientContext.setUserDirectory(cacheDir, saveCB.isSelected());
+
+        // close the asset cache to ensure the new value is used
+        AssetManager.getAssetManager().closeAssetCache();
+    }
+
     // close the dialog
     setVisible(false);
 }//GEN-LAST:event_okButtonActionPerformed
@@ -602,6 +664,10 @@ private void clearCacheButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
     if (result == JOptionPane.YES_OPTION) {
+        // OWL issue #120: shut down the asset database before changing any
+        // files to make sure the directories can be deleted
+        AssetManager.getAssetManager().closeAssetCache();
+
         deleteTree(new File(cacheDir));
         deleteTree(new File(assetDBDir));
         deleteTree(new File(avatarCacheDir));
@@ -616,6 +682,22 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     String text = phoneNumber.getText();
     audioQualityComboBox.setEnabled((text == null) || (text.length() == 0));
 }//GEN-LAST:event_phoneNumberKeyTyped
+
+private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+    JFileChooser jfc = new JFileChooser(cacheLocation.getText());
+    jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    int returnVal = jfc.showDialog(this, bundle.getString("SELECT CACHE DIRECTORY"));
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+        // set the cache directory in the field. The actual directory will
+        // be set when the user clicks OK
+        cacheLocation.setText(jfc.getSelectedFile().getPath());
+    }
+}//GEN-LAST:event_browseButtonActionPerformed
+
+private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+    ClientContext.resetUserDirectory();
+    cacheLocation.setText(ClientContext.getUserDirectory().toString());
+}//GEN-LAST:event_resetButtonActionPerformed
 
     private void deleteTree(File file) {
         if (!file.exists() || !file.isDirectory()) {
@@ -672,6 +754,7 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel audioPanel;
     private javax.swing.JComboBox audioQualityComboBox;
+    private javax.swing.JButton browseButton;
     private javax.swing.JTextField cacheLocation;
     private javax.swing.JPanel cachePanel;
     private javax.swing.JButton cancelButton;
@@ -701,6 +784,8 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     private javax.swing.JButton okButton;
     private javax.swing.JTextField phoneNumber;
     private javax.swing.ButtonGroup proxyBG;
+    private javax.swing.JButton resetButton;
+    private javax.swing.JCheckBox saveCB;
     private javax.swing.JRadioButton systemProxyRB;
     private javax.swing.JRadioButton wlProxyRB;
     // End of variables declaration//GEN-END:variables

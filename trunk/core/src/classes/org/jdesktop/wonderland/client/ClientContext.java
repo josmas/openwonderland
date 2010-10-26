@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -22,6 +40,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
@@ -43,6 +62,7 @@ public class ClientContext {
 
     private static final Logger logger =
             Logger.getLogger(ClientContext.class.getName());
+    private static final String USERDIR_PROP = "wonderland.user.dir";
 
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
     private static InputManager inputManager=null;
@@ -135,11 +155,32 @@ public class ClientContext {
         if (userDir != null) {
             return userDir;
         }
+
+        // first try the preference set up in the login dialog
+        Preferences prefs = Preferences.userNodeForPackage(ClientContext.class);
+        String userDirName = prefs.get(USERDIR_PROP, null);
+        if (userDirName != null) {
+            // if the user has set a preference for a directory, but that
+            // directory doesn't exist, don't create it, just fall back to
+            // what we would have used otherwise. This covers the case of
+            // removable drives, etc
+            File f = new File(userDirName);
+            if (!f.exists() || !f.isDirectory()) {
+                logger.warning("User directory " + userDirName + " does not " +
+                        "exist. Falling back to default.");
+                userDirName = null;
+            }
+        }
         
-        String userDirName = System.getProperty("wonderland.user.dir");
-        String version = System.getProperty("wonderland.version");
-        
+        // next try the system property
         if (userDirName == null) {
+            userDirName = System.getProperty(USERDIR_PROP);
+        }
+
+        // if neither the preference or the system property are set, use
+        // a default value based on the Wonderland version
+        if (userDirName == null) {
+            String version = System.getProperty("wonderland.version");
             userDirName = System.getProperty("user.home") + File.separator + 
                           ".wonderland" + File.separator + version;
         }
@@ -179,8 +220,27 @@ public class ClientContext {
      * System property is not viable.  In other cases, the system
      * property should be used.
      * @param userDirectory the user directory to use
+     * @param save if true, save this value in a preference for future use
      */
-    public static void setUserDirectory(File userDir) {
+    public static void setUserDirectory(File userDir, boolean save) {
+        if (save) {
+            Preferences prefs = Preferences.userNodeForPackage(ClientContext.class);
+            prefs.put(USERDIR_PROP, userDir.getPath());
+        }
+
         ClientContext.userDir = userDir;
+    }
+
+    /**
+     * @InternalAPI
+     * Reset the user directory by removing the preference.
+     */
+    public static void resetUserDirectory() {
+        Preferences prefs = Preferences.userNodeForPackage(ClientContext.class);
+        prefs.remove(USERDIR_PROP);
+
+        // reset the user directory to the default value
+        ClientContext.userDir = null;
+        ClientContext.userDir = getUserDirectory();
     }
 }
