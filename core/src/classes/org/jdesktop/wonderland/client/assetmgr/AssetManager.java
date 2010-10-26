@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -55,17 +73,18 @@ import org.jdesktop.wonderland.common.ThreadManager;
 @ExperimentalAPI
 public class AssetManager {
     
-    private static Logger logger = Logger.getLogger(AssetManager.class.getName());
-    private AssetCache assetCache = null;
-    private AssetFactory assetFactory = null;
+    private static final Logger logger = Logger.getLogger(AssetManager.class.getName());
+    private final AssetFactory assetFactory;
     private final Set<AssetProgressListener> progressListeners =
             new CopyOnWriteArraySet<AssetProgressListener>();
-    
+
+    private AssetCache assetCache;
+
     // A map that maintains protocols and the asset repository factories that
     // handle them.
-    private static Map<String, Class<? extends AssetRepositoryFactory>> protocolFactoryMap = null;
+    private static final Map<String, Class<? extends AssetRepositoryFactory>> protocolFactoryMap =
+            new HashMap<String, Class<? extends AssetRepositoryFactory>>();
     static {
-        protocolFactoryMap = new HashMap();
         protocolFactoryMap.put("wla", ModuleAssetRepositoryFactory.class);
         protocolFactoryMap.put("wlhttp", WlHttpAssetRepositoryFactory.class);
         protocolFactoryMap.put("wlcontent", WlContentAssetRepositoryFactory.class);
@@ -75,17 +94,17 @@ public class AssetManager {
      * A map of assets currently being loaded, where the key is the unique ID
      * of the asset and the value is the loader reponsible for loading it
      */
-    private HashMap<AssetID, AssetLoader> loadingAssets;
+    private final HashMap<AssetID, AssetLoader> loadingAssets;
     
     /*
      * A map of assets already loaded by the asset manager, where the key is the
      * unique ID of the asset and the value is the Asset object itself.
      */
-    private HashMap<AssetID, Asset> loadedAssets;
+    private final HashMap<AssetID, Asset> loadedAssets;
     
     /* The number of threads to use for each of the downloading service */
     private static final int NUMBER_THREADS = 10;    
-    private ExecutorService downloadService = Executors.newFixedThreadPool(AssetManager.NUMBER_THREADS);
+    private final ExecutorService downloadService = Executors.newFixedThreadPool(AssetManager.NUMBER_THREADS);
     
     /* Receive updates every 10 KB during downloads */
     private static final int UPDATE_BYTE_INTERVAL = 1024 * 10;
@@ -94,12 +113,7 @@ public class AssetManager {
     private static final int NETWORK_CHUNK_SIZE = 50 * 1024;
     
     private AssetManager() {
-        try {
-            assetFactory = new AssetFactory();
-            assetCache = new AssetCache(assetFactory);
-        } catch (java.lang.Exception excp) {
-            logger.log(Level.WARNING, "Unable to create Asset Cache", excp);
-        }
+        assetFactory = new AssetFactory();
         loadingAssets = new HashMap<AssetID, AssetLoader>();
         loadedAssets = new HashMap<AssetID, Asset>();
     }
@@ -121,10 +135,33 @@ public class AssetManager {
         return AssetManagerHolder.assetManager;
     }
 
-    public AssetCache getAssetCache() {
+    /**
+     * Get the asset cache associated with this asset manager.
+     * @return the cache associated with this manager
+     */
+    public synchronized AssetCache getAssetCache() {
+        if (assetCache == null) {
+            try {
+                assetCache = new AssetCache(assetFactory);
+            } catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "Unable to create Asset Cache", excp);
+            }
+        }
+
         return assetCache;
     }
-    
+
+    /**
+     * Close the asset cache associated with this asset manager. The cache
+     * will be reopened on the next call to getAssetCache()
+     */
+    public synchronized void closeAssetCache() {
+        if (assetCache != null) {
+            assetCache.close();
+            assetCache = null;
+        }
+    }
+
     /**
      * Add a progress listener for asset loading.
      *
@@ -313,7 +350,7 @@ public class AssetManager {
             loadedAssets.remove(assetID);
             asset.unloaded();
             try {
-                assetCache.deleteAsset(asset);
+                getAssetCache().deleteAsset(asset);
             } catch (AssetCacheException excp) {
                 logger.log(Level.WARNING, "Unable to delete asset from the " +
                         " cache " + assetID.toString(), excp);
@@ -338,7 +375,7 @@ public class AssetManager {
             // that now and open an output stream to it.
             String checksum = assetStream.getChecksum();
             AssetID assetID = new AssetID(asset.getAssetURI(), checksum);
-            String cacheFile = assetCache.getAssetCacheFileName(assetID);
+            String cacheFile = getAssetCache().getAssetCacheFileName(assetID);
             File file = new File(cacheFile);
             if (file.canWrite() == false) {
                 makeDirectory(file);
@@ -630,7 +667,7 @@ public class AssetManager {
                     // version. We first need to set up the location of the
                     // cache file first
                     AssetID assetID = new AssetID(assetURI, asset.getChecksum());
-                    asset.setLocalCacheFile(new File(assetCache.getAssetCacheFileName(assetID)));
+                    asset.setLocalCacheFile(new File(getAssetCache().getAssetCacheFileName(assetID)));
                     return loadAssetFromCache(asset, originalChecksum);
                 }
                 else if (response == AssetResponse.STREAM_READY) {
@@ -642,7 +679,7 @@ public class AssetManager {
                     try {
                         stream.open();
                         loadAssetFromServer(asset, stream);
-                        assetCache.addAsset(asset, stream.getCachePolicy());
+                        getAssetCache().addAsset(asset, stream.getCachePolicy());
                         stream.close();
                         return loadAssetFromCache(asset, originalChecksum);
                     } catch (java.io.IOException excp) {
