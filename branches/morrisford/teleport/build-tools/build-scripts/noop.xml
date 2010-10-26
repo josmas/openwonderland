@@ -1,4 +1,0 @@
-<antlib>
-    <!-- empty antlib to prevent warnings when building from a workspace
-         that has already loaded ant-contrib tasks -->
-</antlib>
