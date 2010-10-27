@@ -116,6 +116,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         this.hud = hud;
         hudStateMap = Collections.synchronizedMap(new HashMap());
         hudViewMap = Collections.synchronizedMap(new HashMap());
+        System.out.println("XXXXXXXXXXXXXXXX - In constructor in WonderlandHUDComponentManager - hud = " + hud);
     }
 
     public Window2D createWindow(HUDComponent component) {
@@ -149,7 +150,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("adding HUD component to component manager: " + component);
         }
-
+        System.out.println("XXXXXXXXXXXXXXXXX - in addComponent - adding HUD component to component manager: " + component + " hud = " + hud);
         HUDComponentState state = new HUDComponentState(component);
         HUDComponent2D component2D = (HUDComponent2D) component;
         Window2D window;
@@ -201,7 +202,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("removing HUD component from component manager: " + component);
         }
-
+        System.out.println("XXXXXXXXXXXXX - In removeComponent - component = " + component);
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
         if (state != null) {
@@ -875,6 +876,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public void close(HUDComponent component) {
+        System.out.println("XXXXXXXXXXXXXXXX - In close in WonderlandHUDComponentManager");
         component.setVisible(false);
         component.setClosed();
     }

@@ -395,7 +395,7 @@ public class AudioManagerClient extends BaseConnection implements
         AudioMenu.getAudioMenu(this).setEnabled(true);
         userListJMenuItem.setEnabled(true);
 
-	audioProblemJFrame = new AudioProblemJFrame(this);
+//	audioProblemJFrame = new AudioProblemJFrame(this);
 
 	connected = true;
     }
@@ -719,7 +719,7 @@ public class AudioManagerClient extends BaseConnection implements
 
     private void showSoftphoneProblem(final String problem) {
 	Timer timer = new Timer();
-
+/*
 	timer.schedule(new TimerTask() {
 	    public void run() {
 		if (connected == false || getStatus().equals(Status.DISCONNECTED)) {
@@ -742,6 +742,7 @@ public class AudioManagerClient extends BaseConnection implements
 		audioProblemJFrame.setText(problem);
 	    }
 	}, 3000);
+ */
     }
 
     public void softphoneTestUDPPort(int port, int duration) {

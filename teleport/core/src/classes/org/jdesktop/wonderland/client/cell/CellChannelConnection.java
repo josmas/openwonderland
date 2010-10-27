@@ -62,8 +62,8 @@ public class CellChannelConnection extends BaseConnection
     private static Logger logger = Logger.getLogger(CellChannelConnection.class.getName());
 
     /** Executor to schedule queue removals */
-    private static final ScheduledExecutorService executor =
-            Executors.newSingleThreadScheduledExecutor();
+//    private static final ScheduledExecutorService executor =
+//            Executors.newSingleThreadScheduledExecutor();
 
     /** The delay (ms) to wait for cell messages after a cell is unloaded */
     private static final long CLEANUP_DELAY = 1000;
@@ -254,7 +254,8 @@ public class CellChannelConnection extends BaseConnection
         cmd.setMessageReceiver(noopRecv);
         
         // schedule a task to clean up
-        executor.schedule(new Runnable() {
+
+        ClientContext.getGlobalScheduledExecutor().schedule(new Runnable() {
             public void run() {
                 synchronized (CellChannelConnection.this) {
                     // make sure the queue hasn't changed in the
@@ -427,5 +428,9 @@ public class CellChannelConnection extends BaseConnection
                             "cell " + cellID);
             }
         }
+    }
+    public void removeCache()
+    {
+        cache = null;
     }
 }

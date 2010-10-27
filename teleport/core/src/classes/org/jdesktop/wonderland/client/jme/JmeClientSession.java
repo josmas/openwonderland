@@ -73,8 +73,16 @@ public class JmeClientSession extends CellClientSession {
     // so the cellCache will be set before we proceed
     @Override
     protected JmeCellCache createCellCache() {
+        System.out.println("********************* JmeClientSession - in createCellCache");
         jmeCellCache = new JmeCellCache(this, getClassLoader());
         getCellCacheConnection().addListener(jmeCellCache);
         return jmeCellCache;
+    }
+
+    public void removeCellCache()
+    {
+        System.out.println("********************* in removeCellCache");
+        jmeCellCache = null;
+        super.deleteCellCache();
     }
 }

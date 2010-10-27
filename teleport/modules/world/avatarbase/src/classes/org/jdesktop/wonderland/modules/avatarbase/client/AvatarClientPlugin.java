@@ -370,7 +370,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
         // Initialize the AvatarSystem after we set up caching
         AvatarSystem.initialize(ClientContextJME.getWorldManager());
-        
+
         super.initialize(manager);
     }
 

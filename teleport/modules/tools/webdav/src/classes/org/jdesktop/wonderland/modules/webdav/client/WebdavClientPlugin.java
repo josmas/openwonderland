@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpException;
 import org.jdesktop.wonderland.common.login.AuthenticationException;
 import org.jdesktop.wonderland.modules.webdav.common.WebdavContentCollection;
@@ -146,6 +147,8 @@ public class WebdavClientPlugin extends BaseClientPlugin {
         if (reg.getLocalRepository() == localRepo) {
             reg.registerLocalRepository(null);
         }
+// MHF
+    MultiThreadedHttpConnectionManager.shutdownAll();
 
         super.cleanup();
     }

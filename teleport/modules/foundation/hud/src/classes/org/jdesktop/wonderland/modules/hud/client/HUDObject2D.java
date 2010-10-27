@@ -283,6 +283,7 @@ public class HUDObject2D implements HUDObject {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
+                System.out.println("^^^^^^^^^^^^ - In run() in setVisible");
                 Timer t = new Timer();
                 t.schedule(new VisibilityTask(DisplayMode.HUD, visible), when);
             }
@@ -300,6 +301,7 @@ public class HUDObject2D implements HUDObject {
         }
 
         public void run() {
+            System.out.println("^^^^^^^^^^^^^^ - enter run in visibilityTask - visible = visible - this = " + this);
             if (mode == DisplayMode.HUD) {
                 setVisible(visible);
             } else if (mode == DisplayMode.WORLD) {
@@ -412,7 +414,10 @@ public class HUDObject2D implements HUDObject {
      * {@inheritDoc}
      */
     public void changeTransparency(Float from, Float to, long duration) {
+        System.out.println("^^^^^^^^^^^^^^ - enter changeTransparency - this = " + this + " from = " + from + " - to = " + to + " - duration = " + duration);
+ 
         if ((animator != null) && (animator.isAnimating())) {
+            System.out.println("^^^^^^^^^^^^^^^^^^ - in changeTransparency animator = " + animator + " - thread = " + animationThread);
             animator.cancel();
             animator = null;
             animationThread = null;

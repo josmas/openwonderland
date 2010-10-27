@@ -35,6 +35,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
@@ -210,7 +211,10 @@ public class ServerSessionManager {
                 // disconnect process
                 loginControl = null;
             }
-
+// MHF
+            System.out.println("&&&&&&&&&&&&&&&&&&& - disconnect after sync");
+            ResourceBundle.clearCache();
+            
             // if we are the primary session, send a notification that there
             // is no longer a primary session
             if (this.equals(LoginManager.getPrimary())) {
@@ -232,6 +236,10 @@ public class ServerSessionManager {
 
             // notify listeners
             fireServerStatus(false);
+// MHF
+///            primarySession = null;
+
+            System.out.println("&&&&&&&&&&&&&&&&&& - disconnect at bottom");
         }
     }
 

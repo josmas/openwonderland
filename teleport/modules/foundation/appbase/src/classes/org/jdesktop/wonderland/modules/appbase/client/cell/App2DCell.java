@@ -122,12 +122,14 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         // Part 2 is at the end of this file.
         // Part 3 is in the client logging.properties.
         addTransformChangeListener(new MyTransformChangeListener());
+        System.out.println("RRRRRRRRRRRRRR - in constructor in App2DCell");
     }
 
     /**
      * {@inheritDoc}
      */
     public void cleanup() {
+        System.out.println("RRRRRRRRRRRRRRR - In cleanup in App2DCell");
         if (app == null) {
             return;
         }

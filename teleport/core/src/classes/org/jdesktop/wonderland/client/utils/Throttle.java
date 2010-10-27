@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import org.jdesktop.wonderland.client.ClientContext;
 
 /**
  * A throttle can be used to schedule tasks with a fixed maximum rate.  For
@@ -114,7 +115,7 @@ public class Throttle {
         // to run it.
         long runAt = getMinDelayMillis() - delay;
         nextTask = task;
-        getExecutor().schedule(new Runnable() {
+        ClientContext.getGlobalScheduledExecutor().schedule(new Runnable() {
             public void run() {
                 synchronized (Throttle.this) {
                     // run the task

@@ -1084,4 +1084,9 @@ public class Cell {
             }
         }
     }
+    public void removeCellCache()
+    {
+        System.out.println("################# - Cell - removeCellCache");
+        cellCache = null;
+    }
 }

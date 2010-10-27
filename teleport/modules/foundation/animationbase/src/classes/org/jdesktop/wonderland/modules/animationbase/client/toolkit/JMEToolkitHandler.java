@@ -48,6 +48,7 @@ public class JMEToolkitHandler implements UIToolkitHandler {
 
 	@Override
 	public void runOnUIThread(Runnable runnable) {
+            System.out.println("KKKKKKKKKKKKKKKKKKK - enter runOnUiThread in JMEToolkitHandler - this = " + this);
             final Runnable r = runnable;
             ClientContextJME.getSceneWorker().addWorker(new WorkCommit(){
                 public void commit() {

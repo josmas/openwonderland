@@ -124,7 +124,7 @@ public abstract class App2D {
 
     /** A flag which stops the invoker thread. */
     private static boolean stopInvoker = false;
-
+/*
     // Register the appbase shutdown hook
     static {
 
@@ -132,12 +132,12 @@ public abstract class App2D {
             @Override
             public void run() { App2D.shutdown(); }
         });
-
+System.out.println("RRRRRRRRRRRRRRR - In register in App2D");
         // Start the invoker thread
         invoker = new Thread(new Invoker(), "Invoker Thread for App Base");
         invoker.start();
     }
-
+*/
     /**
      * Set the default View2DCell factory to be used for all apps in this client. (Called by 
      * AppClientPlugin.initialize).
@@ -164,6 +164,7 @@ public abstract class App2D {
      */
     public App2D(ControlArb controlArb, Vector2f pixelScale) {
         this(null, controlArb, pixelScale);
+        System.out.println("RRRRRRRRRRRRRRRRR - In constructor 1 in App2D");
     }
 
     /**
@@ -175,6 +176,7 @@ public abstract class App2D {
      */
     public App2D(String name, ControlArb controlArb, Vector2f pixelScale) {
         this.name = name;
+        System.out.println("RRRRRRRRRRRRRRRRR - In constructor 2 in App2D");
         if (controlArb == null) {
             throw new RuntimeException("controlArb argument must be non-null.");
         }
@@ -197,23 +199,27 @@ public abstract class App2D {
      * Do not call this while holding any app base locks.
      */
     public void cleanup() {
-
+        System.out.println("UUUUUUUUUUUUUUUUU - in cleanup in App2D - this = " + this);
+        
         // Must be done outside the app cleanup lock.
         if (controlArb != null) {
             controlArb.cleanup();
             controlArb = null;
         }
+        System.out.println("UUUUUUUUUUUUUUUUU - in cleanup in App2D - # 1 - this = " + this);
 
         synchronized (appCleanupLock) {
             setShowInHUD(false);
             viewSet.cleanup();
             stack.cleanup();
+        System.out.println("UUUUUUUUUUUUUUUUU - in cleanup in App2D - # 2 - this = " + this);
 
             LinkedList<Window2D> windowsCopy;
             synchronized (this) {
                 windowsCopy = (LinkedList<Window2D>) windows.clone();
                 windows.clear();
             }
+        System.out.println("UUUUUUUUUUUUUUUUU - in cleanup in App2D - # 3 - this = " + this);
 
             for (Window2D window : windowsCopy) {
                 window.cleanup();
@@ -221,14 +227,18 @@ public abstract class App2D {
 
             pixelScale = null;
         }
+        System.out.println("UUUUUUUUUUUUUUUUU - in cleanup in App2D - # 4 - this = " + this);
 
         synchronized(apps) {
             apps.remove(this);
         }
+                System.out.println("UUUUUUUUUUUUUUUUU - in cleanup in App2D - # 5 - this = " + this);
+
     }
 
     // Signal the invoker to stop and wake it up so it actually stops.
     private static void stopInvokerThread () {
+        System.out.println("RRRRRRRRRRRRRRRRRR - in stopInvokerThread in App2D");
         stopInvoker = true;
         invokeLater(new Runnable () {
             public void run () {
@@ -432,14 +442,20 @@ public abstract class App2D {
         return getName();
     }
 
+    public static void outsideShutdown()
+    {
+        shutdown();
+    }
     /** 
      * Executed by the JVM shutdown process. 
      *
      * THREAD USAGE NOTE: No appbase locks are held during this call. 
      */
     private static void shutdown () {
+        System.out.println("UUUUUUUUUUUUUUUUUU - In shutdown in App2D");
         logger.info("Shutting down app base...");
         isAppBaseRunning = false;
+        System.out.println("UUUUUUUUUUUUUUUUUU - In shutdown in App2D - #1");
 
         // Note: I tried to run this in a synchronized block, but it hung.
         LinkedList<App2D> appsCopy = (LinkedList<App2D>) apps.clone();
@@ -448,9 +464,11 @@ public abstract class App2D {
             app.cleanup();
         }
         logger.info("Done shutting down apps.");
+        System.out.println("UUUUUUUUUUUUUUUUUU - In shutdown in App2D - #2");
 
         apps.clear();
         stopInvokerThread();
+        System.out.println("UUUUUUUUUUUUUUUUUU - In shutdown in App2D - #3");
 
         logger.info("Done shutting down app base.");
     }

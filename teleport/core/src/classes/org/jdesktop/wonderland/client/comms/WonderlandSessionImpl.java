@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -112,7 +113,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private WonderlandIdentity userID;
 
     /** an executor to use when sending data to listeners */
-    private ExecutorService notifier;
+//    private ExecutorService notifier;
     
     /**
      * Create a new client to log in to the given server
@@ -149,7 +150,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
                 new CopyOnWriteArraySet<SessionStatusListener>();
       
         // initialize the notifier
-        notifier = Executors.newSingleThreadExecutor();
+//        notifier = Executors.newSingleThreadExecutor();
         
         // initialize list of clients
         clients = Collections.synchronizedMap(
@@ -500,7 +501,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // setStatus() was called, since that is a Darkstar thread.
         // If a listener blocks the Darkstar thread (for example by
         // waiting on a new connection type) this could cause a hang.
-        notifier.submit(new Runnable() {
+        ClientContext.getGlobalExecutor().submit(new Runnable() {
             public void run() {
                 for (SessionStatusListener listener : sessionStatusListeners) {
                     try {
@@ -518,7 +519,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // connections that they too are disconnected.  Again, let's do
         // this in a separate thread to be safe
         if (status == WonderlandSession.Status.DISCONNECTED) {
-            notifier.submit(new Runnable() {
+            ClientContext.getGlobalExecutor().submit(new Runnable() {
                 public void run() {
                     for (ClientConnection connection : getConnections()) {
                         try {

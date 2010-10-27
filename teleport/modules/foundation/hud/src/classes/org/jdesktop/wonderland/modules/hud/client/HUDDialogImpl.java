@@ -56,17 +56,20 @@ public class HUDDialogImpl extends javax.swing.JPanel {
         dialogFont = messageLabel.getFont().deriveFont(
                 messageLabel.getFont().getStyle() | Font.BOLD,
                 messageLabel.getFont().getSize());
+        System.out.println("TTTTTTTTTTTTTTTT - in constructor HUDDialogImpl");
     }
 
     public void setMode(DIALOG_MODE mode) {
         this.mode = mode;
         switch (mode) {
             case MESSAGE:
+                System.out.println("TTTTTTTTTTTTTTT - set MESSAGE mode in HUDDialogImpl");
                 valueTextField.setVisible(false);
                 messageLabel.setFont(messageFont);
                 messageLabel.setForeground(MESSAGE_COLOR);
                 break;
             case INPUT:
+                System.out.println("TTTTTTTTTTTTTTT - set INPUT mode in HUDDialogImpl");
                 valueTextField.setVisible(true);
                 messageLabel.setFont(dialogFont);
                 messageLabel.setForeground(DIALOG_COLOR);
@@ -187,6 +190,7 @@ public class HUDDialogImpl extends javax.swing.JPanel {
             valueTextField.setText(null);
         }
         super.setVisible(visible);
+        System.out.println("XXXXXXXXXXXXXXXXXXX - in setVisible in HUDDialogImpl - visible = " + visible);
     }
 
     /**

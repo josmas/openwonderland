@@ -20,6 +20,9 @@ package org.jdesktop.wonderland.client;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -49,6 +52,10 @@ public class ClientContext {
     private static File userDir;
 
     private static Cell.RendererType currentRendererType = Cell.RendererType.RENDERER_JME;
+
+    private static ExecutorService executor = Executors.newCachedThreadPool();
+
+    private static ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(5);
     
     /**
      * Return the CellCache if the session has one, otherwise
@@ -182,5 +189,19 @@ public class ClientContext {
      */
     public static void setUserDirectory(File userDir) {
         ClientContext.userDir = userDir;
+    }
+
+    public static ExecutorService getGlobalExecutor() {
+        return executor;
+    }
+
+    public static ScheduledExecutorService getGlobalScheduledExecutor() {
+        return scheduledExecutor;
+    }
+
+    public static void removeCellCaches()
+    {
+        System.out.println("@@@@@@@@@@@@@@@@@@@ - ClientContext - removCellCaches");
+        cellCaches = null;
     }
 }

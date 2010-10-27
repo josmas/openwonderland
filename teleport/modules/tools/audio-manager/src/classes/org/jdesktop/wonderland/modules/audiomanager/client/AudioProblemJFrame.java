@@ -200,11 +200,13 @@ public class AudioProblemJFrame extends javax.swing.JFrame {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 	setVisible(false);
+//    dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void ignoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreButtonActionPerformed
         ignoreProblem = true;
 	setVisible(false);
+//    dispose();
     }//GEN-LAST:event_ignoreButtonActionPerformed
 
     /**

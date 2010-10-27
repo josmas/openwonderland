@@ -81,8 +81,10 @@ public class HUDAnimator implements Runnable {
     }
 
     public void run() {
+        System.out.println("^^^^^^^^^^^^^^^^ - Enter run in HUDAnimator");
         if (timeline != null) {
             timeline.play();
+        System.out.println("^^^^^^^^^^^^^^^^ - Exit run in HUDAnimator");
         }
     }
 }
