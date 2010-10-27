@@ -89,7 +89,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     private CellChannelConnection cellChannelConnection;
 
     /** executor for modifying values in separate threads */
-    private ExecutorService cacheExecutor = Executors.newSingleThreadExecutor();
+//    private ExecutorService cacheExecutor = Executors.newSingleThreadExecutor();
 
     /** listeners */
     private final Set<CellCacheListener> listeners =
@@ -122,7 +122,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             this.classLoader = getClass().getClassLoader();
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -281,6 +281,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     public void unloadCell(CellID cellId) {
         Cell cell = cells.remove(cellId);
         if (cell != null) {
+            System.out.println("++++++++++++++++ - CellCacheBasicImpl - unload cell - " + cell + " - name - " + cell.getName());
+            System.out.println("++++++++++++++++ - cache = " + cell.getCellCache());
             logger.fine("UNLOADING CELL " + cell.getName());
 
             // notify listeners
@@ -290,7 +292,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             // thread to prevent deadlocks waiting for update messages and
             // races with loading the cell
             changeCellStatus(cell, CellStatus.DISK);
-
+// MHF
+///            cell.removeCellCache();
+///            this.cellChannelConnection.removeCache();
+            
             if (cell.getParent() == null) {
                 logger.fine("UNLOADING ROOT CELL " + cell.getName());
                 rootCells.remove(cell);
@@ -379,7 +384,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     private void setCellStatus(Cell cell, CellStatus status) {
         logger.fine("Set status of cell " + cell.getCellID() +
                        " to " + status);
-
+        System.out.println("Set status of cell " + cell.getCellID() + " to " + status);
         synchronized(cell) {
             int currentStatus = cell.getStatus().ordinal();
             int requiredStatus = status.ordinal();
@@ -391,6 +396,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             boolean increasing = (dir==1);
 
             while(currentStatus!=requiredStatus) {
+                System.out.println("&&&&&&&&&&&&&&&&& while loop - cur status = " + currentStatus);
                 currentStatus += dir;
 
                 CellStatus nextStatus = CellStatus.values()[currentStatus];
@@ -565,7 +571,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * @param status
      */
     private void changeCellStatus(Cell cell, CellStatus status) {
-        cacheExecutor.submit(new CellStatusChanger(cell, status));
+        ClientContext.getGlobalExecutor().submit(new CellStatusChanger(cell, status));
     }
 
     private class CellStatusChanger implements Runnable {
@@ -579,12 +585,14 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         public void run() {
+            System.out.println("!!!!!!!!!!!!!!!!!!!! - CellCacheBasicImpl - Enter run for cell - " + cell + " - status = " + cellStatus);
             try {
                 setCellStatus(cell, cellStatus);
             } catch(Throwable t) {
                 // Report the exception, otherwise it will get swallowed
                 logger.log(Level.WARNING, "Exception thrown in Cell.setStatus "+t.getLocalizedMessage(), t);
             }
+            System.out.println("!!!!!!!!!!!!!!!!!! - exit - cell = " + cell + " -status = " + cellStatus);
         }
 
     }

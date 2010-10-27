@@ -26,11 +26,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
@@ -174,7 +180,13 @@ public class ImiAvatarConfigManager {
         synchronized (avatarConfigServers) {
             t = avatarConfigServers.get(session);
         }
+
+        try {
         return t.getAvatarServerURL(avatar);
+        } catch (ExecutionException ee) {
+            logger.log(Level.WARNING, "Error syncing avatar", ee);
+            return null;
+    }
     }
 
     /**
@@ -234,6 +246,10 @@ public class ImiAvatarConfigManager {
             } catch (ContentRepositoryException excp) {
                 logger.log(Level.WARNING, "Unable to create sync thread for " +
                         "server " + session.getServerURL(), excp);
+                return;
+            } catch (ExecutionException ee) {
+                logger.log(Level.WARNING, "Unable to create sync thread for " +
+                        "server " + session.getServerURL(), ee);
                 return;
             }
 
@@ -302,6 +318,11 @@ public class ImiAvatarConfigManager {
                                     " avatar " + avatar.getName() + " from " +
                                     "the server " + c.toString() + " was " +
                                     "interrupted.", excp);
+                        } catch (ExecutionException ee) {
+                            logger.log(Level.WARNING, "Attempt to delete the" +
+                                    " avatar " + avatar.getName() + " from " +
+                                    "the server " + c.toString() + " threw " +
+                                    ee, ee);
                         }
                     }
                 }
@@ -362,12 +383,16 @@ public class ImiAvatarConfigManager {
                         logger.info("Schedule delete of existing avatar " +
                                 "named " + avatarName + " from server.");
                         t.scheduleDelete(existingAvatar, true);
-                    }
-                    catch (InterruptedException excp) {
+                    } catch (InterruptedException excp) {
                         logger.log(Level.WARNING, "Attempt to delete the" +
                                 " avatar " + avatar.getName() + " from " +
                                 "the server " + t.toString() + " was " +
                                 "interrupted.", excp);
+                    } catch (ExecutionException ee) {
+                        logger.log(Level.WARNING, "Attempt to delete the" +
+                                " avatar " + avatar.getName() + " from " +
+                                "the server " + t.toString() + " threw " +
+                                ee, ee);
                     }
                 }
             }
@@ -433,6 +458,10 @@ public class ImiAvatarConfigManager {
                     logger.log(Level.WARNING, "Attempt to upload the avatar " +
                             avatar.getName() + " to the server " + t.toString() +
                             " was interrupted.", excp);
+                } catch (ExecutionException ee) {
+                    logger.log(Level.WARNING, "Attempt to upload the avatar " +
+                            avatar.getName() + " to the server " + t.toString() +
+                            " threw " + ee, ee);
                 }
             }
         }
@@ -450,36 +479,31 @@ public class ImiAvatarConfigManager {
      * a particular server session. It runs its own thread to serialize updates
      * with the server (sync, add, remove, etc).
      */
-    private class ServerSyncThread extends Thread {
+    private class ServerSyncThread {
 
         // The server we are currently collected to
-        private ServerSessionManager manager = null;
-
-        // A queue of jobs to execute on the thread.
-        private LinkedBlockingQueue<Job> jobQueue = new LinkedBlockingQueue();
+        private final ServerSessionManager manager;
 
         // The collection where all IMI avatar information is kept on the server
-        private ContentCollection serverCollection = null;
+        private final ContentCollection serverCollection;
 
         // A map of avatar names to pointers to their configuration files on the
         // server
-        private Map<String, ImiServerAvatar> serverAvatars = new HashMap();
+        private final Map<String, ImiServerAvatar> serverAvatars =
+                new HashMap<String, ImiServerAvatar>();
         
-        // True if we are connected to the server, false if we have disconnected
-        private boolean isConnected = true;
+        // an executor to execute the tasks
+//        private final ExecutorService executor =
+//                Executors.newSingleThreadExecutor();
 
         public ServerSyncThread(final ServerSessionManager manager)
-                throws ContentRepositoryException {
-
-            super(ThreadManager.getThreadGroup(), "AvatarServerSyncThread");
+                throws ContentRepositoryException
+        {
             this.manager = manager;
 
             // Fetch the base directory in which all IMI avatar configuration info
             // is found on the server.
             serverCollection = getBaseServerCollection(manager);
-
-            // Finally, start the thread off
-            this.start();
         }
 
         /**
@@ -490,7 +514,9 @@ public class ImiAvatarConfigManager {
          * @param isConnected True if the session is connected, false if not.
          */
         public void setConnected(boolean isConnected) {
-            this.isConnected = isConnected;
+            if (!isConnected) {
+//                executor.shutdownNow();
+        }
         }
 
         /**
@@ -501,11 +527,17 @@ public class ImiAvatarConfigManager {
          * @return The URL of the avatar configuration file on the server
          * @throw InterruptedException If the job has been interrupted
          */
-        public URL getAvatarServerURL(ImiAvatar avatar) throws InterruptedException {
-            Job job = Job.newGetURLJob(avatar);
-            jobQueue.add(job);
-            job.waitForJob();
-            return job.url;
+        public URL getAvatarServerURL(final ImiAvatar avatar)
+                throws InterruptedException, ExecutionException
+        {
+            Callable<URL> job = new Callable<URL>() {
+                public URL call() throws Exception {
+                    return getURLImpl(avatar);
+        }
+            };
+
+            Future<URL> f = ClientContext.getGlobalExecutor().submit(job);
+            return f.get();
         }
 
         /**
@@ -516,11 +548,18 @@ public class ImiAvatarConfigManager {
          * @param isWait True to block until the job has completed
          * @throw InterruptedException If the job has been interrupted
          */
-        public void scheduleSync(boolean isWait) throws InterruptedException {
-            Job job = Job.newSyncJob();
-            jobQueue.add(job);
+        public void scheduleSync(boolean isWait) 
+                throws InterruptedException, ExecutionException
+        {
+            Runnable job = new Runnable() {
+                public void run() {
+                    syncImpl();
+                }
+            };
+
+            Future f = ClientContext.getGlobalExecutor().submit(job);
             if (isWait == true) {
-                job.waitForJob();
+                f.get();
             }
         }
 
@@ -532,11 +571,18 @@ public class ImiAvatarConfigManager {
          * @param isWait True to block until the job has completed
          * @throw InterruptedException If the job has been interrupted
          */
-        public void scheduleDelete(ImiAvatar avatar, boolean isWait) throws InterruptedException {
-            Job job = Job.newDeleteJob(avatar);
-            jobQueue.add(job);
+        public void scheduleDelete(final ImiAvatar avatar, boolean isWait)
+                throws InterruptedException, ExecutionException
+        {
+            Runnable job = new Runnable() {
+                public void run() {
+                    deleteImpl(avatar);
+                }
+            };
+
+            Future f = ClientContext.getGlobalExecutor().submit(job);
             if (isWait == true) {
-                job.waitForJob();
+                f.get();
             }
         }
 
@@ -548,11 +594,18 @@ public class ImiAvatarConfigManager {
          * @param isWait True to block until the job has completed
          * @throw InterruptedException If the job has been interrupted
          */
-        public void scheduleUpload(ImiAvatar avatar, boolean isWait) throws InterruptedException {
-            Job job = Job.newUploadJob(avatar);
-            jobQueue.add(job);
+        public void scheduleUpload(final ImiAvatar avatar, boolean isWait)
+                throws InterruptedException, ExecutionException
+        {
+            Runnable job = new Runnable() {
+                public void run() {
+                    uploadFileImpl(avatar);
+                }
+            };
+            
+            Future f = ClientContext.getGlobalExecutor().submit(job);
             if (isWait == true) {
-                job.waitForJob();
+                f.get();
             }
         }
 
@@ -573,44 +626,6 @@ public class ImiAvatarConfigManager {
                 imiDir = (ContentCollection) dir.createChild("imi", Type.COLLECTION);
             }
             return imiDir;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void run() {
-            while (isConnected == true) {
-                // Fetch the next job. If we are interrupted in doing so, then
-                // simply log an error and continue.
-                Job job = null;
-                try {
-                    job = jobQueue.take();
-                } catch (InterruptedException excp) {
-                    logger.log(Level.WARNING, "Attempt to fetch the next job" +
-                            " in queue was interrupted for server " +
-                            manager.getServerURL(), excp);
-                    continue;
-                }
-
-                // Dispatch to the implementation based upon the job type. When
-                // done indicate we are done.
-                switch (job.jobType) {
-                    case SYNC:
-                        syncImpl();
-                        break;
-                    case DELETE:
-                        deleteImpl(job.avatar);
-                        break;
-                    case UPLOAD:
-                        uploadFileImpl(job.avatar);
-                        break;
-                    case GETURL:
-                        job.url = getURLImpl(job.avatar);
-                        break;
-                }
-                job.setJobDone();
-            }
         }
 
         /**
@@ -949,60 +964,5 @@ public class ImiAvatarConfigManager {
             }
         }
     }
-
-    /**
-     * A static inner class that represents a 'job' submitted to the 'server
-     * sync' thread. Threads may block on the completion of a thread by
-     * invoking waitForJob().
-     */
-    private static class Job {
-
-        public enum JobType {
-            SYNC, DELETE, UPLOAD, GETURL
-        };
-
-        public JobType jobType;
-        public ImiAvatar avatar = null;
-        public Semaphore jobDone = null;
-        public URL url = null;
-
-        private Job(JobType jobType, ImiAvatar avatar) {
-            this.jobType = jobType;
-            this.avatar = avatar;
-            this.jobDone = new Semaphore(0);
-            this.url = null;
         }
-
-        public static Job newSyncJob() {
-            return new Job(JobType.SYNC, null);
-        }
-
-        public static Job newDeleteJob(ImiAvatar avatar) {
-            return new Job(JobType.DELETE, avatar);
-        }
-
-        public static Job newUploadJob(ImiAvatar avatar) {
-            return new Job(JobType.UPLOAD, avatar);
-        }
-
-        public static Job newGetURLJob(ImiAvatar avatar) {
-            return new Job(JobType.GETURL, avatar);
-        }
-
-        /**
-         * Waits for this job to be done.
-         * @throw InterruptedException If the job has been interrupted
-         */
-        public void waitForJob() throws InterruptedException {
-            jobDone.acquire();
-        }
-
-        /**
-         * Used by jobs to indicate they have completed.
-         */
-        public void setJobDone() {
-            jobDone.release();
-        }
-    }
-}
 

@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.comms.OKErrorResponseListener;
@@ -97,7 +98,7 @@ class SharedMapImpl implements SharedMapCli {
     private VersionedMap backing = new VersionedMap();
 
     /** An executor for requests */
-    private ExecutorService executor = Executors.newCachedThreadPool();
+//    private ExecutorService executor = Executors.newCachedThreadPool();
 
     /** the types of version supported */
     private enum VersionType { LOCAL, REMOTE };
@@ -321,7 +322,7 @@ class SharedMapImpl implements SharedMapCli {
             initializing = true;
             
             // read the initial data for this map in a new thread
-            executor.submit(new Runnable() {
+            ClientContext.getGlobalExecutor().submit(new Runnable() {
                 public void run() {
                     doInit();
                 }
@@ -896,7 +897,7 @@ class SharedMapImpl implements SharedMapCli {
             // if the future does not yet exist, create it
             synchronized (this) {
                 if (future == null) {
-                    future = executor.submit(new ValueGetter(key));
+                    future = ClientContext.getGlobalExecutor().submit(new ValueGetter(key));
                 }
             }
 

@@ -18,9 +18,11 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import java.awt.Canvas;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDFactory;
 import org.jdesktop.wonderland.client.hud.HUDManager;
@@ -43,6 +45,8 @@ public class HUDClientPlugin extends BaseClientPlugin {
     private static final float DEFAULT_HUD_WIDTH = 1.0f;
     private static final float DEFAULT_HUD_HEIGHT = 1.0f;
     private static final float ICON_HUD_HEIGHT = 0.2f;
+private HUDComponentManager compManager;
+private HUDComponentManager iconCompManager;
 
     @Override
     public void initialize(ServerSessionManager loginManager) {
@@ -75,7 +79,8 @@ public class HUDClientPlugin extends BaseClientPlugin {
         manager.addHUD(wonderlandHUD);
 
         // create a component manager for the HUD components in this HUD
-        HUDComponentManager compManager = new WonderlandHUDComponentManager(wonderlandHUD);
+//        HUDComponentManager compManager = new WonderlandHUDComponentManager(wonderlandHUD);
+        compManager = new WonderlandHUDComponentManager(wonderlandHUD);
 
         // define the layout of HUD components in the Wonderland main HUD
         compManager.setLayoutManager(new HUDCompassLayoutManager(wonderlandHUD));
@@ -95,7 +100,8 @@ public class HUDClientPlugin extends BaseClientPlugin {
         manager.addHUD(iconHUD);
 
         // create a component manager for the HUD components in the icon HUD
-        HUDComponentManager iconCompManager = new WonderlandHUDIconManager(iconHUD);
+        iconCompManager = new WonderlandHUDIconManager(iconHUD);
+//        HUDComponentManager iconCompManager = new WonderlandHUDIconManager(iconHUD);
 
         // define the layout of HUD components in the icon HUD
         iconCompManager.setLayoutManager(new HUDFlowLayoutManager(iconHUD));
@@ -108,5 +114,24 @@ public class HUDClientPlugin extends BaseClientPlugin {
 
         // call the superclass's initialize method
         super.initialize(loginManager);
+    }
+    @Override
+    public void cleanup()
+    {
+        System.out.println("^^^^^^^^^^^^^^ - Enter cleanup in HUDClientPlugin");
+/*
+        Iterator itr = compManager.getComponents();
+        while(itr.hasNext())
+            {
+            System.out.println("YYYYYYYYYYYYYYY - hud component - " + (HUDComponent)itr.next());
+            }
+
+        Iterator itri = iconCompManager.getComponents();
+        while(itri.hasNext())
+            {
+            System.out.println("YYYYYYYYYYYYYYY - icon hud component - " + (HUDComponent)itri.next());
+            }
+ */
+
     }
 }

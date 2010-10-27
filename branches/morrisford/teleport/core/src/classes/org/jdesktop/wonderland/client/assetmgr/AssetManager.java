@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.assetmgr.AssetStream.AssetResponse;
 import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListener;
 import org.jdesktop.wonderland.client.assetmgr.content.WlContentAssetRepositoryFactory;
@@ -85,7 +86,7 @@ public class AssetManager {
     
     /* The number of threads to use for each of the downloading service */
     private static final int NUMBER_THREADS = 10;    
-    private ExecutorService downloadService = Executors.newFixedThreadPool(AssetManager.NUMBER_THREADS);
+//    private ExecutorService downloadService = Executors.newFixedThreadPool(AssetManager.NUMBER_THREADS);
     
     /* Receive updates every 10 KB during downloads */
     private static final int UPDATE_BYTE_INTERVAL = 1024 * 10;
@@ -238,7 +239,7 @@ public class AssetManager {
 
                 AssetLoader loader = new AssetLoader(asset, factory);
                 loadingAssets.put(assetID, loader);
-                Future f = downloadService.submit(loader);
+                Future f = ClientContext.getGlobalExecutor().submit(loader);
                 loader.setFuture(f);
 
                 return asset;

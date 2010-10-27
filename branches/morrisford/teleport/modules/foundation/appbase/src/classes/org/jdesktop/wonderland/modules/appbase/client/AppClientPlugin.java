@@ -58,6 +58,7 @@ public class AppClientPlugin extends BaseClientPlugin {
     @Override
     public void cleanup() {
         // Right now there is nothing to do
+        App2D.outsideShutdown();
     }
 
     /**

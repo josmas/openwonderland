@@ -52,9 +52,10 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -82,6 +83,7 @@ import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.LogControl;
+import org.pushingpixels.trident.Timeline;
 /* For Testing FocusEvent3D
 import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
@@ -133,6 +135,7 @@ public class JmeClientMain {
     {
         public void uncaughtException(Thread t, Throwable e) {
             LOGGER.log(Level.WARNING, "Uncaught exception", e);
+            e.printStackTrace();
         }
     };
 
@@ -313,7 +316,7 @@ public class JmeClientMain {
             LOGGER.log(Level.WARNING, "Error connecting to default server "
                     + serverURL, ioe);
         }
-
+System.out.println("6666666666666666 - At end of JmeClientMain ");
     }
 
     /**
@@ -394,7 +397,7 @@ public class JmeClientMain {
         LOGGER.info("[JmeClientMain] loadServer " + serverURL);
 
         logout();
-
+        
         // get the login manager for the given server
         ServerSessionManager lm = LoginManager.getSessionManager(serverURL);
 
@@ -508,7 +511,7 @@ public class JmeClientMain {
      */
     protected void logout() {
         LOGGER.info("[JMEClientMain] log out");
-
+System.out.println("--------------------------    Enter logout in JmeClientMain");
         // disconnect from the current session
         if (curSession != null) {
             if (curSession.getStatus() == Status.CONNECTED) {
@@ -516,15 +519,30 @@ public class JmeClientMain {
                     loggingOut = true;
                 }
             }
+            System.out.println("---------------------- After sync");
+
 
             curSession.getCellCache().unloadAll();
+///            curSession.removeCellCache();
+//MHF
+///            ClientContext.removeCellCaches();
+ 
+            ServerSessionManager ssm = curSession.getSessionManager();
+            System.out.println("---------------------- After get ssm");
 
-            curSession.logout();
-            curSession = null;
+///            curSession.logout();
+///            curSession = null;
             frame.connected(false);
 
             // notify listeners that there is no longer a primary server
             LoginManager.setPrimary(null);
+// MHF
+            ssm.disconnect();
+//            ClientContext.getGlobalExecutor().shutdownNow();
+//            ClientContext.getGlobalScheduledExecutor().shutdownNow();
+
+
+            System.out.println("----------------------- After disconnect");
         }
     }
 
@@ -614,9 +632,26 @@ public class JmeClientMain {
             Webstart.webstartSetup();
         }
 
+        timelineTest tlt = new timelineTest();
+        Timeline mhftl = new Timeline(tlt);
+        mhftl.addPropertyToInterpolate("value", 0.0f, 1.0f);
+        mhftl.play();
+
         JmeClientMain worldTest = new JmeClientMain(args);
 
     }
+
+    public static class timelineTest
+        {
+        private float value;
+
+
+        public void setValue(float newValue)
+            {
+            System.out.println(this.value + " -> " + newValue);
+            this.value = newValue;
+            }
+        }
 
     /**
      * Process any command line args
@@ -638,7 +673,7 @@ public class JmeClientMain {
      * Create all of the Swing windows - and the 3D window
      */
     private void createUI(WorldManager wm) {
-
+System.out.println("99999999999999999 - In createUI in JmeClientMain");
         frame = new MainFrameImpl(wm, width, height);
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);

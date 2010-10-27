@@ -65,6 +65,7 @@ public class CellClientSession extends WonderlandSessionImpl {
         cellEditChannelConnection = new CellEditChannelConnection();
     
         // create the cell cache
+        System.out.println("***************** - in CellClientSession - before createCellCache");
         cellCache = createCellCache();
     }
     
@@ -179,10 +180,16 @@ public class CellClientSession extends WonderlandSessionImpl {
     protected CellCache createCellCache() {
         // create the cell cache and arrange for it to get messages
         // whenever a new cell is created
+        System.out.println("**************** createCellCache in CellClientSession");
         CellCacheBasicImpl cacheImpl = 
                 new CellCacheBasicImpl(this, getClassLoader(),
                                        cellCacheConnection, cellChannelConnection);
         cellCacheConnection.addListener(cacheImpl);
         return cacheImpl;
+    }
+
+    public void deleteCellCache()
+    {
+        cellCache = null;
     }
 }

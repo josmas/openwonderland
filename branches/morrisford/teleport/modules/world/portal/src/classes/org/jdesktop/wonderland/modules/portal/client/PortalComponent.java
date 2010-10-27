@@ -150,6 +150,7 @@ public class PortalComponent extends CellComponent
                               BoundingVolume proximityVolume, int proximityIndex)
     {
         System.out.println("[PortalComponent] trigger!");
+
         teleport();
     }
 

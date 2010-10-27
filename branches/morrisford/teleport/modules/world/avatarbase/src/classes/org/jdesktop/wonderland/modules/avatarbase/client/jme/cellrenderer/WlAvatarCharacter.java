@@ -31,7 +31,6 @@ import org.jdesktop.mtgame.WorldManager;
  * @author paulby
  */
 public class WlAvatarCharacter extends Avatar {
-    
     /**
      * Builder pattern impl
      */

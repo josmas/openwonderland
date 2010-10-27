@@ -220,8 +220,12 @@ public class ChatManager implements TextChatListener {
             public void run() {
                 // Loop through all of the entries in the map and tell the HUD
                 // components to close themselves down.
+///                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                 for (String name : textChatHUDRefMap.keySet()) {
                     HUDComponent component = textChatHUDRefMap.get(name).get();
+
+// MHF
+///                mainHUD.removeComponent(component);
                     component.setVisible(false);
                     // TODO: really dispose of HUD component
                 }
@@ -236,6 +240,7 @@ public class ChatManager implements TextChatListener {
                 // there is no active connection (which may result in a some-
                 // what hamrless exception, but it's good to avoid if we can).
                 textChatConnection.disconnect();
+
             }
         });
     }

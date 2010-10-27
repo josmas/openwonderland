@@ -96,7 +96,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     // variables for the location field
     private String serverURL;
-    private ServerURLListener serverListener;
+    private ServerURLListener serverListener = null;
 
     // user preferences
     private Preferences userPreferences;
@@ -295,7 +295,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     private void logoutMIActionPerformed(ActionEvent evt) {
         if (serverListener != null) {
+            System.out.println("HHHHHHHHHHHHHHHH - serverListener != null");
             serverListener.logout();
+            serverListener = null;
         }
 
         serverURL = null;

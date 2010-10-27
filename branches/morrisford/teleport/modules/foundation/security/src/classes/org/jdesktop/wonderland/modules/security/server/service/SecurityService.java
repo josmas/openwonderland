@@ -208,7 +208,6 @@ public class SecurityService extends AbstractService {
 
     @Override
     protected void doShutdown() {
-        // nothing to do
     }
 
     @Override
