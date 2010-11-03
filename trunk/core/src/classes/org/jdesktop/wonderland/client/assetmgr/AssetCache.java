@@ -250,6 +250,10 @@ public class AssetCache {
         String basePath = getCacheDirectory();
         String relativePath = assetID.getAssetURI().getRelativeCachePath();
         String checksum = assetID.getChecksum();
+
+        // make sure the checksum only contains valid characters
+        checksum = checksum.replaceAll("[^\\w\\d\\.]+", "_");
+
         return basePath + File.separator + relativePath + File.separator + checksum;
     }
 
