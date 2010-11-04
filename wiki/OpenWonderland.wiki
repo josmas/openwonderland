@@ -167,8 +167,8 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">This page provides a collection of web links to tutorials and documentation for jMonkeyEngine, the 3D rendering API used by Open Wonderland.</td>
 </tr>
 <tr>
-  <td class="left">[http://wonderland.dev.java.net/mtgame/MTGameProgGuide.pdf MT-Game Programming Guide]</td>
-  <td class="right">Programming guide for the MT (Multi-Threaded) Game layer on top of jMonkeyEngine ([http://groups.google.com/group/openwonderland/web/MTGameProgGuide.odt document source])</td>
+  <td class="left">[https://docs.google.com/viewer?a=v&pid=sites&srcid=ZGVmYXVsdGRvbWFpbnxvcGVud29uZGVybGFuZHxneDoyZjViZDQ3MzVmYjM4MzJl MT-Game Programming Guide]</td>
+  <td class="right">Programming guide for the MT (Multi-Threaded) Game layer on top of jMonkeyEngine ([https://sites.google.com/site/openwonderland/archive/MTGameProgGuide.odt?attredirects=0&d=1 document source], [https://sites.google.com/site/openwonderland/archive/MTGameProgGuide.pdf?attredirects=0&d=1 download PDF])</td>
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Communications/JVoiceBridge jVoiceBridge Developer's Guide]</td>
