@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -20,6 +38,11 @@ package org.jdesktop.wonderland.client.cell;
 import com.jme.bounding.BoundingVolume;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -61,10 +84,14 @@ import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
  * @author paulby
  */
 @ExperimentalAPI
-public class ProximityComponent extends CellComponent {
+public class ProximityComponent extends CellComponent
+    implements ViewManagerListener
+{
+    private static final Logger LOGGER =
+            Logger.getLogger(ProximityComponent.class.getName());
 
-    private ViewTransformListener viewTransformListener=null;
-    private CellTransformListener  cellTransformListener=null;
+    private final ViewTransformListener viewTransformListener;
+    private final CellTransformListener  cellTransformListener;
     
     private final Set<ProximityListenerRecord> listenerRecords =
             new CopyOnWriteArraySet<ProximityListenerRecord>();
@@ -81,6 +108,9 @@ public class ProximityComponent extends CellComponent {
      */
     public ProximityComponent(Cell cell) {
         super(cell);
+
+        viewTransformListener = new ViewTransformListener();
+        cellTransformListener = new CellTransformListener();
     }
     
     /**
@@ -92,8 +122,16 @@ public class ProximityComponent extends CellComponent {
         synchronized(listenerRecords) {
            ProximityListenerRecord lr = new ProximityListenerRecord(new ClientProximityListenerWrapper(cell,listener), localBounds);
            listenerRecords.add(lr);
-           if (status!=null && status.ordinal()>=CellStatus.ACTIVE.ordinal())
+           if (status!=null && status.ordinal()>=CellStatus.ACTIVE.ordinal()) {
                lr.updateWorldBounds(cell.getWorldTransform());
+
+               // OWL issue #32: update the view position as well, so we are
+               // notified immediately if the client is already in view
+               Cell viewCell = ClientContextJME.getViewManager().getPrimaryViewCell();
+               if (viewCell != null) {
+                   lr.viewCellMoved(viewCell.getCellID(), viewCell.getWorldTransform());
+               }
+           }
         }
     }
     
@@ -113,34 +151,49 @@ public class ProximityComponent extends CellComponent {
         synchronized(listenerRecords) {
             super.setStatus(status, increasing);
 
+            ViewManager vm = ClientContextJME.getViewManager();
+
             switch(status) {
                 case ACTIVE :
                     if (increasing) {
-                        if (viewTransformListener==null) {
-                            viewTransformListener = new ViewTransformListener();
-                            cellTransformListener = new CellTransformListener();
-                        }
-
                         CellTransform worldTransform = cell.getWorldTransform();
                         for(ProximityListenerRecord l : listenerRecords)
                             l.updateWorldBounds(worldTransform);
 
-                        cell.getCellCache().getViewCell().addTransformChangeListener(viewTransformListener);
+                        vm.addViewManagerListener(this);
+                        primaryViewCellChanged(null, vm.getPrimaryViewCell());
+
                         cell.addTransformChangeListener(cellTransformListener);
                     }
                     break;
                 case DISK :
                     if (viewTransformListener!=null) {
-                        // issue #664: add a check to make sure the view cell is not
-                        // null.  cell and cell.getCellCache() are guaranteed not to
-                        // be null, so there is no need to check them
-                        if (cell.getCellCache().getViewCell() != null) {
-                            cell.getCellCache().getViewCell().removeTransformChangeListener(viewTransformListener);
-                        }
+                        vm.removeViewManagerListener(this);
+                        primaryViewCellChanged(vm.getPrimaryViewCell(), null);
+
                         cell.removeTransformChangeListener(cellTransformListener);
                     }
                     break;
             }
+        }
+    }
+
+    /**
+     * When the view changes, update our listeners
+     * @param oldViewCell old view
+     * @param newViewCell new view
+     */
+    public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+        LOGGER.fine("Primary view changed from " + oldViewCell + " to " +
+                    newViewCell);
+
+        if (oldViewCell != null) {
+            oldViewCell.removeTransformChangeListener(viewTransformListener);
+        }
+
+        if (newViewCell != null) {
+            newViewCell.addTransformChangeListener(viewTransformListener);
+            viewTransformListener.transformChanged(newViewCell, TransformChangeListener.ChangeSource.LOCAL);
         }
     }
     
@@ -148,10 +201,10 @@ public class ProximityComponent extends CellComponent {
      * Listen for view moves and check the view against our proximity bounds
      */
     class ViewTransformListener implements TransformChangeListener {
-
-        
         public void transformChanged(Cell cell, ChangeSource source) {
-            
+            LOGGER.finest("View transform changed for " + cell.getCellID() +
+                          " to " + cell.getWorldTransform());
+
             synchronized(listenerRecords) {
                 CellTransform worldTransform = cell.getWorldTransform();
                 for(ProximityListenerRecord l : listenerRecords) {
@@ -159,7 +212,6 @@ public class ProximityComponent extends CellComponent {
                 }
             }
         }
-        
     }
     
     /**
@@ -167,7 +219,6 @@ public class ProximityComponent extends CellComponent {
      * notified update the bounds
      */
     class CellTransformListener implements TransformChangeListener {
-
         public void transformChanged(Cell cell, ChangeSource source) {
             CellTransform worldTransform = cell.getWorldTransform();
             synchronized(listenerRecords) {
@@ -179,7 +230,6 @@ public class ProximityComponent extends CellComponent {
                 }
             }
         }
-        
     }
 
     /**
@@ -187,8 +237,8 @@ public class ProximityComponent extends CellComponent {
      */
     class ClientProximityListenerWrapper implements ProximityListenerRecord.ProximityListenerWrapper {
 
-        private ProximityListener listener;
-        private Cell cell;
+        private final ProximityListener listener;
+        private final Cell cell;
 
         public ClientProximityListenerWrapper(Cell cell, ProximityListener listener) {
             this.listener = listener;
