@@ -130,7 +130,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorkingWithModules05 Working with Modules]</td>
-  <td class="right">This tutorial describes the basics of the Open Wonderland module system and how to install modules. Modules allow developers to extend the functionality of the platform by providing custom code and/or content.</td>
+  <td class="right">This tutorial describes the basics of the Open Wonderland module system and how to install modules. Modules allow developers to extend the functionality of the platform by providing custom code and/or content. The community wiki has some notes on [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20a%20database%20in%20a%20module Using a database in a module at the server-side].</td>
 </tr>
 <tr>
   <td class="left">[https://wonderland.dev.java.net/wiki/beginner/Wonderland_Tutorial_01.pdf Tutorial for Beginners]</td>
