@@ -29,6 +29,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFeatureWishList Feature Wish List]</td>
   <td>This page has a collection of proposals for new small-scale features in Open Wonderland, suggested both by the core team and the community.</td>
 </tr>
+<tr>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Topics Community Wiki]</td>
+  <td>This wiki contains a constantly growing collection of documentation, notes from community meetings, video links, and other useful resources.</td>
+</tr>
 <tr><td></td></tr>
 </table>
 
