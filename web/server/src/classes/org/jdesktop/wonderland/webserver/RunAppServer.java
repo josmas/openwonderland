@@ -100,7 +100,7 @@ public class RunAppServer {
             writeDocumentRoot();
 
             // write DTDs for local deployments
-            writeDtds();
+            writeSchemas();
 
             // write the updated webapps
             writeWebApps();
@@ -333,22 +333,26 @@ public class RunAppServer {
                                     "/files.list", deployDir);
     }
 
-    protected void writeDtds() throws IOException {
+    protected void writeSchemas() throws IOException {
         // issue #1191: for offline instances of Wonderland, make sure
         // we have a copy of all the dtd files locally, otherwise
         // glassfish will fail
         File install_dir = new File(RunUtil.getRunDir(), "web_install");
         File lib_dir = new File(install_dir, "lib");
         File dtds_dir = new File(lib_dir, "dtds");
+        File schemas_dir = new File(lib_dir, "schemas");
 
         // clear the directory & recreate it
         if (dtds_dir.exists()) {
             RunUtil.deleteDir(dtds_dir);
         }
+        if (schemas_dir.exists()) {
+            RunUtil.deleteDir(schemas_dir);
+        }
 
         // extract the dtds
         ZipInputStream zis = new ZipInputStream(
-                getClass().getResourceAsStream("/webserver/dtds/dtds.zip"));
+                getClass().getResourceAsStream("/webserver/schemas/schemas.zip"));
         RunUtil.extractZip(zis, lib_dir);
     }
 
