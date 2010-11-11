@@ -53,6 +53,7 @@ public class AvatarControls extends ViewControls {
     private final LinkedList<Event> events = new LinkedList();
 
     private final AvatarEventListener eventListener = new AvatarEventListener();
+    private final MyEventClassListener eventClassListener = new MyEventClassListener();
 
     private Cell viewCell = null;
 
@@ -67,7 +68,7 @@ public class AvatarControls extends ViewControls {
 
         // Listen for focus lost events and send fake key release messages
         // to avatar for any keys that were pressed when focus was lost
-        ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
+/*        ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
             private Class[] consumeClasses = new Class[]{
                 FocusEvent3D.class
             };
@@ -97,6 +98,7 @@ public class AvatarControls extends ViewControls {
             }
 
         });
+ */
     }
 
     @Override
@@ -139,6 +141,7 @@ public class AvatarControls extends ViewControls {
 
         if (enable) {
             ClientContext.getInputManager().addGlobalEventListener(eventListener);
+            ClientContext.getInputManager().addGlobalEventListener(eventClassListener);
             // register the avatar controls with the world manager
             // RED July 2: Class no longer implements a meaningful interface, added as
             //      user data under its class
@@ -147,6 +150,7 @@ public class AvatarControls extends ViewControls {
         } else {
             ((AvatarCell)viewCell).setSelectedForInput(enable);
             ClientContext.getInputManager().removeGlobalEventListener(eventListener);
+            ClientContext.getInputManager().removeGlobalEventListener(eventClassListener);
             ClientContextJME.getWorldManager().removeUserData(AvatarControls.class);
         }
 
@@ -231,6 +235,36 @@ public class AvatarControls extends ViewControls {
             // are chained
             events.add(event);
         }
-
     }
+    class MyEventClassListener extends EventClassListener {
+                private Class[] consumeClasses = new Class[]{
+                FocusEvent3D.class
+            };
+
+            @Override
+            public Class[] eventClassesToConsume() {
+                return consumeClasses;
+            }
+
+            @Override
+            public void commitEvent(Event event) {
+            }
+
+            @Override
+            public void computeEvent(Event evtIn) {
+                FocusEvent3D focus = (FocusEvent3D) evtIn;
+                if (!focus.isGained()) {
+                    Component source = ClientContextJME.getClientMain().getFrame().getCanvas();
+                    synchronized(events) {
+                        for(Integer pressed : currentPressedKeys) {
+                            KeyEvent ke = new KeyEvent(source, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, pressed.intValue(), KeyEvent.CHAR_UNDEFINED);
+                            inputGroup.processKeyEvent(ke);
+                        }
+                        currentPressedKeys.clear();
+                    }
+                }
+            }
+
+        }
+    
 }
