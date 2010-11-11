@@ -19,10 +19,15 @@ package org.jdesktop.wonderland.client;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -53,9 +58,12 @@ public class ClientContext {
 
     private static Cell.RendererType currentRendererType = Cell.RendererType.RENDERER_JME;
 
-    private static ExecutorService executor = Executors.newCachedThreadPool();
+    private static ExecutorService executor = Executors.newCachedThreadPool(new LocalExecutorThreadFactory());
 
-    private static ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(5);
+//    private static ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(5);
+//    private static ExecutorService executor = Executors.newCachedThreadPool();
+
+    private static ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(5, new LocalExecutorThreadFactory());
     
     /**
      * Return the CellCache if the session has one, otherwise
@@ -204,4 +212,47 @@ public class ClientContext {
         System.out.println("@@@@@@@@@@@@@@@@@@@ - ClientContext - removCellCaches");
         cellCaches = null;
     }
+
+    static class LocalExecutorThreadFactory implements ThreadFactory {
+        private static final String namePrefix = "wonderlandpool-thread-";
+        private final ThreadGroup group;
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+        private final ClassLoader ccl;
+        private final AccessControlContext acc;
+
+        LocalExecutorThreadFactory() {
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null)? s.getThreadGroup() :
+                                 Thread.currentThread().getThreadGroup();
+            ccl = Thread.currentThread().getContextClassLoader();
+            acc = AccessController.getContext();
+        }
+
+        public Thread newThread(final Runnable r) {
+            return createThread(new Runnable() {
+                public void run() {
+                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                        public Object run() {
+                            Thread.currentThread().setContextClassLoader(ccl);
+                            r.run();
+                            return null;
+                        }
+                    }, acc);
+                }
+            });
+        }
+
+        private Thread createThread(Runnable r) {
+            Thread t = new Thread(group, r,
+                                  namePrefix + threadNumber.getAndIncrement(),
+                                  0);
+            if (t.isDaemon())
+                t.setDaemon(false);
+            if (t.getPriority() != Thread.NORM_PRIORITY)
+                t.setPriority(Thread.NORM_PRIORITY);
+            return t;
+            }
+    }
 }
+
+

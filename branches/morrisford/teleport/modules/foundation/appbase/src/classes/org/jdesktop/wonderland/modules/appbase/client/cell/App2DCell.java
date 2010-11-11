@@ -424,6 +424,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
     /** {@inheritDoc} */
     public synchronized View2D createView(Window2D window) {
+        System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQ - In createView in App2DCell");
         View2DCell view =
                 (View2DCell) getViewFactory().createView(this, window);
 
@@ -440,12 +441,15 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
     /** {@inheritDoc} */
     public void destroyView(View2D view) {
+        System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQ - In destroyView in App2DCell");
         if (app == null) {
             return;
         }
+        System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQ - In createView after app check in App2DCell");
         synchronized (app.getAppCleanupLock()) {
             synchronized (this) {
                 if (views.remove((View2DCell) view)) {
+        System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQ - In createViewinside views.remove in App2DCell");
                     Window2D window = view.getWindow();
                     window.removeView(view);
                     view.cleanup();
@@ -456,6 +460,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
     /** {@inheritDoc} */
     public void destroyAllViews() {
+        System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQ - In destroyAllViews in App2DCell");
         if (app == null) {
             return;
         }

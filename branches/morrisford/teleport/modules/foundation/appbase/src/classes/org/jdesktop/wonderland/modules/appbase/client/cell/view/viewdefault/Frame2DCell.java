@@ -132,6 +132,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      * {@inheritDoc}
      */
     public synchronized void cleanup() {
+        System.out.println("QQQQQQQQQQQQQQQQQQQQQ - In cleanup in Frame2DCell");
         if (attached) {
             detachFromViewEntity();
         }

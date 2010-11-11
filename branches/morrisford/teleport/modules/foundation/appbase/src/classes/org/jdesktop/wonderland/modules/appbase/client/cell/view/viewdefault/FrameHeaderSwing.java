@@ -169,15 +169,19 @@ public class FrameHeaderSwing
      */
     @Override
     public void cleanup() {
-
+System.out.println("WWWWWWWWW - In cleanup in FarmeHeaderSwing");
         headerPanel.removeMouseListener(this);
         headerPanel.removeMouseMotionListener(this);
 
         // issue #74: make sure to remove panels on the AWT event thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                System.out.println("WWWWWWWWWWWWW - in run in FrameHeaderSwing");
                 JmeClientMain.getFrame().getCanvas3DPanel().remove(headerPanel);
                 headerPanelAllocator.deallocate(headerPanel);
+//MHF
+                headerPanelAllocator.cleanup();
+                System.out.println("WWWWWWWWWWWWW - at bottom of run in FrameHeaderSwing");
             }
         });
 

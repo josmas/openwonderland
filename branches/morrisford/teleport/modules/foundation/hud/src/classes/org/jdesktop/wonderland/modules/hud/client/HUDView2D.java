@@ -413,6 +413,7 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
      */
     @Override
     public synchronized void cleanup() {
+System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQ - In cleanup in HUDView2D ");
         super.cleanup();
         displayer = null;
     }

@@ -169,6 +169,9 @@ public class AvatarClientPlugin extends BaseClientPlugin
     // Context menu listener
     private ContextMenuListener ctxListener;
 
+    // MHF
+    private Repository theRepository;
+
     /**
      * {@inheritDoc]
      */
@@ -359,9 +362,12 @@ public class AvatarClientPlugin extends BaseClientPlugin
             String baseURL = "wla://avatarbaseart/";
             URL url = AssetUtils.getAssetURL(baseURL, serverHostAndPort);
             WorldManager worldManager = ClientContextJME.getWorldManager();
-            worldManager.addUserData(Repository.class, new Repository(worldManager,
+// MHF
+            theRepository = new Repository(worldManager,
                     new WonderlandAvatarCache(url.toExternalForm(),
-                    ClientContext.getUserDirectory("AvatarCache"))));
+                    ClientContext.getUserDirectory("AvatarCache")));
+
+            worldManager.addUserData(Repository.class, theRepository);
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to form avatar base URL", excp);
         } catch(Exception e) {
@@ -382,7 +388,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
         // XXX should be done in deactivate XXX
         WorldManager worldManager = ClientContextJME.getWorldManager();
         worldManager.removeUserData(Repository.class);
-
+        theRepository.cleanup();
+        
         ServerSessionManager manager = getSessionManager();
         ClientContextJME.getAvatarRenderManager().unregisterRenderer(manager);
         

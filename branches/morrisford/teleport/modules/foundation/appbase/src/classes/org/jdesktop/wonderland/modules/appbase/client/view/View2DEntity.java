@@ -323,11 +323,13 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void cleanup () {
+        System.out.println("QQQQQQQQQQQQQQQQQQQQQQ - In cleanup in View2DEntity");
         inCleanup = true;
 
         changeMask = 0;
         disableGUI();
-
+//        parent.cleanup();
+        
         setParent(null);
         setVisibleUser(false, false);
         setOrtho(false, false);
