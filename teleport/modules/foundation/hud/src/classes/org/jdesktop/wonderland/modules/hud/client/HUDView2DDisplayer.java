@@ -69,6 +69,7 @@ public class HUDView2DDisplayer implements View2DDisplayer {
      * {@inheritDoc}
      */
     public void destroyAllViews() {
+        System.out.println("ZZZZZZZZZZZZZZZZZZZ - In destroyAllViews in HUDView2DDisplayer");
         for (View2D view : views) {
             Window2D window = view.getWindow();
             window.removeView(view);

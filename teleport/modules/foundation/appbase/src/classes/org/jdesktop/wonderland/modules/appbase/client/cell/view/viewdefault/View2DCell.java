@@ -93,13 +93,16 @@ public class View2DCell extends View2DEntity {
     @Override
     public synchronized void cleanup () {
         super.cleanup();
+System.out.println("QQQQQQQQQQQQQQQQ - In cleanup in View2DCell");
 
         if (resizeRect != null) {
+            System.out.println("QQQQQQQQQQQQ - In cleanup in resizeRect in View2DCell");
             resizeRect.cleanup();
             resizeRect = null;
         }
 
         if (frame != null) {
+            System.out.println("QQQQQQQQQQQQ - In cleanup in frame in View2DCell");
             frame.cleanup();
             frame = null;
         }

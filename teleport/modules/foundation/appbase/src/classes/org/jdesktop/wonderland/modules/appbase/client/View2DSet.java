@@ -58,12 +58,16 @@ public class View2DSet {
      * Clean up resources.
      */
     public void cleanup () {
+        System.out.println("ZZZZZZZZZZZZZZZZZZZZZZZ - In cleanup in View2DSet");
         if (app == null) return;
+        System.out.println("ZZZZZZZZZZZZZZZZZZZZZZZ - In cleanup after app = null in View2DSet");
         synchronized (app.getAppCleanupLock()) {
             synchronized (this) {
                 for (View2DDisplayer displayer : displayers) {
+        System.out.println("ZZZZZZZZZZZZZZZZZZZZZZZ - In cleanup in displayers loop in View2DSet");
                     displayer.destroyAllViews();
                 }
+        System.out.println("ZZZZZZZZZZZZZZZZZZZZZZZ - In cleanup before displayers.clear in View2DSet");
                 displayers.clear();
 
                 LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
@@ -73,6 +77,7 @@ public class View2DSet {
                 windows.clear();
                 toRemoveList.clear();
                 app = null;
+        System.out.println("ZZZZZZZZZZZZZZZZZZZZZZZ - In cleanup at end in View2DSet");
             }
         }
     }

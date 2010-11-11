@@ -148,6 +148,7 @@ public class HUDView3D extends View2DEntity implements HUDView {
      */
     @Override
     public synchronized void cleanup() {
+System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ - In cleanup in HUDview3D");
         super.cleanup();
         displayer = null;
     }
