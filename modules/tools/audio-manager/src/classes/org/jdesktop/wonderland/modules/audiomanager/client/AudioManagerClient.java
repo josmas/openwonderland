@@ -641,7 +641,19 @@ public class AudioManagerClient extends BaseConnection implements
 
         sendMessage(new MuteCallRequestMessage(callID, isMuted));
     }
-    
+
+    /**
+     * Called when someone has forced us onto mute, and we need to represent
+     * that in the UI
+     */
+    public void forceMute() {
+        // mute the softphone
+        SoftphoneControlImpl.getInstance().mute(true);
+
+        // update the menu
+        AudioMenu.getAudioMenu(this).mute(true);
+    }
+
     public void personalPhone() {
         voiceChat();
     }
