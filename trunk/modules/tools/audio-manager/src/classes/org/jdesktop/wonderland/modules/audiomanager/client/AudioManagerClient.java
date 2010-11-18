@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -532,8 +533,15 @@ public class AudioManagerClient extends BaseConnection implements
             }
 
             usersMenuSelected = true;
-            userListJMenuItem.setSelected(usersMenuSelected);
-            showUsers(null);
+
+            // OWL issue #140: make sure to show the window on the
+            // AWT event thread
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    userListJMenuItem.setSelected(usersMenuSelected);
+                    showUsers(null);
+                }
+            });
         }
     }
 
@@ -633,7 +641,7 @@ public class AudioManagerClient extends BaseConnection implements
 
         sendMessage(new MuteCallRequestMessage(callID, isMuted));
     }
-
+    
     public void personalPhone() {
         voiceChat();
     }
