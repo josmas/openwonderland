@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -39,13 +57,11 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
 
     private static final Logger logger =
             Logger.getLogger(AudioManagerClientPlugin.class.getName());
-    private AudioManagerClient client;
 
     @Override
     public void initialize(ServerSessionManager loginManager) {
         logger.info("Audio manager initialize");
 
-        this.client = new AudioManagerClient();
         loginManager.addLifecycleListener(this);
         super.initialize(loginManager);
     }
@@ -58,12 +74,12 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
 
     @Override
     protected void activate() {
-        client.addMenus();
+        getClient().addMenus();
     }
 
     @Override
     protected void deactivate() {
-        client.removeMenus();
+        getClient().removeMenus();
     }
 
     public void sessionCreated(WonderlandSession session) {
@@ -96,7 +112,7 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
      */
     protected void connectClient(WonderlandSession session) {
         try {
-            client.connect(session);
+            getClient().connect(session);
         } catch (ConnectionFailureException e) {
             logger.log(Level.WARNING, "Connect client error", e);
         }
@@ -106,6 +122,15 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
      * Disconnect the client
      */
     protected void disconnectClient() {
-        client.disconnect();
+        getClient().disconnect();
+    }
+
+    public static AudioManagerClient getClient() {
+        return SingletonHolder.INSTANCE;
+    }
+
+    private static class SingletonHolder {
+        private static final AudioManagerClient INSTANCE =
+                new AudioManagerClient();
     }
 }
