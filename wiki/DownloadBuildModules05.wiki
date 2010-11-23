@@ -21,25 +21,25 @@ The *wonderland-modules* workspace contains all of the source code for the Open 
 
 The build system of Open Wonderland is designed so that you may compile and deploy each module individually. It is also designed so that if you place your *wonderland-modules* workspace alongside your *wonderland* workspace, the "stable" modules will also be compiled and certain ones appearing on a "white list" will also be deployed to the server when it is started.
 
-This tutorial assumes you will place the modules workspace under a base directory named *~/src*, although you are free to place it anywhere. It also assumes you have further placed the core Open Wonderland workspace under the *0.5-preview4/* subdirectory (for User Preview 4) or under the *trunk/* subdirectory (for the latest source code).
+This tutorial assumes you will place the modules workspace under a base directory named *~/src/wonderland*, although you are free to place it anywhere. It also assumes you have further placed the core Open Wonderland workspace under the *0.5-preview4/* subdirectory (for User Preview 4) or under the *trunk/* subdirectory (for the latest source code).
 
 Below, you will place the *wonderland-modules* workspace as a sibling of the core *wonderland* workspace (that is, both directories have the same parent directory in the file system).
 
 ====Latest module source code====
 
-To download the latest module source (trunk), inside a terminal window from your home directory, after you have created the *~/src/trunk/* subdirectory:
+To download the latest module source (trunk), inside a terminal window from your home directory, after you have created the *~/src/wonderland/trunk/* subdirectory:
 
 {{{
-% cd ~/src/trunk
+% cd ~/src/wonderland/trunk
 % svn checkout http://openwonderland-modules.googlecode.com/svn/trunk/0.5 wonderland-modules
 }}}
 
 ====User Preview 4 module source code====
 
-To download the source from our most recent stable release (User Preview 4), inside a terminal window from your home directory, after you have created the *~/src/0.5-preview4/* subdirectory:
+To download the source from our most recent stable release (User Preview 4), inside a terminal window from your home directory, after you have created the *~/src/wonderland/0.5-preview4/* subdirectory:
 
 {{{
-% cd ~/src/0.5-preview4
+% cd ~/src/wonderland/0.5-preview4
 % svn checkout http://openwonderland-modules.googlecode.com/svn/branches/0.5-preview4 wonderland-modules
 }}}
 
@@ -50,14 +50,14 @@ To download the source from our most recent stable release (User Preview 4), ins
 You can build the Open Wonderland "stable" modules, assuming you have placed the workspace as a sibling of the core Wonderland workspace, by running the *ant* command from the _core_ Wonderland workspace. For the latest source code (trunk):
 
 {{{
-% cd ~/src/trunk/wonderland
+% cd ~/src/wonderland/trunk/wonderland
 % ant
 }}}
 
 and for User Preview 4:
 
 {{{
-% cd ~/src/0.5-preview4/wonderland
+% cd ~/src/wonderland/0.5-preview4/wonderland
 % ant
 }}}
 
@@ -69,7 +69,7 @@ You may also build each "stable" module individually by executing the *ant* comm
 
 You can build the Open Wonderland "unstable" modules by executing the *ant* command for each module individually. This tutorial uses the *shape-module-tutorial* "unstable" module for User Preview 4 an example, but the instructions apply to any module beneath the *unstable* directory.
 
-   * Change directories to *~/src/0.5-preview4/wonderland-modules/unstable/shape-module-tutorial*.
+   * Change directories to *~/src/wonderland/0.5-preview4/wonderland-modules/unstable/shape-module-tutorial*.
    * Edit the *my.module.properties* file to make sure that the *wonderland.dir* property points to your installation of the core *wonderland* workspace. If you have arranged your *wonderland-modules* workspace as a sibling of the *wonderland* workspace as shown above, the proper value of *wonderland.dir* should be *../../../wonderland*.
    * Run the *ant* command from the *shape-module-tutorial* directory.
 
