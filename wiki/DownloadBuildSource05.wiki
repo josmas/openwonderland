@@ -23,29 +23,34 @@ the *ant* targets (specified below) directly from Netbeans.
 
 ===Download the _wonderland_ workspace===
 
-The _wonderland_ workspace contains all of the source code and any libraries that Open Wonderland depends upon and is available via *svn*. It contains its own ant-based build system. This tutorial assumes you will place this workspace inside of a directory named _~/src/0.5_, although you are free to place it anywhere. (Note that '~' denotes your home directory).
+The _wonderland_ workspace contains all of the source code and any libraries that Open Wonderland depends upon and is available via *svn*. It contains its own ant-based build system. This tutorial assumes you will place this workspace inside of a directory named _~/src/wonderland_, although you are free to place it anywhere. (Note that '~' denotes your home directory).
 
 ====Download the trunk====
 
-The most recent version of the code is called the _trunk_. To download the source in the trunk, inside a terminal window from your home directory, after you have created the _src/0.5/_ subdirectory:
+The most recent version of the code is called the _trunk_. To download the source in the trunk, inside a terminal window from your home directory, after you have created the _src/wonderland/_ subdirectory:
 
 {{{
-% cd ~/src/0.5
+% cd ~/src/wonderland
 % mkdir trunk
 % cd trunk
 % svn checkout http://openwonderland.googlecode.com/svn/trunk wonderland
 }}}
 
+This will download the Open Wonderland source into the directory _~/src/wonderland/trunk/wonderland_.
+
 ====Download User Preview 4====
 
-If you wish to work with a more stable version of Open Wonderland, you may download the most recent "preview" release. To download the User Preview 4, inside a terminal window from your home directory, after you have created the _src/0.5/_ subdirectory:
+If you wish to work with a more stable version of Open Wonderland, you may download the most recent "preview" release. To download the User Preview 4, inside a terminal window from your home directory, after you have created the _src/wonderland/_ subdirectory:
 
 {{{
-% cd ~/src/0.5
+% cd ~/src/wonderland
 % mkdir 0.5-preview4
 % cd 0.5-preview4
 % svn checkout https://openwonderland.googlecode.com/svn/branches/0.5-preview4 wonderland
 }}}
+
+This will download the Open Wonderland source into the directory _~/src/wonderland/0.5-preview4/wonderland_.
+
 
 ===Building Open Wonderland===
 
@@ -54,6 +59,8 @@ You can build the Open Wonderland source code by running the *ant* command in a 
 {{{
 % ant
 }}}
+
+Run this command in the _wonderland_ directory created by checking out the source, either _~/src/wonderland/trunk/wonderland_ or _~/src/wonderland/0.5-preview4/wonderland_.
 
 ===Running Open Wonderland===
 
