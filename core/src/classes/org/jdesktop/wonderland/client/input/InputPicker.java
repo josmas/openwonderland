@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,7 +35,6 @@
  */
 package org.jdesktop.wonderland.client.input;
 
-import java.awt.AWTEvent;
 import java.awt.Canvas;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -35,6 +52,12 @@ import com.jme.math.Matrix4f;
 import com.jme.renderer.Camera;
 import com.jme.renderer.AbstractCamera;
 import java.awt.Button;
+import java.awt.Point;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.util.EventObject;
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.jdesktop.mtgame.CameraComponent;
@@ -53,6 +76,8 @@ import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingEventConsumer;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingEventConsumer.EventAction;
+import org.jdesktop.wonderland.client.jme.input.DropTargetDragEnterEvent3D;
+import org.jdesktop.wonderland.client.jme.input.DropTargetDragExitEvent3D;
 
 /**
  * The abstract base class for an InputPicker singleton. The InputPicker is the part of the 
@@ -105,6 +130,9 @@ public abstract class InputPicker {
 
     /** The destination pick info for the previous picked event */
     private PickInfo destPickInfoPrev;
+
+    /** The most-recently picked drop target */
+    private PickInfo dropPickInfoPrev;
 
     // 3 pixels
     private static final int BUTTON_CLICK_POSITION_THRESHOLD = 3;
@@ -439,6 +467,112 @@ public abstract class InputPicker {
 	} else {
 	    eventDistributor.enqueueEvent(event, destPickInfo);
 	}
+    }
+
+    /**
+     * Drop Event picker for non-Swing (3D) events.
+     * Finds the first consuming entity and then turns the work over to the event deliverer.
+     * This method does not return a result but instead enqueues an entry for the event in
+     * the input queue of the event deliverer.
+     */
+    void pickDropEvent (DropTargetEvent dropEvent) {
+	logger.fine("pickDrop: Received awt event = " + dropEvent);
+
+	// If the event has coordinates, determine what we are over by
+        // performing a pick.  Otherwise send the event to the last
+        // object we picked.
+        Point location = null;
+        if (dropEvent instanceof DropTargetDropEvent) {
+            // we are going to use the result in Wonderland, so accept the
+            // drop
+            ((DropTargetDropEvent) dropEvent).acceptDrop(DnDConstants.ACTION_MOVE);
+            location = ((DropTargetDropEvent) dropEvent).getLocation();
+        } else if (dropEvent instanceof DropTargetDragEvent) {
+            // we are going to use the result in Wonderland, so accept the
+            // drag
+            ((DropTargetDragEvent) dropEvent).acceptDrag(DnDConstants.ACTION_MOVE);
+            location = ((DropTargetDragEvent) dropEvent).getLocation();
+        }
+
+        PickInfo pickInfo = null;
+        if (location != null) {
+            pickInfo = pickEventScreenPos(location.x, location.y);
+        }
+
+        // now that we have the current and previous pick infos, we can
+        // generate any necessary enter and exit events
+        if (dropPickInfoPrev != null && !pickInfosEqual(dropPickInfoPrev, pickInfo)) {
+            // generate an exit event
+            DropTargetDragExitEvent3D e =
+                    new DropTargetDragExitEvent3D(dropEvent);
+            eventDistributor.enqueueEvent(e, dropPickInfoPrev);
+        }
+
+        if (pickInfo != null && !pickInfosEqual(pickInfo, dropPickInfoPrev) &&
+            dropEvent instanceof DropTargetDragEvent)
+        {
+            // generate an enter event
+            DropTargetDragEnterEvent3D e =
+                    new DropTargetDragEnterEvent3D((DropTargetDragEvent) dropEvent);
+            eventDistributor.enqueueEvent(e, pickInfo);
+        }
+
+        // forward along the actual event
+        Event event = createWonderlandEvent(dropEvent);
+        if (event != null) {
+            eventDistributor.enqueueEvent(event, pickInfo);
+        }        
+
+        // remember the last object that was notified
+        dropPickInfoPrev = pickInfo;
+
+        // if this was a drop, notify the system that it is complete
+        if (dropEvent instanceof DropTargetDropEvent) {
+            ((DropTargetDropEvent) dropEvent).dropComplete(true);
+
+            // we don't get a drag exit event after a drop, so make sure
+            // to reset the previous pickinfo so we don't generate an extra
+            // exit
+            dropPickInfoPrev = null;
+        }
+    }
+
+    /**
+     * Determine if two PickInfo objects are equivalent
+     * @param p1 the first PickInfo
+     * @param p2 the second PickInfo
+     * @return true if the pickinfos represent the same set of objects, or
+     * false if not
+     */
+    private boolean pickInfosEqual(PickInfo p1, PickInfo p2) {
+        // check for null
+        if (p1 == null) {
+            return (p2 == null);
+        } else if (p2 == null) {
+            return (p1 == null);
+        }
+
+        // compare size of pick list
+        if (p1.size() != p2.size()) {
+            return false;
+        }
+
+        // next compare entities of PickDetail objects
+        for (int i = 0; i < p1.size(); i++) {
+            PickDetails pd1 = p1.get(i);
+            PickDetails pd2 = p2.get(i);
+
+            if (pd1.getEntity() == null) {
+                if (pd2.getEntity() != null) {
+                    return false;
+                }
+            } else if (!pd1.getEntity().equals(pd2.getEntity())) {
+                return false;
+            }
+        }
+
+        // if everything is the same, the objects are equal
+        return true;
     }
 
     /**
@@ -830,7 +964,7 @@ public abstract class InputPicker {
     /**
      * Converts a 2D AWT event into a Wonderland event.
      */
-    protected abstract Event createWonderlandEvent (AWTEvent awtEvent);
+    protected abstract Event createWonderlandEvent (EventObject eventObj);
 
     /**
      * Generate the appropriate enter/exit events. 

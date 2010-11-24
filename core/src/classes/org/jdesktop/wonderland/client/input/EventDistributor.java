@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -85,6 +103,7 @@ public abstract class EventDistributor implements Runnable {
     public class PropagationState {
 	public boolean toParent;
 	public boolean toUnder;
+        public boolean consumed;
     }
 
     private Thread thread;
@@ -211,7 +230,9 @@ public abstract class EventDistributor implements Runnable {
      * Post the event to willing consumers. Also, returns the OR of propagatesToParent for all enabled listeners 
      * and the OR of propagatesToUnder for all enabled listeners in propState.
      */
-    protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState) {
+    protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState,
+                                          boolean notifyAll)
+    {
         if (logger.isLoggable(Level.INFO)) {
             logger.info("tryListenersForEntity, entity = " + entity + ", event = " + event);
         }
@@ -238,6 +259,11 @@ public abstract class EventDistributor implements Runnable {
                     }
 		    listener.postEvent(distribEvent);
                     propState.toParent |= listener.propagatesToParent(distribEvent);
+
+                    propState.consumed = true;
+                    if (!notifyAll) {
+                        break;
+                }
                 }
 		// TODO: someday: decommit for now
                 //propState.toUnder |= listener.propagatesToUnder(distribEvent);
@@ -256,9 +282,11 @@ public abstract class EventDistributor implements Runnable {
      * Post the event to willing consumers. Also, returns the OR of propagatesToParent for all enabled listeners 
      * and the OR of propagatesToUnder for all enabled listeners in propState.
      */
-    protected void tryListenersForEntityParents (Entity entity, Event event, PropagationState propState) {
+    protected void tryListenersForEntityParents (Entity entity, Event event, PropagationState propState,
+                                                 boolean notifyAll)
+    {
         while (entity != null) {
-            tryListenersForEntity(entity, event, propState);
+            tryListenersForEntity(entity, event, propState, notifyAll);
             if (!propState.toParent) {
             // No more propagation to parents. We're done with this loop.
             break;

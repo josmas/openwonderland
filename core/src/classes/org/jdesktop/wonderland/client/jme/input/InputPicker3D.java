@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,11 +35,13 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
-import java.awt.AWTEvent;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.FocusEvent;
+import java.util.EventObject;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -52,35 +72,39 @@ public class InputPicker3D extends InputPicker {
      * {@inheritDoc}
      */
     @InternalAPI
-    public Event createWonderlandEvent(AWTEvent awtEvent) {
+    public Event createWonderlandEvent(EventObject eventObj) {
         Event event = null;
 
-        if (awtEvent instanceof KeyEvent) {
-            event = new KeyEvent3D((KeyEvent) awtEvent);
-        } else if (awtEvent instanceof FocusEvent) {
-            event = new FocusEvent3D((FocusEvent) awtEvent);
-        } else if (awtEvent instanceof MouseWheelEvent) {
-            event = new MouseWheelEvent3D((MouseWheelEvent) awtEvent);
-        } else if (awtEvent instanceof MouseEvent) {
-            switch (awtEvent.getID()) {
+        if (eventObj instanceof KeyEvent) {
+            event = new KeyEvent3D((KeyEvent) eventObj);
+        } else if (eventObj instanceof FocusEvent) {
+            event = new FocusEvent3D((FocusEvent) eventObj);
+        } else if (eventObj instanceof MouseWheelEvent) {
+            event = new MouseWheelEvent3D((MouseWheelEvent) eventObj);
+        } else if (eventObj instanceof MouseEvent) {
+            switch (((MouseEvent) eventObj).getID()) {
                 case MouseEvent.MOUSE_CLICKED:
                 case MouseEvent.MOUSE_RELEASED:
                 case MouseEvent.MOUSE_PRESSED:
-                    event = new MouseButtonEvent3D((MouseEvent) awtEvent);
+                    event = new MouseButtonEvent3D((MouseEvent) eventObj);
                     break;
                 case MouseEvent.MOUSE_ENTERED:
                 case MouseEvent.MOUSE_EXITED:
-                    event = new MouseEnterExitEvent3D((MouseEvent) awtEvent);
+                    event = new MouseEnterExitEvent3D((MouseEvent) eventObj);
                     break;
                 case MouseEvent.MOUSE_MOVED:
-                    event = new MouseMovedEvent3D((MouseEvent) awtEvent);
+                    event = new MouseMovedEvent3D((MouseEvent) eventObj);
                     break;
                 case MouseEvent.MOUSE_DRAGGED:
-                    event = new MouseDraggedEvent3D((MouseEvent) awtEvent);
+                    event = new MouseDraggedEvent3D((MouseEvent) eventObj);
                     break;
                 default:
                     logger.warning("Invalid AWT event type");
             }
+        } else if (eventObj instanceof DropTargetDragEvent) {
+            event = new DropTargetDragEvent3D((DropTargetDragEvent) eventObj);
+        } else if (eventObj instanceof DropTargetDropEvent) {
+            event = new DropTargetDropEvent3D((DropTargetDropEvent) eventObj);
         }
 
         return event;

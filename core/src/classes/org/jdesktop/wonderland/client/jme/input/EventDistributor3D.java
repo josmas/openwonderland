@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -62,6 +80,8 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
             processFocusEvent((FocusEvent3D)event);
         } else if (event instanceof FocusChangeEvent) {
             processFocusChangeEvent(((FocusChangeEvent) event).getChanges());
+        } else if (event instanceof DropTargetEvent3D) {
+            processDropEvent((DropTargetEvent3D) event, destPickInfo);
         } else if (event instanceof Event) {
             processGlobalEvent(event);
         } else {
@@ -103,6 +123,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 
         // Start out the entity search assuming no propagation to unders
         propState.toUnder = false;
+        propState.consumed = false;
 
         // Walk through successive depth levels, as long as propagateToUnder is true,
         // searching up the parent chain in each level
@@ -141,12 +162,12 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
                 }
             }
 
-            tryListenersForEntity(entity, event, propState);
+            tryListenersForEntity(entity, event, propState, true);
 
             // See whether any of the picked entity's parents want the event
             if (propState.toParent) {
                 logger.fine("Propogating to parents");
-                tryListenersForEntityParents(entity.getParent(), event, propState);
+                tryListenersForEntityParents(entity.getParent(), event, propState, true);
             }
 
             if (!propState.toUnder) {
@@ -167,6 +188,52 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
         }
     }
 
+    protected void processDropEvent(DropTargetEvent3D event, PickInfo pickInfo) {
+        logger.fine("Distributor: received event = " + event);
+        logger.fine("Distributor: pickInfo = " + pickInfo);
+
+        // set the pick info for the event
+        event.setPickInfo(pickInfo);
+
+        // try each listener in the pick info to see if anyone consumes the
+        // event
+        propState.toUnder = false;
+        propState.consumed = false;
+
+        if (pickInfo != null) {
+            for (int i = 0; i < pickInfo.size(); i++) {
+                // get the next set of details
+                PickDetails details = pickInfo.get(i);
+                event.setPickDetails(details);
+
+                // see if we picked an entity
+                Entity entity = details.getEntity();
+                if (entity != null) {
+                    // try the listeners for this entity
+                    propState.toParent = false;
+                    tryListenersForEntity(entity, event, propState, false);
+
+                    if (!propState.consumed && propState.toParent) {
+                        // the event was not consumed, pass it on to the parent
+                        tryListenersForEntityParents(entity, event, propState, false);
+                    }
+
+                    if (propState.consumed || !propState.toUnder) {
+                        // someone consumed the event, or we aren't propagating
+                        // under, then we are done
+                        break;
+                    }
+                }
+            }
+        }
+
+        // if no one consumed the event, try the global listener
+        if (!propState.consumed) {
+            event.setPickDetails(null);
+            tryGlobalListeners(event);
+        }
+    }
+
     protected void processFocusEvent(FocusEvent3D event) {
         logger.fine("Distributor: received focus event = " + event);
 
@@ -181,12 +248,13 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 
         // See whether the specified entity wants the event.
         propState.toParent = false;
-        tryListenersForEntity(entity, event, propState);
+        propState.consumed = false;
+        tryListenersForEntity(entity, event, propState, true);
 
         // See whether any of the picked entity's parents want the event
         if (propState.toParent) {
             logger.fine("Propogating to parents");
-            tryListenersForEntityParents(entity.getParent(), event, propState);
+            tryListenersForEntityParents(entity.getParent(), event, propState, true);
         }
     }
 

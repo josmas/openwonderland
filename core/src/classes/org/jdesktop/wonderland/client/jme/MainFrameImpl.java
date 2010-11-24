@@ -132,7 +132,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         centerPanel.setPreferredSize(new Dimension(width, height));
 
         // Register the main panel with the drag-and-drop manager
-        DragAndDropManager.getDragAndDropManager().setDropTarget(centerPanel);
+        // This is now handled by the InputManager
+        // DragAndDropManager.getDragAndDropManager().setDropTarget(centerPanel);
 
         serverField.getDocument().addDocumentListener(new DocumentListener() {
 
