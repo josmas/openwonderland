@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -59,6 +77,14 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      * @inheritDoc()
      */
     public String importFile(File file, String extension) {
+        return importFile(file, extension, true);
+    }
+
+
+    /**
+     * @inheritDoc()
+     */
+    public String importFile(File file, String extension, boolean createCell) {
 
         final JFrame frame = JmeClientMain.getFrame().getFrame();
 
@@ -94,7 +120,10 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         // If the content exists and we do not want to upload a new version,
         // then simply create it and return.
         if (result == JOptionPane.NO_OPTION) {
+            if (createCell) {
             createCell(uri);
+            }
+            
             return uri;
         }
 
@@ -146,7 +175,10 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         }
 
         // Finally, go ahead and create the cell.
+        if (createCell) {
         createCell(uri);
+        }
+        
         return uri;
     }
 
@@ -175,7 +207,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      *
      * @param uri The URI of the uploaded content
      */
-    public void createCell(String uri) {
+    public static void createCell(String uri) {
         // Figure out what the file extension is from the uri, looking for
         // the final '.'.
         String extension = getFileExtension(uri);
@@ -240,7 +272,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      * Utility routine to fetch the file extension from the URI, or null if
      * none can be found.
      */
-    private String getFileExtension(String uri) {
+    private static String getFileExtension(String uri) {
         // Figure out what the file extension is from the uri, looking for
         // the final '.'.
         int index = uri.lastIndexOf(".");

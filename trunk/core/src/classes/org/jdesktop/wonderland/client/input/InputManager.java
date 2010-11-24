@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -20,6 +38,11 @@ package org.jdesktop.wonderland.client.input;
 import com.jme.math.Ray;
 import java.awt.Canvas;
 import java.awt.Component;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseListener;
@@ -97,7 +120,8 @@ import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
 
 @ExperimentalAPI
 public abstract class InputManager 
-    implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, FocusListener
+    implements MouseListener, MouseMotionListener, MouseWheelListener, 
+               KeyListener, FocusListener, DropTargetListener
 {
     private static final Logger logger = Logger.getLogger(InputManager.class.getName());
 
@@ -235,6 +259,7 @@ public abstract class InputManager
 	canvas.addMouseMotionListener(this);
 	canvas.addMouseWheelListener(this);
 	canvas.addFocusListener(this);
+        canvas.setDropTarget(new DropTarget(canvas, this));
 
 	logger.fine("Input System initialization complete.");
     }
@@ -396,6 +421,53 @@ public abstract class InputManager
         mainWindowHasFocus = false;
         FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
         eventDistributor.enqueueEvent(event, (PickInfo)null);
+    }
+
+    /** 
+     * INTERNAL ONLY
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void dragEnter(DropTargetDragEvent e) {
+        inputPicker.pickDropEvent(e);
+    }
+
+    /**
+     * INTERNAL ONLY
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void dragExit(DropTargetEvent e) {
+        inputPicker.pickDropEvent(e);
+    }
+
+    /**
+     * INTERNAL ONLY
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void dragOver(DropTargetDragEvent e) {
+        inputPicker.pickDropEvent(e);
+    }
+
+    /**
+     * INTERNAL ONLY
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void drop(DropTargetDropEvent e) {
+        logger.warning("Drop: " + e.getCurrentDataFlavors().length + " items");
+
+        inputPicker.pickDropEvent(e);
+    }
+
+    /**
+     * INTERNAL ONLY
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void dropActionChanged(DropTargetDragEvent e) {
+        inputPicker.pickDropEvent(e);
     }
 
     /** 

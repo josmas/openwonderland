@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,16 +35,11 @@
  */
 package org.jdesktop.wonderland.client.jme.dnd;
 
-import java.awt.Component;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDropEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -34,8 +47,14 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
+import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI.ImportResultListener;
+import org.jdesktop.wonderland.client.jme.input.DropTargetDropEvent3D;
+import org.jdesktop.wonderland.client.jme.input.DropTargetEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -56,11 +75,11 @@ public class DragAndDropManager {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/client/jme/dnd/Bundle");
 
-    /* The drop-target component */
-    private Component dropTarget = null;
-
     /* A map of supported data flavor and the handler */
-    private Map<DataFlavor, DataFlavorHandlerSPI> dataFlavorHandlerMap;
+    private final Map<DataFlavor, DataFlavorHandlerSPI> dataFlavorHandlerMap;
+
+    /** the listener for drop events */
+    private final GlobalDropListener dropEventListener;
 
     /** Default constructor */
     private DragAndDropManager() {
@@ -70,6 +89,9 @@ public class DragAndDropManager {
         registerDataFlavorHandler(new FileListDataFlavorHandler());
         registerDataFlavorHandler(new URLDataFlavorHandler());
         registerDataFlavorHandler(new URIListDataFlavorHandler());
+
+        dropEventListener = new GlobalDropListener();
+        InputManager.inputManager().addGlobalEventListener(dropEventListener);
     }
 
     /**
@@ -87,22 +109,6 @@ public class DragAndDropManager {
      */
     public static final DragAndDropManager getDragAndDropManager() {
         return DragAndDropManagerHolder.dndManager;
-    }
-
-    /**
-     * Sets the sole drop target for the system-wide drag and drop
-     *
-     * @param dropTarget The new drop target for all drag-and-drop operations
-     */
-    public void setDropTarget(Component dropTarget) {
-        // First check whether there is an existing drop target and null out
-        // its drop target
-        if (this.dropTarget != null) {
-            this.dropTarget.setDropTarget(null);
-        }
-        this.dropTarget = dropTarget;
-        DropTarget dt = new DropTarget(dropTarget, new JmeDropTarget());
-        dropTarget.setDropTarget(dt);
     }
 
     /**
@@ -165,6 +171,63 @@ public class DragAndDropManager {
     }
 
     /**
+     * Return true if a handler exists for the given data flavor
+     *
+     * @param dataFlavor The DataFlavor object
+     * @return true if there is a handler for this flavor
+     */
+    public boolean hasDataFlavorHandler(DataFlavor dataFlavor) {
+        return dataFlavorHandlerMap.containsKey(dataFlavor);
+    }
+
+    /**
+     * Get the file extension for the given event, or return null
+     * if no extension can be determined.
+     *
+     * @param event the event to determine the file name of
+     */
+    public String getFileExtension(DropTargetEvent3D event) {
+        for (DataFlavor flavor : getSupportedFlavors(event.getDataFlavors())) {
+            DataFlavorHandlerSPI handler = getDataFlavorHandler(flavor);
+            if (handler.accept(event, flavor)) {
+                String extension = handler.getFileExtension(event, flavor);
+                if (extension != null) {
+                    return extension;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Import a file and return the corresponding URI to the listner
+     *
+     * @param event the event to import a file from
+     * @param listener the optional listener to report results to
+     */
+    public void importContent(DropTargetDropEvent3D event,
+                              ImportResultListener listener)
+    {
+        // Get the flavors we support
+        List<DataFlavor> supportedFlavors = getSupportedFlavors(event.getDataFlavors());
+
+        // Find a handler that will accept the file
+        for (DataFlavor dataFlavor : supportedFlavors) {
+            // Check to see whether the handler will accept the drop,
+            // if not just go into the next in the list
+            DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
+            if (handler.accept(event, dataFlavor) == true) {
+                handler.handleImport(event, dataFlavor, listener);
+                return;
+            }
+        }
+
+        // if we got here, the data flavor was not supported
+        listener.importFailure(null, "No supported data flavors");
+    }
+
+    /**
      * Returns the string extension name of the given file name. If none, return
      * null. This simply looks for the final period (.) in the name.
      *
@@ -180,17 +243,48 @@ public class DragAndDropManager {
     }
     
     /**
+     * Get the supported data flavors from the given array.
+     *
+     * @param dataFlavors an array of data flavors to consider
+     * @return a list of supported data flavors
+     */
+    private List<DataFlavor> getSupportedFlavors(DataFlavor[] dataFlavors) {
+        List<DataFlavor> supported = new ArrayList(Arrays.asList(dataFlavors));
+
+        // remove all flavors we do not have a handler for
+        for (Iterator<DataFlavor> i = supported.iterator(); i.hasNext();) {
+            if (!hasDataFlavorHandler(i.next())) {
+                i.remove();
+            }
+        }
+
+        return supported;
+    }
+    /**
      * Adapter for the drop target event. Dispatches to the various handlers
      * registerd on this class for the matching data flavor
      */
-    private class JmeDropTarget extends DropTargetAdapter {
+    private class GlobalDropListener extends EventClassListener {
 
-        public void drop(DropTargetDropEvent dtde) {
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[] { DropTargetDropEvent3D.class };
+        }
+
+        @Override
+        public void commitEvent(Event event) {
+            DropTargetDropEvent3D dtde =
+                    (DropTargetDropEvent3D) event;
+            drop(dtde);
+        }
+
+        public void drop(DropTargetDropEvent3D dtde) {
+            logger.warning("In global listener: " + dtde.getDataFlavors().length);
 
             // Check to see if the list of data flavors is empty. This happens
             // on MAX OSX, which is likely a Java bug. If so, display a dialog
             // to tell the user to retry the DnD.
-            if (dtde.getCurrentDataFlavors().length == 0) {
+            if (dtde.getDataFlavors().length == 0) {
                 JFrame frame = JmeClientMain.getFrame().getFrame();
                 String title = BUNDLE.getString("DND_Error_Title");
                 String message = BUNDLE.getString("DND_Error_message");
@@ -199,47 +293,23 @@ public class DragAndDropManager {
                 return;
             }
 
-            List<DataFlavor> flavorList = dtde.getCurrentDataFlavorsAsList();
-            List<DataFlavor> supportedFlavors = new LinkedList();
-            for (DataFlavor dataFlavor : flavorList) {
-                DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
-                if (handler != null) {
-                    logger.info("Adding flavor to handled " + dataFlavor.toString());
-                    supportedFlavors.add(dataFlavor);
-                }
-            }
-
-
-            // Check to make sure there is at least one supported flavor,
-            // otherwise, we reject the drop
-            if (supportedFlavors.isEmpty() == true) {
-                dtde.rejectDrop();
-                return;
-            }
+            // Get the flavors we support
+            List<DataFlavor> supportedFlavors = getSupportedFlavors(dtde.getDataFlavors());
 
             // At this point, if there is at least one supported flavor, we
             // accept the drop on the presumption that at least one can really
             // handle it. It is possible that each decides to reject the drop,
             // but that is the rare case. In that event, we would acceptDrop(),
             // but later dropComplete(false), which isn't too bad I think.
-            dtde.acceptDrop(DnDConstants.ACTION_MOVE);
-            Transferable transferable = dtde.getTransferable();
-            Point location = dtde.getLocation();
-
             for (DataFlavor dataFlavor : supportedFlavors) {
                 // Check to see whether the handler will accept the drop,
                 // if not just go into the next in the list
                 DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
-                if (handler.accept(transferable, dataFlavor) == true) {
-                    handler.handleDrop(transferable, dataFlavor, location);
-                    dtde.dropComplete(true);
+                if (handler.accept(dtde, dataFlavor) == true) {
+                    handler.handleDrop(dtde, dataFlavor);
                     return;
                 }
             }
-
-            // Otherwise if we reach here, it turns out that none of the handlers
-            // could really deal with the drop, so we set failure
-            dtde.dropComplete(false);
         }
     }
 }
