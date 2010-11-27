@@ -239,7 +239,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         } catch (CellCreationException excp) {
             final JFrame frame = JmeClientMain.getFrame().getFrame();
             LOGGER.log(Level.WARNING,
-                    "Could not find cell factory for " + extension, excp);
+                    "Could not find cell factory for " + extension);
             String message = BUNDLE.getString("Launch_Failed_Message");
             message = MessageFormat.format(message, uri);
             JOptionPane.showMessageDialog(frame, message,
