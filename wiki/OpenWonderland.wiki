@@ -9,29 +9,22 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 [OpenWonderland#For_System_Administrators Sys Admins] |
 [OpenWonderland#For_Content_Developers Content Developers] |
 [OpenWonderland#For_Developers Developers] |
-[OpenWonderland#For_Students Students] 
+[OpenWonderland#For_Students Students] |
+[OpenWonderland#Historic Historic] |
 
 ==For Everyone==
 <table cellpadding="5" width="100%">
 <tr>
-  <td width="25%">[http://wiki.java.net/bin/view/Javadesktop/WonderlandRoadmap Project Roadmap and Release Plan Estimates]</td>
-  <td>Our best guess at the timeframes for the upcoming releases and what will be included in them</td>
-</tr>
-<tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandResources Multimedia Resources]</td>
-  <td>This page has a collection of videos, presentations, screenshots, and web resources on Open Wonderland.</td>
-</tr>
-<tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandProposals Proposals]</td>
-  <td>This page has a collection of proposals for new large-scale features in Open Wonderland, suggested both by the core team and the community.</td>
-</tr>
-<tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFeatureWishList Feature Wish List]</td>
-  <td>This page has a collection of proposals for new small-scale features in Open Wonderland, suggested both by the core team and the community.</td>
+  <td width="25%">[http://openwonderland.org Open Wonderland web site]</td>
+  <td>The web site contains FAQs, pointers to community resources, instructions on downloading software, and many other helpful resources</td>
 </tr>
 <tr>
   <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Topics Community Wiki]</td>
   <td>This wiki contains a constantly growing collection of documentation, notes from community meetings, video links, and other useful resources.</td>
+</tr>
+<tr>
+  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandProposals Proposals]</td>
+  <td>This page has a collection of proposals for new large-scale features in Open Wonderland, suggested both by the core team and the community.</td>
 </tr>
 <tr><td></td></tr>
 </table>
@@ -59,6 +52,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 
 ==For System Administrators==
 <table cellpadding="5" width="100%">
+<tr>
+  <td width="25%">[http://openwonderland.org/download/modules?cat=add_ons Wonderland Module Warehouse]</td>
+  <td>Collection of Wonderland "apps" available to download and install in your own Wonderland server.</td>
+</tr>
 <tr>
   <td width="25%">[http://openwonderland.org/index.php?option=com_content&view=article&id=70&Itemid=64 Download and Install Wonderland]</td>
   <td>Leads you step-by-step to download, install, configure, and run Open Wonderland.</td>
@@ -202,6 +199,23 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 <tr>
   <td class="left" width="25%">[http://wiki.java.net/bin/view/Javadesktop/StudentProjects Project Ideas for Students (and others)]</td>
   <td class="right">An ever-growing list of Wonderland projects, organized by level-of-effort, suitable for students or others interesting in extending Wonderland.</td>
+</tr>
+<tr><td></td></tr>
+</table>
+
+==Historic (documents are now out-of-date)==
+<table cellpadding="5" width="100%">
+<tr>
+  <td width="25%">[http://wiki.java.net/bin/view/Javadesktop/WonderlandRoadmap Project Roadmap and Release Plan Estimates]</td>
+  <td>Our best guess at the timeframes for the upcoming releases and what will be included in them</td>
+</tr>
+<tr>
+  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandResources Multimedia Resources]</td>
+  <td>This page has a collection of videos, presentations, screenshots, and web resources on Open Wonderland.</td>
+</tr>
+<tr>
+  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFeatureWishList Feature Wish List]</td>
+  <td>This page has a collection of proposals for new small-scale features in Open Wonderland, suggested both by the core team and the community.</td>
 </tr>
 <tr><td></td></tr>
 </table>
