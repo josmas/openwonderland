@@ -596,4 +596,12 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
     }
+
+    public void cleanup()
+        {
+        ClientContext.unregisterCellCache(session);
+        classLoader = null;
+        session = null;
+        cellCacheConnection = null;
+        }
 }

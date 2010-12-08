@@ -87,12 +87,17 @@ public class ClientContext {
         if (cellCaches==null) {
             cellCaches = new HashMap();
         }
-        
+       
         CellCache previous = cellCaches.put(session, clientCellCache);
         
         if (previous!=null)
             throw new RuntimeException("registerCellCache can only be called once");
     }
+
+    public static void unregisterCellCache(WonderlandSession session)
+        {
+        cellCaches.remove(session);
+        }
     
     /**
      * Return the CellManager for this client
@@ -207,11 +212,12 @@ public class ClientContext {
         return scheduledExecutor;
     }
 
-    public static void removeCellCaches()
-    {
-        System.out.println("@@@@@@@@@@@@@@@@@@@ - ClientContext - removCellCaches");
-        cellCaches = null;
-    }
+//    public static void removeCellCaches()
+//    {
+//        System.out.println("@@@@@@@@@@@@@@@@@@@ - ClientContext - removCellCaches");
+//        cellCaches.clear();
+//        cellCaches = null;
+//    }
 
     static class LocalExecutorThreadFactory implements ThreadFactory {
         private static final String namePrefix = "wonderlandpool-thread-";

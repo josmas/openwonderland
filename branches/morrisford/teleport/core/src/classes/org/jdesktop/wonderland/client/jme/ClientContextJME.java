@@ -196,4 +196,12 @@ public class ClientContextJME extends ClientContext {
     static void setClientMain(JmeClientMain clientMain) {
         ClientContextJME.clientMain = clientMain;
     }
+    public static void cleanup(ServerSessionManager curSession)
+    {
+        removeAllCollisionSystems(curSession);
+        removeAllPhysicsSystems(curSession);
+        
+        worldManager.shutdown();
+        worldManager = null;
+    }
 }

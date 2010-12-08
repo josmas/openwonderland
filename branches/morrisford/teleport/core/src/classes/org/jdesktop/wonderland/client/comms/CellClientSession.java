@@ -192,4 +192,17 @@ public class CellClientSession extends WonderlandSessionImpl {
     {
         cellCache = null;
     }
+
+    protected void cleanupCellCache()
+        {
+        CellCacheBasicImpl cacheImpl = (CellCacheBasicImpl)cellCache;
+        cacheImpl.cleanup();
+        }
+
+    @Override
+    public void logout()
+        {
+        System.out.println("============================= in logout in CellClientSession");
+        cleanupCellCache();
+        }
 }

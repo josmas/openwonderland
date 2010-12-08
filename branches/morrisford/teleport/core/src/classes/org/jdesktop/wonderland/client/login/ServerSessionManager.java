@@ -222,10 +222,14 @@ public class ServerSessionManager {
             }
 
             // disconnect all sessions
-            for (WonderlandSession session : getAllSessions()) {
+/*            for (WonderlandSession session : getAllSessions()) {
+                System.out.println("6666666666666666666666 - session = " + session);
                 session.logout();
+                System.out.println("6666666666666666666666 - session = " + session);
+                session = null;
+                System.out.println("6666666666666666666666 - session = " + session);
             }
-
+*/
             // clean up all plugins
             for (ClientPlugin plugin : plugins) {
                 plugin.cleanup();
