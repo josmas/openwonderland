@@ -523,15 +523,16 @@ System.out.println("--------------------------    Enter logout in JmeClientMain"
 
 
             curSession.getCellCache().unloadAll();
-///            curSession.removeCellCache();
-//MHF
-///            ClientContext.removeCellCaches();
+//            curSession.removeCellCache();
  
             ServerSessionManager ssm = curSession.getSessionManager();
             System.out.println("---------------------- After get ssm");
 
-///            curSession.logout();
-///            curSession = null;
+//            ClientContextJME.cleanup(ssm);
+
+////            curSession.logout();
+////            curSession = null;
+            
             frame.connected(false);
 
             // notify listeners that there is no longer a primary server
@@ -541,8 +542,12 @@ System.out.println("--------------------------    Enter logout in JmeClientMain"
 //            ClientContext.getGlobalExecutor().shutdownNow();
 //            ClientContext.getGlobalScheduledExecutor().shutdownNow();
 
+//MHF
+//            ClientContext.removeCellCaches();
+            curSession.logout();
+            curSession = null;
+            System.out.println("----------------------- After disconnect - session = " + curSession);
 
-            System.out.println("----------------------- After disconnect");
         }
     }
 

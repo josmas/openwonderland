@@ -38,6 +38,7 @@ public class JmeClientSession extends CellClientSession {
                             ClassLoader loader)
     {
         super(manager, serverInfo, loader);
+        System.out.println("666666666666666666666666666666666 - in constructor in JmeClientSession - loader = " + loader);
     }
 
     @Override

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import imi.input.CharacterControls;
 import imi.input.DefaultCharacterControls;
 import imi.input.InputClient;
 import imi.input.InputClientGroup;
@@ -29,6 +30,7 @@ import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
@@ -152,6 +154,7 @@ public class AvatarControls extends ViewControls {
             ClientContext.getInputManager().removeGlobalEventListener(eventListener);
             ClientContext.getInputManager().removeGlobalEventListener(eventClassListener);
             ClientContextJME.getWorldManager().removeUserData(AvatarControls.class);
+            ClientContextJME.getWorldManager().removeUserData(CharacterControls.class);
         }
 
         this.enable = enable;
