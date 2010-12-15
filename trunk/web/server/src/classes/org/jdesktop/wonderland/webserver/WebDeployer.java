@@ -22,6 +22,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarInputStream;
@@ -94,7 +95,7 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @param part the web module part
      */
     public void deploy(String type, Module module, ModulePart part) {
-        for (File war : getWebApps(part.getFile(), getFileSuffix())) {
+        for (File war : getWebApps(part.getFile(), getFileSuffixes())) {
             try {
                 deployFile(module.getName(), war);
             } catch (IOException ioe) {
@@ -215,7 +216,7 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @param part the web module part
      */
     public void undeploy(String type, Module module, ModulePart part) {
-        for (File war : getWebApps(part.getFile(), getFileSuffix())) {
+        for (File war : getWebApps(part.getFile(), getFileSuffixes())) {
             DeployRecord record = new DeployRecord(module.getName(), war.getName());
             undeploy(record);
         }
@@ -278,22 +279,31 @@ public class WebDeployer implements ModuleDeployerSPI {
      * Get the file suffix
      * @return the file suffix
      */
-    protected String getFileSuffix() {
-        return ".war";
+    protected String[] getFileSuffixes() {
+        return new String[] { ".war", ".ear", ".rar" };
     }
 
     /**
      * Get the list of .wars in a directory
      * @param dir the directory to search
-     * @param suffix the file suffix to search for
+     * @param suffixes the file suffixes to search for
      * @return a list of .war files in the directory, or an empty list
      * if there are no .wars in the directory
      */
-    protected File[] getWebApps(File dir, final String suffix) {
+    protected File[] getWebApps(File dir, final String[] suffixes) {
         File[] wars = dir.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
-                return !pathname.isDirectory() &&
-                        pathname.getName().endsWith(suffix);
+                if (pathname.isDirectory()) {
+                    return false;
+            }         
+
+                for (String suffix : suffixes) {
+                    if (pathname.getName().endsWith(suffix)) {
+                        return true;
+                    }
+                }
+
+                return false;
             }         
         });
         
