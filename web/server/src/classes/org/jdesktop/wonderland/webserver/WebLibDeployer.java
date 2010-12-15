@@ -114,7 +114,7 @@ public class WebLibDeployer extends WebDeployer {
     }
 
     @Override
-    protected String getFileSuffix() {
-        return ".jar";
+    protected String[] getFileSuffixes() {
+        return new String[] { ".jar" };
     }
 }
