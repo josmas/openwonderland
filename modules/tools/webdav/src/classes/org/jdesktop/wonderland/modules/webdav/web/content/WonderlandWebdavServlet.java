@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -17,6 +35,7 @@
  */
 package org.jdesktop.wonderland.modules.webdav.web.content;
 
+import com.sun.enterprise.security.web.integration.WebPrincipal;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
@@ -32,12 +51,14 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
+import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.servlets.WebdavServlet;
 import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
+import org.glassfish.security.common.Group;
 import org.jdesktop.wonderland.modules.security.weblib.UserGroupPrincipal;
 import org.jdesktop.wonderland.utils.RunUtil;
 
@@ -386,15 +407,26 @@ public class WonderlandWebdavServlet extends WebdavServlet {
                 return false;
             } else if (type.getType().equalsIgnoreCase(USERS_DIR)) {
                 return (type.getUser() != null) &&
-                        type.getUser().equalsIgnoreCase(getUserName());
+                        type.getUser().equals(getUserName());
             } else if (type.getType().equalsIgnoreCase(GROUPS_DIR)) {
-                if (!(p instanceof UserGroupPrincipal)) {
-                    return false;
-                }
-
-                for (String group : ((UserGroupPrincipal) p).getGroups()) {
-                    if (group.equalsIgnoreCase(type.getUser())) {
-                        return true;
+                // get the name of the group
+                String target = type.getUser();
+                
+                // see if this user is a member of the given group
+                if (p instanceof UserGroupPrincipal) {
+                    for (String group : ((UserGroupPrincipal) p).getGroups()) {
+                        if (group.equals(target)) {
+                            return true;
+                        }
+                    }
+                } else if (p instanceof WebPrincipal) {
+                    // Glassfish sometimes wraps the actual principal in its
+                    // own class
+                    Subject s = ((WebPrincipal) p).getSecurityContext().getSubject();
+                    for (Group group : s.getPrincipals(Group.class)) {
+                        if (group.getName().equals(target)) {
+                            return true;
+                        }
                     }
                 }
             }
