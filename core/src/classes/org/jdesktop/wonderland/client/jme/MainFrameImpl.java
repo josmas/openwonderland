@@ -37,6 +37,10 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -73,7 +77,6 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
 
@@ -102,6 +105,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private FrameRateListener frameRateListener = null;
     private JMenuItem fpsMI;
     private JMenuItem logViewerMI;
+    private JCheckBoxMenuItem locationBarMI;
     private Chart chart;
     private HUDComponent fpsComponent;
     private WorldManager wm;
@@ -128,8 +132,29 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         initMenus();
 
         setTitle(BUNDLE.getString("Wonderland"));
-        centerPanel.setMinimumSize(new Dimension(width, height));
-        centerPanel.setPreferredSize(new Dimension(width, height));
+
+        if (width == -1 || height == -1) {
+            // OWL issue #146: for full screen, set the size of the frame to the
+            // full size of the screen device, and let the rest of the panels
+            // size themselves appropriately
+            GraphicsEnvironment ge =
+                        GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice[] gs = ge.getScreenDevices();
+            if (gs.length > 1) {
+                LOGGER.warning("Fullscreen using size of first screen");
+            }
+
+            GraphicsConfiguration gc = gs[0].getDefaultConfiguration();
+            Rectangle size = gc.getBounds();
+
+            setBounds(size);
+        } else {
+            // user-specified size. Try to set the size of the 3d canvas to
+            // the size the user specified
+            centerPanel.setMinimumSize(new Dimension(width, height));
+            centerPanel.setPreferredSize(new Dimension(width, height));
+            pack();
+        }
 
         // Register the main panel with the drag-and-drop manager
         // This is now handled by the InputManager
@@ -158,8 +183,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 }
             }
         });
-
-        pack();
     }
 
     private void initMenus() {
@@ -186,6 +209,16 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                     }
                 });
                 addToFileMenu(exitMI, 3);
+
+                // Turn location bar on and off
+                locationBarMI = new JCheckBoxMenuItem(BUNDLE.getString("Location_Bar"));
+                locationBarMI.setSelected(true);
+                locationBarMI.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
+                        locationBarMIActionPerformed(evt);
+                    }
+                });
+                addToViewMenu(locationBarMI, -1);
 
                 // View menu
                 firstPersonRB = new JRadioButtonMenuItem(
@@ -340,6 +373,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private void exitMIActionPerformed(ActionEvent evt) {
         ClientContextJME.getWorldManager().shutdown();
         System.exit(0);
+    }
+
+    private void locationBarMIActionPerformed(ActionEvent evt) {
+        serverPanel.setVisible(!serverPanel.isVisible());
+        locationBarMI.setSelected(serverPanel.isVisible());
     }
 
     private void cameraChangedActionPerformed(ActionEvent evt) {
@@ -859,17 +897,20 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         });
 
         serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        serverPanel.setPreferredSize(new java.awt.Dimension(692, 35));
+        serverPanel.setPreferredSize(new java.awt.Dimension(35, 35));
+        serverPanel.setLayout(new java.awt.BorderLayout());
 
         serverLabel.setFont(serverLabel.getFont());
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/Bundle"); // NOI18N
         serverLabel.setText(bundle.getString("Location:")); // NOI18N
+        serverPanel.add(serverLabel, java.awt.BorderLayout.WEST);
 
         serverField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverFieldActionPerformed(evt);
             }
         });
+        serverPanel.add(serverField, java.awt.BorderLayout.CENTER);
 
         goButton.setText(bundle.getString("Go!")); // NOI18N
         goButton.addActionListener(new java.awt.event.ActionListener() {
@@ -877,28 +918,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 goButtonActionPerformed(evt);
             }
         });
-
-        org.jdesktop.layout.GroupLayout serverPanelLayout = new org.jdesktop.layout.GroupLayout(serverPanel);
-        serverPanel.setLayout(serverPanelLayout);
-        serverPanelLayout.setHorizontalGroup(
-            serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(serverPanelLayout.createSequentialGroup()
-                .add(serverLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(serverField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(goButton))
-        );
-        serverPanelLayout.setVerticalGroup(
-            serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(serverPanelLayout.createSequentialGroup()
-                .add(serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serverLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(serverField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(goButton)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        serverPanel.add(goButton, java.awt.BorderLayout.EAST);
 
         getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
 
