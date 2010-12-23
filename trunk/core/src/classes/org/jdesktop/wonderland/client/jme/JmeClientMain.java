@@ -42,10 +42,6 @@ import com.sun.scenario.animation.Interpolators;
 import com.sun.scenario.animation.TimingTarget;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -54,7 +50,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -97,6 +92,11 @@ public class JmeClientMain {
             Logger.getLogger(JmeClientMain.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/client/jme/resources/Bundle");
+
+    /** Default window size */
+    private static final int DEFAULT_WIDTH = 800;
+    private static final int DEFAULT_HEIGHT = 600;
+
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
     // user preferences
@@ -113,11 +113,7 @@ public class JmeClientMain {
     private static final String DESIRED_FPS_DEFAULT = "30";
     private static final String WINDOW_SIZE_DEFAULT = "800x600";
     private int desiredFrameRate = Integer.parseInt(DESIRED_FPS_DEFAULT);
-    /**
-     * The width and height of our 3D window
-     */
-    private int width = 800;
-    private int height = 600;
+  
     // the current Wonderland login and session
     private JmeLoginUI login;
     private JmeClientSession curSession;
@@ -172,18 +168,16 @@ public class JmeClientMain {
 
         String windowSize = System.getProperty(
                 WINDOW_SIZE_PROP, WINDOW_SIZE_DEFAULT);
+        
+        int width = DEFAULT_WIDTH;
+        int height = DEFAULT_HEIGHT;
+
         try {
             if (windowSize.equalsIgnoreCase("fullscreen")) {
-                GraphicsEnvironment ge =
-                        GraphicsEnvironment.getLocalGraphicsEnvironment();
-                GraphicsDevice[] gs = ge.getScreenDevices();
-                if (gs.length > 1) {
-                    LOGGER.warning("Fullscreen using size of first screen");
-                }
-                GraphicsConfiguration gc = gs[0].getDefaultConfiguration();
-                Rectangle size = gc.getBounds();
-                width = size.width;
-                height = size.height; // -50 hack for current swing decorations
+                // OWL issue #146: for full screen, let the frame figure out
+                // how to size itself
+                width = -1;
+                height = -1; // -50 hack for current swing decorations
             } else {
                 String sizeWidth =
                         windowSize.substring(0, windowSize.indexOf('x'));
@@ -252,7 +246,7 @@ public class JmeClientMain {
         }
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
 
-        createUI(worldManager);
+        createUI(worldManager, width, height);
 
         // Register our loginUI for login requests
         login = new JmeLoginUI(frame);
@@ -652,7 +646,7 @@ public class JmeClientMain {
     /**
      * Create all of the Swing windows - and the 3D window
      */
-    private void createUI(WorldManager wm) {
+    private void createUI(WorldManager wm, int width, int height) {
 
         frame = new MainFrameImpl(wm, width, height);
         // center the frame
@@ -660,7 +654,7 @@ public class JmeClientMain {
 
         // show frame
         frame.getFrame().setVisible(true);
-
+        
         JPanel canvas3D = frame.getCanvas3DPanel();
         // Initialize an onscreen view
         ViewManager.initialize(canvas3D.getWidth(), canvas3D.getHeight());
@@ -728,6 +722,11 @@ public class JmeClientMain {
         });
 
         frame.setDesiredFrameRate(desiredFrameRate);
+
+        // OWL issue #146: for full screen, make sure the canvas is actually
+        // the right size by forcing a repaint
+        canvas3D.invalidate();
+        frame.getFrame().getContentPane().validate();
     }
 
     /**
