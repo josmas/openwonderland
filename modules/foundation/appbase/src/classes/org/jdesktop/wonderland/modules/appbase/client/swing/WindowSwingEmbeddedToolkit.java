@@ -233,6 +233,10 @@ class WindowSwingEmbeddedToolkit
             throw new RuntimeException("Invalid embedded peer type");
         }
         WindowSwing winOwner = ((WindowSwingEmbeddedPeer) peer).getWindowSwing();
+        if (winOwner instanceof PopupProvider) {
+            return ((PopupProvider) winOwner).getPopup(contents, x, y);
+        }
+
         WindowSwing winPopup = null;
         winPopup = new WindowSwing(winOwner.getApp(), Window2D.Type.POPUP, winOwner, width, height,
                                    false, winOwner.getPixelScale(), "Popup for " + winOwner.getName());

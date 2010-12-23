@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
@@ -65,7 +66,10 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
         ActionListener {
 
     private static final Logger logger = Logger.getLogger(HUDView2D.class.getName());
-    private View2DDisplayer displayer;
+
+    private final HUD hud;
+    private final View2DDisplayer displayer;
+
     private HUDView2DDisplayer hudDisplayer;
     private HUDFrameHeader2D frame;
     private HUDView2D frameView;
@@ -78,8 +82,8 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
      * @param displayer the entity in which the view is displayed.
      * @param window the window displayed in this view.
      */
-    public HUDView2D(View2DDisplayer displayer, Window2D window) {
-        this(displayer, window, null);
+    public HUDView2D(HUD hud, View2DDisplayer displayer, Window2D window) {
+        this(hud, displayer, window, null);
     }
 
     /**
@@ -88,9 +92,12 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
      * @param window The window displayed in this view.
      * @param geometryNode The geometry node on which to display the view.
      */
-    public HUDView2D(View2DDisplayer displayer, Window2D window, GeometryNode geometryNode) {
+    public HUDView2D(HUD hud, View2DDisplayer displayer, Window2D window, GeometryNode geometryNode) {
         super(window, geometryNode);
+
         this.displayer = displayer;
+        this.hud = hud;
+
         changeMask = CHANGED_ALL;
         name = "HUDView2D for " + window.getName();
         update();
@@ -102,9 +109,9 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
             logger.finest("creating frame header for: " + this);
         }
 
-        HUDApp2D app = new HUDApp2D("HUD", new ControlArbHUD(), WonderlandHUD.HUD_SCALE);
+        HUDApp2D app = new HUDApp2D(hud, "HUD", new ControlArbHUD(), WonderlandHUD.HUD_SCALE);
         if (hudDisplayer == null) {
-            hudDisplayer = new HUDView2DDisplayer();
+            hudDisplayer = new HUDView2DDisplayer(hud);
         }
 
         // create the Swing frame component and resize it to fit this view's
@@ -406,15 +413,6 @@ public class HUDView2D extends View2DEntity implements HUDView, MouseMotionListe
         if (viewListeners != null) {
             viewListeners.remove(listener);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized void cleanup() {
-        super.cleanup();
-        displayer = null;
     }
 
     @Override

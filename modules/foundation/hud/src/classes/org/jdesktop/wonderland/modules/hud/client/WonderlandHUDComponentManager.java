@@ -126,12 +126,22 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         Window2D window = null;
 
         //if (hudApp == null) {
-        hudApp = new HUDApp2D("HUD", new ControlArbHUD(), WonderlandHUD.HUD_WORLD_SCALE);
+        hudApp = new HUDApp2D(hud, "HUD", new ControlArbHUD(), WonderlandHUD.HUD_WORLD_SCALE);
         //}
         try {
             // TODO: pixel scale doesn't match
-            window = hudApp.createWindow(component.getWidth(), component.getHeight(), Type.PRIMARY,
-                    false, WonderlandHUD.HUD_SCALE, "HUD component");
+            if (component instanceof HUDPopup2D) {
+                HUDPopup2D popup = (HUDPopup2D) component;
+                HUDWindow parent = popup.getParent();
+                HUDApp2D parentApp = (HUDApp2D) parent.getApp();
+                window = parentApp.createWindow(component.getWidth(), component.getHeight(),
+                                                Type.POPUP, parent, false, WonderlandHUD.HUD_SCALE,
+                                                "HUD popup");
+                window.setPixelOffset(popup.getXOffset(), popup.getYOffset());
+            } else {
+                window = hudApp.createWindow(component.getWidth(), component.getHeight(), Type.PRIMARY,
+                        false, WonderlandHUD.HUD_SCALE, "HUD component");
+            }
 
             JComponent comp = ((HUDComponent2D) component).getComponent();
             ((WindowSwing) window).setComponent(comp);
@@ -310,7 +320,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         if (view == null) {
             if (hudDisplayer == null) {
-                hudDisplayer = new HUDView2DDisplayer();
+                hudDisplayer = new HUDView2DDisplayer(hud);
             }
 
             view = hudDisplayer.createView(state.getWindow());
