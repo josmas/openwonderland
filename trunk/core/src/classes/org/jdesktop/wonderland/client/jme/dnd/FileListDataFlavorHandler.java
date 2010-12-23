@@ -169,6 +169,8 @@ public class FileListDataFlavorHandler implements DataFlavorHandlerSPI {
                 } catch (Throwable t) {
                     if (listener != null) {
                         listener.importFailure(t, null);
+                    } else {
+                        logger.log(Level.WARNING, "Error importing " + file, t);
                     }
                 }
             }
