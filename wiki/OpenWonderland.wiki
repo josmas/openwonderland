@@ -192,8 +192,8 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">This is a guide to collecting troubleshooting data and documenting bugs.</td>
 </tr>
 <tr>
-  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCommunity05 Community Documentation]</td>
-  <td class="right">A wiki containing documents for features being worked on by the community including [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Development%20tips%20and%20tricks Development Tips and Tricks], [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sysadmin%20Tips System Admin Tips], and [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Groups%20Security%20Tips Group Security Tips].</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Topics  Community Documentation]</td>
+  <td class="right">A wiki containing documents for features being worked on by the community including [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Development%20tips%20and%20tricks Development Tips and Tricks], [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sysadmin%20Tips System Admin Tips], and [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Groups%20Security%20Tips Group Security Tips]. ([http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCommunity05 Old Community Wiki])</td>
 </tr>
 <tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/WonderlandReleasepoint5 Version 0.5 Technical Documents]</td>
