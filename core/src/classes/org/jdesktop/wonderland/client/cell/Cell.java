@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -446,7 +446,8 @@ public class Cell {
      * @param localToVWorld
      */
     void setWorldTransform(CellTransform worldTransform, TransformChangeListener.ChangeSource source) {
-        worldTransform = (CellTransform) worldTransform.clone(null);
+        // OWL issue #149: make sure to actually set the transform
+        this.worldTransform = (CellTransform) worldTransform.clone(null);
         cachedVWBounds = localBounds.clone(cachedVWBounds);
         worldTransform.transform(cachedVWBounds);
         local2VW = null; // force local2VW to be recalculated
@@ -490,7 +491,9 @@ public class Cell {
         CellTransform childTransform = child.getLocalTransform();
 
         if (childTransform != null) {
-            childTransform.mul(parentWorldTransform);
+            // OWL issue #149: calculate the transform the same way as 
+            // setLocalTransform() above.
+            childTransform = parentWorldTransform.mul(childTransform);
             child.setWorldTransform(childTransform, source);
         } else {
             child.setWorldTransform(parentWorldTransform, source);
