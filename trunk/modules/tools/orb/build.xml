@@ -44,11 +44,7 @@
                 </clientjar>
 	    </client>
 
-            <server dir="${current.dir}/../audio-manager/lib">
-		<include name="voicelib.jar"/>
-		<include name="bridge_connector.jar"/>
-		<include name="voip.jar"/>
-
+            <server>
                 <serverjar name="orb-server" basedir="${build.classes.dir}">
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.orb.common.OrbCellServerState"/>
