@@ -75,7 +75,7 @@
             <% }%>
         </table>
         <div id="actionLinks">
-            <a href="javascript:void(0)" onclick="$('removeForm').submit()">Removed selected modules</a>
+            <a href="javascript:void(0)" onclick="$('removeForm').submit()">Remove selected modules</a>
         </div>
     </form>
     <br>
