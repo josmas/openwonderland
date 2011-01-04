@@ -18,7 +18,8 @@
         </tstamp>
 
         <copy file="${javasrc.dir}/${util.src}/Version.java.template"
-              tofile="${javasrc.dir}/${util.src}/Version.java">
+              tofile="${javasrc.dir}/${util.src}/Version.java"
+              overwrite="true">
             <filterset begintoken="@" endtoken="@">
                 <filter token="VERSION" value="${wonderland.version}"/>
                 <filter token="REVISION" value="${svn.info.rev}"/>
