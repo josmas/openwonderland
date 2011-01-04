@@ -46,11 +46,7 @@
                 </clientjar>
             </client>
                 
-            <server dir="${current.dir}/../audio-manager/lib">
-                <include name="voicelib.jar"/>
-                <include name="bridge_connector.jar"/>
-                <include name="voip.jar"/>
-
+            <server>
                 <serverjar name="phone-server" basedir="${build.classes.dir}">                    
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>                   
