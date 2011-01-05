@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -148,8 +148,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
     // The gesture HUD panel and menu item
     private WeakReference<GestureHUD> gestureHUDRef = null;
-    private JMenuItem gestureMI = null;
-    private boolean gestureHUDEnabled = false;
+    private JCheckBoxMenuItem gestureMI = null;
 
     // True if the menus have been added to the main menu, false if not
     private boolean menusAdded = false;
@@ -215,7 +214,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
                 // current avatar character.
                 if (gestureHUDRef != null && gestureHUDRef.get() != null) {
                     if (newAvatar instanceof WlAvatarCharacter) {
-                        gestureHUDRef.get().setAvatarCharacter((WlAvatarCharacter) newAvatar);
+                        gestureHUDRef.get().setAvatarCharacter((WlAvatarCharacter) newAvatar,
+                                                               gestureMI.getState());
                     } else {
                         gestureHUDRef.get().setVisible(false);
                     }
@@ -293,14 +293,16 @@ public class AvatarClientPlugin extends BaseClientPlugin
         gestureMI.setSelected(false);
         gestureMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                boolean visible = gestureMI.isSelected();
+                
                 if (gestureHUDRef == null || gestureHUDRef.get() == null) {
-                    GestureHUD hud = new GestureHUD();
-                    hud.setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
+                    GestureHUD hud = new GestureHUD(gestureMI);
+                    hud.setAvatarCharacter(avatarCellRenderer.getAvatarCharacter(),
+                                           visible);
                     gestureHUDRef = new WeakReference(hud);
+                } else {
+                    gestureHUDRef.get().setVisible(visible);
                 }
-                gestureHUDEnabled = !gestureHUDEnabled;
-                gestureMI.setSelected(gestureHUDEnabled);
-                ((GestureHUD)gestureHUDRef.get()).setVisible(gestureHUDEnabled);
             }
         });
 
@@ -554,7 +556,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
         // Initialize the gesture HUD panel with the current avatar character.
         if (gestureHUDRef != null && gestureHUDRef.get() != null) {
-            gestureHUDRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
+            gestureHUDRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter(),
+                                                   gestureMI.isSelected());
         }
 
         // We also want to listen (if we aren't doing so already) for when the

@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -37,6 +37,9 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.character.CharacterEyes;
 import imi.character.avatar.AvatarContext.TriggerNames;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -44,9 +47,17 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDButton;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 /**
@@ -60,87 +71,60 @@ public class GestureHUD {
     private static final Logger logger = Logger.getLogger(GestureHUD.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
+
+    private final JCheckBoxMenuItem gestureMI;
+
     private boolean visible = false;
-    private boolean showingGestures = true;
     // maps GUI visible gesture names to non-visible action names
     private Map<String, String> gestureMap = new HashMap<String, String>();
-    private Map<String, HUDButton> buttonMap = new HashMap<String, HUDButton>();
-    private HUDButton showGesturesButton;
+    private HUDComponent gestureHud;
     private HUD mainHUD;
+    private JPanel panelForHUD = new JPanel();
+    //TODO we are not using positions anymore, can clean the bundle - same goes for show/hide gestures
     // map gestures to column, row locations on gesture HUD
-    private String[][] gestures = {
-        {BUNDLE.getString("AnswerCell"), BUNDLE.getString("AnswerCell_X"), "1"},
-        {BUNDLE.getString("Sit"), BUNDLE.getString("Sit_X"), "2"},
+    private String[] gestures = {
+        BUNDLE.getString("AnswerCell"),
+        BUNDLE.getString("Sit"),
         /*{"Take Damage", "0", "3"},*/
-        {BUNDLE.getString("PublicSpeaking"), BUNDLE.getString("PublicSpeaking_X"), "0"},
-        {BUNDLE.getString("Bow"), BUNDLE.getString("Bow_X"), "1"},
-        {BUNDLE.getString("ShakeHands"), BUNDLE.getString("ShakeHands_X"), "2"},
-        {BUNDLE.getString("Cheer"), BUNDLE.getString("Cheer_X"), "0"},
-        {BUNDLE.getString("Clap"), BUNDLE.getString("Clap_X"), "1"},
-        {BUNDLE.getString("Laugh"), BUNDLE.getString("Laugh_X"), "2"},
-        {BUNDLE.getString("Wave"), BUNDLE.getString("Wave_X"), "2"},
-        {BUNDLE.getString("RaiseHand"), BUNDLE.getString("RaiseHand_X"), "1"},
-        {BUNDLE.getString("Follow"), BUNDLE.getString("Follow_X"), "0"},
+        BUNDLE.getString("PublicSpeaking"),
+        BUNDLE.getString("Bow"),
+        BUNDLE.getString("ShakeHands"),
+        BUNDLE.getString("Cheer"),
+        BUNDLE.getString("Clap"),
+        BUNDLE.getString("Laugh"),
+        BUNDLE.getString("Wave"),
+        BUNDLE.getString("RaiseHand"),
+        BUNDLE.getString("Follow"),
         /*{"Left Wink", "4", "0"},*/
-        {BUNDLE.getString("Wink"), BUNDLE.getString("Wink_X"), "0"},
-        {BUNDLE.getString("No"), BUNDLE.getString("No_X"), "1"},
-        {BUNDLE.getString("Yes"), BUNDLE.getString("Yes_X"), "2"}};
-    private int leftMargin = 20;
-    private int bottomMargin = 10;
-    private int rowHeight = 30;
-    private int columnWidth = 100;
-    private final static String HIDE_GESTURES = BUNDLE.getString("HideGestures");
-    private final static String SHOW_GESTURES = BUNDLE.getString("ShowGestures");
+        BUNDLE.getString("Wink"),
+        BUNDLE.getString("No"),
+        BUNDLE.getString("Yes")};
+    private int leftMargin = 295;
+    private int bottomMargin = 5;
 
     /**
      * creates a new GestureHUD
      */
-    public GestureHUD() {
-        setAvatarCharacter(null);
+    public GestureHUD(JCheckBoxMenuItem gestureMI) {
+        this.gestureMI = gestureMI;
+
+        setAvatarCharacter(null, false);
     }
 
     /**
      * shows or hides the gesture HUD
      * @param visible if <tt>true</tt>, the HUD is shown, otherwise hidden
      */
-    public void setVisible(final boolean visible) {
+    public void setVisible(final boolean show) {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                if (GestureHUD.this.visible == visible) {
+                GestureHUD.this.visible = show;
+                gestureHud.setVisible(show);
                     return;
                 }
-                if (showGesturesButton == null) {
-                    showGesturesButton = mainHUD.createButton(HIDE_GESTURES);
-                    showGesturesButton.setDecoratable(false);
-                    showGesturesButton.setLocation(leftMargin, bottomMargin);
-                    showGesturesButton.addActionListener(new ActionListener() {
-
-                        public void actionPerformed(ActionEvent event) {
-                            showingGestures = SHOW_GESTURES.equals(showGesturesButton.getLabel());
-                            showGesturesButton.setLabel(showingGestures ? HIDE_GESTURES : SHOW_GESTURES);
-                            showGestureButtons(showingGestures);
-                        }
                     });
-                    mainHUD.addComponent(showGesturesButton);
                 }
-                GestureHUD.this.visible = visible;
-                showGesturesButton.setVisible(visible);
-                showGestureButtons(visible && showingGestures);
-            }
-        });
-    }
-
-    /**
-     * shows or hides the gesture buttons
-     * @param show if <tt>true</tt>, the gesture buttons are shown, otherwise
-     * hidden
-     */
-    public void showGestureButtons(boolean show) {
-        for (HUDButton button : buttonMap.values()) {
-            button.setVisible(show);
-        }
-    }
 
     /**
      * returns <tt>true</tt>, when the HUD is visible, otherwise false
@@ -180,10 +164,32 @@ public class GestureHUD {
     }
 
     /**
+     * Creation of a JPanel with a message stating that that no gestures are supported
+     * @return panelForHUD with the appropriate message
+     */
+    private JPanel createNoGesturesMessage() {
+        panelForHUD = new JPanel();
+        panelForHUD.setLayout(new BorderLayout());
+
+        JTextArea jta = new JTextArea(3, 30);
+        jta.setEditable(false);
+        jta.setLineWrap(true);
+        jta.setWrapStyleWord(true);
+        jta.setFont(new Font(null, Font.PLAIN, 16));
+        jta.setText(BUNDLE.getString("Gestures_Not_Supported"));
+
+        JScrollPane jsp = new JScrollPane(jta);
+        panelForHUD.add(jsp, BorderLayout.CENTER);
+        
+        return panelForHUD;
+    }
+
+    /**
      * sets the avatar and activates supported gestures
      * @param avatar the avatar to set
+     * @param show stating if the HUD should be visible
      */
-    public void setAvatarCharacter(final WlAvatarCharacter avatar) {
+    public void setAvatarCharacter(final WlAvatarCharacter avatar, final boolean show) {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -191,12 +197,14 @@ public class GestureHUD {
                     mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                 }
 
-                // remove existing gesture buttons
-                for (HUDButton button : buttonMap.values()) {
-                    mainHUD.removeComponent(button);
-                }
-                buttonMap.clear();
                 gestureMap.clear();
+
+                if (gestureHud != null) {
+                    gestureHud.setVisible(false);
+                    mainHUD.removeComponent(gestureHud);
+                    gestureHud = null;
+                    panelForHUD = null;
+                }
 
                 // If we don't have an avatar, then just return
                 if (avatar == null) {
@@ -223,24 +231,17 @@ public class GestureHUD {
                     gestureMap.put(BUNDLE.getString("Sit"), "Sit");
                 }
 
+                if (!gestureMap.keySet().isEmpty()) {
+                    panelForHUD = new JPanel();
+                    panelForHUD.setLayout(new GridLayout(5, 3));
+
                 // Create HUD buttons for each of the actions
                 for (String name : gestureMap.keySet()) {
-                    int row = 0;
-                    int column = 0;
 
                     // find the button row, column position for this gesture
-                    for (String[] gesture : gestures) {
-                        if (gesture[0].equals(name)) {
-                            column = Integer.valueOf(gesture[1]);
-                            row = Integer.valueOf(gesture[2]);
-                            HUDButton button = mainHUD.createButton(name);
-                            button.setDecoratable(false);
-                            button.setPreferredTransparency(0.2f);
-                            button.setLocation(leftMargin + column * columnWidth,
-                                    bottomMargin + row * rowHeight);
-                            mainHUD.addComponent(button);
-                            buttonMap.put(name, button);
-
+                    for (String gesture : gestures) {
+                        if (gesture.equals(name)) {
+                                JButton button = new JButton(name);
                             button.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent event) {
@@ -256,17 +257,37 @@ public class GestureHUD {
                                     }
                                 }
                             });
-
-                            // OWL issue #125: set the button visible now or
-                            // it won't show up when buttons are removed and
-                            // re-added
-                            button.setVisible(isVisible());
+                                panelForHUD.add(button);
                             break;
                         }
                     }
                 }
-                setVisible(true);
+                } else {
+                    logger.warning("No animations found; creating No gestures Message.");
+                    panelForHUD = createNoGesturesMessage();
             }
+
+                if (gestureHud == null){
+                    gestureHud = mainHUD.createComponent(panelForHUD);
+                    //gestureHud.setDecoratable(false);
+                    gestureHud.setName(BUNDLE.getString("Gesture_UI"));
+                    gestureHud.setLocation(leftMargin, bottomMargin);
+                    mainHUD.addComponent(gestureHud);
+
+                    gestureHud.addEventListener(new HUDEventListener() {
+                        public void HUDObjectChanged(HUDEvent event) {
+                            if (event.getEventType() == HUDEventType.APPEARED) {
+                                gestureMI.setSelected(true);
+                            } else if (event.getEventType() == HUDEventType.DISAPPEARED) {
+                                gestureMI.setSelected(false);
+                            }
+                        }
+        });
+    }
+                
+                GestureHUD.this.visible = show;
+                gestureHud.setVisible(show);
+}
         });
     }
 }
