@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -36,9 +36,11 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeConverter;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +65,9 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 
     private static final Logger LOGGER =
             Logger.getLogger(VuMeterPanel.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+
     private static final double DEFAULT_WARNING_LIMIT = 0.9d;
     private static final Color CONNECTED_COLOR = new Color(51, 204, 0);
     private static final Color DISCONNECTED_COLOR = new Color(255, 0, 0);
@@ -84,6 +89,13 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     private ImageIcon speakerMutedIcon;
     private ImageIcon speakerUnmutedIcon;
 
+    private static ThreadLocal<Boolean> localChange = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
+
     public VuMeterPanel() {
         this(null);
     }
@@ -91,7 +103,13 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     public VuMeterPanel(AudioManagerClient client) {
         this.client = client;
 
-        initComponents();
+        try {
+            setLocalChange(true);
+            initComponents();
+        } finally {
+            setLocalChange(false);
+        }
+        
         micPanelBackground = micMeterPanel.getBackground();
         speakerPanelBackground = speakerMeterPanel.getBackground();
         micMutedIcon = new ImageIcon(getClass().getResource(
@@ -152,8 +170,6 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 	    isConnected = SoftphoneControlImpl.getInstance().isConnected();
 	} catch (IOException e) {
 	}
-
-	setStatusLED(isConnected ? CONNECTED_COLOR : DISCONNECTED_COLOR);
 
 	startMicVuMeter(start);
 	startSpeakerVuMeter(start);
@@ -240,6 +256,14 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 
 	this.muted = muted;
 
+        if (muted) {
+            pttButton.setEnabled(true);
+            pttButton.setText(BUNDLE.getString("Push_to_talk"));
+        } else {
+            pttButton.setEnabled(false);
+            pttButton.setText(BUNDLE.getString("Talking"));
+        }
+
 	setMicVolumeSlider(muted);
     }
 
@@ -258,6 +282,13 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 	micVolumeSlider.setEnabled(isEnabled);
 	speakerMuteButton.setEnabled(isEnabled);
 	speakerVolumeSlider.setEnabled(isEnabled);
+        pttButton.setEnabled(isEnabled);
+
+        if (isEnabled) {
+            pttButton.setText(BUNDLE.getString("Push_to_talk"));
+        } else {
+            pttButton.setText(BUNDLE.getString("Disconnected"));
+        }
     }
 
     public void softphoneTestUDPPort(int port, int duration) {
@@ -267,7 +298,6 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     }
 
     public void softphoneProblem(String problem) {
-        setStatusLED(PROBLEM_COLOR);
     }
 
     public void microphoneVuMeterValue(String value) {
@@ -292,9 +322,14 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     }
 
     public void microphoneVolume(String data) {
-        micVolumeSlider.setValue(volumeConverter.getVolume((Float.parseFloat(data))));
+        try {
+            setLocalChange(true);
 
-        softphoneMuted(SoftphoneControlImpl.getInstance().isMuted());
+            micVolumeSlider.setValue(volumeConverter.getVolume((Float.parseFloat(data))));
+            softphoneMuted(SoftphoneControlImpl.getInstance().isMuted());
+        } finally {
+            setLocalChange(false);
+        }
     }
 
     private Timer speakerVuMeterTimer;
@@ -353,22 +388,17 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        statusLED = new javax.swing.JPanel();
         micVolumeSlider = new javax.swing.JSlider();
         micMeterPanel = new javax.swing.JPanel();
         micMuteButton = new javax.swing.JButton();
         speakerVolumeSlider = new javax.swing.JSlider();
         speakerMeterPanel = new javax.swing.JPanel();
         speakerMuteButton = new javax.swing.JButton();
+        panelToggleButton = new javax.swing.JButton();
+        pttButton = new javax.swing.JButton();
 
-        setPreferredSize(new java.awt.Dimension(95, 205));
+        setPreferredSize(new java.awt.Dimension(95, 244));
         setLayout(null);
-
-        statusLED.setBackground(new java.awt.Color(255, 0, 0));
-        statusLED.setPreferredSize(new java.awt.Dimension(10, 10));
-        statusLED.setSize(new java.awt.Dimension(10, 10));
-        add(statusLED);
-        statusLED.setBounds(4, 190, 10, 10);
 
         micVolumeSlider.setMinorTickSpacing(10);
         micVolumeSlider.setOrientation(javax.swing.JSlider.VERTICAL);
@@ -386,7 +416,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         add(micMeterPanel);
         micMeterPanel.setBounds(20, 10, 20, 160);
 
-        micMuteButton.setFont(new java.awt.Font("SansSerif", 1, 8));
+        micMuteButton.setFont(new java.awt.Font("Arial", 1, 8)); // NOI18N
         micMuteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMicMuteOff24x24.png"))); // NOI18N
         micMuteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -412,7 +442,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         add(speakerMeterPanel);
         speakerMeterPanel.setBounds(65, 10, 20, 160);
 
-        speakerMuteButton.setFont(new java.awt.Font("SansSerif", 1, 8));
+        speakerMuteButton.setFont(new java.awt.Font("Arial", 1, 8));
         speakerMuteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListSpeakerMuteOff24x24.png"))); // NOI18N
         speakerMuteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -421,6 +451,42 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         });
         add(speakerMuteButton);
         speakerMuteButton.setBounds(65, 175, 24, 24);
+
+        panelToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/downArrow23x10.png"))); // NOI18N
+        panelToggleButton.setBorder(null);
+        panelToggleButton.setMaximumSize(new java.awt.Dimension(63, 14));
+        panelToggleButton.setMinimumSize(new java.awt.Dimension(63, 14));
+        panelToggleButton.setPreferredSize(new java.awt.Dimension(20, 14));
+        panelToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                panelToggleButtonActionPerformed(evt);
+            }
+        });
+        add(panelToggleButton);
+        panelToggleButton.setBounds(70, 227, 20, 14);
+
+        pttButton.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        pttButton.setText(bundle.getString("VuMeterPanel.pttButton.text")); // NOI18N
+        pttButton.setPreferredSize(new java.awt.Dimension(92, 23));
+        pttButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                pttButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                pttButtonMouseReleased(evt);
+            }
+        });
+        pttButton.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                pttButtonKeyPressed(evt);
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                pttButtonKeyReleased(evt);
+            }
+        });
+        add(pttButton);
+        pttButton.setBounds(1, 202, 92, 23);
     }// </editor-fold>//GEN-END:initComponents
 
     private int micVolumeSliderValue = 50;
@@ -429,6 +495,12 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     private void micVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_micVolumeSliderStateChanged
 	previousMicVolumeSliderValue = micVolumeSliderValue;
 	micVolumeSliderValue = micVolumeSlider.getValue();
+
+        // ignore changes that originated from this component (as opposed to
+        // from the user)
+        if (isLocalChange()) {
+            return;
+        }
 
         client.setMute(micVolumeSliderValue == 0);
 
@@ -464,11 +536,11 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     }//GEN-LAST:event_speakerVolumeSliderStateChanged
 
     private void micMuteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micMuteButtonActionPerformed
-	if (previousMicVolumeSliderValue != 0) {
+        if (previousMicVolumeSliderValue != 0) {
             client.toggleMute();
-	} else {
-	    client.setMute(true);
-	}
+        } else {
+            client.setMute(true);
+        }
     }//GEN-LAST:event_micMuteButtonActionPerformed
 
     private void setMicVolumeSlider(final boolean isMuted) {
@@ -480,14 +552,20 @@ public class VuMeterPanel extends javax.swing.JPanel implements
     }
 
     private void setMicVolumeSliderLater(boolean isMuted) {
-	if (isMuted) {
-	    micVolumeSlider.setValue(0);
-            micMuteButton.setIcon(micMutedIcon);
-	} else {
-	    micVolumeSlider.setValue(previousMicVolumeSliderValue);
-            micMuteButton.setIcon(micUnmutedIcon);
-            micMuteButton.setIcon(micUnmutedIcon);
-	}
+	try {
+            setLocalChange(true);
+
+            if (isMuted) {
+                micVolumeSlider.setValue(0);
+                micMuteButton.setIcon(micMutedIcon);
+            } else {
+                micVolumeSlider.setValue(previousMicVolumeSliderValue);
+                micMuteButton.setIcon(micUnmutedIcon);
+                micMuteButton.setIcon(micUnmutedIcon);
+            }
+        } finally {
+            setLocalChange(false);
+        }
     }
 
     private void speakerMuteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speakerMuteButtonActionPerformed
@@ -506,6 +584,30 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 	setSpeakerMutedIcon(speakerMuted);
     }//GEN-LAST:event_speakerMuteButtonActionPerformed
 
+    private void panelToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_panelToggleButtonActionPerformed
+        client.miniVUMeter();
+}//GEN-LAST:event_panelToggleButtonActionPerformed
+
+    private void pttButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pttButtonMousePressed
+        client.setMute(false);
+}//GEN-LAST:event_pttButtonMousePressed
+
+    private void pttButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pttButtonMouseReleased
+        client.setMute(true);
+}//GEN-LAST:event_pttButtonMouseReleased
+
+    private void pttButtonKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_pttButtonKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
+            client.setMute(false);
+        }
+}//GEN-LAST:event_pttButtonKeyPressed
+
+    private void pttButtonKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_pttButtonKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
+            client.setMute(true);
+        }
+}//GEN-LAST:event_pttButtonKeyReleased
+
     private void setSpeakerMutedIcon(boolean speakerMuted) {
 	this.speakerMuted = speakerMuted;
 
@@ -516,18 +618,22 @@ public class VuMeterPanel extends javax.swing.JPanel implements
 	}
     }
 
-    private void setStatusLED(Color color) {
-        statusLED.setBackground(color);
-        repaint();
+    private void setLocalChange(boolean local) {
+        localChange.set(local);
+    }
+
+    private boolean isLocalChange() {
+        return localChange.get();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel micMeterPanel;
     private javax.swing.JButton micMuteButton;
     private javax.swing.JSlider micVolumeSlider;
+    private javax.swing.JButton panelToggleButton;
+    private javax.swing.JButton pttButton;
     private javax.swing.JPanel speakerMeterPanel;
     private javax.swing.JButton speakerMuteButton;
     private javax.swing.JSlider speakerVolumeSlider;
-    private javax.swing.JPanel statusLED;
     // End of variables declaration//GEN-END:variables
 }
