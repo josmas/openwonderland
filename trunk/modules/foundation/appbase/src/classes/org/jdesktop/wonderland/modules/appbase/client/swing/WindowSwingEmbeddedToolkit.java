@@ -111,6 +111,9 @@ class WindowSwingEmbeddedToolkit
             if (lastWindow != null) {
                 logger.fine("Exit swing");
 
+                // request focus in main window
+                InputManager.ensureKeyFocusInMainWindow();
+
                 // send a fake mouse event to generate an exit
                 final EmbeddedPeer targetEmbeddedPeer = lastWindow.getEmbeddedPeer();
                 lastWindow = null;

@@ -137,12 +137,6 @@ public abstract class InputManager
     /** The canvas from which this input manager should receive events. */
     protected Canvas canvas;
 
-    /** Whether the main window has focus. */
-    private static boolean mainWindowHasFocus;
-
-    /** Whether the cursor is in the main window. */
-    private static boolean mainWindowHasCursor;
-
     /** Are we running on a Mac? */
     private static boolean isMac = "Mac OS X".equals(System.getProperty("os.name"));
 
@@ -310,12 +304,9 @@ public abstract class InputManager
     @InternalAPI
     public void mouseEntered(MouseEvent e) {
 	inputPicker.pickMouseEvent3D(e);
-        mainWindowHasCursor = true;
 
         if (isMac) {
-            if (!mainWindowHasFocus) {
-                ensureKeyFocusInMainWindow();
-            }
+            ensureKeyFocusInMainWindow();
         }
     }
 
@@ -326,7 +317,6 @@ public abstract class InputManager
     @InternalAPI
     public void mouseExited(MouseEvent e) {
 	inputPicker.pickMouseEvent3D(e);
-        mainWindowHasCursor = false;
     }
 
     /**
@@ -407,7 +397,6 @@ public abstract class InputManager
      */
     @InternalAPI
     public void focusGained(FocusEvent e) {
-        mainWindowHasFocus = true;
         FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
         eventDistributor.enqueueEvent(event, (PickInfo)null);
     }
@@ -418,7 +407,6 @@ public abstract class InputManager
      */
     @InternalAPI
     public void focusLost(FocusEvent e) {
-        mainWindowHasFocus = false;
         FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
         eventDistributor.enqueueEvent(event, (PickInfo)null);
     }
@@ -475,8 +463,7 @@ public abstract class InputManager
      */
     public static void ensureKeyFocusInMainWindow() {
         SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
-                if (mainWindowHasFocus || !mainWindowHasCursor) return;
+            public void run () {                
                 Canvas canvas = JmeClientMain.getFrame().getCanvas();
                 if (!canvas.requestFocusInWindow()) {
                     logger.info("Focus request for main canvas rejected.");
