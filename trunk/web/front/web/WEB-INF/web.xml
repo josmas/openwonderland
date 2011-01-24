@@ -21,10 +21,17 @@
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
-    
     <servlet>
         <servlet-name>ClientPropertiesServlet</servlet-name>
         <servlet-class>org.jdesktop.wonderland.front.servlet.ClientPropertiesServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ClientPropertiesEditorServlet</servlet-name>
+        <servlet-class>org.jdesktop.wonderland.front.servlet.ClientPropertiesEditorServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ClientSettingsServlet</servlet-name>
+        <servlet-class>org.jdesktop.wonderland.front.servlet.ClientSettingsServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>JnlpDownloadServlet</servlet-name>
@@ -45,6 +52,14 @@
     <servlet-mapping>
         <servlet-name>ClientPropertiesServlet</servlet-name>
         <url-pattern>/config/run-client.properties</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ClientPropertiesEditorServlet</servlet-name>
+        <url-pattern>/config/edit</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ClientSettingsServlet</servlet-name>
+        <url-pattern>/config/settings</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
@@ -88,6 +103,23 @@
         </web-resource-collection>
         <auth-constraint>
             <role-name>user</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>Require Admin</display-name>
+        <web-resource-collection>
+            <web-resource-name>Properties editor</web-resource-name>
+            <description>Properties editor</description>
+            <url-pattern>/config/edit</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>Settings editor</web-resource-name>
+            <description>Settings editor</description>
+            <url-pattern>/config/settings</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description/>
+            <role-name>admin</role-name>
         </auth-constraint>
     </security-constraint>
     <security-role>
