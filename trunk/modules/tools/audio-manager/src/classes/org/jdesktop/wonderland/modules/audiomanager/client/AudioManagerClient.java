@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -35,7 +35,9 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -49,8 +51,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
@@ -78,10 +88,14 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
@@ -137,6 +151,11 @@ public class AudioManagerClient extends BaseConnection implements
     public static final String TABBED_PANEL_PROP =
             "AudioManagerClient.Tabbed.Panel";
 
+    // initial state -- one of "mute" or "pushToTalk", anything else
+    // will result in the default behavior, unmuted.
+    public static final String AUDIO_STATE_PROP =
+            "AudioManagerClient.InitialState";
+
     private static final Logger logger =
             Logger.getLogger(AudioManagerClient.class.getName());
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
@@ -159,11 +178,18 @@ public class AudioManagerClient extends BaseConnection implements
     private HUDComponent userListHUDComponent;
     private UserListPanel userListPanel;
     private boolean usersMenuSelected = false;
+    
+    private boolean miniVUMeter = true;
     private HUDComponent vuMeterComponent;
+    private HUDComponent vuMeterMiniComponent;
+    private final HUDEventListener audioMeterListener;
+
     private ImageIcon voiceChatIcon;
     private ImageIcon userListIcon;
 
     private String localAddress;
+
+    private boolean inPTT;
 
     /**
      * Create a new AudioManagerClient
@@ -211,6 +237,16 @@ public class AudioManagerClient extends BaseConnection implements
             }
         };
 
+        audioMeterListener = new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent event) {
+                if (event.getEventType() == HUDEvent.HUDEventType.APPEARED ||
+                    event.getEventType() == HUDEvent.HUDEventType.DISAPPEARED)
+                {
+                    boolean visible = isAudioVolumeVisible();
+                    AudioMenu.getAudioMenu(AudioManagerClient.this).audioVolumeVisible(visible);
+                }
+            }
+        };
 
         logger.fine("Starting AudioManagerCLient");
     }
@@ -369,6 +405,12 @@ public class AudioManagerClient extends BaseConnection implements
             mainHUD.removeComponent(vuMeterComponent);
             vuMeterComponent = null;
         }
+
+        if (vuMeterMiniComponent != null) {
+            vuMeterMiniComponent.setVisible(false);
+            mainHUD.removeComponent(vuMeterMiniComponent);
+            vuMeterComponent = null;
+        }
     }
 
     public synchronized void execute(final Runnable r) {
@@ -399,6 +441,21 @@ public class AudioManagerClient extends BaseConnection implements
 	audioProblemJFrame = new AudioProblemJFrame(this);
 
 	connected = true;
+
+        String audioMode = System.getProperty(AUDIO_STATE_PROP);
+        if (audioMode != null) {
+            if (audioMode.equalsIgnoreCase("mute") ||
+                audioMode.equalsIgnoreCase("muted"))
+            {
+                setMute(true);
+            }
+        }
+
+        // add push to talk listeners
+        addPTTListeners();
+
+        // show the mini vu meter by default
+        miniVUMeter();
     }
 
     @Override
@@ -409,6 +466,9 @@ public class AudioManagerClient extends BaseConnection implements
 
         // remove open dialogs
         removeDialogs();
+
+        // remove push-to-talk listeners
+        removePTTListeners();
 
         // TODO: add methods to remove listeners!
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
@@ -436,6 +496,9 @@ public class AudioManagerClient extends BaseConnection implements
         mainFrame.addToWindowMenu(userListJMenuItem, 5);
 
         AudioMenu.getAudioMenu(this).addMenus();
+
+        // make sure menus are up-to-date
+        AudioMenu.getAudioMenu(this).mute(isMute());
 
         ContextMenuManager.getContextMenuManager().addContextMenuListener(ctxListener);
     }
@@ -620,6 +683,10 @@ public class AudioManagerClient extends BaseConnection implements
         }
     }
 
+    public boolean isMute() {
+        return isMuted;
+    }
+
     public void toggleMute() {
 	setMute(!isMuted);
     }
@@ -652,6 +719,48 @@ public class AudioManagerClient extends BaseConnection implements
 
         // update the menu
         AudioMenu.getAudioMenu(this).mute(true);
+    }
+
+    private void addPTTListeners() {
+        JComponent canvas = JmeClientMain.getFrame().getCanvas3DPanel();
+
+        InputMap im = canvas.getInputMap(JComponent.WHEN_FOCUSED);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false), "pttPush");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true), "pttRelease");
+
+        ActionMap am = canvas.getActionMap();
+        am.put("pttPush", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                // if we are on mute, pressing space
+                // triggers a push to talk
+                if (isMute()) {
+                    inPTT = true;
+                    setMute(false);
+                }
+            }
+        });
+        am.put("pttRelease", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                // if we were in push-to-talk mode,
+                // get out of it when space is released
+                if (inPTT) {
+                    inPTT = false;
+                    setMute(true);
+                }
+            }
+        });
+    }
+
+    private void removePTTListeners() {
+        JMenuBar menuBar = JmeClientMain.getFrame().getFrame().getJMenuBar();
+
+        InputMap im = menuBar.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        im.remove(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true));
+        im.remove(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false));
+
+        ActionMap am = menuBar.getActionMap();
+        am.remove("pttPush");
+        am.remove("pttRelease");
     }
 
     public void personalPhone() {
@@ -715,7 +824,16 @@ public class AudioManagerClient extends BaseConnection implements
     public void softphoneConnected(boolean connected) {
 	if (connected == false) {
 	    softphoneProblem("Softphone Disconnected");
-	}
+	} else if (isMute()) {
+            // sync up mute state
+            SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+            String callID = sc.getCallID();
+            if (callID != null) {
+                sc.mute(true);
+                sendMessage(new MuteCallRequestMessage(callID, true));
+            }
+        }
     }
 
     public void softphoneExited() {
@@ -772,13 +890,51 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void audioVolume() {
-	boolean isConnected = false;
-        try {
-            if (SoftphoneControlImpl.getInstance().isConnected()) {
-		isConnected = true;
-            }
-        } catch (IOException e) {
+        boolean visible = isAudioVolumeVisible();
+        if (visible && miniVUMeter) {
+            vuMeterMiniComponent.setVisible(false);
+        } else if (visible) {
+            vuMeterComponent.setVisible(false);
+        } else if (miniVUMeter) {
+            miniVUMeter();
+        } else {
+            fullVUMeter();
         }
+    }
+
+    public boolean isAudioVolumeVisible() {
+        return (vuMeterMiniComponent != null &&
+                vuMeterMiniComponent.isVisible()) ||
+               (vuMeterComponent != null &&
+                vuMeterComponent.isVisible());
+    }
+    
+    public void miniVUMeter() {
+        miniVUMeter = true;
+
+        if (vuMeterMiniComponent == null) {
+            final VuMeterMiniPanel vuMeterPanel = new VuMeterMiniPanel(this);
+
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            vuMeterMiniComponent = mainHUD.createComponent(vuMeterPanel);
+            vuMeterMiniComponent.setPreferredLocation(Layout.SOUTHEAST);
+            vuMeterMiniComponent.setName(BUNDLE.getString("Microphone_Level"));
+            vuMeterMiniComponent.setIcon(voiceChatIcon);
+            vuMeterMiniComponent.setDecoratable(false);
+            vuMeterMiniComponent.addEventListener(audioMeterListener);
+            mainHUD.addComponent(vuMeterMiniComponent);
+        }
+
+        if (vuMeterComponent != null) {
+            vuMeterComponent.setVisible(false);
+        }
+
+        vuMeterMiniComponent.setVisible(true);
+    }
+
+    public void fullVUMeter() {
+        miniVUMeter = false;
 
         if (vuMeterComponent == null) {
             final VuMeterPanel vuMeterPanel = new VuMeterPanel(this);
@@ -804,8 +960,13 @@ public class AudioManagerClient extends BaseConnection implements
                     }
                 }
             });
+            vuMeterComponent.addEventListener(audioMeterListener);
             mainHUD.addComponent(vuMeterComponent);
             vuMeterPanel.startVuMeter(true);
+        }
+
+        if (vuMeterMiniComponent != null) {
+            vuMeterMiniComponent.setVisible(false);
         }
 
         vuMeterComponent.setVisible(true);

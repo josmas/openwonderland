@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -41,7 +59,7 @@ public class AudioMenu extends javax.swing.JPanel {
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private AudioMenuListener audioMenuListener;
     private static AudioMenu audioM = null;
-    private JMenuItem audioVolumeMenuItem;
+    private JCheckBoxMenuItem audioVolumeMenuItem;
     private JMenuItem personalPhoneMenuItem;
     private JMenuItem voiceChatMenuItem;
     private JCheckBoxMenuItem muteCheckBox;
@@ -74,7 +92,7 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
 
-        voiceChatMenuItem = new JMenuItem(BUNDLE.getString("Voice_Chat"));
+        voiceChatMenuItem = new JCheckBoxMenuItem(BUNDLE.getString("Voice_Chat"));
         voiceChatMenuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -84,7 +102,7 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
 
-        audioVolumeMenuItem = new JMenuItem(BUNDLE.getString("Audio_Volume"));
+        audioVolumeMenuItem = new JCheckBoxMenuItem(BUNDLE.getString("Audio_Volume"));
         audioVolumeMenuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -108,17 +126,21 @@ public class AudioMenu extends javax.swing.JPanel {
         muteCheckBox.setState(isMuted);
     }
 
+    public void audioVolumeVisible(boolean visible) {
+        audioVolumeMenuItem.setState(visible);
+    }
+
     public void addMenus() {
         JmeClientMain.getFrame().addToWindowMenu(audioVolumeMenuItem, 5);
         JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);
-        JmeClientMain.getFrame().addToWindowMenu(voiceChatMenuItem, 3);
+        JmeClientMain.getFrame().addToToolsMenu(voiceChatMenuItem, 3);
         //JmeClientMain.getFrame().addToWindowMenu(personalPhoneMenuItem, 4);
     }
 
     public void removeMenus() {
         JmeClientMain.getFrame().removeFromWindowMenu(audioVolumeMenuItem);
         JmeClientMain.getFrame().removeFromToolsMenu(muteCheckBox);
-        JmeClientMain.getFrame().removeFromWindowMenu(voiceChatMenuItem);
+        JmeClientMain.getFrame().removeFromToolsMenu(voiceChatMenuItem);
         //JmeClientMain.getFrame().removeFromWindowMenu(personalPhoneMenuItem);
     }
 
