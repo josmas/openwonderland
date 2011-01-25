@@ -165,6 +165,11 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=CreateModuleFromSnapshot How to Create Modules from Snapshots]</td>
+  <td class="right">Learn how to convert a snapshot into a module that will show up in the "Initial Worlds" section of the Manage Worlds page in the Server Admin Console.</td>
+</tr>
+
+<tr>
   <td class="left">ChangingTheSkybox</td>
   <td class="right">This brief tutorial explains how, as a developer building from source, you can easily change the skybox.</td>
 </tr>
