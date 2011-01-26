@@ -51,8 +51,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
@@ -88,14 +87,10 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
@@ -151,10 +146,14 @@ public class AudioManagerClient extends BaseConnection implements
     public static final String TABBED_PANEL_PROP =
             "AudioManagerClient.Tabbed.Panel";
 
-    // initial state -- one of "mute" or "pushToTalk", anything else
+    // initial state -- one of "mute" or "unmute", anything else
     // will result in the default behavior, unmuted.
     public static final String AUDIO_STATE_PROP =
             "AudioManagerClient.InitialState";
+
+    // whether or not to show the audio status HUD by default
+    public static final String AUDIO_HUD_PROP =
+            "AudioManagerClient.ShowStatusHUD";
 
     private static final Logger logger =
             Logger.getLogger(AudioManagerClient.class.getName());
@@ -442,20 +441,24 @@ public class AudioManagerClient extends BaseConnection implements
 
 	connected = true;
 
-        String audioMode = System.getProperty(AUDIO_STATE_PROP);
-        if (audioMode != null) {
-            if (audioMode.equalsIgnoreCase("mute") ||
-                audioMode.equalsIgnoreCase("muted"))
-            {
-                setMute(true);
-            }
+        String audioMode = System.getProperty(AUDIO_STATE_PROP, "unmuted");
+        if (audioMode.equalsIgnoreCase("mute") ||
+            audioMode.equalsIgnoreCase("muted"))
+        {
+            setMute(true);
+        } else {
+            setMute(false);
         }
 
         // add push to talk listeners
         addPTTListeners();
 
         // show the mini vu meter by default
-        miniVUMeter();
+        boolean showHUD = Boolean.parseBoolean(
+                System.getProperty(AUDIO_HUD_PROP, "true"));
+        if (showHUD) {
+            miniVUMeter();
+        }
     }
 
     @Override
@@ -692,7 +695,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void setMute(boolean isMuted) {
-	if (this.isMuted == isMuted) {
+        if (this.isMuted == isMuted) {
 	    return;
 	}
 
@@ -701,6 +704,10 @@ public class AudioManagerClient extends BaseConnection implements
         String callID = sc.getCallID();
 
         if (callID == null) {
+            // if there is no call id, we still want the UI to be correct,
+            // so we fake a call to softphoneMuted() as if the softphone
+            // was reporting a mute
+            softphoneMuted(isMuted);
             return;
         }
 
@@ -822,7 +829,7 @@ public class AudioManagerClient extends BaseConnection implements
     private AudioProblemJFrame audioProblemJFrame;
 
     public void softphoneConnected(boolean connected) {
-	if (connected == false) {
+        if (connected == false) {
 	    softphoneProblem("Softphone Disconnected");
 	} else if (isMute()) {
             // sync up mute state
