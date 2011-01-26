@@ -102,7 +102,7 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
 
-        audioVolumeMenuItem = new JCheckBoxMenuItem(BUNDLE.getString("Audio_Volume"));
+        audioVolumeMenuItem = new JCheckBoxMenuItem(BUNDLE.getString("Audio_Status"));
         audioVolumeMenuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
