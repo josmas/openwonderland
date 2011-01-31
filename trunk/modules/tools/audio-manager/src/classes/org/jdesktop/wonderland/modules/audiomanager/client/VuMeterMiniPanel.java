@@ -17,24 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Polygon;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JPopupMenu;
-import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import javax.swing.JButton;
+import javax.swing.SwingWorker;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
@@ -99,13 +90,14 @@ public class VuMeterMiniPanel extends javax.swing.JPanel
     private void initComponents() {
 
         muteButton = new javax.swing.JButton();
-        pttButton = new javax.swing.JButton();
+        pttButton = new DelayButton();
         panelToggleButton = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(160, 26));
         setLayout(null);
 
         muteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMicMuteOn24x24.png"))); // NOI18N
+        muteButton.setFocusable(false);
         muteButton.setPreferredSize(new java.awt.Dimension(24, 24));
         muteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -227,6 +219,55 @@ public class VuMeterMiniPanel extends javax.swing.JPanel
     }
 
     public void microphoneGainTooHigh() {
+    }
+
+    static class DelayButton extends JButton {
+        private final int delay;
+        private MouseEvent delayed;
+
+        public DelayButton() {
+            this.delay = AudioManagerClient.PTT_DELAY;
+        }
+
+        @Override
+        protected void processMouseEvent(MouseEvent e) {
+            if (e.getID() != MouseEvent.MOUSE_RELEASED ||
+                e.getButton() != MouseEvent.BUTTON1)
+            {
+                super.processMouseEvent(e);
+                return;
+            }
+
+            delayed = e;
+
+            SwingWorker sw = new SwingWorker() {
+
+                @Override
+                protected Object doInBackground() throws Exception {
+                    try {
+                        Thread.sleep(delay);
+                    } catch (InterruptedException ie) {
+
+                    }
+
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    if (delayed != null) {
+                        superMouseEvent(delayed);
+                        delayed = null;
+                    }
+                }
+            };
+
+            sw.execute();
+        }
+
+        private void superMouseEvent(MouseEvent e) {
+            super.processMouseEvent(e);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

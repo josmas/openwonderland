@@ -53,6 +53,7 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 import org.jdesktop.wonderland.client.softphone.SpeakerInfoListener;
+import org.jdesktop.wonderland.modules.audiomanager.client.VuMeterMiniPanel.DelayButton;
 
 /**
  * A microphone level control panel.
@@ -395,7 +396,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         speakerMeterPanel = new javax.swing.JPanel();
         speakerMuteButton = new javax.swing.JButton();
         panelToggleButton = new javax.swing.JButton();
-        pttButton = new javax.swing.JButton();
+        pttButton = new DelayButton();
 
         setPreferredSize(new java.awt.Dimension(95, 244));
         setLayout(null);
@@ -416,8 +417,9 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         add(micMeterPanel);
         micMeterPanel.setBounds(20, 10, 20, 160);
 
-        micMuteButton.setFont(new java.awt.Font("Arial", 1, 8)); // NOI18N
+        micMuteButton.setFont(new java.awt.Font("Arial", 1, 8));
         micMuteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListMicMuteOff24x24.png"))); // NOI18N
+        micMuteButton.setFocusable(false);
         micMuteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 micMuteButtonActionPerformed(evt);
@@ -465,7 +467,7 @@ public class VuMeterPanel extends javax.swing.JPanel implements
         add(panelToggleButton);
         panelToggleButton.setBounds(70, 227, 20, 14);
 
-        pttButton.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        pttButton.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
         pttButton.setText(bundle.getString("VuMeterPanel.pttButton.text")); // NOI18N
         pttButton.setPreferredSize(new java.awt.Dimension(92, 23));

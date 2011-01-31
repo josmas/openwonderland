@@ -51,7 +51,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
@@ -61,6 +60,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -159,6 +159,11 @@ public class AudioManagerClient extends BaseConnection implements
             Logger.getLogger(AudioManagerClient.class.getName());
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+
+    // delay (in milliseconds) before releasing push-to-talk. Used by VUMeter
+    // panels as well
+    static final int PTT_DELAY = 500;
+
     private WonderlandSession session;
     private boolean connected = true;
     private PresenceManager pm;
@@ -189,6 +194,7 @@ public class AudioManagerClient extends BaseConnection implements
     private String localAddress;
 
     private boolean inPTT;
+    private PTTReleaseTimer pttReleaseTimer;
 
     /**
      * Create a new AudioManagerClient
@@ -744,15 +750,23 @@ public class AudioManagerClient extends BaseConnection implements
                     inPTT = true;
                     setMute(false);
                 }
+
+                // if there is a pending release, cancel it
+                if (pttReleaseTimer != null) {
+                    pttReleaseTimer.cancel(true);
+                    pttReleaseTimer = null;
+                }
             }
         });
         am.put("pttRelease", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                // if we were in push-to-talk mode,
-                // get out of it when space is released
-                if (inPTT) {
-                    inPTT = false;
-                    setMute(true);
+                // if we were in push-to-talk mode, start a release timer
+                // when space is released. This allows any queued audio
+                // to be sent before we go on mute. This also works around
+                // key repeat issues on Linux
+                if (inPTT && pttReleaseTimer == null) {
+                    pttReleaseTimer = new PTTReleaseTimer();
+                    pttReleaseTimer.execute();
                 }
             }
         });
@@ -768,6 +782,33 @@ public class AudioManagerClient extends BaseConnection implements
         ActionMap am = menuBar.getActionMap();
         am.remove("pttPush");
         am.remove("pttRelease");
+    }
+
+    private class PTTReleaseTimer extends SwingWorker {
+        @Override
+        protected Object doInBackground() throws Exception {
+            try {
+                Thread.sleep(PTT_DELAY);
+            } catch (InterruptedException ie) {
+                // ignore
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            if (inPTT) {
+                inPTT = false;
+                setMute(true);
+            }
+
+            // make sure to set the timer to null so it will
+            // be reused during the next push-to-talk
+            if (pttReleaseTimer == this) {
+                pttReleaseTimer = null;
+            }
+        }
     }
 
     public void personalPhone() {
