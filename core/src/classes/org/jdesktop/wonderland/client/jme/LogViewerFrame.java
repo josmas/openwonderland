@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -64,6 +65,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
@@ -102,6 +104,9 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
     /** the log handler */
     private LogViewerHandler handler;
+
+    /** the queue of work to process */
+    private List<LogRecord> workQueue = new LinkedList<LogRecord>();
 
     /** the list of currently displayed records */
     private final List<LogEntry> entries = new LinkedList<LogEntry>();
@@ -201,10 +206,9 @@ public class LogViewerFrame extends javax.swing.JFrame {
         Preferences prefs = Preferences.userNodeForPackage(LogViewerFrame.class);
         prefs.putInt("maxEntries", maxEntries);
 
-        // make clean up down to the new limit
-        while (entries.size() > getMaxEntries()) {
-            removeOldestRecord();
-        }
+        // processing records now will correctly remove any records over
+        // the new limit
+        processRecords();
     }
 
     public Level getRootLogLevel() {
@@ -231,9 +235,73 @@ public class LogViewerFrame extends javax.swing.JFrame {
         prefs.putBoolean("visibleOnStartup", visibleOnStartup);
     }
 
-    protected void addRecord(LogRecord record) {
-        // format the record
-        String str = format(record);
+    /**
+     * Called by the handler to add a new record to the log. This method queues
+     * the record and schedules the actual update to happen on the AWT
+     * event thread.
+     * @param record the record to process
+     */
+    protected synchronized void addRecord(LogRecord record) {
+        // OWL issue #160: queue up multiple events to improve performance
+
+        // if the queue is empty, then we need to schedule a task
+        // to clear the list. If the list is not empty, it means a task
+        // has been scheduled but has not yet run. In that case, we can
+        // just add our elements to the list and they will be processed
+        // by the eventual task
+        boolean schedule = workQueue.isEmpty();
+
+        // add our record
+        workQueue.add(record);
+
+        // schedule a task if necessary
+        if (schedule) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    processRecords();
+                }
+            });
+        }
+    }
+
+    /**
+     * Called on the AWT event thread to process all outstanding records
+     */
+    protected void processRecords() {
+        // OWL issue #160: handle multiple events to improve performance
+
+        // first, get the set of records to process, making sure we have the
+        // lock to prevent additions
+        Collection<LogRecord> records;
+        synchronized (this) {
+            // copy the records into a new collection
+            records = new ArrayList<LogRecord>(workQueue);
+
+            // clear the work queue. This ensures that the next time an element
+            // is added, a new task will be scheduled
+            workQueue.clear();
+        }
+
+        // process each record
+        StringBuilder str = new StringBuilder();
+        for (LogRecord record : records) {
+            // format the record and add it to the strig builder
+            int length = format(record, str);
+
+            // add it to the list of records
+            LogEntry entry = new LogEntry();
+            entry.record = record;
+            entry.length = length;
+            entries.add(entries.size(), entry);
+        }
+
+        // if we are now over the maximum number of entries, remove as many
+        // as we need
+        int removeLen = 0;
+        while (entries.size() > getMaxEntries()) {
+            LogEntry entry = entries.remove(0);
+            removeLen += entry.length;
+        }
 
         // update the scrolling information for the panel
         ManualScrollEditorPane mspe = (ManualScrollEditorPane) logPane;
@@ -243,23 +311,18 @@ public class LogViewerFrame extends javax.swing.JFrame {
         // add the new text to the end of the current document
         try {
             final Document doc = logPane.getDocument();
+
+            // if there is text to remove, remove it first
+            if (removeLen > 0) {
+                doc.remove(0, removeLen);
+            }
+
             Position end = doc.getEndPosition();
-            doc.insertString(end.getOffset() - 1, str, null);
+            doc.insertString(end.getOffset() - 1, str.toString(), null);
         } catch (BadLocationException ble) {
             // should never happen
             logger.log(Level.WARNING, "Bad location", ble);
             return;
-        }
-
-        // add a record of the text to our list of entries
-        LogEntry entry = new LogEntry();
-        entry.record = record;
-        entry.length = str.length();
-        entries.add(entries.size(), entry);
-
-        // make sure we haven't exceeded the number of entries
-        while (entries.size() > getMaxEntries()) {
-            removeOldestRecord();
         }
 
         // now that everything is updated, have the panel scroll to the
@@ -267,41 +330,33 @@ public class LogViewerFrame extends javax.swing.JFrame {
         mspe.postModify(pos, atEnd);
     }
 
-    protected void removeOldestRecord() {
-        // get the oldest record
-        LogEntry entry = entries.remove(0);
-
-        // clear it from the document
-        try {
-            logPane.getDocument().remove(0, entry.length);
-        } catch (BadLocationException ble) {
-            // should never happen
-            logger.log(Level.WARNING, "Bad location", ble);
-            return;
-        }
-    }
-
-    protected String format(LogRecord record) {
-        StringBuffer out = new StringBuffer();
-        out.append(record.getLevel());
-        out.append(" ");
-        out.append(DateFormat.getTimeInstance().format(new Date(record.getMillis())));
-        out.append(" ");
-        out.append(record.getSourceClassName());
-        out.append(" ");
-        out.append(record.getSourceMethodName());
-        out.append("\n");
+    /**
+     * Format the given record, and add it to the given string builder. Return
+     * the length of text added to the builder.
+     */
+    protected int format(LogRecord record, StringBuilder builder) {
+        int startLen = builder.length();
+        
+        builder.append(record.getLevel());
+        builder.append(" ");
+        builder.append(DateFormat.getTimeInstance().format(new Date(record.getMillis())));
+        builder.append(" ");
+        builder.append(record.getSourceClassName());
+        builder.append(" ");
+        builder.append(record.getSourceMethodName());
+        builder.append("\n");
 
         if (record.getMessage() != null) {
-            out.append(record.getMessage());
-            out.append("\n");
+            builder.append(record.getMessage());
+            builder.append("\n");
         }
 
         if (record.getThrown() != null) {
-            out.append(formatThrowable(record.getThrown()));
+            builder.append(formatThrowable(record.getThrown()));
         }
 
-        return out.toString();
+        // return the difference in length from when we started
+        return builder.length() - startLen;
     }
 
     protected String formatThrowable(Throwable t) {
@@ -667,7 +722,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_levelTableMinusActionPerformed
 
     protected String generateErrorReport() {
-        final StringBuffer out = new StringBuffer();
+        final StringBuilder out = new StringBuilder();
         out.append("Error report generated " +
                    DateFormat.getDateTimeInstance().format(new Date()) + "\n");
         out.append("\n");
@@ -743,7 +798,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
         // error log
         out.append("-------- Error Log --------\n");
         for (LogEntry entry : entries) {
-            out.append(format(entry.record));
+            format(entry.record, out);
         }
         out.append("\n");
 
