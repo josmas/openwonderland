@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -46,6 +64,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
 public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
 
@@ -284,6 +303,9 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         originalRotation = transform.getRotation(null);
         originalScaling = transform.getScaling(null);
 
+        // OWL issue #159: we are now up to date, no local changes have been made
+        isLocalChangesMade = false;
+
         movableComponent = cell.getComponent(MovableComponent.class);
         if (movableComponent == null) {
             translationXTF.setEnabled(false);
@@ -337,7 +359,15 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
      * @inheritDoc()
      */
     public void apply() {
-        // Do nothing.
+        // OWL issue #159: we no longer want to revert back to old values
+        // on restore, so make sure that we have the latest values on record
+        CellTransform transform = editor.getCell().getLocalTransform();
+        originalTranslation = transform.getTranslation(null);
+        originalRotation = transform.getRotation(null);
+        originalScaling = transform.getScaling(null);
+
+        // OWL issue #159: also mark that there are currently no changes 
+        isLocalChangesMade = false;
     }
 
     /**
@@ -366,6 +396,10 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
             transform.setScaling(originalScaling.x);
             transform.setRotation(originalRotation);
             movableComponent.localMoveRequest(transform);
+
+            // OWL issue #159: local changes have now been restored, so we set this
+            // variable back to false
+            isLocalChangesMade = false;
         }
     }
 
