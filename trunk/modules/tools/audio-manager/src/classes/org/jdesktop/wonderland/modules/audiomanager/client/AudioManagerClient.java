@@ -61,6 +61,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -735,7 +736,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     private void addPTTListeners() {
-        JComponent canvas = JmeClientMain.getFrame().getCanvas3DPanel();
+        final JComponent canvas = JmeClientMain.getFrame().getCanvas3DPanel();
 
         InputMap im = canvas.getInputMap(JComponent.WHEN_FOCUSED);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false), "pttPush");
@@ -744,8 +745,16 @@ public class AudioManagerClient extends BaseConnection implements
         ActionMap am = canvas.getActionMap();
         am.put("pttPush", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                // if we are on mute, pressing space
-                // triggers a push to talk
+                // if the global entity does not have focus, ignore this event
+                // because it is going to a shared app
+                KeyEvent ke = new KeyEvent(canvas, KeyEvent.KEY_PRESSED,
+                        e.getWhen(), 0, KeyEvent.VK_SPACE, ' ');
+                Entity global = InputManager.inputManager().getGlobalFocusEntity();
+                if (!InputManager.entityHasFocus(ke, global)) {
+                    return;
+                }
+
+                // if we are on mute, pressing space triggers a push to talk.
                 if (isMute()) {
                     inPTT = true;
                     setMute(false);
