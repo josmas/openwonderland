@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -825,21 +825,14 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         {
             // OWL issue #124: ignore keyboard accelerators if anything but
             // the global entity has keyboard focus
-            Event wlev = new MyKeyEvent(e);
             Entity global = InputManager.inputManager().getGlobalFocusEntity();
 
-            if (!InputManager.entityHasFocus(wlev, global)) {
+            if (!InputManager.entityHasFocus(e, global)) {
                 // if the global entity does not have focus, ignore the event
                 return false;
             }
 
             return super.processKeyBinding(ks, e, condition, pressed);
-        }
-
-        class MyKeyEvent extends KeyEvent3D {
-            public MyKeyEvent(KeyEvent e) {
-                this.awtEvent = e;
-            }
         }
     }
 

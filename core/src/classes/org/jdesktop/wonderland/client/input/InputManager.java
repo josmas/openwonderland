@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -52,6 +52,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.util.EventObject;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -641,9 +642,20 @@ public abstract class InputManager
      * @param event The event to be delivered.
      * @param entity The entity to check if it is in the focus set.
      */
-    @InternalAPI
     public static boolean entityHasFocus (Event event, Entity entity) {
         return EventDistributor.entityHasFocus(event, entity);
+    }
+
+    /**
+     * Returns true if the given entity is marked as having focus.
+     * @param event The event to be delivered.
+     * @param entity The entity to check if it is in the focus set.
+     */
+    public static boolean entityHasFocus (EventObject event, Entity entity) {
+        InputPicker picker = InputManager.inputManager().inputPicker;
+        Event wlEvent = picker.createWonderlandEvent(event);
+
+        return entityHasFocus(wlEvent, entity);
     }
 
     /**
