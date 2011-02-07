@@ -72,7 +72,6 @@ import java.util.logging.Level;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
-import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingEventConsumer;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingEventConsumer.EventAction;
@@ -304,7 +303,6 @@ public abstract class InputPicker {
 	    logger.finest("Enqueue null pick info for 3D event");
 	    logger.finest("awtMouseEvent = " + awtMouseEvent);
 	    swingPickInfos.add(new PickInfoQueueEntry(null, awtMouseEvent));
-	    generateSwingEnterExitEvents(null);
 	    return null;
 	}
 
@@ -343,17 +341,12 @@ public abstract class InputPicker {
                 // We haven't hit an input sensitive WindowSwing so post the event to the 
                 // event distributor as a 3D event
                 swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
-
-                generateSwingEnterExitEvents(null);
-
                 return null;
 
             case CONSUME_2D:
 
                 // HACK: see doc for this method
                 cleanupGrab(awtMouseEvent);
-
-                generateSwingEnterExitEvents(entity);
 
                 // Return the event to Swing
                 if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null &&
@@ -365,7 +358,6 @@ public abstract class InputPicker {
 
             case DISCARD:
             default:
-                generateSwingEnterExitEvents(null);
                 return null;
             }
         } else {
@@ -378,8 +370,6 @@ public abstract class InputPicker {
                 swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
             }
 
-            generateSwingEnterExitEvents(null);
-
             return null;
         }
     }
@@ -391,28 +381,6 @@ public abstract class InputPicker {
 	// We know whether it is a WindowSwing entity by looking for the attached WindowSwingEntityComponent
 	EntityComponent comp = entity.getComponent(InputManager.WindowSwingViewMarker.class);
 	return comp != null;
-    }
-
-    /**
-     * Generates a swing enter event when the pointer moves inside the swing region.
-     * Generates a swing enter event when the pointer moves outside the swing region.
-     * The swing region is the union of the regions occupied by all WindowSwings.
-     */
-    private void generateSwingEnterExitEvents (Entity insideSwingEntity) {
-	SwingEnterExitEvent3D event = null;
-	if (insideSwingEntity != null) {
-	    if (insideSwingEntityPrev == null) {
-		event = new SwingEnterExitEvent3D(true, insideSwingEntity);
-		eventDistributor.enqueueEvent(event, insideSwingEntity);
-	    }
-	} else {
-	    if (insideSwingEntityPrev != null) {
-		event = new SwingEnterExitEvent3D(false, insideSwingEntityPrev);
-		eventDistributor.enqueueEvent(event, insideSwingEntityPrev);
-	    }
-	}
-
-	insideSwingEntityPrev = insideSwingEntity;
     }
 
     /**
