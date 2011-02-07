@@ -99,9 +99,18 @@ public interface EventListener  {
     public boolean consumesEvent (Event event);
 
     /**
-     * Returns whether the event should also be propagated to the event entity's parent for possible delivery.
-     * Computations in this method should be kept reasonably short as they occur in
-     * AWT Event Dispatch thread. This method is only called for entity-attached event listeners.
+     * Returns whether the event should also be propagated to the event entity's 
+     * parent for possible delivery. If any listener on an entity prevents
+     * propagation to parents, the event will not be delivered to the entity's
+     * parents or to any global listeners. Note that other listeners on the
+     * same entity will receive the event.
+     * <p>
+     * This method is only called if consumesEvent() returns true for the
+     * given event
+     * <p>
+     * Computations in this method should be kept reasonably short as they occur
+     * in the AWT Event Dispatch thread. This method is only called for
+     * entity-attached event listeners.
      *
      * @param event The event in question.
      */

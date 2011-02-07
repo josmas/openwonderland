@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -48,13 +48,10 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.EntityComponent;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingViewMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
@@ -326,8 +323,6 @@ public class WindowSwing extends Window2D {
 	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
 	//component.addMouseListener(new MyAwtEnterListener());
 
-        addEventListener(new MySwingEnterExitListener());
-
         // OWL issue #47: be sure to call validate from the AWT event thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -353,39 +348,6 @@ public class WindowSwing extends Window2D {
         }
     }
     */
-
-    private static class MySwingEnterExitListener extends EventClassListener {
-
-        @Override
-        public boolean propagatesToParent (Event event) {
-            return false;
-        }
-
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[]{SwingEnterExitEvent3D.class};
-        }
-
-        @Override
-        public void commitEvent(Event event) {
-            SwingEnterExitEvent3D seeEvent = (SwingEnterExitEvent3D) event;
-
-            /* For debug
-            StringBuffer sb = new StringBuffer();
-            String typeStr = "SWING " + (seeEvent.isEntered() ? "ENTER" : "EXIT");
-            sb.append(typeStr + ", entity = " + seeEvent.getEntity());
-            System.err.println(sb.toString());
-            */
-
-
-            // OWL issue #71: replace this with fake mouse event in
-            // WindowSwingEmbeddedToolkit
-            // Reacquire key focus for the main window on cursor exit from swing area
-            // if (!seeEvent.isEntered()) {
-            //    InputManager.ensureKeyFocusInMainWindow();
-            // }
-        }
-    }
 
     /** Returned the Swing component displayed in this window */
     public final Component getComponent() {

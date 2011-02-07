@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.input.InputManager.FocusChange;
-import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 
 /**
  * The abstract base class for an Event Distributor singleton. The Entity Distributor is part of the input 
@@ -85,7 +84,7 @@ public abstract class EventDistributor implements Runnable {
         }
     }
 
-    /** 
+    /**
      * Used for events which are posted directly to a known entity. InputManager.postEvent(event,entity)
      * uses this as well as the internal SwingEnterExit3D events.
      * Note: this type of event has no pickInfo but has an entity./
@@ -97,13 +96,6 @@ public abstract class EventDistributor implements Runnable {
 	    super(event, null);
 	    this.entity = entity;
 	}
-    }
-
-    /** The state of the propagation state during the traversal. */
-    public class PropagationState {
-	public boolean toParent;
-	public boolean toUnder;
-        public boolean consumed;
     }
 
     private Thread thread;
@@ -145,15 +137,6 @@ public abstract class EventDistributor implements Runnable {
 	inputQueue.add(new Entry(event, destPickInfo, hitPickInfo));
     }
 
-    /**
-     * Add a Wonderland SwingEnterExit3D event to the event distribution queue.
-     * @param event The event to enqueue.
-     * @param entity The event's entity.
-     */
-    void enqueueEvent (SwingEnterExitEvent3D event, Entity entity) {
-	inputQueue.add(new EntryPostEventToEntity(event, entity));
-    }
-
     void enqueueEvent(Event event, Entity entity) {
         inputQueue.add(new EntryPostEventToEntity(event, entity));
     }
@@ -170,11 +153,11 @@ public abstract class EventDistributor implements Runnable {
 		    EntryPostEventToEntity epost = (EntryPostEventToEntity) entry;
 		    processPostEventToEntity(epost.event, epost.entity);
 		} else {
-		    processEvent(entry.event, entry.destPickInfo, entry.hitPickInfo);
+                    processEvent(entry.event, entry.destPickInfo, entry.hitPickInfo);
 		}
             } catch (Exception ex) {
-		ex.printStackTrace();
-		logger.warning("Exception caught in EventDistributor thread. Event is ignored.");
+		logger.log(Level.WARNING, "Exception caught in " +
+                           "EventDistributor thread. Event is ignored.", ex);
 	    }
 	}
     }
@@ -195,10 +178,9 @@ public abstract class EventDistributor implements Runnable {
      */
     protected abstract void processPostEventToEntity (Event event, Entity entity);
 
-    /** 
-     * Traverse the list of global listeners to see whether the event should be delivered to any of them. 
-     * Post the event to willing consumers. Note: the return values of propagatesToParent() and propagatesToUnder() 
-     * for global listeners are ignored.
+    /**
+     * Traverse the list of global listeners to see whether the event should be
+     * delivered to any of them. Post the event to all willing consumers.
      */
     protected void tryGlobalListeners (Event event) {
         if (logger.isLoggable(Level.INFO)) {
@@ -226,75 +208,102 @@ public abstract class EventDistributor implements Runnable {
     }
 	
     /** 
-     * See if any of the enabled event listeners for the given entity are willing to consume the given event.
-     * Post the event to willing consumers. Also, returns the OR of propagatesToParent for all enabled listeners 
-     * and the OR of propagatesToUnder for all enabled listeners in propState.
+     * See if any of the enabled event listeners for the given entity are 
+     * willing to consume the given event. Post the event to the first willing
+     * consumer. Returns true if the event was consumed, and false if not.
+     *
+     * @param param entity the entity to try listeners for
+     * @param event the event to try
+     * @returns true if the event should be propagated to parents,
+     * or false if not
      */
-    protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState,
-                                          boolean notifyAll)
-    {
+    protected boolean tryListenersForEntity (Entity entity, Event event) {
         if (logger.isLoggable(Level.INFO)) {
-            logger.info("tryListenersForEntity, entity = " + entity + ", event = " + event);
+            logger.info("tryListenersForEntity, entity = " + entity +
+                        ", event = " + event);
         }
-        EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+
+        // get the listeners for this entity
+        EventListenerCollection listeners = (EventListenerCollection)
+                entity.getComponent(EventListenerCollection.class);
+        
+        // if there are none, return that the event should go to parents
         if (listeners == null || listeners.size() <= 0) {
             logger.info("Entity has no listeners");
-            // propagatesToParent is true, so OR makes no change to its accumulator
-            // propagatesToUnder is false, so OR makes its accumulator is false
-            propState.toUnder = false;
-        } else {
-            Iterator<EventListener> it = listeners.iterator();
-            while (it.hasNext()) {
-            EventListener listener = it.next();
+            return true;
+        }
+        
+        boolean toParents = true;
+
+        // try each listener in turn
+        for (Iterator<EventListener> i = listeners.iterator(); i.hasNext();) {
+            EventListener listener = i.next();
             if (listener.isEnabled()) {
                 if (logger.isLoggable(Level.INFO)) {
                     logger.info("Calling consume for listener " + listener);
                 }
+
+                // create a copy of the event for this listener
                 Event distribEvent = createEventForEntity(event, entity);
+
+                // check if the listener will consume this event
                 if (listener.consumesEvent(distribEvent)) {
                     if (logger.isLoggable(Level.INFO)) {
                         logger.info("CONSUMED event: " + event);
                         logger.info("Consuming entity " + entity);
                         logger.info("Consuming listener " + listener);
                     }
-		    listener.postEvent(distribEvent);
-                    propState.toParent |= listener.propagatesToParent(distribEvent);
+		
+                    // the listener will consume the event
+                    listener.postEvent(distribEvent);
 
-                    propState.consumed = true;
-                    if (!notifyAll) {
-                        break;
+                    // check if we should block the event from going to
+                    // parents
+                    if (!listener.propagatesToParent(event)) {
+                        toParents = false;
+                    }
+
+                    // even if the event does not go to parents, try other
+                    // listeners for this entity. Otherwise, if multiple
+                    // listeners register for the same event type, it will be
+                    // random which listener actually gets the events.
                 }
-                }
-		// TODO: someday: decommit for now
-                //propState.toUnder |= listener.propagatesToUnder(distribEvent);
-//                logger.finer("Listener prop state, toParent = " + propState.toParent +
-//                    ", toUnder = " + propState.toUnder);
-            }
             }
         }
-        if (logger.isLoggable(Level.FINE))
-            logger.fine("Cumulative prop state, toParent = " + propState.toParent + ", toUnder = " + propState.toUnder);
+        
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Finished event dispatch. Send to parents: " + toParents);
+        }
+
+        return toParents;
     }
 
     /** 
-     * Traverse the entity parent chain (starting with the given entity) to see if the
-     * event should be delivered to any of their listeners. Continue the search until no more parents are found.
-     * Post the event to willing consumers. Also, returns the OR of propagatesToParent for all enabled listeners 
-     * and the OR of propagatesToUnder for all enabled listeners in propState.
+     * Traverse the entity parent chain (starting with the given entity) to see
+     * if the event should be delivered to any of their listeners. Continue the
+     * search until the event is consumed or no more parents are found.
+     * Post the event to willing consumers.
+     *
+     * @param entity the entity to start with
+     * @param event the event to post
+     * @return true if the event should go to global listeners, or false if not
      */
-    protected void tryListenersForEntityParents (Entity entity, Event event, PropagationState propState,
-                                                 boolean notifyAll)
+    protected boolean tryListenersForEntityAndParents (Entity entity,
+                                                       Event event)
     {
-        while (entity != null) {
-            tryListenersForEntity(entity, event, propState, notifyAll);
-            if (!propState.toParent) {
-            // No more propagation to parents. We're done with this loop.
-            break;
-            }
-            if (logger.isLoggable(Level.FINE))
+        boolean toParents = true;
+
+        while (entity != null && toParents) {
+            toParents = tryListenersForEntity(entity, event);
+
+            if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Propagate to next parent");
+            }
+
             entity = entity.getParent();
         }
+
+        return toParents;
     }
 	
     /**

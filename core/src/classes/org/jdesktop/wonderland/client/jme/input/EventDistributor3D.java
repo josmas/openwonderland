@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -56,7 +56,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 public class EventDistributor3D extends EventDistributor implements Runnable {
 
     private static final Logger logger = Logger.getLogger(EventDistributor3D.class.getName());
-    private EventDistributor.PropagationState propState = new PropagationState();
+
     /** The pick info for the last mouse event */
     private PickInfo mousePickInfoPrev;
     /** The singleton event distributor */
@@ -89,18 +89,12 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
         }
     }
 
-    protected void processMouseKeyboardEvent(Event event, PickInfo destPickInfo, PickInfo hitPickInfo) {
+    protected void processMouseKeyboardEvent(final Event event,
+            final PickInfo destPickInfo, final PickInfo hitPickInfo)
+    {
         logger.fine("Distributor: received event = " + event);
         logger.fine("Distributor: destPickInfo = " + destPickInfo);
-        /*
-        if (destPickInfo != null && destPickInfo.size() > 0 && destPickInfo.get(0) != null) {
-	    logger.fine("entity = " + destPickInfo.get(0).getEntity();
-        }
-        logger.fine("Distributor: hitPickInfo = " + hitPickInfo);
-        if (hitPickInfo != null && hitPickInfo.size() > 0 && hitPickInfo.get(0) != null) {
-	    logger.fine("entity = " + hitPickInfo.get(0).getEntity());
-        }
-         */
+       
         // Track the last mouse pick info for focus-follows-mouse keyboard focus policy
         if (event instanceof MouseEvent3D) {
             mousePickInfoPrev = destPickInfo;
@@ -114,122 +108,93 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
             ((InputEvent3D) event).setPickInfo(destPickInfo);
         }
 
+        // propagate the event to the picked entity
+        processEntityEvent(event, destPickInfo, new EventModifier<Event>() {
+            public void modifyEvent(Event event, int index) {
+                // if this is a mouse event, set the details
+                if (event instanceof MouseEvent3D) {
+                    // get the selected set of details
+                    PickDetails details = null;
+                    if (destPickInfo != null && destPickInfo.size() > index) {
+                        details = destPickInfo.get(index);
+                    }
 
-        // Try the global event listeners. Set the pickDetails of mouse events to topmost pickDetails.
-        if (event instanceof MouseEvent3D && destPickInfo != null && destPickInfo.size() > 0) {
-            ((MouseEvent3D) event).setPickDetails(destPickInfo.get(0));
-        }
-        tryGlobalListeners(event);
+                    ((MouseEvent3D) event).setPickDetails(details);
 
-        // Start out the entity search assuming no propagation to unders
-        propState.toUnder = false;
-        propState.consumed = false;
-
-        // Walk through successive depth levels, as long as propagateToUnder is true,
-        // searching up the parent chain in each level
-        if (destPickInfo == null || destPickInfo.size() <= 0) {
-            return;
-        }
-        PickDetails pickDetails = destPickInfo.get(0);
-        logger.fine("pickDetails = " + pickDetails);
-        int idx = 0;
-        while (true) {
-
-            // Start this loop interation out assuming no propagation to parents
-            propState.toParent = false;
-
-            // See whether the picked entity wants the event.
-            if (event instanceof MouseEvent3D) {
-                ((MouseEvent3D) event).setPickDetails(pickDetails);
-                if (((MouseEvent3D) event).getID() == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null) {
-                    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) event;
-                    if (idx < hitPickInfo.size()) {
-                        de3d.setHitPickDetails(hitPickInfo.get(idx));
+                    // for a drag event, use the hitPickInfo instead
+                    if (((MouseEvent3D) event).getID() == MouseEvent.MOUSE_DRAGGED &&
+                        hitPickInfo != null)
+                    {
+                        MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) event;
+                        if (index < hitPickInfo.size()) {
+                            de3d.setHitPickDetails(hitPickInfo.get(index));
+                        }
                     }
                 }
             }
-	    Entity entity = null;
-	    if (pickDetails != null) {
-		entity = pickDetails.getEntity();
-	    }
-            if (entity == null) {
-                idx++;
-                if (idx >= destPickInfo.size()) {
-                    // No more picked objects underneath. We're done.
-                    break;
-                } else {
-                    continue;
-                }
-            }
-
-            tryListenersForEntity(entity, event, propState, true);
-
-            // See whether any of the picked entity's parents want the event
-            if (propState.toParent) {
-                logger.fine("Propogating to parents");
-                tryListenersForEntityParents(entity.getParent(), event, propState, true);
-            }
-
-            if (!propState.toUnder) {
-                // No more propagation to unders. We're done.
-                break;
-            }
-
-            logger.fine("Propagate to next under");
-
-            idx++;
-            if (idx >= destPickInfo.size()) {
-                // No more picked objects underneath. We're done.
-                break;
-            }
-
-            pickDetails = destPickInfo.get(idx);
-            logger.fine("pickDetails = " + pickDetails);
-        }
+        });
     }
 
-    protected void processDropEvent(DropTargetEvent3D event, PickInfo pickInfo) {
+    protected void processDropEvent(final DropTargetEvent3D event,
+                                    final PickInfo pickInfo)
+    {
         logger.fine("Distributor: received event = " + event);
         logger.fine("Distributor: pickInfo = " + pickInfo);
 
-        // set the pick info for the event
+        // set the pickinfo for the event
         event.setPickInfo(pickInfo);
 
-        // try each listener in the pick info to see if anyone consumes the
-        // event
-        propState.toUnder = false;
-        propState.consumed = false;
+        // propagate the event to the picked entity
+        processEntityEvent(event, pickInfo, new EventModifier<DropTargetEvent3D>() {
+            public void modifyEvent(DropTargetEvent3D event, int index) {
+                // get the PickDetails for the event, if any
+                PickDetails details = null;
+                if (pickInfo != null && pickInfo.size() > index) {
+                    details = pickInfo.get(index);
+                }
+
+                event.setPickDetails(details);
+            }
+        });
+    }
+
+    protected <T extends Event> void processEntityEvent(T event,
+            PickInfo pickInfo, EventModifier<? super T> modifier)
+    {
+        // find the first pickdetails with an entity
+        int index = 0;
+        Entity entity = null;
 
         if (pickInfo != null) {
-            for (int i = 0; i < pickInfo.size(); i++) {
-                // get the next set of details
-                PickDetails details = pickInfo.get(i);
-                event.setPickDetails(details);
+            for (index = 0; index < pickInfo.size(); index++) {
+                PickDetails details = pickInfo.get(index);
 
                 // see if we picked an entity
-                Entity entity = details.getEntity();
+                entity = details.getEntity();
                 if (entity != null) {
-                    // try the listeners for this entity
-                    propState.toParent = false;
-                    tryListenersForEntity(entity, event, propState, false);
-
-                    if (!propState.consumed && propState.toParent) {
-                        // the event was not consumed, pass it on to the parent
-                        tryListenersForEntityParents(entity, event, propState, false);
-                    }
-
-                    if (propState.consumed || !propState.toUnder) {
-                        // someone consumed the event, or we aren't propagating
-                        // under, then we are done
-                        break;
-                    }
+                    break;
                 }
             }
         }
 
-        // if no one consumed the event, try the global listener
-        if (!propState.consumed) {
-            event.setPickDetails(null);
+        boolean toGlobal = true;
+
+        // if we found an entity, try it and (if necessary) its parents to see
+        // if anyone consumes the event
+        if (entity != null) {
+            if (modifier != null) {
+                modifier.modifyEvent(event, index);
+            }
+
+            toGlobal = tryListenersForEntityAndParents(entity, event);
+        }
+
+        // see if we should try the global listener
+        if (toGlobal) {
+            if (modifier != null) {
+                modifier.modifyEvent(event, index);
+            }
+
             tryGlobalListeners(event);
         }
     }
@@ -244,23 +209,27 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
     protected void processPostEventToEntity (Event event, Entity entity) {
         logger.fine("Distributor: received event = " + event + ", entity = " + entity);
 
-        tryGlobalListeners(event);
+        boolean toGlobal = true;
 
-        // See whether the specified entity wants the event.
-        propState.toParent = false;
-        propState.consumed = false;
-        tryListenersForEntity(entity, event, propState, true);
+        // if we found an entity, try it and (if necessary) its parents to see
+        // if anyone consumes the event
+        if (entity != null) {
+            toGlobal = tryListenersForEntityAndParents(entity, event);
+        }
 
-        // See whether any of the picked entity's parents want the event
-        if (propState.toParent) {
-            logger.fine("Propogating to parents");
-            tryListenersForEntityParents(entity.getParent(), event, propState, true);
+        // see if we should try the global listener
+        if (toGlobal) {
+            tryGlobalListeners(event);
         }
     }
 
     private void processGlobalEvent(Event event) {
         logger.fine("Distributor: received global event = " + event);
         tryGlobalListeners(event);
+    }
+
+    protected interface EventModifier<T extends Event> {
+        public void modifyEvent(T event, int index);
     }
 }
 
