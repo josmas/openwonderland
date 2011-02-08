@@ -453,6 +453,19 @@ public class ModuleManager {
             Map.Entry<String, ModuleInfo> entry = it.next();
             String moduleName = entry.getKey();
             Module module = installed.get(moduleName);
+
+            // OWL issue #165: if the module doesn't exist, remove it from
+            // the uninstall list and move on. The reference to the file
+            // should be removed the next time the uninstall list is
+            // written
+            if (module == null) {
+                logger.warning("Module " + moduleName + " no longer installed. "
+                        + "Skipping.");
+                
+                it.remove();
+                continue;
+            }
+
             DeploymentQueryResult res = this.deployManager.canUndeploy(module);
             if (res.getResult() == false) {
                 StringBuffer message = new StringBuffer("[MODULES] Unable to uninstall " +
@@ -504,6 +517,10 @@ public class ModuleManager {
             this.installedMananger.remove(moduleName);
             this.uninstallManager.remove(moduleName);
         }
+
+        // OWL issue #165: make sure the uninstall list gets written here,
+        // to guarantee that any failed uninstalls will be cleaned up
+        this.uninstallManager.write();
     }
     
     /**

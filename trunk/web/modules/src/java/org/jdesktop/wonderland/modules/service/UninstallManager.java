@@ -92,17 +92,7 @@ public class UninstallManager {
         list.add(moduleInfo);
         ModuleInfo[] newInfos = list.toArray(new ModuleInfo[] {});
         this.uninstallList.setModuleInfos(newInfos);
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(uninstallFile);
-            this.uninstallList.encode(writer);
-        } catch (JAXBException ex) {
-            Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
-        } finally {
-            RunUtil.close(writer);
-        }
+        write();
     }
     
     /**
@@ -125,6 +115,13 @@ public class UninstallManager {
         }
         ModuleInfo[] newInfos = list.toArray(new ModuleInfo[] {});
         this.uninstallList.setModuleInfos(newInfos);
+        write();
+    }
+
+    /**
+     * Write the current state uninstall file
+     */
+    protected void write() {
         FileWriter writer = null;
         try {
             writer = new FileWriter(uninstallFile);
@@ -137,7 +134,7 @@ public class UninstallManager {
             RunUtil.close(writer);
         }
     }
-    
+
     /**
      * Returns a map of module names and objects from a given directory. If no
      * modules are present, this method returns an empty map.
