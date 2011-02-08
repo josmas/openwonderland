@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -99,7 +117,6 @@ public class ModelCellComponentProperties
                     (ModelCellComponentServerState) compState;
             origState = (ModelCellComponentServerState) mState.clone(null);
             deployedModelURLTF.setText(mState.getDeployedModelURL());
-            collisionEnabledCB.setSelected(mState.isCollisionEnabled());
             pickingEnabledCB.setSelected(mState.isPickingEnabled());
             lightingEnabledCB.setSelected(mState.isLightingEnabled());
             backfaceCullingEnabledCB.setSelected(mState.isBackfactCullingEnabled());
@@ -125,7 +142,6 @@ public class ModelCellComponentProperties
         ModelCellComponentServerState compState =
                 (ModelCellComponentServerState) state.getComponentServerState(
                 ModelCellComponentServerState.class);
-        compState.setCollisionEnabled(collisionEnabledCB.isSelected());
         compState.setPickingEnable(pickingEnabledCB.isSelected());
         compState.setLightingEnabled(lightingEnabledCB.isSelected());
         compState.setBackfaceCullingEnabled(backfaceCullingEnabledCB.isSelected());
@@ -139,7 +155,6 @@ public class ModelCellComponentProperties
     public void restore() {
         // Restore from the original state stored.
         deployedModelURLTF.setText(origState.getDeployedModelURL());
-        collisionEnabledCB.setSelected(origState.isCollisionEnabled());
         pickingEnabledCB.setSelected(origState.isPickingEnabled());
         lightingEnabledCB.setSelected(origState.isLightingEnabled());
         backfaceCullingEnabledCB.setSelected(origState.isBackfactCullingEnabled());
@@ -176,7 +191,6 @@ public class ModelCellComponentProperties
         boolean dirty;
 
         dirty = !deployedModelURLTF.getText().equals(origState.getDeployedModelURL());
-        dirty |= (collisionEnabledCB.isSelected() != origState.isCollisionEnabled());
         dirty |= (pickingEnabledCB.isSelected() != origState.isPickingEnabled());
         dirty |= (lightingEnabledCB.isSelected() != origState.isLightingEnabled());
         dirty |= (backfaceCullingEnabledCB.isSelected() != origState.isBackfactCullingEnabled());
@@ -196,7 +210,6 @@ public class ModelCellComponentProperties
 
         jLabel1 = new javax.swing.JLabel();
         deployedModelURLTF = new javax.swing.JTextField();
-        collisionEnabledCB = new javax.swing.JCheckBox();
         pickingEnabledCB = new javax.swing.JCheckBox();
         lightingEnabledCB = new javax.swing.JCheckBox();
         backfaceCullingEnabledCB = new javax.swing.JCheckBox();
@@ -207,13 +220,6 @@ public class ModelCellComponentProperties
         jLabel1.setText(bundle.getString("ModelCellComponentProperties.jLabel1.text")); // NOI18N
 
         deployedModelURLTF.setEditable(false);
-
-        collisionEnabledCB.setText(bundle.getString("ModelCellComponentProperties.collisionEnabledCB.text")); // NOI18N
-        collisionEnabledCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                collisionEnabledCBActionPerformed(evt);
-            }
-        });
 
         pickingEnabledCB.setText(bundle.getString("ModelCellComponentProperties.pickingEnabledCB.text")); // NOI18N
         pickingEnabledCB.addActionListener(new java.awt.event.ActionListener() {
@@ -259,15 +265,16 @@ public class ModelCellComponentProperties
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(deployedModelURLTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
-                            .add(collisionEnabledCB)
-                            .add(pickingEnabledCB)
-                            .add(lightingEnabledCB)))
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(deployedModelURLTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
                     .add(printSceneGraphB)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(pickingEnabledCB))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(lightingEnabledCB))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(backfaceCullingEnabledCB))
@@ -284,8 +291,6 @@ public class ModelCellComponentProperties
                     .add(jLabel1)
                     .add(deployedModelURLTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(collisionEnabledCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pickingEnabledCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lightingEnabledCB)
@@ -293,15 +298,11 @@ public class ModelCellComponentProperties
                 .add(backfaceCullingEnabledCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(graphOptimizationEnabledCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 66, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 89, Short.MAX_VALUE)
                 .add(printSceneGraphB)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void collisionEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collisionEnabledCBActionPerformed
-        checkDirty();
-    }//GEN-LAST:event_collisionEnabledCBActionPerformed
 
     private void pickingEnabledCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pickingEnabledCBActionPerformed
         checkDirty();
@@ -349,7 +350,6 @@ public class ModelCellComponentProperties
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox backfaceCullingEnabledCB;
-    private javax.swing.JCheckBox collisionEnabledCB;
     private javax.swing.JTextField deployedModelURLTF;
     private javax.swing.JCheckBox graphOptimizationEnabledCB;
     private javax.swing.JLabel jLabel1;

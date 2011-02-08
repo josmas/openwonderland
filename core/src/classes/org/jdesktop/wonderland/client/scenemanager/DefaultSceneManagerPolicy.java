@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,7 +35,9 @@
  */
 package org.jdesktop.wonderland.client.scenemanager;
 
-import java.awt.event.MouseEvent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.InteractionComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.InputEvent3D.ModifierId;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -51,7 +71,8 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
             return mbe.isPressed() == true && mbe.getEntity() != null &&
                     mbe.getButton() == ButtonId.BUTTON1 &&
-                    mbe.getAwtEvent().isShiftDown() == false;
+                    mbe.getAwtEvent().isShiftDown() == false &&
+                    isSelectable(mbe.getEntity());
         }
         return false;
     }
@@ -63,7 +84,8 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
             return mbe.isPressed() == true && mbe.getEntity() != null &&
                     mbe.getButton() == ButtonId.BUTTON1 &&
-                    mbe.getAwtEvent().isShiftDown() == true;
+                    mbe.getAwtEvent().isShiftDown() == true &&
+                    isSelectable(mbe.getEntity());
         }
         return false;        
     }
@@ -112,6 +134,12 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
                     return false;
                 }
             }
+
+            // is the entity selectable?
+            if (mbe.getEntity() != null) {
+                return isSelectable(mbe.getEntity());
+            }
+
             return true;
         }
         return false;
@@ -135,5 +163,28 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
             return mee.isEnter() == false;
         }
         return false;  
+    }
+
+    /**
+     * Return true if an entity is eligible for selection, or false if not.
+     * This method maps the entity to a cell. If the cell exists and contains
+     * an InteractionComponent that sets selectable to false, the entity
+     * is not considered for selection.
+     *
+     * @param e the entity to check
+     * @return true if the entity is selectable, and false if not
+     */
+    private boolean isSelectable(Entity e) {
+        Cell cell = SceneManager.getCellForEntity(e);
+        if (cell == null) {
+            return true;
+        }
+
+        InteractionComponent ic = cell.getComponent(InteractionComponent.class);
+        if (ic == null) {
+            return true;
+        }
+
+        return ic.isSelectable();
     }
 }

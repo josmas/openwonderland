@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -44,7 +62,6 @@ public class ModelCellComponent extends CellComponent {
     private String deployedModelURL = null;   // URL of .dep file
     protected DeployedModel deployedModel = null;
     protected ModelRenderer renderer = null;
-    private boolean collidable = true;
     private boolean pickable = true;
     private boolean lightingEnabled = true;
     private boolean backfaceCullingEnabled = true;
@@ -66,7 +83,6 @@ public class ModelCellComponent extends CellComponent {
                     getDeployedModel();
                 }
                 renderer = new ModelRenderer(cell, deployedModel);
-                renderer.setCollisionEnabled(collidable);
                 renderer.setPickingEnabled(pickable);
                 renderer.setLightingEnabled(lightingEnabled);
                 renderer.setBackfaceCullingEnabled(backfaceCullingEnabled);
@@ -116,13 +132,11 @@ public class ModelCellComponent extends CellComponent {
 
         ModelCellComponentClientState state = (ModelCellComponentClientState) clientState;
         setDeployedModelURL(state.getDeployedModelURL());
-        collidable = state.isCollisionEnabled();
         pickable = state.isPickingEnabled();
         lightingEnabled = state.isLightingEnabled();
         backfaceCullingEnabled = state.isBackfaceCullingEnabled();
 
         if (renderer!=null) {
-            renderer.setCollisionEnabled(collidable);
             renderer.setPickingEnabled(pickable);
             renderer.setLightingEnabled(lightingEnabled);
             renderer.setBackfaceCullingEnabled(backfaceCullingEnabled);
