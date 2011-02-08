@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -47,8 +65,12 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.component.CellPhysicsPropertiesComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
+import org.jdesktop.wonderland.client.cell.InteractionComponent;
+import org.jdesktop.wonderland.client.cell.InteractionComponent.InteractionComponentListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -87,6 +109,8 @@ public abstract class BasicRenderer implements CellRendererJME {
     private boolean lightingEnabled = true;
     private boolean backfaceCullingEnabled = true;
 
+    private final CollisionListener collisionListener;
+
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
         zbuf.setEnabled(true);
@@ -95,6 +119,10 @@ public abstract class BasicRenderer implements CellRendererJME {
     
     public BasicRenderer(Cell cell) {
         this.cell = cell;
+
+        // update the collidable property of this renderer based on the
+        // cell's interaction component
+        this.collisionListener = new CollisionListener(cell);
     }
 
     /**
@@ -139,12 +167,16 @@ public abstract class BasicRenderer implements CellRendererJME {
                         }
                     }
 
+                    // enable the collision listener
+                    collisionListener.enable();
                 } else {
                     logger.info("No Entity for Cell "+cell.getClass().getName());
                 }
             break;
             case INACTIVE :
                 if (!increasing) {
+                    collisionListener.disable();
+
                     try {
                         Entity child = getEntity();
                         Entity parent = child.getParent();
@@ -663,5 +695,65 @@ public abstract class BasicRenderer implements CellRendererJME {
         protected void finalize() {
             ClientContextJME.getWorldManager().freeEvent(postId);
         }
+    }
+
+    private class CollisionListener
+            implements ComponentChangeListener, InteractionComponentListener
+    {
+        private final Cell cell;
+        private InteractionComponent ic;
+
+        public CollisionListener(Cell cell) {
+            this.cell = cell;
+        }
+
+        public void enable() {
+            cell.addComponentChangeListener(this);
+            setInteractionComponent(cell.getComponent(InteractionComponent.class));
+        }
+
+        public void disable() {
+            cell.removeComponentChangeListener(this);
+            setInteractionComponent(null);
+        }
+
+        public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
+            if (component instanceof InteractionComponent) {
+                switch (type) {
+                    case ADDED:
+                        setInteractionComponent((InteractionComponent) component);
+                        break;
+                    case REMOVED:
+                        setInteractionComponent(null);
+                        break;
+                }
+            }
+        }
+
+        public void collidableChanged(boolean collidable) {
+            setCollisionEnabled(collidable);
+        }
+
+        public void selectableChanged(boolean selectable) {
+            // ignore
+        }
+
+        private void setInteractionComponent(InteractionComponent ic) {
+            if (this.ic != null) {
+                this.ic.removeInteractionComponentListener(this);
+            }
+
+            this.ic = ic;
+
+            if (ic != null) {
+                ic.addInteractionComponentListener(this);
+                setCollisionEnabled(ic.isCollidable());
+            } else {
+                // if there is no interaction component, set collision to
+                // the default, true
+                setCollisionEnabled(true);
+            }
+        }
+
     }
 }

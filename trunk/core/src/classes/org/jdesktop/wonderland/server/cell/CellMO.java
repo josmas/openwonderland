@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -467,7 +467,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
 
         // Notify all components of new live state
-        Collection<ManagedReference<CellComponentMO>> compList = components.values();
+        ManagedReference<CellComponentMO>[] compList =
+                    components.values().toArray(new ManagedReference[components.size()]);
         for(ManagedReference<CellComponentMO> c : compList) {
             // Issue #1108: if the component was added from another component
             // above, it may already be live.  Don't set it live a second

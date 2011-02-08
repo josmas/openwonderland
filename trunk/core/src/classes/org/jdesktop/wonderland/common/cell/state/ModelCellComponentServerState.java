@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -70,7 +88,6 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
             ret = new ModelCellComponentServerState();
 
         ret.deployedModelURL = this.deployedModelURL;
-        ret.collidable = this.collidable;
         ret.pickable = this.pickable;
         ret.lightingEnabled = this.lightingEnabled;
         ret.backfaceCullingEnabled = this.backfaceCullingEnabled;
@@ -81,7 +98,6 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
 
     public CellComponentClientState setClientState(ModelCellComponentClientState state) {
         state.setDeployedModelURL(deployedModelURL);
-        state.setCollisionEnabled(collidable);
         state.setPickingEnabled(pickable);
         state.setLightingEnabled(lightingEnabled);
         state.setBackfaceCullingEnabled(backfaceCullingEnabled);
@@ -124,6 +140,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
     }
 
     /**
+     * @deprecated Use InteractionComponent instead
      * @return the collidable
      */
     @XmlTransient public boolean isCollisionEnabled() {
@@ -131,6 +148,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
     }
 
     /**
+     * @deprecated Use InteractionComponent instead
      * @param collidable the collidable to set
      */
     public void setCollisionEnabled(boolean collidable) {
