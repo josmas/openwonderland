@@ -140,9 +140,16 @@ public class CellPlacementUtils {
         // view.
         Vector3f origin = lookAt.mult(distance);
 
-        // Try to find the ground position based upon the view position and
+        // Add to the position of the view cell to determine the (nearly) final
+        // origin for the Cell's initial position.
+        origin = origin.add(viewPosition);
+
+        // Try to find the ground position based upon the cell's origin and
         // collision with the ground.
-        float yDown = CellPlacementUtils.getVectorToGround(system, viewPosition);
+        // OWL issue #166: be sure to do this at the cell's projected origin
+        // as opposed to the view location, otherwise you will pick the avatar
+        // instead of the ground.
+        float yDown = CellPlacementUtils.getVectorToGround(system, origin);
         if (yDown == -1) {
             logger.warning("Unable to find floor for initial Cell placement," +
                     " using avatar position as floor, y=" + viewPosition.y);
@@ -153,11 +160,7 @@ public class CellPlacementUtils {
         // place the Cell so that is above ground, with respect to the view
         // Cell.
         float height = CellPlacementUtils.getBoundsHeight(bounds);
-        origin.y = height - yDown;
-
-        // Add to the position of the view cell to determine the final origin
-        // for the Cell's initial position.
-        origin = origin.add(viewPosition);
+        origin.y += height - yDown;
 
         logger.info("Determined world origin of Cell is " + origin);
         return origin;
