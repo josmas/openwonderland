@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
 public class InteractionComponentMO extends CellComponentMO {
-    private boolean collidable;
-    private boolean selectable;
+    private boolean collidable = true;
+    private boolean selectable = true;
 
     public InteractionComponentMO(CellMO cell) {
         super(cell);
