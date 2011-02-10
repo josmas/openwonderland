@@ -196,6 +196,7 @@ public class AudioManagerClient extends BaseConnection implements
 
     private boolean inPTT;
     private PTTReleaseTimer pttReleaseTimer;
+    private boolean pttEnabled = true;
 
     /**
      * Create a new AudioManagerClient
@@ -745,6 +746,11 @@ public class AudioManagerClient extends BaseConnection implements
         ActionMap am = canvas.getActionMap();
         am.put("pttPush", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
+                // make sure push-to-talk is enabled
+                if (!isPTTEnabled()) {
+                    return;
+                }
+
                 // if the global entity does not have focus, ignore this event
                 // because it is going to a shared app
                 KeyEvent ke = new KeyEvent(canvas, KeyEvent.KEY_PRESSED,
@@ -818,6 +824,14 @@ public class AudioManagerClient extends BaseConnection implements
                 pttReleaseTimer = null;
             }
         }
+    }
+
+    public boolean isPTTEnabled() {
+        return pttEnabled;
+    }
+
+    public void setPTTEnabled(boolean pttEnabled) {
+        this.pttEnabled = pttEnabled;
     }
 
     public void personalPhone() {
