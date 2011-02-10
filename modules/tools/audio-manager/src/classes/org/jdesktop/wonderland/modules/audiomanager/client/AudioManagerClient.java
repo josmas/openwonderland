@@ -807,7 +807,7 @@ public class AudioManagerClient extends BaseConnection implements
 
         @Override
         protected void done() {
-            if (inPTT) {
+            if (inPTT && !isCancelled()) {
                 inPTT = false;
                 setMute(true);
             }
