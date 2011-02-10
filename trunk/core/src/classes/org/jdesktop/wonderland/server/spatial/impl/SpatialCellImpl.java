@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -434,6 +434,11 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
             computeSpaces(newWorldBounds);
         } else {
             this.viewCacheSet = viewCacheSet;
+            
+            // OWL issue #167: add listeners to all views. This will be cleaned
+            // up properly when the cell is removed and ViewCacheSet.destroy()
+            // is called
+            viewCachesAddedOrRemoved(viewCacheSet.getCaches(), true, false, this);
         }
 
         if (children != null) {
@@ -493,7 +498,7 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
         // children that have expressed an interest
         try {
             acquireRootReadLock();
-            viewCachesAddedOrRemoved(caches, true, this);
+            viewCachesAddedOrRemoved(caches, true, true, this);
         } finally {
             releaseRootReadLock();
         }
@@ -508,27 +513,29 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
         // children that have expressed an interest
         try {
             acquireRootReadLock();
-            viewCachesAddedOrRemoved(caches, false, this);
+            viewCachesAddedOrRemoved(caches, false, true, this);
         } finally {
             releaseRootReadLock();
         }
     }
 
-    void viewCachesAddedOrRemoved(Collection<ViewCache> caches, boolean added, SpatialCellImpl cell) {
+    static void viewCachesAddedOrRemoved(Collection<ViewCache> caches,
+            boolean added, boolean notifyChildren, SpatialCellImpl cell)
+    {
         // Issue #860: add a single listener to each cache to notify this
         // cell of any view updates. This cell will then forward that
         // updates to all the registered listeners.
         for (ViewCache c : caches) {
             if (added) {
-                c.addViewUpdateListener(cellID, this);
+                c.addViewUpdateListener(cell.getCellID(), cell);
             } else {
-                c.removeViewUpdateListener(cellID, this);
+                c.removeViewUpdateListener(cell.getCellID(), cell);
             }
         }
 
-        if (children!=null) {
-            for(SpatialCellImpl child : children) {
-                child.viewCachesAddedOrRemoved(caches, added, child);
+        if (notifyChildren && cell.getChildren() != null) {
+            for(SpatialCellImpl child : cell.getChildren()) {
+                viewCachesAddedOrRemoved(caches, added, true, child);
             }
         }
     }
@@ -680,6 +687,13 @@ public class SpatialCellImpl implements SpatialCell, ViewUpdateListener {
         private final Map<ViewCache, HashSet<Space>> viewCache = new HashMap();
 
         public ViewCacheSet() {
+        }
+
+        public Collection<ViewCache> getCaches() {
+            // return a copy
+            synchronized (viewCache) {
+                return new ArrayList<ViewCache>(viewCache.keySet());
+            }
         }
 
         /**
