@@ -78,7 +78,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Telephone%20Setup Wonderland Phone Setup Guide]</td>
-  <td>This guide explains how to connect a Wonderland installation to the telephone network. For original documentation see: [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandPhoneSetup Project Wonderland Phone Setup Guide] and [[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandTelephoneAdmin?TWIKISID=85e154924b7dd7b9d15444109d6af36b Telephone Integration]</td>
+  <td>This guide explains how to connect a Wonderland installation to the telephone network. For original documentation see: [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandPhoneSetup Project Wonderland Phone Setup Guide] and [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandTelephoneAdmin?TWIKISID=85e154924b7dd7b9d15444109d6af36b Telephone Integration]</td>
 </tr>
 <tr>
   <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sysadmin%20Tips Sys Admin Tips]</td>
