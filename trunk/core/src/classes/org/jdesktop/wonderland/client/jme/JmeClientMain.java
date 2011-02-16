@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -750,13 +751,23 @@ public class JmeClientMain {
      * @param propsURL the URL of the properties file to load
      */
     protected void loadProperties(URL propsURL) {
+        Properties mergeProps = new Properties();
+
         // load the given file
         if (propsURL != null) {
             try {
-                System.getProperties().load(propsURL.openStream());
+                mergeProps.load(propsURL.openStream());
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, "Error reading properties from "
                         + propsURL, ioe);
+            }
+        }
+
+        // only set a property if it has not been set by web start
+        for (String propsName : mergeProps.stringPropertyNames()) {
+            if (System.getProperties().getProperty(propsName) == null) {
+                System.getProperties().setProperty(propsName,
+                                                   mergeProps.getProperty(propsName));
             }
         }
     }
