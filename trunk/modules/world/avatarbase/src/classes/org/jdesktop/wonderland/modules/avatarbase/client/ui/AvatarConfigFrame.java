@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -21,8 +39,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
@@ -34,8 +54,6 @@ import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatar;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
@@ -133,7 +151,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private void populateAvatarList() {
         DefaultListModel listModel = (DefaultListModel) avatarList.getModel();
         AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
-        Set<AvatarSPI> avatarSet = registry.getAllAvatars();
+        
+        // sort avatars by name
+        Set<AvatarSPI> avatarSet = new TreeSet<AvatarSPI>(new Comparator<AvatarSPI>() {
+            public int compare(AvatarSPI o1, AvatarSPI o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        avatarSet.addAll(registry.getAllAvatars());
 
         // We want to make sure the default avatar if the first, so add it. We
         // also need to remove it from the list so it does not get added twice.
