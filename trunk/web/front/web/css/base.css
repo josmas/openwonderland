@@ -17,7 +17,7 @@ textarea, input, table, optgroup {
 html { font-size:100.01%; }
 
 body { 
-	background: white url('../images/idy_watermark.gif') 50% 10% no-repeat;
+	background: white url('../images/idy_watermark.gif') no-repeat fixed 50% -50px;
 	color: #333;
 	font: 1em/1.3em 'Arial','Helvetica', sans-serif;
 }
@@ -96,7 +96,7 @@ li {
 	position: relative;
 	right: 22px;
 	top: 5px;
-	width: 365px;
+	width: 345px;
 }
 
 #head h1 { 
