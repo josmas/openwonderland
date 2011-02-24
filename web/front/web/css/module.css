@@ -7,28 +7,24 @@ table.installed {
         border: solid #adb7c1;
         border-width: 0px 1px 1px 1px;
         border-collapse: collapse;
-        /* margin-top: 10px; */
 }
 
 tr.header {
 	background-color: #adb7c1;
 	color: #fff;
 	font-weight: normal;
-/* 	filter:alpha(opacity=70);
-	opacity: 0.7;
-	-moz-opacity:0.7; */
+}
+
+tr {
+        background-color: rgb(243, 243, 243); /* #f3f3f3 */
+        background-color: rgba(243, 243, 243, 0.5);
+	border: 1px solid #adb7c1;
 }
 
 /* CSS3 for alternating rows. */
 tr:nth-child(even) {
-	background-color: #d6dbe0;
-/* 	filter:alpha(opacity=50);
-	opacity: 0.5;
-	-moz-opacity:0.5; */
-}
-
-tr {
-	border: 1px solid #adb7c1;
+        background-color: rgb(214, 219, 224); /* #d6dbe0 */
+        background-color: rgba(214, 219, 224, 0.5);
 }
 
 td, th {
@@ -43,6 +39,17 @@ tr.installed_a {
 
 tr.installed_b {
         background-color:#ffffff;
+}
+
+/* Specifically for nested tables, i.e. tightvnccontrol */
+table table tr td:first-child {
+        text-align: right;
+}
+
+table table td {
+        padding: 3px 5px;
+        font-size: .85em;
+        line-height: 1em;
 }
 
 /* ----------------------------------- NEW ----------------------------------*/
