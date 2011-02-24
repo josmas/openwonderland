@@ -943,7 +943,15 @@ public class LogViewerFrame extends javax.swing.JFrame {
                         return new ParagraphView(element) {
                             @Override
                             public void layout(int width, int height) {
-                                super.layout(Short.MAX_VALUE, height);
+                                try {
+                                    super.layout(Short.MAX_VALUE, height);
+                                } catch (Throwable t) {
+                                    // this method sometimes throws an error
+                                    // which prevents the component from
+                                    // initializing. Just ignore any errors.
+                                    logger.log(Level.WARNING, "Error in layout", 
+                                               t);
+                                }
                             }
 
                             @Override
