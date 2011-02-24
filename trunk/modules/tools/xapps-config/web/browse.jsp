@@ -22,9 +22,9 @@
         <p>Use this page to configure desktop (X11) applications (such as Firefox) that will be shared by all users.</p>
         <table class="installed" id="runnerTable">
             <tr class="header">
-                <td class="installed"><b>App Name</b></td>
-                <td class="installed"><b>Command</b></td>
-                <td class="installed"><b>Actions</b></td>
+                <td class="installed">App Name</td>
+                <td class="installed">Command</td>
+                <td class="installed">Actions</td>
             </tr>
             <c:forEach var="entry" items="${requestScope['entries']}">
                 <tr>

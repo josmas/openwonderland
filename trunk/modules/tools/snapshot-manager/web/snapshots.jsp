@@ -33,7 +33,7 @@
                 <td class="installed">Actions</td>
             </tr>
             <c:forEach var="root" items="${requestScope['roots']}">
-                <tr class="installed_a">
+                <tr>
                     <td class="installed">${root.name}</td>
                     <td class="installed">${root.rootPath}</td>
                     <td class="installed">
@@ -63,7 +63,7 @@
                 <td class="installed">Actions</td>
             </tr>
             <c:forEach var="snapshot" items="${requestScope['snapshots']}">
-                <tr class="installed_a">
+                <tr>
                     <td class="installed">${snapshot.name}</td>
                     <td class="installed"><fmt:formatDate value="${snapshot.timestamp}" type="both"/></td>
                     <td class="installed">${snapshot.description}</td>
