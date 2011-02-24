@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -35,9 +35,12 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,27 +69,29 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
  */
 public class CellServerStateFactory {
     /* A list of core cell setup class names, currently only for components */
-    private static Class[] coreSetupClasses = {
-        PositionComponentServerState.class,
-        ModuleURI.class
-    };
+    private static final List<Class> coreClasses = new ArrayList<Class>();
     
     /* The JAXB contexts used to create marshallers and unmarshallers */
     private static JAXBContext systemContext = null;
 
     /* The Logger for this class */
-    private static Logger logger = Logger.getLogger(CellServerStateFactory.class.getName());
+    private static final Logger logger = Logger.getLogger(CellServerStateFactory.class.getName());
      
     /* Create the XML marshaller and unmarshaller once for all setup classes */
     static {
         ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
 
+        coreClasses.addAll(Arrays.asList(getClasses(scl)));
+        coreClasses.add(ModuleURI.class);
+
         try {
-            systemContext = JAXBContext.newInstance(getClasses(scl));
+            systemContext = JAXBContext.newInstance(coreClasses.toArray(new Class[0]));
         } catch (javax.xml.bind.JAXBException excp) {
             CellServerStateFactory.logger.log(Level.SEVERE,
                      "[CELL] SETUP FACTORY Failed to create JAXBContext", excp);
         }
+
+        logger.fine("Core classes: " + coreClasses.toString());
     }
 
     /**
@@ -155,7 +160,7 @@ public class CellServerStateFactory {
      * @return
      */
     private static Class[] getClasses(ScannedClassLoader classLoader) {
-        Set<Class> setupClasses = new LinkedHashSet<Class>(Arrays.asList(coreSetupClasses));
+        Set<Class> setupClasses = new LinkedHashSet<Class>(coreClasses);
 
         /* Attempt to load the class names using annotations */
         Iterator<CellState> it = classLoader.getInstances(
@@ -175,6 +180,8 @@ public class CellServerStateFactory {
         while (it2.hasNext()) {
             setupClasses.add(it2.next().getClass());
         }
+
+        logger.fine("Setup classes: " + setupClasses.toString());
         
         return setupClasses.toArray(new Class[0]);
     }

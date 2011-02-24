@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -23,8 +41,9 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +102,18 @@ public class ScannedClassLoader extends URLClassLoader {
     public ScannedClassLoader(URL[] urls, ClassLoader parent) {
         super (urls, parent);
 
-        createDB(urls);
+        // find URLs in this classloader, as well as all parent classloaders
+        // (stopping when we find an instance of ScannedClassLoader)
+        Set<URL> urlSet = new HashSet<URL>(Arrays.asList(urls));
+        while (parent != null && !(parent instanceof ScannedClassLoader)) {
+            if (parent instanceof URLClassLoader) {
+                urlSet.addAll(Arrays.asList(((URLClassLoader) parent).getURLs()));
+            }
+
+            parent = parent.getParent();
+        }
+
+        createDB(urlSet.toArray(new URL[urlSet.size()]));
     }
 
     /**
@@ -95,9 +125,21 @@ public class ScannedClassLoader extends URLClassLoader {
         String name = clazz.getName();
 
         // search the index for the given annotation
-        Set<String> out = annotationDB.getAnnotationIndex().get(name);
-        if (out == null) {
-            out = Collections.emptySet();
+        Set<String> out = new LinkedHashSet<String>();
+        Set<String> classes = annotationDB.getAnnotationIndex().get(name);
+        if (classes != null) {
+            out.addAll(classes);
+        }
+        
+        // if there is a parent ScannedClassLoader, delegate to it
+        ClassLoader parent = getParent();
+        while (parent != null) {
+            if (parent instanceof ScannedClassLoader) {
+                out.addAll(((ScannedClassLoader) parent).getClasses(clazz));
+                break;
+            }
+
+            parent = parent.getParent();
         }
 
         return out;
