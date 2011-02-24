@@ -1,3 +1,21 @@
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
 /*
  * Project Wonderland
  * 
@@ -158,24 +176,40 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
                 int x = component.getX();
                 int y = component.getY();
 
-                if (x + compWidth < hudX + MIN_LEFT_MARGIN*4) {
-                    // allow component to move off left edge, with at least
-                    // MIN_LEFT_MARGIN visible (close button visible)
-                    x = (int) (hudX + MIN_LEFT_MARGIN*4 - compWidth);
-                } else if (x > hudX + hudWidth - MIN_RIGHT_MARGIN) {
-                    // allow component to move off right edge, with at least
-                    // MIN_RIGHT_MARGIN visible
-                    x = hudX + hudWidth - MIN_RIGHT_MARGIN;
-                }
-                if (y + compHeight < hud.getY() + MIN_BOTTOM_MARGIN) {
-                    // allow component to move off bottom edge, with at least
-                    // MIN_BOTTOM_MARGIN visible (header visible)
-                    y = (int) (hudY + MIN_BOTTOM_MARGIN - compHeight);
-                } else if (y + compHeight > hudY + hudHeight - MIN_TOP_MARGIN) {
-                    // do not allow component to move off top of HUD
-                    y = (int) (hudY + hudHeight - MIN_TOP_MARGIN - compHeight);
-                }
+                if (component.getDecoratable()) {
+                    if (x + compWidth < hudX + MIN_LEFT_MARGIN*4) {
+                        // allow component to move off left edge, with at least
+                        // MIN_LEFT_MARGIN visible (close button visible)
+                        x = (int) (hudX + MIN_LEFT_MARGIN*4 - compWidth);
+                    } else if (x > hudX + hudWidth - MIN_RIGHT_MARGIN) {
+                        // allow component to move off right edge, with at least
+                        // MIN_RIGHT_MARGIN visible
+                        x = hudX + hudWidth - MIN_RIGHT_MARGIN;
+                    }
 
+                    if (y + compHeight < hud.getY() + MIN_BOTTOM_MARGIN) {
+                        // allow component to move off bottom edge, with at least
+                        // MIN_BOTTOM_MARGIN visible (header visible)
+                        y = (int) (hudY + MIN_BOTTOM_MARGIN - compHeight);
+                    } else if (y + compHeight > hudY + hudHeight - MIN_TOP_MARGIN) {
+                        // do not allow component to move off top of HUD
+                        y = (int) (hudY + hudHeight - MIN_TOP_MARGIN - compHeight);
+                    }
+                } else {
+                    // make sure a non-decoratable component is always
+                    // completely visible
+                    if (x < hudX + MIN_LEFT_MARGIN) {
+                        x = hudX + MIN_LEFT_MARGIN;
+                    } else if (x + compWidth > hudX + hudWidth - MIN_RIGHT_MARGIN) {
+                        x = (int) (hudX + hudWidth - MIN_RIGHT_MARGIN - compWidth);
+                    }
+
+                    if (y < hudY + MIN_BOTTOM_MARGIN) {
+                        y = hudY + MIN_BOTTOM_MARGIN;
+                    } else if (y + compHeight > hudY + hudHeight - MIN_TOP_MARGIN) {
+                        y = (int) (hudY + hudHeight - MIN_TOP_MARGIN - compHeight);
+                    }
+                }
                 location.set(x, y);
             }
 
