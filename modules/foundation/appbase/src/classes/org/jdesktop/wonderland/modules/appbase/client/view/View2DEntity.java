@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -2368,6 +2368,8 @@ public abstract class View2DEntity implements View2D {
         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
         CollisionComponent cc = collisionSystem.createCollisionComponent(rc.getSceneRoot());
         entity.addComponent(CollisionComponent.class, cc);
+        cc.setCollidable(true);
+        cc.setInheritCollidable(true);
     }
 
 
