@@ -90,7 +90,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 ==For Content Developers==
 <table cellpadding="5" width="100%">
 <tr>
-  <td width="25%">http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandArtImport05.pdf Importing 3D Models]</td>
+  <td width="25%">[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandArtImport05.pdf Importing 3D Models]</td>
   <td>This tutorial provides an introduction to importing existing 3D models into Open Wonderland.</td>
 </tr>
 <tr>
