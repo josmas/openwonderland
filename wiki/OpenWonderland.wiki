@@ -65,15 +65,15 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>Leads you step-by-step to download, install, configure, and run Open Wonderland.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandServerAdministration05 Web-based Server Administration]</td>
+  <td>[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandServerAdministration05.pdf Web-based Server Administration]</td>
   <td>A reference guide for configuring and administering the Open Wonderland server via a web-based interface.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandConfigureFirewall05 Firewall Configuration]</td>
+  <td>[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandConfigureFirewall05.pdf Firewall Configuration]</td>
   <td>This tutorial describes how to configure Open Wonderland if your server is behind a firewall or NAT.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandAuthentication05 Configuring Authentication]</td>
+  <td>[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandAuthentication05.pdf Configuring Authentication]</td>
   <td>This tutorial describes how to configure authentication for Open Wonderland</td>
 </tr>
 <tr>
@@ -90,11 +90,11 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 ==For Content Developers==
 <table cellpadding="5" width="100%">
 <tr>
-  <td width="25%">[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandArtImport05 Importing 3D Models]</td>
+  <td width="25%">http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandArtImport05.pdf Importing 3D Models]</td>
   <td>This tutorial provides an introduction to importing existing 3D models into Open Wonderland.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorldAssembly05 Assembling Worlds]</td>
+  <td>[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandWorldAssembly05.pdf Assembling Worlds]</td>
   <td>This tutorial provides an introduction to assembling worlds. You may insert new objects into your world and move, rotate, and resize them.</td>
 </tr>
 <tr>
