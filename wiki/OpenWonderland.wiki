@@ -95,10 +95,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorldAssembly05 Assembling Worlds]</td>
-  <td>This tutorial provides an introduction to assembling worlds. You may insert new Components into your world and move, rotate, and resize them.</td>
+  <td>This tutorial provides an introduction to assembling worlds. You may insert new objects into your world and move, rotate, and resize them.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWorldFromScratch05 Building an Open Wonderland World From Scratch]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Building%20an%20Open%20Wonderland%20World%20From%20Scratch Building an Open Wonderland World From Scratch]</td>
   <td>This tutorial explains how to start with an empty world, populate it with content, and save a snapshot.</td>
 </tr>
 <tr>
