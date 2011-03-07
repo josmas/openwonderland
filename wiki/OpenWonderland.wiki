@@ -40,19 +40,23 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td width="25%">[http://199.17.224.245:8080//quickstartguide/quickstartguide/QuickstartTOC.html Quickstart Guides]</td>
   <td>This set of very short guides provides a brief introduction to the basic features of Open Wonderland. These guides are also available in-world from the Help menu.</td>
 </tr>
-
 <tr>
   <td class="left">[http://sites.google.com/site/openwonderland/tutorials/learning-the-basics-tutorial Learning the Basics]</td>
   <td class="right">Introductory user-focused tutorial explaining how to start Wonderland and use the basic features.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandClientSpecs05 Client Hardware Performance]</td>
-  <td>This page lists the reported performance of various hardware and software configurations with Open Wonderland</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Troubleshooting%20and%20Testing Troubleshooting and Testing]</td>
+  <td class="right">This document contains troubleshooting information applicable to everyone as well as more advanced topics for system administrators and developers.</td>
 </tr>
 <tr>
   <td>[https://sites.google.com/site/openwonderland/tutorials/troubleshooting-tips Troubleshooting Tips]</td>
   <td>Tips for handling a variety of problems new users might encountered running Wonderland.</td>
 </tr>
+<tr>
+  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandClientSpecs05 Client Hardware Performance]</td>
+  <td>This page lists the reported performance of various hardware and software configurations with Open Wonderland</td>
+</tr>
+
 <tr><td></td></tr>
 </table>
 
