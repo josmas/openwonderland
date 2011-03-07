@@ -109,7 +109,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 <tr>
   <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities]</td>
-  <td>Learn to use Google !SketchUp to create simple, but attractive 3D models and import them into Wonderland.</td>
+  <td>This is a reference guide covering the default capabilities that come bundled with Wonderland as well as the common optional capabilities.</td>
 </tr>
 
 <tr>
