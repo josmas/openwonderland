@@ -71,7 +71,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>Leads you step-by-step to download, install, configure, and run Open Wonderland.</td>
 </tr>
 <tr>
-  <td>[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandServerAdministration05.pdf Web-based Server Administration]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Server%20Administration%20Console%20Guide Wonderland Server Administration Console Guide]</td>
   <td>A reference guide for configuring and administering the Open Wonderland server via a web-based interface.</td>
 </tr>
 <tr>
