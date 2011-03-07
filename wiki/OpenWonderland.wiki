@@ -104,9 +104,13 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This tutorial explains how to start with an empty world, populate it with content, and save a snapshot.</td>
 </tr>
 <tr>
-  <td>[http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandArtworkForNonArtists05 Creating and Importing Artwork for Non-Artists]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Creating%20and%20Importing%20Artwork%20for%20Non-Artists Creating and Importing Artwork for Non-Artists]</td>
   <td>Learn to use Google !SketchUp to create simple, but attractive 3D models and import them into Wonderland.</td>
 </tr>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities]</td>
+  <td>Learn to use Google !SketchUp to create simple, but attractive 3D models and import them into Wonderland.</td>
+</tr>
+
 <tr>
   <td>ExportingBlenderModels</td>
   <td>Matthew Schmidt provides advice on how to export models from Blender to import into Wonderland.</td>
