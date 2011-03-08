@@ -192,7 +192,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
-  <td class="left">[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandJMETips05 Links to jMonkeyEngine Documentation]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=JMonkeyEngine%28jME%29%20Resources]</td>
   <td class="right">This page provides a collection of web links to tutorials and documentation for jMonkeyEngine, the 3D rendering API used by Open Wonderland.</td>
 </tr>
 <tr>
