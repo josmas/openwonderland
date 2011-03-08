@@ -1,10 +1,6 @@
-<%--
-   Document   : index
-   Created on : Thu Aug 27 14:29:04 EDT 2009 @811 /Internet Time/
-   Author     : gritchie
---%>
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
@@ -47,7 +43,7 @@
           <h3>For more information:</h3>
 
           <ul>
-            <li>Open Wonderland v0.5 User's Guide [coming soon]</li>
+            <li><a href="http://199.17.224.245:8080//quickstartguide/quickstartguide/QuickstartTOC.html">Open Wonderland QuickStart Guides</li>
 
             <li><a href="http://openwonderland.org">Open Wonderland Web Site</a></li>
 
@@ -67,7 +63,7 @@
           <h3>For more information:</h3>
 
           <ul>
-            <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandServerAdministration">Web-Based Administration Guide</a></li>
+            <li><a href="http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Server%20Administration%20Console%20Guide">Server Administration Console Guide</a></li>
 
             <li><a href="http://code.google.com/p/openwonderland/wiki/WebStart05">Launching Wonderland Clients using Java Web Start</a></li>
 
@@ -78,8 +74,8 @@
 
       <div id="footer">
 	<p id="serverInfo">
-	Server:  <%= request.getLocalName() %>, Port: <%= request.getLocalPort() %><br/>
-	Version: @VERSION@
+	Server:  ip-10-244-26-31.ec2.internal, Port: 8080<br/>
+	Version: 0.5-dev
 	</p>
       </div>
     </div>
