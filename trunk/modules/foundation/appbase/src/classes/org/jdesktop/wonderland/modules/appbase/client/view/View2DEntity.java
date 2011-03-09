@@ -948,6 +948,17 @@ public abstract class View2DEntity implements View2D {
         return locationOrtho.clone();
     }
 
+    /**
+     * Issue 151: Returns the corresponding component location for locationOrtho.
+     */
+    public Point getLocation() {
+    	return
+    		new Point(
+    			(int)(locationOrtho.x - getDisplayerLocalWidth() / 2),
+    			(int)(locationOrtho.y - getDisplayerLocalHeight() / 2)
+    		);
+    }
+    
     /** {@inheritDoc} */
     public synchronized void setOffset(Vector2f offset) {
         setOffset(offset, true);
@@ -1456,7 +1467,8 @@ public abstract class View2DEntity implements View2D {
 
         // Determine what frame changes need to be performed. But these aren't executed now;
         // they are executed later by view.updateFrame, which must be invoked outside the window lock.
-        if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_TYPE |
+        // issue 151: prepare for reattachment of frame on resize. 
+        if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_TYPE | CHANGED_SIZE_APP |
                            CHANGED_PIXEL_SCALE | CHANGED_USER_RESIZABLE | CHANGED_VISIBLE)) != 0) { 
             logger.fine("Update frame for view " + this);
             logger.fine("decorated " + decorated);
@@ -1484,7 +1496,7 @@ public abstract class View2DEntity implements View2D {
                 }
             }
 
-            if ((changeMask & CHANGED_TYPE) != 0) {
+            if ((changeMask & (CHANGED_TYPE | CHANGED_SIZE_APP)) != 0) {
                 if (decorated) {
                     frameChanges.add(FrameChange.REATTACH_FRAME);
                 }
@@ -2375,7 +2387,13 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public void updateFrame () {
-        for (FrameChange frameChg : frameChanges) {
+    	
+    	// issue 151
+    	if (inCleanup) {
+    		return;
+    	}
+        
+    	for (FrameChange frameChg : frameChanges) {
             switch (frameChg) {
             case ATTACH_FRAME:
                 attachFrame();

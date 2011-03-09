@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -563,7 +563,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
     protected void componentResized(final HUDComponent2D component) {
         if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("resizing HUD component: " + component);
+            logger.finest("resizing HUD component: " + component); 
         }
 
         final HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
@@ -572,8 +572,11 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
 
         final HUDView2D view = state.getView();
-        if (view != null) {
+        if (view != null) { 
             view.setSizeApp(component.getSize());
+            
+            // issue 151: update componentLocation by deriving it from location on glass
+            component.setLocation(view.getLocation());
         }
     }
 
