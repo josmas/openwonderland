@@ -79,7 +79,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This tutorial describes how to configure Open Wonderland if your server is behind a firewall or NAT.</td>
 </tr>
 <tr>
-  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Open%20Wonderland%20v0.5%20Configuring%20Authentication%20%28under%20construction%29 Configuring Authentication]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Open%20Wonderland%20v0.5%20Configuring%20Authentication Configuring Authentication]</td>
   <td>This tutorial describes how to configure authentication for Open Wonderland</td>
 </tr>
 <tr>
