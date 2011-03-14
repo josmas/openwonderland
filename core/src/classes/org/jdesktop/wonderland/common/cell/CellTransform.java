@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -26,6 +44,7 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Quat4d;
 import javax.vecmath.Vector3d;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.Math3DUtils;
 
 /**
  * The transform for a cell.
@@ -363,6 +382,30 @@ public class CellTransform implements Serializable {
         translation.set((float)t.x, (float)t.y, (float)t.z);
 
         return this;
+    }
+
+    /**
+     * Determine if all values from this transform are within epsilon of
+     * the values from the given transform.
+     */
+    public boolean epsilonEquals(CellTransform o) {
+        if (o == null) {
+            return false;
+        }
+
+        if (!Math3DUtils.epsilonEquals(translation, o.translation)) {
+            return false;
+        }
+
+        if (!Math3DUtils.epsilonEquals(rotation, o.rotation)) {
+            return false;
+        }
+
+        if (!Math3DUtils.epsilonEquals(scale, scale)) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override

@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -22,8 +40,8 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.FastMath;
 import com.jme.math.Matrix3f;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Utilities for dealing with 3D Math
@@ -147,6 +165,9 @@ public class Math3DUtils {
             euler.z = FastMath.TWO_PI-euler.z;
      }
 
+    public static boolean epsilonEquals(float f1, float f2) {
+        return epsilonEquals(f1, f2, FastMath.FLT_EPSILON);
+    }
 
     public static boolean epsilonEquals(float f1, float f2, float epsilon) {
         float diff;
@@ -159,12 +180,42 @@ public class Math3DUtils {
         return true;
     }
 
+    public static boolean epsilonEquals(Vector3f t1, Vector3f t2) {
+        return epsilonEquals(t1, t2, FastMath.FLT_EPSILON);
+    }
+
     public static boolean epsilonEquals(Vector3f t1, Vector3f t2, float epsilon) {
+        if (t1 == null && t2 == null) {
+            return true;
+        } else if (t1 == null || t2 == null) {
+            return false;
+        }
+
         if (epsilonEquals(t1.x, t2.x, epsilon) &&
             epsilonEquals(t1.y, t2.y, epsilon) &&
             epsilonEquals(t1.z, t2.z, epsilon))
             return true;
         
+        return false;
+    }
+
+    public static boolean epsilonEquals(Quaternion q1, Quaternion q2) {
+        return epsilonEquals(q1, q2, FastMath.FLT_EPSILON);
+    }
+
+    public static boolean epsilonEquals(Quaternion q1, Quaternion q2, float epsilon) {
+        if (q1 == null && q2 == null) {
+            return true;
+        } else if (q1 == null || q2 == null) {
+            return false;
+        }
+
+        if (epsilonEquals(q1.x, q2.x, epsilon) &&
+            epsilonEquals(q1.y, q2.y, epsilon) &&
+            epsilonEquals(q1.z, q2.z, epsilon) &&
+            epsilonEquals(q1.w, q2.w, epsilon))
+            return true;
+
         return false;
     }
 
