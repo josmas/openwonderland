@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -74,7 +74,7 @@ public class HelpClientPlugin extends BaseClientPlugin {
         {"User_Guide", "http://openwonderland.org/index.php?option=com_content&view=article&id=95&Itemid=94"},
         {"Blog", "http://blogs.openwonderland.org/"},
         {"Forum", "http://groups.google.com/group/openwonderland"},
-        {"Tutorials", "http://wiki.java.net/bin/view/Javadesktop/ProjectWonderland"},
+        {"Tutorials", "http://code.google.com/p/openwonderland/wiki/OpenWonderland"},
         {"Report_Bug", "http://code.google.com/p/openwonderland/issues/list"},
         {"About", "http://www.openwonderland.org"}
     };
