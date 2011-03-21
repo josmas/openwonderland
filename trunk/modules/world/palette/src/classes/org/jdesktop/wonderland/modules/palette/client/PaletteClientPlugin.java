@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -23,18 +41,29 @@ import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
@@ -48,11 +77,6 @@ import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.security.ModifyAction;
 import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorHandler;
 import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
-import org.jdesktop.wonderland.client.cell.utils.CellUtils;
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
-import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 /**
  * Client-size plugin for the cell palette.
@@ -113,22 +137,20 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        paletteHUDMI = new JMenuItem(BUNDLE.getString("Shortcuts"));
+        paletteHUDMI = new JCheckBoxMenuItem(BUNDLE.getString("Shortcuts"));
         paletteHUDMI.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                // Display the HUD Panel. We need to call HUD methods
-                // on a thread OTHER than the AWT Event Thread.
-                new Thread() {
-
-                    @Override
-                    public void run() {
-                        if (paletteHUD == null) {
-                            createHUD();
-                        }
-                        paletteHUD.setVisible(true);
+                // Display the HUD Panel.
+                // issue #174 hud visibility management                	
+                if (paletteHUDMI.isSelected() == true) {
+                	if (paletteHUD == null) {
+                		createHUD();
                     }
-                }.start();
+                    paletteHUD.setMaximized();
+                    paletteHUD.setVisible(true);
+                } else {
+                    paletteHUD.setVisible(false);
+                }
             }
         });
 
@@ -138,7 +160,6 @@ public class PaletteClientPlugin extends BaseClientPlugin
     /**
      * Creates the affordance HUD frame.
      *
-     * NOTE: This method should NOT be called on the AWT Event Thread.
      */
     private void createHUD() {
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
@@ -153,6 +174,20 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // add affordances HUD panel to main HUD
         mainHUD.addComponent(paletteHUD);
+        
+        // issue #174 hud visibility management
+        paletteHUD.addEventListener(new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent event) {
+            	HUDEventType hudEventType = event.getEventType();
+                if (hudEventType == HUDEventType.CLOSED
+                		|| hudEventType == HUDEventType.MINIMIZED) {
+                	paletteHUDMI.setSelected(false);
+                } else 
+                if (hudEventType == HUDEventType.MAXIMIZED) {
+                	paletteHUDMI.setSelected(true);
+                } 
+            }
+        });
     }
 
     /**
@@ -167,8 +202,10 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // Register the handler for CellServerState flavors with the system-wide
         // drag and drop manager. When the preview icon is dragged from the Cell
         // Palette this handler creates an instance of the cell in the world.
-        DragAndDropManager dndManager =
+        DragAndDropManager
+        	dndManager =
                 DragAndDropManager.getDragAndDropManager();
+        
         dndManager.registerDataFlavorHandler(dndHandler);
     }
 
@@ -178,8 +215,10 @@ public class PaletteClientPlugin extends BaseClientPlugin
         JmeClientMain.getFrame().removeFromInsertMenu(paletteMI);
         JmeClientMain.getFrame().removeFromWindowMenu(paletteHUDMI);
 
-        DragAndDropManager dndManager =
+        DragAndDropManager
+        	dndManager =
                 DragAndDropManager.getDragAndDropManager();
+        
         dndManager.unregisterDataFlavorHandler(dndHandler);
     }
 

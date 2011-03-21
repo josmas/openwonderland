@@ -182,7 +182,6 @@ public class AudioManagerClient extends BaseConnection implements
             Collections.synchronizedList(new ArrayList());
     private HUDComponent userListHUDComponent;
     private UserListPanel userListPanel;
-    private boolean usersMenuSelected = false;
     
     private boolean miniVUMeter = true;
     private HUDComponent vuMeterComponent;
@@ -216,13 +215,12 @@ public class AudioManagerClient extends BaseConnection implements
 
         userListJMenuItem = new javax.swing.JCheckBoxMenuItem();
         userListJMenuItem.setText(BUNDLE.getString("Users"));
-        userListJMenuItem.setSelected(usersMenuSelected);
+        userListJMenuItem.setSelected(false);
         userListJMenuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                usersMenuSelected = !usersMenuSelected;
-                userListJMenuItem.setSelected(usersMenuSelected);
-                showUsers(evt);
+           		// issue #174 hud visibility management
+           		showUsers(evt);
             }
         });
         userListJMenuItem.setEnabled(false);
@@ -384,18 +382,31 @@ public class AudioManagerClient extends BaseConnection implements
             
             mainHUD.addComponent(userListHUDComponent);
             userListHUDComponent.addEventListener(new HUDEventListener() {
-
-                public void HUDObjectChanged(HUDEvent e) {
-                    if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
-                        usersMenuSelected = false;
-                        userListJMenuItem.setSelected(usersMenuSelected);
-                    }
-                }
+                // modified for fixing issue #174 hud visibility management
+                public void HUDObjectChanged(HUDEvent event) {
+                	HUDEventType hudEventType = event.getEventType();
+                    if (hudEventType == HUDEventType.CLOSED
+                    		|| hudEventType == HUDEventType.MINIMIZED
+                    		|| hudEventType == HUDEventType.DISAPPEARED) {
+                    	userListJMenuItem.setSelected(false);
+                    } else 
+                    if (hudEventType == HUDEventType.MAXIMIZED) {
+                    	userListJMenuItem.setSelected(true);
+                    } 
+                }                
             });
         }
 
         userListPanel.setUserList();
-        userListHUDComponent.setVisible(usersMenuSelected);
+        
+        //userListHUDComponent.setVisible(usersMenuSelected);
+        if (userListJMenuItem.isSelected()) {
+    		userListHUDComponent.setMaximized();
+    		userListHUDComponent.setVisible(true);
+        } else {
+        	userListHUDComponent.setVisible(false);
+        }
+        
     }
 
     public void removeDialogs() {
@@ -606,13 +617,11 @@ public class AudioManagerClient extends BaseConnection implements
                 cell.addComponent(new ProximityComponent(cell));
             }
 
-            usersMenuSelected = true;
-
             // OWL issue #140: make sure to show the window on the
             // AWT event thread
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    userListJMenuItem.setSelected(usersMenuSelected);
+                    userListJMenuItem.setSelected(true);
                     showUsers(null);
                 }
             });
@@ -1040,6 +1049,9 @@ public class AudioManagerClient extends BaseConnection implements
             vuMeterMiniComponent.setVisible(false);
         }
 
+		// issue #174 hud visibility management
+        vuMeterComponent.setMaximized();
+              
         vuMeterComponent.setVisible(true);
     }
 
