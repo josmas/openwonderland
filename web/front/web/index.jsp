@@ -74,8 +74,8 @@
 
       <div id="footer">
 	<p id="serverInfo">
-	Server:  ip-10-244-26-31.ec2.internal, Port: 8080<br/>
-	Version: 0.5-dev
+          Server:  <%= request.getLocalName() %>, Port: <%= request.getLocalPort() %><br/>
+          Version: @VERSION@
 	</p>
       </div>
     </div>
