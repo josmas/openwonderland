@@ -294,16 +294,17 @@ public class AvatarClientPlugin extends BaseClientPlugin
         gestureMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean visible = gestureMI.isSelected();
-                
                 if (gestureHUDRef == null || gestureHUDRef.get() == null) {
                     GestureHUD hud = new GestureHUD(gestureMI);
-                    hud.setAvatarCharacter(avatarCellRenderer.getAvatarCharacter(),
-                                           visible);
+                    hud.setAvatarCharacter(avatarCellRenderer.getAvatarCharacter(), visible);
                     gestureHUDRef = new WeakReference(hud);
-                } else {
-                    gestureHUDRef.get().setVisible(visible);
                 }
-            }
+                //issue #174 hud visibility management
+                if (visible) {
+                	gestureHUDRef.get().setMaximized();
+                } 
+                gestureHUDRef.get().setVisible(visible);
+            }        
         });
 
         // The menu item for the avatar configuration

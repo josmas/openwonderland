@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -124,6 +124,10 @@ public class ChatManager implements TextChatListener {
                 HUDComponent hud = textChatHUDRefMap.get("").get();
                 boolean show = !hud.isVisible();
                 textChatMenuItem.setState(show);
+                //issue #174 hud visibility management
+                if (show) {
+                	hud.setMaximized();
+                }
                 hud.setVisible(show);
             }
         });
@@ -178,14 +182,19 @@ public class ChatManager implements TextChatListener {
                         // If the window is being closed, we need to update the
                         // state of the checkbox menu item, but we must do this
                         // in the AWT Event Thread.
-                        if (event.getEventType() == HUDEventType.CLOSED) {
-                            SwingUtilities.invokeLater(new Runnable() {
-
-                                public void run() {
-                                    textChatMenuItem.setSelected(false);
-                                }
-                            });
-                        }
+                    	
+                    	// modified for fixing issue #174 hud visibility management
+                    	HUDEventType hudEventType = event.getEventType();
+                    	if (hudEventType == HUDEventType.MINIMIZED
+                    			|| hudEventType == HUDEventType.MAXIMIZED
+                    			|| hudEventType == HUDEventType.CLOSED) {
+                    		final boolean isSelected = hudEventType == HUDEventType.MAXIMIZED;
+                    		SwingUtilities.invokeLater(new Runnable() {
+                    			public void run() {
+                    				textChatMenuItem.setSelected(isSelected);
+                    			}
+                    		});
+                    	}
                     }
                 });
 

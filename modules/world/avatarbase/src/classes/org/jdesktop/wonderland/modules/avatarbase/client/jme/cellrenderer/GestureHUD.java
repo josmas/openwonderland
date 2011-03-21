@@ -112,6 +112,20 @@ public class GestureHUD {
     }
 
     /**
+     * maximizes the gesture HUD
+     * making the HUD visible may require
+     * to maximize it if it was minimized
+     * introduced for fixing issue #174 hud visibility management
+     */
+    public void setMaximized() {
+    	SwingUtilities.invokeLater(new Runnable() {
+    		public void run() {
+    			gestureHud.setMaximized();	
+    		}
+    	});
+    }
+    
+    /**
      * shows or hides the gesture HUD
      * @param visible if <tt>true</tt>, the HUD is shown, otherwise hidden
      */
@@ -235,37 +249,38 @@ public class GestureHUD {
                     panelForHUD = new JPanel();
                     panelForHUD.setLayout(new GridLayout(5, 3));
 
-                // Create HUD buttons for each of the actions
-                for (String name : gestureMap.keySet()) {
+                    // Create HUD buttons for each of the actions
+                    for (String name : gestureMap.keySet()) {
 
-                    // find the button row, column position for this gesture
-                    for (String gesture : gestures) {
-                        if (gesture.equals(name)) {
+                    	// find the button row, column position for this gesture
+                    	for (String gesture : gestures) {
+                    		if (gesture.equals(name)) {
                                 JButton button = new JButton(name);
-                            button.addActionListener(new ActionListener() {
-
-                                public void actionPerformed(ActionEvent event) {
-                                    String action = gestureMap.get(event.getActionCommand());
-                                    logger.info("playing animation: " + event.getActionCommand());
-                                    if (action.equals("Sit")) {
-                                        doSitGesture(avatar);
-                                    } else if (action.equals("RightWink")) {
-                                        CharacterEyes eyes = avatar.getEyes();
-                                        eyes.wink(false);
-                                    } else {
-                                        avatar.playAnimation(action);
-                                    }
-                                }
-                            });
+                                button.addActionListener(
+                                	new ActionListener() {
+                                		public void actionPerformed(ActionEvent event) {
+                                			String action = gestureMap.get(event.getActionCommand());
+                                			logger.info("playing animation: " + event.getActionCommand());
+                                			if (action.equals("Sit")) {
+                                				doSitGesture(avatar);
+                                			} else if (action.equals("RightWink")) {
+                                				CharacterEyes eyes = avatar.getEyes();
+                                				eyes.wink(false);
+                                			} else {
+                                				avatar.playAnimation(action);
+                                			}
+                                		}
+                                	});
                                 panelForHUD.add(button);
-                            break;
-                        }
+                                break;
+                    		}
+                    	}
                     }
-                }
+                
                 } else {
                     logger.warning("No animations found; creating No gestures Message.");
                     panelForHUD = createNoGesturesMessage();
-            }
+                }
 
                 if (gestureHud == null){
                     gestureHud = mainHUD.createComponent(panelForHUD);
@@ -274,20 +289,26 @@ public class GestureHUD {
                     gestureHud.setLocation(leftMargin, bottomMargin);
                     mainHUD.addComponent(gestureHud);
 
+                    // issue #174 hud visibility management
                     gestureHud.addEventListener(new HUDEventListener() {
-                        public void HUDObjectChanged(HUDEvent event) {
-                            if (event.getEventType() == HUDEventType.APPEARED) {
-                                gestureMI.setSelected(true);
-                            } else if (event.getEventType() == HUDEventType.DISAPPEARED) {
-                                gestureMI.setSelected(false);
-                            }
-                        }
-        });
-    }
+                    	public void HUDObjectChanged(HUDEvent event) {
+                    		HUDEventType hudEventType = event.getEventType();
+                    		if (event.getEventType() == HUDEventType.DISAPPEARED
+                    				|| hudEventType == HUDEventType.CLOSED
+                    				|| hudEventType == HUDEventType.MINIMIZED) {
+                    			gestureMI.setSelected(false);
+                    		} else 
+                    		if (event.getEventType() == HUDEventType.APPEARED
+                    				|| hudEventType == HUDEventType.MAXIMIZED) {
+                    			gestureMI.setSelected(true);
+                    		} 
+                    	}
+                    });
+                }
                 
                 GestureHUD.this.visible = show;
                 gestureHud.setVisible(show);
-}
+            }
         });
     }
 }
