@@ -102,18 +102,7 @@ public class ScannedClassLoader extends URLClassLoader {
     public ScannedClassLoader(URL[] urls, ClassLoader parent) {
         super (urls, parent);
 
-        // find URLs in this classloader, as well as all parent classloaders
-        // (stopping when we find an instance of ScannedClassLoader)
-        Set<URL> urlSet = new HashSet<URL>(Arrays.asList(urls));
-        while (parent != null && !(parent instanceof ScannedClassLoader)) {
-            if (parent instanceof URLClassLoader) {
-                urlSet.addAll(Arrays.asList(((URLClassLoader) parent).getURLs()));
-            }
-
-            parent = parent.getParent();
-        }
-
-        createDB(urlSet.toArray(new URL[urlSet.size()]));
+        createDB(urls);
     }
 
     /**
