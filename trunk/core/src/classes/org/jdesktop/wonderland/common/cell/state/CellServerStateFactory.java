@@ -79,9 +79,17 @@ public class CellServerStateFactory {
      
     /* Create the XML marshaller and unmarshaller once for all setup classes */
     static {
+        // start with everything in the system classloader.
         ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
-
         coreClasses.addAll(Arrays.asList(getClasses(scl)));
+        
+        // this list includes all ServerState classes in core, since webstart
+        // won't always find them
+        coreClasses.add(AvatarCellServerState.class);
+        coreClasses.add(InteractionComponentServerState.class);
+        coreClasses.add(ModelCellComponentServerState.class);
+        coreClasses.add(ModelCellServerState.class);
+        coreClasses.add(PositionComponentServerState.class);
         coreClasses.add(ModuleURI.class);
 
         try {
