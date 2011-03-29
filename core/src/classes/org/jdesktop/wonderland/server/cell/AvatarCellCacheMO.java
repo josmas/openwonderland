@@ -305,12 +305,12 @@ public class AvatarCellCacheMO extends ViewCellCacheMO implements ManagedObject,
     }
 
 
-    private void addRevalidationListener(ViewCellCacheRevalidationListener listener) {
+    void addRevalidationListener(ViewCellCacheRevalidationListener listener) {
         // Called from the scheduler via a reference so does not need synchronization
         revalidationsListeners.add(listener);
     }
     
-    private void removeRevalidationListener(ViewCellCacheRevalidationListener listener) {
+    void removeRevalidationListener(ViewCellCacheRevalidationListener listener) {
         // Called from the scheduler via a reference so does not need synchronization
         revalidationsListeners.remove(listener);
     }
