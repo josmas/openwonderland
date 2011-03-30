@@ -210,10 +210,13 @@ public class Math3DUtils {
             return false;
         }
 
-        if (epsilonEquals(q1.x, q2.x, epsilon) &&
-            epsilonEquals(q1.y, q2.y, epsilon) &&
-            epsilonEquals(q1.z, q2.z, epsilon) &&
-            epsilonEquals(q1.w, q2.w, epsilon))
+        // convert to axis angles and compare
+        float[] a1 = q1.toAngles(null);
+        float[] a2 = q2.toAngles(null);
+
+        if (epsilonEquals(a1[0], a2[0], epsilon) &&
+            epsilonEquals(a1[1], a2[1], epsilon) &&
+            epsilonEquals(a1[2], a2[2], epsilon))
             return true;
 
         return false;
