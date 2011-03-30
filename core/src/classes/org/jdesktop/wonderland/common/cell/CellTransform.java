@@ -393,15 +393,18 @@ public class CellTransform implements Serializable {
             return false;
         }
 
-        if (!Math3DUtils.epsilonEquals(translation, o.translation)) {
+        // within 1 millimeter
+        if (!Math3DUtils.epsilonEquals(translation, o.translation, 0.001f)) {
             return false;
         }
 
-        if (!Math3DUtils.epsilonEquals(rotation, o.rotation)) {
+        // within one degree
+        if (!Math3DUtils.epsilonEquals(rotation, o.rotation, 0.0174532925f)) {
             return false;
         }
 
-        if (!Math3DUtils.epsilonEquals(scale, scale)) {
+        // close in scale
+        if (!Math3DUtils.epsilonEquals(scale, scale, 0.0001f)) {
             return false;
         }
 
