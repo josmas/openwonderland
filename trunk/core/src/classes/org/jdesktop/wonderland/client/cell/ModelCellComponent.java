@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
 
 /**
  * A Component that represents a deployed model.
@@ -65,6 +66,7 @@ public class ModelCellComponent extends CellComponent {
     private boolean pickable = true;
     private boolean lightingEnabled = true;
     private boolean backfaceCullingEnabled = true;
+    private TransparencyMode transparency = TransparencyMode.DEFAULT;
 
     public ModelCellComponent(Cell cell) {
         super(cell);
@@ -86,6 +88,7 @@ public class ModelCellComponent extends CellComponent {
                 renderer.setPickingEnabled(pickable);
                 renderer.setLightingEnabled(lightingEnabled);
                 renderer.setBackfaceCullingEnabled(backfaceCullingEnabled);
+                renderer.setTransparency(transparency);
             }
             return renderer;
         }
@@ -135,11 +138,13 @@ public class ModelCellComponent extends CellComponent {
         pickable = state.isPickingEnabled();
         lightingEnabled = state.isLightingEnabled();
         backfaceCullingEnabled = state.isBackfaceCullingEnabled();
+        transparency = state.getTransparencyMode();
 
         if (renderer!=null) {
             renderer.setPickingEnabled(pickable);
             renderer.setLightingEnabled(lightingEnabled);
             renderer.setBackfaceCullingEnabled(backfaceCullingEnabled);
+            renderer.setTransparency(transparency);
         }
      }
 
