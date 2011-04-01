@@ -37,8 +37,13 @@ package org.jdesktop.wonderland.modules.artimport.client.jme;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import java.awt.Component;
 import java.util.List;
 import java.util.ResourceBundle;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -52,6 +57,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
 
 /**
  *
@@ -82,6 +88,22 @@ public class ModelCellComponentProperties
         // Listen for changes to the info text field
         deployedModelURLTF.getDocument().addDocumentListener(
                 new InfoTextFieldListener());
+
+        ComboBoxModel cb = new DefaultComboBoxModel(TransparencyMode.values());
+        transparencyCB.setModel(cb);
+        transparencyCB.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, 
+                                                          int index, boolean isSelected, 
+                                                          boolean cellHasFocus) 
+            {
+                TransparencyMode tv = (TransparencyMode) value;
+                String valueString = BUNDLE.getString("TransparencyMode_" + tv.name());
+                
+                return super.getListCellRendererComponent(list, valueString, index, 
+                                                          isSelected, cellHasFocus);
+            }
+        });
     }
 
     /**
@@ -121,6 +143,7 @@ public class ModelCellComponentProperties
             lightingEnabledCB.setSelected(mState.isLightingEnabled());
             backfaceCullingEnabledCB.setSelected(mState.isBackfactCullingEnabled());
             graphOptimizationEnabledCB.setSelected(mState.isGraphOptimizationEnabled());
+            transparencyCB.setSelectedItem(mState.getTransparencyMode());
 
             checkDirty();
         }
@@ -146,6 +169,8 @@ public class ModelCellComponentProperties
         compState.setLightingEnabled(lightingEnabledCB.isSelected());
         compState.setBackfaceCullingEnabled(backfaceCullingEnabledCB.isSelected());
         compState.setGraphOptimizationEnabled(graphOptimizationEnabledCB.isSelected());
+        compState.setTransparencyMode((TransparencyMode) transparencyCB.getSelectedItem());
+
         editor.addToUpdateList(compState);
     }
 
@@ -159,6 +184,7 @@ public class ModelCellComponentProperties
         lightingEnabledCB.setSelected(origState.isLightingEnabled());
         backfaceCullingEnabledCB.setSelected(origState.isBackfactCullingEnabled());
         graphOptimizationEnabledCB.setSelected(origState.isGraphOptimizationEnabled());
+        transparencyCB.setSelectedItem(origState.getTransparencyMode());
 
         checkDirty();
     }
@@ -195,7 +221,8 @@ public class ModelCellComponentProperties
         dirty |= (lightingEnabledCB.isSelected() != origState.isLightingEnabled());
         dirty |= (backfaceCullingEnabledCB.isSelected() != origState.isBackfactCullingEnabled());
         dirty |= (graphOptimizationEnabledCB.isSelected() != origState.isGraphOptimizationEnabled());
-
+        dirty |= (transparencyCB.getSelectedItem() != origState.getTransparencyMode());
+        
         editor.setPanelDirty(ModelCellComponentProperties.class, dirty);
     }
 
@@ -215,6 +242,8 @@ public class ModelCellComponentProperties
         backfaceCullingEnabledCB = new javax.swing.JCheckBox();
         graphOptimizationEnabledCB = new javax.swing.JCheckBox();
         printSceneGraphB = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        transparencyCB = new javax.swing.JComboBox();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
         jLabel1.setText(bundle.getString("ModelCellComponentProperties.jLabel1.text")); // NOI18N
@@ -257,6 +286,15 @@ public class ModelCellComponentProperties
             }
         });
 
+        jLabel2.setText(bundle.getString("ModelCellComponentProperties.jLabel2.text")); // NOI18N
+
+        transparencyCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Default", "Inverse", "None" }));
+        transparencyCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transparencyCBActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -280,7 +318,12 @@ public class ModelCellComponentProperties
                         .add(backfaceCullingEnabledCB))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(graphOptimizationEnabledCB)))
+                        .add(graphOptimizationEnabledCB))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(transparencyCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -298,7 +341,11 @@ public class ModelCellComponentProperties
                 .add(backfaceCullingEnabledCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(graphOptimizationEnabledCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 89, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(transparencyCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 53, Short.MAX_VALUE)
                 .add(printSceneGraphB)
                 .addContainerGap())
         );
@@ -334,6 +381,10 @@ public class ModelCellComponentProperties
         checkDirty();
     }//GEN-LAST:event_graphOptimizationEnabledCBActionPerformed
 
+    private void transparencyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transparencyCBActionPerformed
+        checkDirty();
+    }//GEN-LAST:event_transparencyCBActionPerformed
+
     private void print(Spatial node, int level) {
         for(int i=0; i<level; i++)
             System.err.print(" ");
@@ -353,8 +404,10 @@ public class ModelCellComponentProperties
     private javax.swing.JTextField deployedModelURLTF;
     private javax.swing.JCheckBox graphOptimizationEnabledCB;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JCheckBox lightingEnabledCB;
     private javax.swing.JCheckBox pickingEnabledCB;
     private javax.swing.JButton printSceneGraphB;
+    private javax.swing.JComboBox transparencyCB;
     // End of variables declaration//GEN-END:variables
 }

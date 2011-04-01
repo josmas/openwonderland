@@ -35,6 +35,8 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
+
 /**
  * A cell component that encapsulates all the information required to load a
  * collada model.
@@ -46,7 +48,8 @@ public class ModelCellComponentClientState extends CellComponentClientState {
     private boolean lightingEnabled=true;
     private boolean backfaceCullingEnabled = true;
     private boolean graphOptimizationEnabled = true;
-    
+    private TransparencyMode transparencyMode = TransparencyMode.DEFAULT;
+
     /** Default constructor */
     public ModelCellComponentClientState() {
     }
@@ -117,5 +120,13 @@ public class ModelCellComponentClientState extends CellComponentClientState {
      */
     public void setGraphOptimizationEnabled(boolean graphOptimizationEnabled) {
         this.graphOptimizationEnabled = graphOptimizationEnabled;
+    }
+
+    public TransparencyMode getTransparencyMode() {
+        return transparencyMode;
+    }
+
+    public void setTransparencyMode(TransparencyMode transparencyMode) {
+        this.transparencyMode = transparencyMode;
     }
 }

@@ -37,15 +37,20 @@ package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
+import com.jme.renderer.Renderer;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.state.BlendState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderComponent.AttachPointNode;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellStatistics.TimeCellStat;
@@ -56,13 +61,13 @@ import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
 
 /**
  *
  * @author paulby
  */
 public class ModelRenderer extends BasicRenderer {
-
     private URL deployedModelURL;
     private Vector3f modelTranslation = null;
     private Quaternion modelRotation = null;
@@ -70,6 +75,8 @@ public class ModelRenderer extends BasicRenderer {
 
     private ModelCellComponent modelComponent = null;
     private DeployedModel deployedModel = null;
+
+    private TransparencyMode transparency = null;
 
     public ModelRenderer(Cell cell, URL deployedModelURL) {
         this(cell, deployedModelURL, null, null, null, null);
@@ -139,6 +146,15 @@ public class ModelRenderer extends BasicRenderer {
             getCell().getCellCache().getStatistics().add(getCell(), loadTime);
         }
     }
+
+    @Override
+    protected void addDefaultComponents(Entity entity, Node rootNode) {
+        super.addDefaultComponents(entity, rootNode);
+
+        // update transparency now that the scene root is set
+        applyTransparency(TransparencyMode.DEFAULT, transparency);
+    }
+
     /**
      * For the renderer to reload the scene graph. This is required if the user
      * changes properties of the graph, such as optimization levels. The detach of
@@ -158,6 +174,57 @@ public class ModelRenderer extends BasicRenderer {
                 }
             }, sceneRoot);
         }
+    }
+
+    /**
+     * Change the transparency properties of the model
+     * @param transparency the new transparency
+     */
+    public void setTransparency(TransparencyMode transparency) {
+        if (this.transparency == transparency) {
+            // ignore
+            return;
+        }
+
+        TransparencyMode old = this.transparency;
+        this.transparency = transparency;
+
+        if (sceneRoot != null) {
+            applyTransparency(old, transparency);
+        }
+    }
+
+    protected void applyTransparency(TransparencyMode oldTM,
+                                     TransparencyMode newTM)
+    {
+        final Transparency oldTrans = Transparency.get(oldTM);
+        final Transparency newTrans = Transparency.get(newTM);
+
+        // make the change on the render thread
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                TreeScan.findNode((Spatial) arg0, new ProcessNodeInterface() {
+                    public boolean processNode(Spatial node) {
+                        // stop if we cross an entity barier
+                        if (node instanceof AttachPointNode) {
+                            return false;
+                        }
+
+                        // load the blend state (if any)
+                        BlendState as = (BlendState) node.getRenderState(RenderState.StateType.Blend);
+                        if (as != null) {
+                            // unapply the old state (getting us back to base state)
+                            oldTrans.unapply(node, as);
+
+                            // apply the new state
+                            newTrans.apply(node, as);
+                        }
+
+                        return true;
+                    }
+                });
+            }
+        }, sceneRoot);
     }
 
     @Override
@@ -186,4 +253,55 @@ public class ModelRenderer extends BasicRenderer {
         deployedModel = null;
     }
 
+
+    private enum Transparency {
+        DEFAULT,
+        INVERSE {
+            @Override
+            public void apply(Spatial target, BlendState as) {
+                ColorRGBA c = as.getConstantColor();
+                if (c != null) {
+                    c.set(1.0f - c.r, 1.0f - c.g, 1.0f - c.b, 1.0f - c.a);
+                    as.setConstantColor(c);
+                }
+            }
+
+            @Override
+            public void unapply(Spatial target, BlendState as) {
+                // apply will reverse the transparency, bringing it back
+                // to the original level
+                apply(target, as);
+            }
+        },
+        NONE {
+            @Override
+            public void apply(Spatial target, BlendState as) {
+                // disable blending & transparency
+                as.setEnabled(false);
+                target.setRenderQueueMode(Renderer.QUEUE_OPAQUE);
+            }
+
+            @Override
+            public void unapply(Spatial target, BlendState as) {
+                // enable blending & transparency
+                as.setEnabled(true);
+                target.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+            }
+        };
+
+        // default does nothing -- we are already in the start state
+        void apply(Spatial target, BlendState as) {}
+        void unapply(Spatial target, BlendState as) {}
+
+        static Transparency get(TransparencyMode mode) {
+            switch (mode) {
+                case INVERSE:
+                    return Transparency.INVERSE;
+                case NONE:
+                    return Transparency.NONE;
+                default:
+                    return Transparency.DEFAULT;
+            }
+        }
+    };
 }

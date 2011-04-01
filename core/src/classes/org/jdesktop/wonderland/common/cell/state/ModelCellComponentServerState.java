@@ -51,7 +51,8 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @XmlRootElement(name="model-cell-component")
 @ServerState
 public class ModelCellComponentServerState extends CellComponentServerState implements Serializable {
-    
+    public enum TransparencyMode { DEFAULT, INVERSE, NONE };
+
     /* The URI of the static deployedModelURL file */
     @XmlElement(name="deployedModelURL")
     public String deployedModelURL = null;
@@ -70,6 +71,9 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
 
     @XmlElement(name="GraphOptimizationEnabled")
     private boolean graphOptimizationEnabled = true;
+
+    @XmlElement(name="TransparencyMode")
+    private TransparencyMode transparencyMode = TransparencyMode.DEFAULT;
 
     /** Default constructor */
     public ModelCellComponentServerState() {
@@ -92,6 +96,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
         ret.lightingEnabled = this.lightingEnabled;
         ret.backfaceCullingEnabled = this.backfaceCullingEnabled;
         ret.graphOptimizationEnabled = this.graphOptimizationEnabled;
+        ret.transparencyMode = this.transparencyMode;
 
         return ret;
     }
@@ -102,6 +107,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
         state.setLightingEnabled(lightingEnabled);
         state.setBackfaceCullingEnabled(backfaceCullingEnabled);
         state.setGraphOptimizationEnabled(graphOptimizationEnabled);
+        state.setTransparencyMode(transparencyMode);
 
         return state;
     }
@@ -183,4 +189,13 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
 
     public void setGraphOptimizationEnabled(boolean graphOptimizationEnabled) {
         this.graphOptimizationEnabled = graphOptimizationEnabled;
-    }}
+    }
+
+    @XmlTransient public TransparencyMode getTransparencyMode() {
+        return transparencyMode;
+    }
+
+    public void setTransparencyMode(TransparencyMode transparencyMode) {
+        this.transparencyMode = transparencyMode;
+    }
+}
