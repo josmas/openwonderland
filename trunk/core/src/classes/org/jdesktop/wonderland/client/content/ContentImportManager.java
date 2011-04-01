@@ -93,7 +93,11 @@ public class ContentImportManager {
         String extensions[] = importer.getExtensions();
         if (extensions != null) {
             for (String extension : extensions) {
-                contentImportMap.put(extension, importer);
+                if (extension == null) {
+                    continue;
+                }
+
+                contentImportMap.put(extension.toLowerCase(), importer);
             }
         }
     }
@@ -109,13 +113,17 @@ public class ContentImportManager {
         String extensions[] = importer.getExtensions();
         if (extensions != null) {
             for (String extension : extensions) {
-                ContentImporterSPI curImporter = contentImportMap.get(extension);
+                if (extension == null) {
+                    continue;
+                }
+
+                ContentImporterSPI curImporter = contentImportMap.get(extension.toLowerCase());
 
                 // XXX the use of .equals() here is problematic -- it
                 // means we can easily overwrite valid values with null
                 // if unregister is called after register XXX
                 if (curImporter != null && curImporter.equals(importer)) {
-                    contentImportMap.remove(extension);
+                    contentImportMap.remove(extension.toLowerCase());
                 }
             }
         }
@@ -133,7 +141,11 @@ public class ContentImportManager {
      * @return A ContentImportSPI object
      */
     public ContentImporterSPI getContentImporter(String extension, boolean useDefault) {
-        ContentImporterSPI importer = contentImportMap.get(extension);
+        if (extension == null) {
+            return null;
+        }
+
+        ContentImporterSPI importer = contentImportMap.get(extension.toLowerCase());
         if (importer == null && useDefault == true) {
             return defaultContentImporter;
         }
