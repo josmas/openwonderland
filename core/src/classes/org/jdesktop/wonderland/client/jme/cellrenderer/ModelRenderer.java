@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -152,7 +152,9 @@ public class ModelRenderer extends BasicRenderer {
         super.addDefaultComponents(entity, rootNode);
 
         // update transparency now that the scene root is set
-        applyTransparency(TransparencyMode.DEFAULT, transparency);
+        if (transparency != null) {
+            applyTransparency(TransparencyMode.DEFAULT, transparency);
+        }
     }
 
     /**
