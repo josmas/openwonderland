@@ -14,7 +14,10 @@
 	<os family="windows" arch="x86"/>
     </condition>
     <condition property="system.type" value="windows-amd64">
-	<os name="Windows Vista" arch="amd64"/>
+        <or>
+            <os name="Windows Vista" arch="amd64"/>
+            <os name="Windows 7" arch="amd64"/>
+        </or>
     </condition>
 
     <condition property="system.type" value="linux-i386">
