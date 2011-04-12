@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -145,7 +145,6 @@ public class AssetCache {
             AssetType assetType = AssetType.valueOf(record.type);
             AssetID assetID = new AssetID(recordURI, record.checksum);
             Asset asset = assetFactory.assetFactory(assetType, assetID);
-            asset.setFailureInfo(null);
             assetList.add(asset);
         }
         return assetList;

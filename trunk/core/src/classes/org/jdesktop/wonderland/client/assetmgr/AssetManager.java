@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -380,6 +380,11 @@ public class AssetManager {
             if (file.canWrite() == false) {
                 makeDirectory(file);
             }
+
+            // set the cache file immediately, so it available during download
+            // for streaming applications
+            asset.setLocalCacheFile(file);
+
             OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 
             // Loop through and download the data in network-size chunks and
@@ -403,7 +408,6 @@ public class AssetManager {
             // the HTTP GET.
             assetStream.close();
             asset.setChecksum(assetStream.getChecksum());
-            asset.setLocalCacheFile(file);
             asset.setBaseURL(assetStream.getBaseURL());
 
             logger.fine("Downloaded asset with checksum " +
@@ -424,6 +428,10 @@ public class AssetManager {
      * @param percent the percent of the total
      */
     protected void fireDownloadProgress(Asset asset, int readBytes, int percent) {
+        // notify per-asset listeners
+        asset.setDownloadProgress(readBytes, percent);
+        
+        // notify global listeners
         for (AssetProgressListener listener : progressListeners) {
             listener.downloadProgress(asset, readBytes, percent);
         }
@@ -537,8 +545,7 @@ public class AssetManager {
      * why and notifies all of the listeners.
      */
     private void assetFailed(Asset asset, String reason) {
-        asset.setFailureInfo(reason);
-        asset.notifyAssetReadyListeners();
+        asset.setDownloadFailure(reason);
     }
 
     /**
@@ -546,8 +553,7 @@ public class AssetManager {
      * listeners
      */
     private void assetSuccess(Asset asset) {
-        asset.setFailureInfo(null);
-        asset.notifyAssetReadyListeners();
+        asset.setDownloadSuccess();
     }
 
     /**
@@ -558,10 +564,10 @@ public class AssetManager {
      */
     class AssetLoader implements Callable {
         /* The asset to load */
-        private Asset asset = null;
+        private final Asset asset;
 
         /* The factory which tells us how to download the asset */
-        private AssetRepositoryFactory factory = null;
+        private final AssetRepositoryFactory factory;
         
         /* Object reflecting the results of the asynchronous operation */
         private Future future = null;
@@ -698,6 +704,10 @@ public class AssetManager {
                     continue;
                 }
             }
+
+            // if we got here, the asset was not loaded from any of the
+            // repositories, so it has failed
+            asset.setDownloadFailure("Unable to load from any repositories");
             return null;
         }
     }

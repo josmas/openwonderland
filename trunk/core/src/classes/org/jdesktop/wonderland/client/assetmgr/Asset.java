@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -21,6 +39,9 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArraySet;
+import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetProgressListener;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -33,7 +54,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * Each asset has a type: typically, either file, image, or model and given by
  * the AssetType enumeration.
  * <p>
- * Each asset 
  * The url gives the full URL from which the asset was downloaded
  * <p>
  * @author paulby
@@ -41,13 +61,29 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public abstract class Asset<T> {
+    // possible asset status
+    public enum Status { SCHEDULED, DOWNLOADING, DOWNLOADED, FAILED };
+
     protected AssetType type = null;
     protected AssetURI assetURI = null;
     protected File localCacheFile = null;
     protected String checksum = null;
     protected String baseURL = null;
-    protected ArrayList<AssetReadyListener> listeners = null;
-    protected String failureInfo = null;
+    
+    // current status
+    private Status status = Status.SCHEDULED;
+
+    // if the asset is in the "downloading" state, this will be the
+    // percentage complete
+    private int downloadBytes;
+    private int downloadPercent;
+
+    // if the asset is in the "failed" state, this will be the reason
+    private String failureInfo = null;
+
+    // status listeners
+    private final Collection<AssetProgressListener> listeners =
+            new CopyOnWriteArraySet<AssetProgressListener>();
 
     /**
      * Constructor that takes the unique URI as an argument.
@@ -160,68 +196,116 @@ public abstract class Asset<T> {
      * @return
      */
     public abstract T getAsset();
-    
-    /**
-     * Used to recieve notification when an asset load has been completed or
-     * has failed. Register with Asset.addAssetReadyListener().
-     */
-    @ExperimentalAPI
-    public interface AssetReadyListener {
-        /**
-         * Called when the asset is ready for use
-         * @param asset The asset loaded
-         */
-        public void assetReady(Asset asset);
 
-        /**
-         * Called when loading the asset has failed, with the given reason
-         * @param asset The asset that has failed to load
-         * @param reason The reason why the asset has failed to load
-         */
-        public void assetFailure(Asset asset, String reason);
+
+    public void addAssetProgressListener(AssetProgressListener listener) {
+        switch (getStatus()) {
+            case DOWNLOADED:
+                // shortcut if we are already downloaded
+                listener.downloadCompleted(this);
+                break;
+
+            case FAILED:
+                // shortcut if we have already failed
+                listener.downloadFailed(this);
+                break;
+
+            case DOWNLOADING:
+                // report current status
+                listener.downloadProgress(this, getDownloadBytes(), getDownloadPercent());
+                listeners.add(listener);
+                break;
+
+            case SCHEDULED:
+                listeners.add(listener);
+                break;
+        }
     }
 
-    /**
-     * Notify listeners waiting for asset to be downloaded, if failureInfo
-     * is set will call assetFailure, otherwise it will call assetReady
-     * @param asset
-     */
-    void notifyAssetReadyListeners() {
-        if (listeners == null)
-            return;
+    public void removeAssetProgressListener(AssetProgressListener listener) {
+        listeners.remove(listener);
+    }
 
-        synchronized (listeners) {
-            if (failureInfo == null) {
-                for (AssetReadyListener listener : listeners)
-                    listener.assetReady(this);
-            } else {
-                for (AssetReadyListener listener : listeners)
-                    listener.assetFailure(this, failureInfo);
+    protected void fireStatusChanged(Status status) {
+        for (AssetProgressListener l : listeners) {
+            switch (status) {
+                case DOWNLOADING:
+                    l.downloadProgress(this, getDownloadBytes(), getDownloadPercent());
+                    break;
+
+                case DOWNLOADED:
+                    l.downloadCompleted(this);
+                    break;
+
+                case FAILED:
+                    l.downloadFailed(this);
+                    break;
             }
         }
     }
 
-    public void addAssetReadyListener(AssetReadyListener listener) {
-        if (listeners == null)
-            listeners = new ArrayList();
-        synchronized (listeners) {
-            listeners.add(listener);
-            if (localCacheFile != null)
-                listener.assetReady(this);
-        }
+    public synchronized Status getStatus() {
+        return status;
+    }
+    
+    protected synchronized void setStatus(Status status) {
+        this.status = status;
     }
 
-    public void removeAssetReadyListener(AssetReadyListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
+    protected void setDownloadProgress(int downloadBytes,
+                                       int downloadPercent)
+    {
+        synchronized (this) {
+            if (getStatus() == Status.DOWNLOADED || getStatus() == Status.FAILED) {
+                throw new IllegalStateException("Can't download when status is " +
+                                                getStatus());
+            }
+
+            setStatus(Status.DOWNLOADING);
+
+            this.downloadBytes = downloadBytes;
+            this.downloadPercent = downloadPercent;
         }
+
+        fireStatusChanged(Status.DOWNLOADING);
     }
 
-    public String getFailureInfo() {
+    public synchronized int getDownloadBytes() {
+        return downloadBytes;
+    }
+
+    public synchronized int getDownloadPercent() {
+        return downloadPercent;
+    }
+
+    protected void setDownloadSuccess() {
+        synchronized (this) {
+            if (getStatus() == Status.DOWNLOADED || getStatus() == Status.FAILED) {
+                throw new IllegalStateException("Can't succeed when status is " +
+                                                getStatus());
+            }
+
+            setStatus(Status.DOWNLOADED);
+        }
+
+        fireStatusChanged(Status.DOWNLOADED);
+    }
+
+    public synchronized String getFailureInfo() {
         return failureInfo;
     }
 
-    public void setFailureInfo(String failureInfo) {
-        this.failureInfo = failureInfo;
-    }  
+    protected synchronized void setDownloadFailure(String failureInfo) {
+        synchronized (this) {
+            if (getStatus() == Status.DOWNLOADED || getStatus() == Status.FAILED) {
+                throw new IllegalStateException("Can't fail when status is " + 
+                                                getStatus());
+            }
+        
+            setStatus(Status.FAILED);
+            this.failureInfo = failureInfo;
+        }
+
+        fireStatusChanged(Status.FAILED);
+    }
 }
