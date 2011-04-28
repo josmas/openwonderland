@@ -433,6 +433,10 @@ public class JmeClientMain {
         // connection properties of the cell cache connection
         login.setInitialPosition(translation, look);
 
+        // OWL issue #185: set this manager as primary before creating any
+        // connectons (but after it is properly initialized)
+        login.setPrimary(true);
+        
         // create a new session
         try {
             curSession = lm.createSession(login);
@@ -507,8 +511,7 @@ public class JmeClientMain {
             }
         });
 
-        // set the primary login manager and session
-        LoginManager.setPrimary(lm);
+        // set the primary session
         lm.setPrimarySession(curSession);
         frame.setServerURL(serverURL);
     }
