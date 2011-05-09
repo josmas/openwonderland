@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -36,11 +36,17 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.math.Quaternion;
+import com.jme.math.Ray;
 import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.CollisionManager;
+import org.jdesktop.mtgame.JMECollisionSystem;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
@@ -54,11 +60,22 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author paulby
  */
 public class ThirdPersonCameraProcessor implements CameraController {
-
+    private static final String CAMERA_COLLISION_PROP = 
+            ThirdPersonCameraProcessor.class.getName() + ".CameraCollision";
+    
+    private static final Vector3f DEFAULT_OFFSET = new Vector3f(0,2.2f,-6);
+    private static final float MIN_DISTANCE = 0.5f;
+    private static final float MAX_DISTANCE = 10f;
+    private static final boolean COLLISION_GLOBAL_ENABLE =
+            Boolean.parseBoolean(System.getProperty(CAMERA_COLLISION_PROP, "true"));
+    
+    private final JMECollisionSystem collisionSys;
+    private final CameraComponent cameraComp;
+    
     private Quaternion rotation = new Quaternion();
     private Vector3f translation = new Vector3f();
     protected float cameraZoom = 0.2f;
-    protected Vector3f offset = new Vector3f(0,2.2f,-6);
+    protected Vector3f offset = DEFAULT_OFFSET.clone();
     private boolean commitRequired = false;
     private Quaternion viewRot = new Quaternion();
     private Vector3f viewTranslation = new Vector3f();
@@ -66,8 +83,9 @@ public class ThirdPersonCameraProcessor implements CameraController {
     protected Vector3f cameraLook = new Vector3f(0,0,1);
     private Vector3f yUp = new Vector3f(0,1,0);
 
-    private Vector3f tmp=new Vector3f();
-
+    private boolean collisionEnabled = true;
+    private boolean collisionCheck = false;
+    
     private WorldManager wm;
 
     private CameraNode cameraNode;
@@ -86,7 +104,12 @@ public class ThirdPersonCameraProcessor implements CameraController {
     
     public ThirdPersonCameraProcessor() {
         wm = ClientContextJME.getWorldManager();
+        
+        CollisionManager cm = ClientContextJME.getWorldManager().getCollisionManager();
+	collisionSys = (JMECollisionSystem) cm.loadCollisionSystem(JMECollisionSystem.class);
+        cameraComp = ViewManager.getViewManager().getCameraComponent();
     }
+    
     
     public void compute() {
     }
@@ -109,7 +132,6 @@ public class ThirdPersonCameraProcessor implements CameraController {
 
     private void update(Vector3f tIn, Quaternion rIn) {
         translation.set(tIn);
-        tmp = translation.clone();
         rotation.set(rIn);
         viewRot.set(rotation);
         viewTranslation.set(translation);
@@ -118,6 +140,59 @@ public class ThirdPersonCameraProcessor implements CameraController {
 //            System.out.println("Camera trans "+cameraTrans );
         translation.addLocal(cameraTrans);
 
+        // handle camera collision
+        if (COLLISION_GLOBAL_ENABLE && (collisionEnabled || collisionCheck)) {
+            Vector3f dir = new Vector3f(translation);
+            Vector3f target = new Vector3f(tIn);
+            target.addLocal(0, DEFAULT_OFFSET.y, 0);
+            dir.subtractLocal(target).normalizeLocal();
+            
+            Ray ray = new Ray(target, dir);
+            PickInfo info = collisionSys.pickAllWorldRay(ray, true, false, 
+                                                         false, cameraComp);
+            for (int i = 0; i < info.size(); i++) {
+                // find the next picked object
+                PickDetails details = info.get(i);
+                
+                // if the distance is less than the minimum, try the next
+                // info
+                if (details.getDistance() < MIN_DISTANCE) {
+                    continue;
+                }
+                
+                // if we are performing a collision check, see if the 
+                // camera is closer than the collision
+                if (collisionCheck) {
+                    if (target.distance(translation) <= details.getDistance()) {
+                        // camera is closer than the nearest collision, 
+                        // re-enable collision
+                        collisionEnabled = true;
+                    }
+                    
+                    // only check the first collision
+                    break;
+                }
+                
+                // if the collision is farther than where the camera would
+                // have been positioned or outside of range, we can stop and
+                // leave the camera as is
+                if (details.getDistance() >= MAX_DISTANCE || 
+                    details.getDistance() >= target.distance(translation))
+                {
+                    break;
+                }
+                
+                // if we made it here, the collision is within range. Move
+                // the camera to the collision point
+                translation.set(details.getPosition());
+                break;
+            }
+            
+            // we have checked the collision status -- don't check again until
+            // the user zooms in
+            collisionCheck = false;
+        }
+        
         rotation.lookAt(rotation.mult(cameraLook), yUp);
         commitRequired=true;
     }
@@ -142,17 +217,17 @@ public class ThirdPersonCameraProcessor implements CameraController {
                         if (event instanceof KeyEvent3D) {
                             KeyEvent key = (KeyEvent) ((KeyEvent3D)event).getAwtEvent();
                             if (key.getKeyCode()==KeyEvent.VK_EQUALS) {
-                                offset.z += cameraZoom;
+                                zoom(cameraZoom);
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
                             } else if (key.getKeyCode()==KeyEvent.VK_MINUS) {
-                                offset.z -= cameraZoom;
+                                zoom(-cameraZoom);
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
                             }
                         } else if (event instanceof MouseEvent3D) {
                             MouseEvent mouse = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
                             if (mouse instanceof MouseWheelEvent) {
                                 int clicks = ((MouseWheelEvent)mouse).getWheelRotation();
-                                offset.z -= cameraZoom*clicks;
+                                zoom(-cameraZoom*clicks);
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
                             } else if (mouse.isControlDown()) {
                                 int diffX = mouse.getX() - mouseX;
@@ -182,6 +257,24 @@ public class ThirdPersonCameraProcessor implements CameraController {
                                 mouseX = mouse.getX();
                                 mouseY = mouse.getY();
                             }
+                        }
+                    }
+                    
+                    /**
+                     * Zoom in or out. Positive amounts for zooming in,
+                     * negative amounts for zooming out
+                     */
+                    private void zoom(float amount) {
+                        offset.z += amount;
+                        
+                        if (amount > 0f && !collisionEnabled) {
+                            // zoom in -- check for collision
+                            collisionCheck = true;
+                        } else if (amount < 0f) {
+                            // zoom out -- disable collision until we
+                            // zoom in again
+                            collisionEnabled = false;
+                            collisionCheck = false;
                         }
                     }
                 };
