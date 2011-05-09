@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -20,23 +38,40 @@ package org.jdesktop.wonderland.modules.sharedstate.server;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ObjectNotFoundException;
+import com.sun.sgs.app.Task;
 import com.sun.sgs.app.util.ScalableHashMap;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedByte;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedChar;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedDouble;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedFloat;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedLong;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedShort;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.ChangeValueMessage;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.GetRequestMessage;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.GetResponseMessage;
@@ -69,7 +104,7 @@ public class SharedStateComponentMO extends CellComponentMO {
      * The message receiver for this component.  Most of the work happens t
      * in the receiver.
      */
-    private ManagedReference<SharedMessageReceiver> receiverRef;
+    private final ManagedReference<SharedMessageReceiver> receiverRef;
 
     /** whether or not we are live */
     private boolean live = false;
@@ -105,21 +140,9 @@ public class SharedStateComponentMO extends CellComponentMO {
             state = sscss;
             return;
         }
-
-        // clear the existing maps
-        SharedMessageReceiver receiver = receiverRef.get();
-        receiver.mapsRef.get().clear();
-
-        for (MapEntry me : sscss.getMaps()) {
-            SharedMapImpl smi = new SharedMapImpl(me.getName(),
-                                receiverRef.get(), channelRef.get());
-
-            for (SharedDataEntry sde : me.getData()) {
-                smi.put(sde.getKey(), sde.getValue());
-            }
-
-            receiver.addMap(me.getName(), smi);
-        }
+        
+        // merge maps
+        receiverRef.get().mergeMaps(sscss.getMaps());
     }
 
     @Override
@@ -208,10 +231,10 @@ public class SharedStateComponentMO extends CellComponentMO {
                 AppContext.getDataManager().createReference(new MapOfMaps());
 
         /** a reference to the SharedStateComponentMO */
-        private ManagedReference<SharedStateComponentMO> stateRef;
+        private final ManagedReference<SharedStateComponentMO> stateRef;
 
         /** a reference to the cell MO */
-        private ManagedReference<CellMO> cellRef;
+        private final ManagedReference<CellMO> cellRef;
 
         /** a reference to the channel component */
         private ManagedReference<ChannelComponentMO> channelRef;
@@ -376,7 +399,65 @@ public class SharedStateComponentMO extends CellComponentMO {
             ManagedReference<SharedMapImpl> mapRef = maps.remove(mapName);
             AppContext.getDataManager().removeObject(mapRef.get());
         }
-
+        
+        private void mergeMaps(MapEntry[] merge) {
+            MapOfMaps maps = mapsRef.get();
+            
+            // first remove any maps that are not in the merge set
+            Set<String> toRemove = new HashSet<String>(maps.keySet());
+            for (MapEntry mergeMap : merge) {
+                toRemove.remove(mergeMap.getName());
+            }
+            
+            logger.fine("[SharedStateComponentMO]: Clear " + 
+                        toRemove.size() + " maps");
+            
+            for (String removeMapName : toRemove) {
+                // clear the map asynchronously
+                getMap(removeMapName, false).clear();
+            }
+            
+            logger.fine("[SharedStateComponentMO]: Merge " + 
+                        merge.length + " maps");
+            
+            // now create or merge all remaining maps
+            for (MapEntry mergeMap : merge) {
+                // merge map asynchronously
+                mergeMap(getMap(mergeMap.getName(), true), mergeMap.getData());
+            }
+        }
+        
+        private void mergeMap(SharedMapImpl map, SharedDataEntry[] data) {
+            // find all keys that aren't in data, and convert data to a map
+            Set<String> toRemove = new LinkedHashSet<String>(map.keySet());
+            Map<String, SharedData> dm = new LinkedHashMap<String, SharedData>();
+            for (SharedDataEntry mergeData : data) {
+                toRemove.remove(mergeData.getKey());
+                
+                dm.put(mergeData.getKey(), mergeData.getValue());
+            }
+            
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("[SharedStateComponentMO]: Clear " + 
+                            toRemove.size() + " keys from " + map.getName());
+            }
+            
+            // remove keys not in data
+            if (toRemove.size() > 0) {
+                map.scheduleTask(new RemoveTask(null, toRemove));
+            }
+            
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("[SharedStateComponentMO]: Merge " + 
+                            dm.size() + " keys from " + map.getName());
+            }
+            
+            // now add in all data
+            if (dm.size() > 0) {
+                map.scheduleTask(new PutTask(null, dm));
+            }
+        }
+        
         public void recordMessage(WonderlandClientSender sender,
                                   WonderlandClientID clientID,
                                   CellMessage message)
@@ -398,18 +479,21 @@ public class SharedStateComponentMO extends CellComponentMO {
         private long version = 0;
 
         /** the name of this map */
-        private String name;
+        private final String name;
 
         /** listeners */
-        private Set<SharedMapListenerSrv> listeners =
+        private final Set<SharedMapListenerSrv> listeners =
                 new LinkedHashSet<SharedMapListenerSrv>();
 
         /** the enclosing listener */
-        private ManagedReference<SharedMessageReceiver> receiverRef;
+        private final ManagedReference<SharedMessageReceiver> receiverRef;
 
         /** the channel */
-        private ManagedReference<ChannelComponentMO> channelRef;
+        private final ManagedReference<ChannelComponentMO> channelRef;
 
+        /** asynchronous operations in flight on this map */
+        private ManagedReference<MapTaskRunner> tasksRef;
+        
         public SharedMapImpl(String name, SharedMessageReceiver receiver,
                              ChannelComponentMO channel)
         {
@@ -428,14 +512,75 @@ public class SharedStateComponentMO extends CellComponentMO {
             return version;
         }
 
+        @Override
+        public SharedData get(Object key) {
+            // if there are pending asynchronous tasks, check those first
+            MapTaskRunner async = getTaskRunner();
+            if (async != null) {
+                SharedData value = async.get((String) key);
+                if (!(value instanceof SharedDataNoEffect)) {
+                    return value;
+                }
+            }
+            
+            // no async tasks, or the async task didn't affect this key.
+            // Proceed normally.
+            return super.get((String) key);
+        }
+        
         public <T extends SharedData> T get(String key, Class<T> type) {
-            return (T) super.get(key);
+            return (T) get(key);
         }
 
         @Override
+        public boolean containsKey(Object key) {
+            // take into account asynchronous operations
+            return (get(key) != null);
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            throw new UnsupportedOperationException("Not supported");
+        }
+
+        @Override
+        public boolean isEmpty() {
+            // use keyset to take into account asynchronous operations
+            return keySet().isEmpty();
+        }
+        
+        @Override
+        public Set<String> keySet() {
+            Set<String> initial = super.keySet();
+            
+            // if there are asynchronous operations scheduled, update the
+            // keyset
+            MapTaskRunner async = getTaskRunner();
+            if (async != null) {
+                // create a new set to modify
+                initial = new LinkedHashSet<String>(initial);
+                async.adjustKeySet(initial);
+            }
+            
+            return initial;
+        }
+        
+        @Override
         public void clear() {
-            throw new UnsupportedOperationException("SharedMap does not " +
-                                                    " support clear");
+            clear(keySet());
+        }
+        
+        /**
+         * Clear a subset of keys
+         * @param keys the keys to clear
+         */
+        protected void clear(Set<String> keys) {
+            // make sure there is something to clear
+            if (keys.isEmpty()) {
+                return;
+            }
+            
+            scheduleTask(new RemoveTask(null, keys));
         }
 
         /**
@@ -444,7 +589,7 @@ public class SharedStateComponentMO extends CellComponentMO {
          */
         @Override
         public SharedData put(String key, SharedData value) {
-            return doPut(null, key, value);
+            return asyncDoPut(null, key, value);
         }
 
         /**
@@ -459,30 +604,51 @@ public class SharedStateComponentMO extends CellComponentMO {
 
             // notify listeners, see if they veto
             if (firePropertyChange(senderID, message, key, prev, value)) {
-                doPut(senderID, key, value);
+                asyncDoPut(senderID, key, value);
                 return true;
             }
 
             return false;
         }
 
-        private SharedData doPut(WonderlandClientID senderID, String key,
-                                 SharedData value)
+        private SharedData asyncDoPut(WonderlandClientID senderID, String key,
+                                      SharedData value)
         {
+            // if there are pending asynchronous tasks, defer this operation
+            MapTaskRunner async = getTaskRunner();
+            if (async != null) {
+                async.getTasks().add(new PutTask(senderID, key, value));
+                return get(key);
+            }
+            
+            // nothing asynchronous
+            return syncDoPut(senderID, key, value);
+        }
+        
+        
+        private SharedData syncDoPut(WonderlandClientID senderID, String key,
+                                     SharedData value)
+        {
+            // make sure this is actually a change before sending any messages
+            SharedData current = super.put(key, value);
+            if (value.equals(current)) {
+                // no change
+                return value;
+            }
+            
             version++;
-
+            
             // send a message to notify all clients
             CellMessage message = ChangeValueMessage.put(getName(), version,
                                                          key, value);
             channelRef.get().sendAll(senderID, message);
-
-            return super.put(key, value);
+            return current;
         }
 
         @Override
         public void putAll(Map<? extends String, ? extends SharedData> m) {
-            version++;
-            super.putAll(m);
+            Map<String, SharedData> d = new LinkedHashMap<String, SharedData>(m);
+            scheduleTask(new PutTask(null, d));
         }
 
         /**
@@ -491,7 +657,7 @@ public class SharedStateComponentMO extends CellComponentMO {
          */
         @Override
         public SharedData remove(Object key) {
-            return doRemove(null, (String) key);
+            return asyncDoRemove(null, (String) key);
         }
 
         /**
@@ -506,30 +672,47 @@ public class SharedStateComponentMO extends CellComponentMO {
 
             // notify listeners, see if they veto
             if (firePropertyChange(senderID, message, key, prev, null)) {
-                doRemove(senderID, key);
+                asyncDoRemove(senderID, key);
                 return true;
             }
 
             return false;
         }
 
-        private SharedData doRemove(WonderlandClientID senderID, String key) {
+        private SharedData asyncDoRemove(WonderlandClientID senderID, String key) {
+            // if there are pending asynchronous tasks, defer this operation
+            MapTaskRunner async = getTaskRunner();
+            if (async != null) {
+                async.getTasks().add(new RemoveTask(senderID, key));
+                return get(key);
+            }
+            
+            // nothing asynchronous
+            return syncDoRemove(senderID, key);
+        }
+        
+        private SharedData syncDoRemove(WonderlandClientID senderID, String key) {
+            // make sure there is a value to remove before sending any messages
+            SharedData prev = super.remove(key);
+            if (prev == null) {
+                return null;
+            }
+            
             version++;
 
             CellMessage message = ChangeValueMessage.remove(getName(), version,
                                                             key);
             channelRef.get().sendAll(senderID, message);
 
-            SharedData prev = super.remove(key);
-
-            // if the map is now empty, remove it from tha map of maps
-            if (isEmpty()) {
+            // if the map is now empty and there are no listeners, 
+            // remove it from tha map of maps
+            if (isEmpty() && listeners.isEmpty()) {
                 receiverRef.getForUpdate().removeMap(getName());
             }
 
             return prev;
         }
-
+        
         public void addSharedMapListener(SharedMapListenerSrv listener) {
             if (listener instanceof ManagedObject) {
                 listener = new ListenerMOWrapper(listener);
@@ -544,6 +727,11 @@ public class SharedStateComponentMO extends CellComponentMO {
             }
 
             listeners.remove(listener);
+            
+            // if there are no listeners and the map is empty, remove it
+            if (isEmpty() && listeners.isEmpty()) {
+                receiverRef.getForUpdate().removeMap(getName());
+            }
         }
 
         protected boolean firePropertyChange(WonderlandClientID senderID,
@@ -560,6 +748,115 @@ public class SharedStateComponentMO extends CellComponentMO {
             }
 
             return true;
+        }
+        
+        protected void scheduleTask(MapTask task) {
+            MapTaskRunner runner = getTaskRunner();
+            
+            if (runner == null) {
+                // if no tasks are scheduled, create a new runner
+                runner = new MapTaskRunner(this, task);
+                tasksRef = AppContext.getDataManager().createReference(runner);
+                AppContext.getTaskManager().scheduleTask(runner);
+            } else {
+                // add to the end of the current list of tasks
+                AppContext.getDataManager().markForUpdate(runner);
+                runner.getTasks().add(task);
+            }
+        }
+        
+        protected MapTaskRunner getTaskRunner() {
+            MapTaskRunner runner = null;
+            if (tasksRef != null) {
+                try {
+                    runner = tasksRef.get();
+                } catch (ObjectNotFoundException onfe) {
+                    // the runner doesn't exist -- it will be created below
+                }
+            }
+            
+            return runner;
+        }
+
+        public String getString(String key) {
+            SharedString value = get(key, SharedString.class);
+            return (value == null ? null : value.getValue());
+        }
+
+        public void putString(String key, String value) {
+            put(key, SharedString.valueOf(value));
+        }
+
+        public boolean getBoolean(String key) {
+            SharedBoolean value = get(key, SharedBoolean.class);
+            return (value == null ? false : value.getValue());
+        }
+
+        public void putBoolean(String key, boolean value) {
+            put(key, SharedBoolean.valueOf(value));
+        }
+
+        public byte getByte(String key) {
+            SharedByte value = get(key, SharedByte.class);
+            return (value == null ? 0 : value.getValue());
+        }
+
+        public void putByte(String key, byte value) {
+            put(key, SharedByte.valueOf(value));
+        }
+
+        public char getChar(String key) {
+            SharedChar value = get(key, SharedChar.class);
+            return (value == null ? 0 : value.getValue());
+        }
+
+        public void putChar(String key, char value) {
+            put(key, SharedChar.valueOf(value));
+        }
+
+        public short getShort(String key) {
+            SharedShort value = get(key, SharedShort.class);
+            return (value == null ? 0 : value.getValue());
+        }
+
+        public void putShort(String key, short value) {
+            put(key, SharedShort.valueOf(value));
+        }
+
+        public int getInt(String key) {
+            SharedInteger value = get(key, SharedInteger.class);
+            return (value == null ? 0 : value.getValue());
+        }
+
+        public void putInt(String key, int value) {
+            put(key, SharedInteger.valueOf(value));
+        }
+
+        public long getLong(String key) {
+            SharedLong value = get(key, SharedLong.class);
+            return (value == null ? 0 : value.getValue());
+        }
+
+        public void putLong(String key, long value) {
+            put(key, SharedLong.valueOf(value));
+        }
+
+        public float getFloat(String key) {
+            SharedFloat value = get(key, SharedFloat.class);
+            return (value == null ? 0f : value.getValue());
+        }
+
+        public void putFloat(String key, float value) {
+            put(key, SharedFloat.valueOf(value));
+        }
+
+        public double getDouble(String key) {
+            SharedDouble value = get(key, SharedDouble.class);
+            return (value == null ? 0.0 : value.getValue());
+        }
+
+        public void putDouble(String key, double value) {
+            put(key, SharedDouble.valueOf(value));
         }
     }
 
@@ -586,5 +883,218 @@ public class SharedStateComponentMO extends CellComponentMO {
             ListenerMOWrapper o = (ListenerMOWrapper) obj;
             return listenerRef.equals(o.listenerRef);
         }
+    }
+    
+    static class MapTaskRunner implements Task, ManagedObject, Serializable {
+        // maximum number of properties to clear per task
+        protected static final int MAX_OPS = 5;
+        
+        // the map to clear
+        private final ManagedReference<SharedMapImpl> mapRef;
+        
+        // the tasks to run
+        private final List<MapTask> tasks;
+        
+        public MapTaskRunner(SharedMapImpl map, MapTask... tasks) {
+            this (map, Arrays.asList(tasks));
+        }
+ 
+        public MapTaskRunner(SharedMapImpl map, List<MapTask> tasks) {
+            this.mapRef = AppContext.getDataManager().createReference(map);
+            this.tasks = new ArrayList<MapTask>(tasks);
+        }
+        
+        public void run() throws Exception {
+            SharedMapImpl map = mapRef.getForUpdate();
+            MapTask task = tasks.get(0);
+            
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("[SharedStateComponentMO]: MapTaskRunner.run " +
+                              task + " with queue " + tasks.size());
+            }
+            
+            // execute up to MAX_OPS iterations of the first task.
+            for (int i = 0; i < MAX_OPS; i++) {
+                if (!task.run(map)) {
+                    // the task is finished, so remove it from
+                    // the list
+                    tasks.remove(0);
+                    break;
+                }
+            }
+            
+            // if there is more work to be done. Reschedule the runner
+            if (!tasks.isEmpty()) {
+                AppContext.getTaskManager().scheduleTask(this);
+            } else {
+                // this task is complete -- remove it from the data store
+                AppContext.getDataManager().removeObject(this);
+            }
+        }
+        
+        public List<MapTask> getTasks() {
+            return tasks;
+        }
+        
+        /**
+         * Get the value for the given key after applying all pending tasks
+         * in this runner
+         * @param key the key to check
+         * @return the value for the given key, or SharedDataNoEffect if
+         * the pending tasks don't affect key
+         */
+        public SharedData get(String key) {
+            // look at each pending task starting at the end of the list
+            // and working backwards
+            ListIterator<MapTask> i = getTasks().listIterator(getTasks().size());
+            while (i.hasPrevious()) {
+                MapTask t = i.previous();
+                if (t.affects(key)) {
+                    return t.get(key);
+                }
+            }
+            
+            // no effect
+            return new SharedDataNoEffect();
+        }
+        
+        /**
+         * Get the keyset after applying all pending tasks in this runner
+         * @param keySet the starting keyset to modify
+         */
+        public void adjustKeySet(Set<String> keySet) {
+            for (MapTask task : getTasks()) {
+                task.adjustKeySet(keySet);
+            }
+        }
+    }
+    
+    // marker for no effect
+    static class SharedDataNoEffect extends SharedData {}
+    
+    static class RemoveTask implements MapTask {
+        private final WonderlandClientID senderID;
+        private final Set<String> keys;
+        
+        public RemoveTask(WonderlandClientID senderID, String key) {
+            this (senderID, new LinkedHashSet<String>(Collections.singleton(key)));
+        }
+        
+        public RemoveTask(WonderlandClientID senderID, Set<String> keys) {
+            this.senderID = senderID;
+            this.keys = keys;
+        }
+        
+        public boolean run(SharedMapImpl map) {            
+            Iterator<String> i = keys.iterator();
+            if (i.hasNext()) {
+                String key = i.next();
+                
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest("Clear " + key);
+                }
+                
+                map.syncDoRemove(senderID, key);
+                i.remove();
+            }
+            
+            return i.hasNext();
+        }
+
+        public boolean affects(String key) {
+            return keys.contains(key);
+        }
+
+        public SharedData get(String key) {
+            return null;
+        }
+
+        public void adjustKeySet(Set<String> keySet) {
+            keySet.removeAll(keys);
+        }
+        
+        @Override
+        public String toString() {
+            return "[RemoveTask: " + keys + "]";
+        }
+    }
+    
+    static class PutTask implements MapTask {
+        private final WonderlandClientID senderID;
+        private final Map<String, SharedData> data;
+        
+        public PutTask(WonderlandClientID senderID, String key, SharedData value) {
+            this (senderID, new LinkedHashMap<String, SharedData>(
+                                        Collections.singletonMap(key, value)));
+        }
+        
+        public PutTask(WonderlandClientID senderID, Map<String, SharedData> data) {
+            this.senderID = senderID;
+            this.data = data;
+        }
+        
+        public boolean run(SharedMapImpl map) {
+            Iterator<Map.Entry<String, SharedData>> i = data.entrySet().iterator();            
+            if (i.hasNext()) {
+                Map.Entry<String, SharedData> e = i.next();
+            
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest("[SharedStateComponentMO]: Put " + 
+                                  e.getKey() + " = " + e.getValue());
+                }
+            
+                map.syncDoPut(senderID, e.getKey(), e.getValue());
+                
+                i.remove();
+            }
+            
+            return i.hasNext();
+        }
+
+        public boolean affects(String key) {
+            return data.containsKey(key);
+        }
+
+        public SharedData get(String key) {
+            return data.get(key);
+        }
+
+        public void adjustKeySet(Set<String> keySet) {
+            keySet.addAll(data.keySet());
+        }
+        
+        @Override
+        public String toString() {
+            return "[PutTask: " + data.keySet() + "]";
+        }
+    }
+    
+    interface MapTask extends Serializable {
+        /**
+         * Run an instance of this task. 
+         * @param map the map
+         * @return true to continue, or false if all tasks are complete.
+         */
+        public boolean run(SharedMapImpl map) throws Exception;
+        
+        /**
+         * Return true if this task affects the value of the given key
+         * @param key the key to test
+         * @return true if this task affects the value of key, or false if not
+         */
+        public boolean affects(String key);
+        
+        /**
+         * Return the value for the given key after this task has been applied.
+         * This will only be called if affects(key) return true
+         */
+        public SharedData get(String key);
+        
+        /**
+         * Adjust the keyset for the map based on this operation. Either add
+         * or remove keys as necessary
+         * @param keySet the set of keys to adjust
+         */
+        public void adjustKeySet(Set<String> keySet);
     }
 }
