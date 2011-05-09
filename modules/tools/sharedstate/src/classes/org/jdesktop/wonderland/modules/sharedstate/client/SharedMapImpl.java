@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -43,8 +61,17 @@ import org.jdesktop.wonderland.client.comms.OKErrorResponseListener;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedByte;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedChar;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedDouble;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedFloat;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedLong;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedMap;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedShort;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.ChangeValueMessage;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.MapRequestMessage;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.MapResponseMessage;
@@ -287,6 +314,87 @@ class SharedMapImpl implements SharedMapCli {
                                         SharedMapListenerCli listener)
     {
         listeners.remove(new ListenerRecord(propRegex, listener));
+    }
+    
+    public String getString(String key) {
+        SharedString value = get(key, SharedString.class);
+        return (value == null ? null : value.getValue());
+    }
+
+    public void putString(String key, String value) {
+        put(key, SharedString.valueOf(value));
+    }
+
+    public boolean getBoolean(String key) {
+        SharedBoolean value = get(key, SharedBoolean.class);
+        return (value == null ? false : value.getValue());
+    }
+
+    public void putBoolean(String key, boolean value) {
+        put(key, SharedBoolean.valueOf(value));
+    }
+
+    public byte getByte(String key) {
+        SharedByte value = get(key, SharedByte.class);
+        return (value == null ? 0 : value.getValue());
+    }
+
+    public void putByte(String key, byte value) {
+        put(key, SharedByte.valueOf(value));
+    }
+
+    public char getChar(String key) {
+        SharedChar value = get(key, SharedChar.class);
+        return (value == null ? 0 : value.getValue());
+    }
+
+    public void putChar(String key, char value) {
+        put(key, SharedChar.valueOf(value));
+    }
+
+    public short getShort(String key) {
+        SharedShort value = get(key, SharedShort.class);
+        return (value == null ? 0 : value.getValue());
+    }
+
+    public void putShort(String key, short value) {
+        put(key, SharedShort.valueOf(value));
+    }
+
+    public int getInt(String key) {
+        SharedInteger value = get(key, SharedInteger.class);
+        return (value == null ? 0 : value.getValue());
+    }
+
+    public void putInt(String key, int value) {
+        put(key, SharedInteger.valueOf(value));
+    }
+
+    public long getLong(String key) {
+        SharedLong value = get(key, SharedLong.class);
+        return (value == null ? 0 : value.getValue());
+    }
+
+    public void putLong(String key, long value) {
+        put(key, SharedLong.valueOf(value));
+    }
+
+    public float getFloat(String key) {
+        SharedFloat value = get(key, SharedFloat.class);
+        return (value == null ? 0f : value.getValue());
+    }
+
+    public void putFloat(String key, float value) {
+        put(key, SharedFloat.valueOf(value));
+    }
+
+    public double getDouble(String key) {
+        SharedDouble value = get(key, SharedDouble.class);
+        return (value == null ? 0.0 : value.getValue());
+    }
+
+    public void putDouble(String key, double value) {
+        put(key, SharedDouble.valueOf(value));
     }
 
     void handleMessage(ChangeValueMessage cvm) {
