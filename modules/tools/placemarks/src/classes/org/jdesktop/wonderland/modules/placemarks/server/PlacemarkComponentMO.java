@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -51,6 +69,7 @@ public class PlacemarkComponentMO extends CellComponentMO
     private static Logger logger = Logger.getLogger(PlacemarkComponentMO.class.getName());
 
     private String placemarkName;
+    private String placemarkRotation;
     private String moveTaskBindingName;
 
     public PlacemarkComponentMO(CellMO cell) {
@@ -99,6 +118,7 @@ public class PlacemarkComponentMO extends CellComponentMO
         }
 
         ((PlacemarkComponentServerState)state).setPlacemarkName(placemarkName);
+        ((PlacemarkComponentServerState)state).setPlacemarkRotation(placemarkRotation);
 
         return super.getServerState(state);
     }
@@ -113,9 +133,16 @@ public class PlacemarkComponentMO extends CellComponentMO
         }
 
         placemarkName = ((PlacemarkComponentServerState) state).getPlacemarkName();
+        placemarkRotation= ((PlacemarkComponentServerState) state).getPlacemarkRotation();
+
         if (placemarkName == null) {
             // use the cell name if no placemark name is specified
             placemarkName = cellRef.get().getName();
+        }
+
+        if (placemarkRotation == null)
+        {
+            placemarkRotation = "";
         }
         
         // now register the new placemark
@@ -145,12 +172,29 @@ public class PlacemarkComponentMO extends CellComponentMO
             // just return here.
             return null;
         }
-        
+   
+        // get the cell's transform
         Vector3f trans = xform.getTranslation(null);
+ 
+        // get the cell's rotation about each axis
         Quaternion rot = xform.getRotation(null);
-        float angle = rot.toAngleAxis(null);
+        float[] angles = new float[3];
+        rot.toAngles(angles);
 
-        return new Placemark(placemarkName, null, trans.x, trans.y, trans.z, angle);
+        // get the relative offset (in Quaternions) 
+        float angle = 0;
+        if (placemarkRotation != null) {
+            angle = (float) Math.toRadians(Float.valueOf(placemarkRotation)); 
+        }
+
+        // combine the relative offset with the y axis rotation (discard others) 
+        angle  += angles[1];
+ 
+        // convert angle to degrees
+        angle = (float) Math.toDegrees(angle);
+
+        // create placemark
+        return new Placemark(placemarkName, null, trans.x, trans.y, trans.z, angle);    
     }
 
     /**
