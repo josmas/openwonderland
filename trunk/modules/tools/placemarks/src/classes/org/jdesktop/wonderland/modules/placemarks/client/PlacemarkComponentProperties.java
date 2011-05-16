@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -39,6 +57,7 @@ public class PlacemarkComponentProperties extends JPanel
 
     private CellPropertiesEditor editor;
     private String origName;
+    private String origRotation;
 
     /** Creates new form PortalComponentProperties */
     public PlacemarkComponentProperties() {
@@ -48,6 +67,7 @@ public class PlacemarkComponentProperties extends JPanel
         // Listen for changes to the text fields
         TextFieldListener listener = new TextFieldListener();
         nameTF.getDocument().addDocumentListener(listener);
+        rotationTF.getDocument().addDocumentListener(listener);
     }
 
     /**
@@ -78,6 +98,7 @@ public class PlacemarkComponentProperties extends JPanel
                 PlacemarkComponentServerState.class);
         if (state != null) {
             origName = state.getPlacemarkName();
+            origRotation = state.getPlacemarkRotation();
         }
 
         if (origName == null) {
@@ -85,6 +106,12 @@ public class PlacemarkComponentProperties extends JPanel
         }
 
         nameTF.setText(origName);
+
+        if (origRotation == null) {
+            origRotation = "0";
+        }
+
+        rotationTF.setText(origRotation);
     }
 
     /**
@@ -109,10 +136,19 @@ public class PlacemarkComponentProperties extends JPanel
         }
 
         String name = nameTF.getText().trim();
+        String rotation = rotationTF.getText().trim();
+
         if (name.length() == 0) {
             name = null;
         }
+
+        if (rotation.length() == 0) {
+            rotation = null;
+        }
+
         state.setPlacemarkName(name);
+        state.setPlacemarkRotation(rotation);
+
         editor.addToUpdateList(state);
     }
 
@@ -122,6 +158,7 @@ public class PlacemarkComponentProperties extends JPanel
     public void restore() {
         // Restore from the originally stored values.
         nameTF.setText(origName);
+        rotationTF.setText(origRotation);
     }
 
     private void checkDirty() {
@@ -130,6 +167,7 @@ public class PlacemarkComponentProperties extends JPanel
         }
 
         boolean clean = nameTF.getText().equals(origName);
+        clean = clean & rotationTF.getText().equals(origRotation);//////////////////////////////???????????????????????????
         editor.setPanelDirty(PlacemarkComponentProperties.class, !clean);
     }
 
@@ -163,32 +201,47 @@ public class PlacemarkComponentProperties extends JPanel
 
         nameTF = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        rotationTF = new javax.swing.JTextField();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle"); // NOI18N
         jLabel1.setText(bundle.getString("PlacemarkComponentProperties.jLabel1.text_1")); // NOI18N
+
+        jLabel2.setText(bundle.getString("PlacemarkComponentProperties.jLabel2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(69, 69, 69)
-                .add(jLabel1)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(nameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(rotationTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 52, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(nameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(nameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
-                .addContainerGap())
+                    .add(jLabel1)
+                    .add(nameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(rotationTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField nameTF;
+    private javax.swing.JTextField rotationTF;
     // End of variables declaration//GEN-END:variables
 }
