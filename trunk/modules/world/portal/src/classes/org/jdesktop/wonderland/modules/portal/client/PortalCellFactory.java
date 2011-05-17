@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,6 +35,7 @@
  */
 package org.jdesktop.wonderland.modules.portal.client;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.Image;
@@ -28,8 +47,11 @@ import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 
 /**
@@ -51,20 +73,28 @@ public class PortalCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(
             Properties props) {
 
-        ModelLoader loader = LoaderManager.getLoaderManager().getLoader("kmz");
-        ModelCellServerState cellState = loader.getCellServerState(
-                "wla://portal/portal.kmz/models/portal.dae",
-                new Vector3f(-1.5f, 1.3f, 0f),
-                new Quaternion(1f, 0f, 0f, 0.7854f),
-                new Vector3f(0.01f, 0.01f, 0.01f),
-                null);
+        ModelCellServerState cellState = new ModelCellServerState();
+        cellState.setBoundingVolumeHint(new BoundingVolumeHint(true,
+                new BoundingBox(Vector3f.ZERO, 
+                                1.44526004f,
+                                1.44525876f,
+                                0.13593452f)));
+        
+        // add the model
+        ModelCellComponentServerState mccss = new ModelCellComponentServerState();
+        mccss.setDeployedModelURL("wla://portal/portal.kmz/portal.kmz.dep");
+        mccss.setLightingEnabled(false);
+        cellState.addComponentServerState(mccss);
+        
+        // add the portal state (by default this will send the user to the
+        // origin)
         cellState.addComponentServerState(new PortalComponentServerState());
-
-        //PositionComponentServerState pcs = new PositionComponentServerState();
-        //pcs.setBounds(new BoundingSphere(2.0f, new Vector3f(0f, 0f, 0f)));
-        // pcs.setOrigin(new Origin(new Vector3f(0f, 2.6f, 0f)));
-        //state.addComponentServerState(pcs);
-
+        
+        // set the scaling to make the model smaller
+        PositionComponentServerState pcss = new PositionComponentServerState();
+        pcss.setScaling(new Vector3f(0.4f, 0.4f, 0.4f));
+        cellState.addComponentServerState(pcss);
+        
         return (T) cellState;
     }
 
