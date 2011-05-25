@@ -118,7 +118,14 @@ public class DarkstarWebLoginImpl implements DarkstarWebLogin, RunnerListener, R
     public void addDarkstarServerListener(DarkstarServerListener listener) {
         listeners.add(listener);
 
-        for (Entry<DarkstarRunnerImpl, ServerSessionManager> e : sessions.entrySet()) {
+        // create a copy while holding the lock
+        Entry<DarkstarRunnerImpl, ServerSessionManager>[] entries;
+        synchronized (sessions) {
+            entries = sessions.entrySet().toArray(new Entry[0]);
+        }
+        
+        // notify listeners after releasing the lock
+        for (Entry<DarkstarRunnerImpl, ServerSessionManager> e : entries) {
             listener.serverStarted(e.getKey(), e.getValue());
         }
     }
@@ -192,14 +199,21 @@ public class DarkstarWebLoginImpl implements DarkstarWebLogin, RunnerListener, R
             ServerSessionManager sessionManager =
                 LoginManager.getSessionManager(ServerInfo.getInternalServerURL());
 
+            // add to session map
+            synchronized (sessions) {
+                sessions.put(runner, sessionManager);
+            }
+         
             // notify listeners
             for (DarkstarServerListener l : listeners) {
-                l.serverStarted(runner, sessionManager);
+                try {
+                    l.serverStarted(runner, sessionManager);
+                } catch (Throwable t) {
+                    logger.log(Level.WARNING, "Error sending server started event", t);
+                }
             }
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error getting session manager", ioe);
-        } catch (Throwable t) {
-            logger.log(Level.WARNING, "Error sending server started event", t);
         }
     }
 
@@ -208,12 +222,17 @@ public class DarkstarWebLoginImpl implements DarkstarWebLogin, RunnerListener, R
      * @param runner the runner that stopped
      */
     protected void fireServerStopped(DarkstarRunnerImpl runner) {
-        try {
-            for (DarkstarServerListener l : listeners) {
+        // remove from session map
+        synchronized (sessions) {
+            sessions.remove(runner);
+        }
+        
+        for (DarkstarServerListener l : listeners) {
+            try {
                 l.serverStopped(runner);
+            } catch (Throwable t) {
+                logger.log(Level.WARNING, "Error sending server stopped event", t);
             }
-        } catch (Throwable t) {
-            logger.log(Level.WARNING, "Error sending server stopped event", t);
         }
     }
 
