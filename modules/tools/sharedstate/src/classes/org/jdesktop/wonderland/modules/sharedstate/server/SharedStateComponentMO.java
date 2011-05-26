@@ -545,8 +545,16 @@ public class SharedStateComponentMO extends CellComponentMO {
 
         @Override
         public boolean isEmpty() {
-            // use keyset to take into account asynchronous operations
-            return keySet().isEmpty();
+            // if there are asynchronous operations scheduled, use the keyset
+            // so their size is accounted for
+            MapTaskRunner async = getTaskRunner();
+            if (async != null) {
+                Set<String> initial = new LinkedHashSet<String>(super.keySet());
+                async.adjustKeySet(initial);
+                return initial.isEmpty();
+            } else {
+                return super.isEmpty();
+            }
         }
         
         @Override
@@ -621,22 +629,23 @@ public class SharedStateComponentMO extends CellComponentMO {
                 return get(key);
             }
             
-            // nothing asynchronous
-            return syncDoPut(senderID, key, value);
+            // nothing asynchronous, go ahead and do the put. Always notify
+            // listeners, even if the values are equal
+            return syncDoPut(senderID, key, value, true);
         }
         
         
         private SharedData syncDoPut(WonderlandClientID senderID, String key,
-                                     SharedData value)
+                                     SharedData value, boolean notifyIfEqual)
         {
+            version++;
+        
             // make sure this is actually a change before sending any messages
             SharedData current = super.put(key, value);
-            if (value.equals(current)) {
+            if (!notifyIfEqual && value.equals(current)) {
                 // no change
                 return value;
             }
-            
-            version++;
             
             // send a message to notify all clients
             CellMessage message = ChangeValueMessage.put(getName(), version,
@@ -1042,8 +1051,8 @@ public class SharedStateComponentMO extends CellComponentMO {
                     logger.finest("[SharedStateComponentMO]: Put " + 
                                   e.getKey() + " = " + e.getValue());
                 }
-            
-                map.syncDoPut(senderID, e.getKey(), e.getValue());
+                
+                map.syncDoPut(senderID, e.getKey(), e.getValue(), false);
                 
                 i.remove();
             }
