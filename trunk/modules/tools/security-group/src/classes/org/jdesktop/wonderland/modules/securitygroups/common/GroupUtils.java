@@ -72,7 +72,10 @@ public class GroupUtils {
         throws IOException, JAXBException
     {
         String urlStr = "?members=" + members;
-        urlStr += "&user=" + userId;
+        
+        // OWL issue #188: make sure to encode user IDs -- they are
+        // automatically decoded when they are received
+        urlStr += "&user=" + URLEncoder.encode(userId, "UTF-8");
 
         return getGroups(baseUrl, urlStr, cm);
     }
