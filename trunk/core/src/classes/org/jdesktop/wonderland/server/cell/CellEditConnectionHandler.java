@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellCreatedMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
@@ -60,6 +61,7 @@ import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -199,6 +201,8 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             if (cellMO == null) {
                 /* Log a warning and move onto the next cell */
                 logger.warning("Unable to load cell MO: " + className );
+                sender.send(clientID, new ErrorMessage(editMessage.getMessageID(),
+                        "Unable to load cell MO: " + className));
                 return;
             }
 
@@ -218,15 +222,23 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                 } else {
                     parent.addChild(cellMO);
                 }
+                //everything worked okay. send response message
+                sender.send(clientID, new CellCreatedMessage(editMessage.getMessageID(), cellMO.getCellID()));
+
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +
                         cellMO.getClass() + ", it does not implement " +
                         "BeanSetupMO.", cce);
+                sender.send(clientID,
+                        new ErrorMessage(editMessage.getMessageID(),cce));
                 return;
             } catch (MultipleParentException excp) {
-                logger.log(Level.WARNING, "Error adding new cell " + cellMO.getName() +
-                        " of type " + cellMO.getClass() + ", has multiple parents", excp);
+                logger.log(Level.WARNING, "Error adding new cell " + cellMO.getName()
+                        + " of type " + cellMO.getClass() + ", has multiple parents", excp);
+                sender.send(clientID,
+                        new ErrorMessage(editMessage.getMessageID(), excp));
+                return;
             }
         }
         else if (editMessage.getEditType() == EditType.DELETE_CELL) {
@@ -256,6 +268,8 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             CellMO cellMO = CellManagerMO.getCell(cellID);
             if (cellMO == null) {
                 logger.warning("No cell found to duplicate with cell id " + cellID);
+                sender.send(clientID, new ErrorMessage(editMessage.getMessageID(),
+                        "No cell found to duplicate with cell id " + cellID));
                 return;
             }
             CellMO parentCellMO = cellMO.getParent();
@@ -272,6 +286,8 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             if (newCellMO == null) {
                 /* Log a warning and move onto the next cell */
                 logger.warning("Unable to duplicate cell MO: " + className);
+                sender.send(clientID, new ErrorMessage(editMessage.getMessageID(),
+                        "Unable to duplicate cell MO: " + className));
                 return;
             }
 
@@ -281,6 +297,9 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             if (position == null) {
                 logger.warning("Unable to determine the position of the cell " +
                         "to duplicate with id " + cellID);
+                sender.send(clientID, new ErrorMessage(editMessage.getMessageID(),
+                        "Unable to determine the position of the cell " +
+                        "to duplicate with id " + cellID));
                 return;
             }
             Vector3f offset = new Vector3f(1, 0, 1);
@@ -302,10 +321,14 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                 else {
                     parentCellMO.addChild(newCellMO);
                 }
+                sender.send(clientID, new CellCreatedMessage(editMessage.getMessageID(), newCellMO.getCellID()));
             } catch (MultipleParentException excp) {
                 logger.log(Level.WARNING, "Error duplicating cell " +
                         newCellMO.getName() + " of type " + newCellMO.getClass() +
                         ", has multiple parents", excp);
+                sender.send(clientID, new ErrorMessage(editMessage.getMessageID(),
+                        excp));
+                return;
             }
         }
         else if (editMessage.getEditType() == EditType.REPARENT_CELL) {
