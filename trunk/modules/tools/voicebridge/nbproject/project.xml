@@ -55,7 +55,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jsr173_1.0_api.jar:../../../web/utils/dist/wonderland-web-utils.jar:../../../web/runner/dist/wonderland-runner-core.jar:../../foundation/darkstar-api/build/lib/darkstar-api.jar</classpath>
+                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jsr173_1.0_api.jar:../../../web/utils/dist/wonderland-web-utils.jar:../../../web/runner/dist/wonderland-runner-core.jar:../../foundation/darkstar-api/build/lib/darkstar-api.jar:../audio-manager/lib/voip.jar:../../../core/ext/common/commons-httpclient-3.0.1.jar:../webdav/build/client/webdav-client.jar:../../../core/build/lib/wonderland-client.jar:../../foundation/content-repository/build/client/contentrepo-client.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

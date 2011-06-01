@@ -12,6 +12,7 @@
         <file name="presence-manager/build.xml"/>
         <file name="text-chat/build.xml"/>
         <file name="orb/build.xml"/>
+        <file name="webdav/build.xml"/>
         <file name="voicebridge/build.xml"/>
         <file name="server-manager/build.xml"/>
         <file name="audio-manager/build.xml"/>
@@ -20,7 +21,6 @@
         <file name="coneofsilence/build.xml"/>
         <file name="phone/build.xml"/>
         <file name="artimport/build.xml"/>
-        <file name="webdav/build.xml"/>
         <file name="snapshot-manager/build.xml"/>
         <file name="asset-meter/build.xml"/>
         <file name="xapps-config/build.xml"/>
