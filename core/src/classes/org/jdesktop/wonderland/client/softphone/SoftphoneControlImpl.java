@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -17,22 +35,15 @@
  */
 package org.jdesktop.wonderland.client.softphone;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.common.cell.CallID;
-
 import java.io.BufferedOutputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
-
-
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
 
@@ -151,7 +162,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    s += " " + command[i];
         }
 
-        System.out.println("Launching communicator: " + s);
+        logger.warning("Launching communicator: " + s);
 
         softphoneProcess = Runtime.getRuntime().exec(command);
             
@@ -264,115 +275,85 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         String javaHome = System.getProperty("java.home");
         
         String softphonePath = getJarPath();
-
 	if (softphonePath == null) {
 	    return null;
 	}
 
-        String fileSeparator = System.getProperty("file.separator");
-
-        /*
-         * Set path for native libraries
-         */
-	int ix = softphonePath.indexOf(fileSeparator + "softphone.jar");
-
-        System.setProperty("java.library.path", softphonePath.substring(0, ix));
-        
-	int cmdLength = 11;
-	
-	if (registrarTimeout != 0) {
-	    cmdLength += 2;
-	}
-
-	if (localHost != null) {
-	    cmdLength += 2;
-	}
-
-        if (quality != null) {
-            cmdLength += 8;
-        }
-        
-	if (isMuted == true) {
-	    cmdLength ++;
-	}
-
-        // check for an audio file to play
         String audioFile = System.getProperty("softphone.audio.file");
-        if (audioFile != null) {
-            cmdLength += 2;
-        }
-
-        // see if the softphone should run in silent (no mic/speaker) mode
         boolean silent = Boolean.parseBoolean(System.getProperty("softphone.silent"));
-        if (silent) {
-            cmdLength ++;
-        }
+        boolean debug = Boolean.parseBoolean(System.getProperty("softphone.debug"));
 
-        String[] command = new String[cmdLength];
+        // list of string to turn into a command
+        List<String> command = new ArrayList<String>(11);
+       
+        command.add(javaHome + File.separator + "bin" + File.separator + "java");
+	command.add("-Dsun.java2d.noddraw=true");
         
-        command[0] = javaHome + fileSeparator + "bin"
-                + fileSeparator + "java";
-	command[1] = "-Dsun.java2d.noddraw=true";
-        command[2] = "-jar";
-        command[3] = softphonePath;
-        command[4] = "-mc";
-        command[5] = "-u";
-        command[6] = username;
-	command[7] = "-r";
-	command[8] = registrar;
-	command[9] = "-stun";
+        // java options
+        if (debug) {
+            command.add("-Xdebug");
+            command.add("-Xrunjdwp:transport=dt_socket,server=y,address=8895,suspend=n");
+        }
+        
+        // the jar to run
+        command.add("-jar");
+        command.add(softphonePath);
+        
+        // everything below are arguments to that jar
+        command.add("-mc");
+        command.add("-u");
+        command.add(username);
+	command.add("-r");
+	command.add(registrar);
+	command.add("-stun");
 
 	String[] tokens = registrar.split(":");
-
-	ix = tokens[0].indexOf(";");
-	
+        String stun = tokens[0];
+	int ix = stun.indexOf(";");
 	if (ix >= 0) {
-	    command[10] = tokens[0].substring(0, ix);
-	} else {
-	    command[10] = tokens[0];
+            stun = stun.substring(0, ix);
 	}
 
 	if (tokens.length >= 2) {
-	    command[10] += ":" + tokens[1];
+	    stun += ":" + tokens[1];
 	}
-
-	int i = 11;
+        command.add(stun);
 
 	if (registrarTimeout != 0) {
-	    command[i++] = "-t";
-	    command[i++] = String.valueOf(registrarTimeout);
+	    command.add("-t");
+	    command.add(String.valueOf(registrarTimeout));
 	}
 
 	if (localHost != null) {
-	    command[i++] = "-l";
-	    command[i++] = localHost;
+            command.add("-l");
+	    command.add(localHost);
 	}
               
         if (quality != null) {
-            command[i++] = "-sampleRate";
-            command[i++] = String.valueOf(quality.sampleRate());
-            command[i++] = "-channels";
-            command[i++] = String.valueOf(quality.channels());
-            command[i++] = "-transmitSampleRate";
-            command[i++] = String.valueOf(quality.transmitSampleRate());
-            command[i++] = "-transmitChannels";
-            command[i++] = String.valueOf(quality.transmitChannels());
+            command.add("-sampleRate");
+            command.add(String.valueOf(quality.sampleRate()));
+            command.add("-channels");
+            command.add(String.valueOf(quality.channels()));
+            command.add("-transmitSampleRate");
+            command.add(String.valueOf(quality.transmitSampleRate()));
+            command.add("-transmitChannels");
+            command.add(String.valueOf(quality.transmitChannels()));
         }
         
 	if (isMuted == true) {
-	    command[i++] = "-mute";
+	    command.add("-mute");
 	}
 
         if (audioFile != null) {
-            command[i++] = "-playTreatment";
-            command[i++] = audioFile;
+            command.add("-playTreatment");
+            command.add(audioFile);
         }
 
         if (silent) {
-            command[i++] = "-silent";
+            command.add("-silent");
         }
 
-        return command;
+        return command.toArray(new String[command.size()]);
     }
 
     public void stopSoftphone() {
@@ -465,7 +446,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
     private boolean isMuted;
 
     public void mute(boolean isMuted) {
-	try {
+        try {
             if (isMuted) {
                 sendCommandToSoftphone("Mute");
             } else {
