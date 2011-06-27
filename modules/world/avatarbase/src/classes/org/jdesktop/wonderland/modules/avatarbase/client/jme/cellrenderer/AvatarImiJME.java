@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -166,6 +166,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         characterMotionListener = new CharacterMotionListener() {
             Vector3f prevTrans;
             PMatrix prevRot;
+            float prevHeight;
+            boolean prevCollision;
             
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
                 if (logger.isLoggable(Level.FINEST)) {
@@ -175,13 +177,21 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                             rotation);
                 }
                 
+                float height = avatarCharacter.getController().getHeight();
+                boolean collision = avatarCharacter.getController().isColliding();
+             
                 if (prevTrans == null || !Math3DUtils.epsilonEquals(prevTrans, translation, 0.001f) ||
-                    prevRot == null || !prevRot.epsilonEquals(rotation, 0.001f))
-                {
-                    ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
+                    prevRot == null || !prevRot.epsilonEquals(rotation, 0.001f) ||
+                    !Math3DUtils.epsilonEquals(prevHeight, height, 0.001f) ||
+                    prevCollision != collision)
+                {                    
+                    MovableAvatarComponent mac = ((MovableAvatarComponent) c.getComponent(MovableComponent.class));
+                    mac.localMoveRequest(new CellTransform(rotation.getRotation(), translation), height, collision);
 
                     prevTrans = translation.clone();
                     prevRot = new PMatrix(rotation);
+                    prevHeight = height;
+                    prevCollision = collision;
                 }
             };   
         };
@@ -194,16 +204,25 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     currentTrigger = trigger;
                     currentPressed = pressed;
                 }
-
+                
                 GameState state = avatarCharacter.getContext().getCurrentState();
                 String animationName=null;
                 if (state instanceof CycleActionState) {
                     animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
                 }
-                if (c.getComponent(MovableComponent.class)==null)
+                
+                float height = avatarCharacter.getController().getHeight();
+                boolean collision = avatarCharacter.getController().isColliding();
+                
+                if (c.getComponent(MovableComponent.class)==null) {
                     logger.warning("!!!! NULL MovableComponent");
-                else
-                    ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
+                } else {
+                    MovableAvatarComponent mac = ((MovableAvatarComponent) c.getComponent(MovableComponent.class));
+                    mac.localMoveRequest(new CellTransform(rotation, translation), 
+                                         trigger, pressed, animationName, 
+                                         height, collision, null);
+                
+                }
             }
         };
 
@@ -557,8 +576,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             return loadAvatarInternal(avatarConfigInfo);
         } catch (java.lang.Exception excp) {
             // Loger and error and return null
+            String url = avatarConfigInfo == null ? "null" : avatarConfigInfo.getAvatarConfigURL();
             logger.log(Level.WARNING, "Failed to load avatar character for " +
-                    "url " + avatarConfigInfo.getAvatarConfigURL(), excp);
+                    "url " + url, excp);
             return null;
         } finally {
             LoadingInfo.finishedLoading(cell.getCellID(), username);
@@ -694,8 +714,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // is known to report false negatives on at least one graphics card.
         // Our shader test should do an adequate job determining whether a
         // graphics card supports the OpenGL 2.0 features we use.
-
-        return shaderPass && uniformsPass;
+        
+        // Update: fixed version of supportsOpenGL20 should properly detect
+        // version.
+        
+        return rm.supportsOpenGL20() && shaderPass && uniformsPass;
     }
 
     /**
@@ -718,10 +741,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private void setCollisionController(WlAvatarCharacter avatar) {
         // Create a spatial that represents the bounds of the avatar to use
         // for collision. These are hardcoded values for now.
-        Vector3f origin = new Vector3f(0f, 0.92f, 0f);
-        float xExtent = 0.4f;
+        Vector3f origin = new Vector3f(0f, 0.92f, 0.15f);
+        float xExtent = 0.3f;
         float yExtent = 0.6f;
-        float zExtent = 0.3f;
+        float zExtent = 0.15f;
 
         if (selectedForInput) {
             Spatial collisionGraph = new Box("AvatarCollision", origin, xExtent,
@@ -748,6 +771,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             ac.addCollisionListener(collisionListener);
         } else {
             AvatarController ac = (AvatarController)avatar.getContext().getController();
+            ac.setCollisionController(null);
             ac.removeCollisionListener(collisionListener);
          }
     }
@@ -908,14 +932,21 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     } else {
                         avatarCharacter.getContext().triggerReleased(trigger);
                     }
-
-                    currentTrigger = trigger;
-                    currentPressed = pressed;
-                } catch(Exception e) {
+                } catch (Exception e) {
                     // We can get this if a user is viewing a female avatar but
                     // has not yet set female as the default. 
                 }
+
+                currentTrigger = trigger;
+                currentPressed = pressed;
             }
+        }
+    }
+    
+    public void triggerCollision(float height, boolean collision) {
+        if (!selectedForInput && avatarCharacter != null) {
+            ((WlAvatarController) avatarCharacter.getController()).setHeight(height);
+            ((WlAvatarController) avatarCharacter.getController()).setColliding(collision);
         }
     }
 
