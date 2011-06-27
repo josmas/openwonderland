@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -35,11 +35,13 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import imi.character.CharacterController;
 import imi.character.avatar.Avatar;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.ActionInfo;
 import imi.character.statemachine.corestates.ActionState;
 import imi.character.statemachine.corestates.CycleActionState;
+import imi.character.statemachine.corestates.FlyState;
 import imi.character.statemachine.corestates.IdleState;
 import imi.character.statemachine.corestates.TurnState;
 import imi.character.statemachine.corestates.WalkState;
@@ -70,6 +72,13 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
                 actionMap.put(actionInfo.getAnimationName(), actionInfo);
             }
     }
+
+    @Override
+    protected CharacterController instantiateController() {
+        return new WlAvatarController(getavatar());
+    }
+    
+    
 /*
     @Override
     public void notifyAnimationMessage(AnimationMessageType message, int stateID)
@@ -107,7 +116,7 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
             // Force the trigger, note that this transition is so fast that the
             // state machine may not actually change state. Therefore in triggerAlert
             // we check for the trigger and force the state change.
-            triggerReleased(TriggerNames.MiscAction.ordinal());
+            //triggerReleased(TriggerNames.MiscAction.ordinal());
             triggerPressed(TriggerNames.MiscAction.ordinal());
             triggerReleased(TriggerNames.MiscAction.ordinal());
         }
@@ -181,9 +190,23 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
 
     @Override
     protected void triggerAlert(int trigger, boolean pressed) {
-        if (pressed && trigger==TriggerNames.MiscAction.ordinal()) {
-            // Force animation to play if this is a Misc trigger
-            setCurrentState((ActionState) gameStates.get(CycleActionState.class));
+        if (!pressed) {
+            return;
+        }
+        
+        switch (TriggerNames.values()[trigger]) {
+//            case MiscAction:
+//                // Force animation to play if this is a Misc trigger
+//                setCurrentState((ActionState) gameStates.get(CycleActionState.class));
+//                break;
+                
+            case Idle:
+                // force idle by interrupting the current animation
+                GameState state = getCurrentState();
+                if (state instanceof ActionState) {
+                    state.notifyAnimationMessage(AnimationMessageType.PlayOnceComplete);
+                }
+                break;
         }
     }
 }

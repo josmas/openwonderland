@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,8 +35,6 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -38,7 +54,9 @@ public class MovableAvatarComponent extends MovableComponent {
     private int trigger;
     private boolean pressed;
     private String animationName;
-
+    private float height;
+    private boolean collision;
+    
     public final static int NO_TRIGGER = -1;
 
     public MovableAvatarComponent(Cell cell) {
@@ -49,6 +67,12 @@ public class MovableAvatarComponent extends MovableComponent {
     @Override
     public void localMoveRequest(CellTransform transform) {
         localMoveRequest(transform, NO_TRIGGER, false, null, null);
+    }
+    
+    public void localMoveRequest(CellTransform transform, float height, 
+                                 boolean collision) 
+    {
+        localMoveRequest(transform, NO_TRIGGER, false, null, height, collision, null);
     }
 
     @Override
@@ -62,12 +86,24 @@ public class MovableAvatarComponent extends MovableComponent {
                                  int trigger,
                                  boolean pressed,
                                  String animationName,
-                                 CellMoveModifiedListener listener) {
-
+                                 CellMoveModifiedListener listener) 
+    {
+        localMoveRequest(transform, trigger, pressed, animationName,
+                         0f, false, listener);
+    }
+    
+    public void localMoveRequest(CellTransform transform, int trigger, 
+                                 boolean pressed, String animationName,
+                                 float height, boolean collision,
+                                 CellMoveModifiedListener listener)
+    {
         synchronized(this) {
             this.trigger = trigger;
             this.pressed = pressed;
             this.animationName = animationName;
+            this.height = height;
+            this.collision = collision;
+            
             if (trigger==NO_TRIGGER) {
                 // Just a transform update, so it can be throttled
                 super.localMoveRequest(transform, null);
@@ -93,7 +129,9 @@ public class MovableAvatarComponent extends MovableComponent {
                                                     transform.getRotation(null),
                                                     trigger,
                                                     pressed,
-                                                    animationName);
+                                                    animationName,
+                                                    height,
+                                                    collision);
     }
 
     @Override
@@ -115,6 +153,10 @@ public class MovableAvatarComponent extends MovableComponent {
         super.serverMoveRequest(msg);
 
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
+        
+        // update collision
+        ((AvatarCell) cell).triggerCollision(mam.getHeight(), mam.isCollision());
+        
 //        System.err.println("Move message "+msg.getCellTransform().getTranslation(null)+"  "+mam.getTrigger()+" "+mam.getAnimationName());
         if (mam.getTrigger()!=NO_TRIGGER) {
             ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed(), mam.getAnimationName());
