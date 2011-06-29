@@ -181,7 +181,7 @@
     </target>
     
     <target name="core-run-server" depends="-core-setup-server" 
-            description="Run Sun Game Server for Project Wonderland">
+            description="Run Sun Game Server for Open Wonderland">
 
         <property name="sgs.logging.properties.file"
                   location="${sgs.platform.data.dir}/sgs-logging.properties"/>
