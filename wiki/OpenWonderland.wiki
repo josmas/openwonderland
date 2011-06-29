@@ -139,6 +139,11 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
+  <td class="left">[http://javadoc.openwonderland.org Open Wonderland Core APIs]</td>
+  <td class="right">JavaDoc reference for all core packages and classes.</td>
+</tr>
+
+<tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/DevelopingWithNetBeansPoint5 Developing With NetBeans]</td>
   <td class="right"> This page describes how to use !NetBeans to develop, run and debug Wonderland 0.5.</td>
 </tr>
