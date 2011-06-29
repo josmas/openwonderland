@@ -76,8 +76,8 @@
 		<pathelement path="${module-client.classpath}"/>
             </classpath>
             
-            <doctitle><![CDATA[<h1>Project Wonderland App Base</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Project Wonderland App Base</i>]]></bottom>
+            <doctitle><![CDATA[<h1>Open Wonderland App Base</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Open Wonderland App Base</i>]]></bottom>
 
         </javadoc>
     </target>
@@ -103,8 +103,8 @@
                 <param name="-wonderlandAPI" value="stable,experimental"/> 
             </doclet>
             
-            <doctitle><![CDATA[<h1>Project Wonderland App Base API</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Project Wonderland App Base API</i>]]></bottom>
+            <doctitle><![CDATA[<h1>Open Wonderland App Base API</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Open Wonderland App Base API</i>]]></bottom>
         </javadoc>
     </target>
     -->

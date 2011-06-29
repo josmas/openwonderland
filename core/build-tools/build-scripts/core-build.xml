@@ -127,8 +127,8 @@
 		<pathelement path="${core-client.classpath}"/>
             </classpath>
             
-            <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Project Wonderland - http://wonderland.dev.java.net</i>]]></bottom>
+            <doctitle><![CDATA[<h1>Open Wonderland</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Open Wonderland - http://openwonderland.org</i>]]></bottom>
             <link offline="true" href="http://java.sun.com/javase/6/docs/api" packageListLoc="${javadoc.packagelist.dir}/1.5.0"/>
             <link offline="true" href="http://www.jmonkeyengine.com/doc/" packageListLoc="${javadoc.packagelist.dir}/jmonkeyengine"/>
             <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-server"/>
@@ -156,8 +156,8 @@
                 <param name="-wonderlandAPI" value="stable,experimental"/> 
             </doclet>
             
-            <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Project Wonderland - http://wonderland.dev.java.net</i>]]></bottom>
+            <doctitle><![CDATA[<h1>Open Wonderland</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Open Wonderland - http://openwonderland.org</i>]]></bottom>
             <link offline="true" href="http://java.sun.com/javase/6/docs/api" packageListLoc="${javadoc.packagelist.dir}/1.5.0"/>
             <link offline="true" href="http://www.jmonkeyengine.com/doc/" packageListLoc="${javadoc.packagelist.dir}/jmonkeyengine"/>
             <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-server"/>
