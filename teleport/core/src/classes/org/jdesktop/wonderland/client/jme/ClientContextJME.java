@@ -201,7 +201,7 @@ public class ClientContextJME extends ClientContext {
         removeAllCollisionSystems(curSession);
         removeAllPhysicsSystems(curSession);
         
-        worldManager.shutdown();
-        worldManager = null;
+//        worldManager.shutdown();
+//        worldManager = null;
     }
 }

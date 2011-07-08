@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
+import java.util.logging.Level;
 import org.jdesktop.mtgame.Entity;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector2f;
@@ -256,7 +257,11 @@ System.out.println("QQQQQQQQQQQQQQQQ - In cleanup in View2DCell");
     protected void attachFrame () {
         if (frame == null) {
             logger.fine("Create new frame for view " + this);
-            frame = new Frame2DCell(this);
+            try {
+                frame = new Frame2DCell(this);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(View2DCell.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         logger.fine("Attach frame to view " + this);
         frame.attachToViewEntity();

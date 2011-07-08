@@ -82,6 +82,7 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.LogControl;
 import org.pushingpixels.trident.Timeline;
 /* For Testing FocusEvent3D
@@ -528,7 +529,7 @@ System.out.println("--------------------------    Enter logout in JmeClientMain"
             ServerSessionManager ssm = curSession.getSessionManager();
             System.out.println("---------------------- After get ssm");
 
-//            ClientContextJME.cleanup(ssm);
+            ClientContextJME.cleanup(ssm);
 
 ////            curSession.logout();
 ////            curSession = null;
@@ -546,6 +547,10 @@ System.out.println("--------------------------    Enter logout in JmeClientMain"
 //            ClientContext.removeCellCaches();
             curSession.logout();
             curSession = null;
+            
+            SoftphoneControlImpl softphoneControlImpl = SoftphoneControlImpl.getInstance();
+            softphoneControlImpl.cleanup(null);
+
             System.out.println("----------------------- After disconnect - session = " + curSession);
 
         }

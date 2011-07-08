@@ -98,7 +98,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      *
      * @param view The view the frame encloses.
      */
-    public Frame2DCell (View2DCell view) {
+    public Frame2DCell (View2DCell view) throws InterruptedException {
         this.view = view;
         name = "Frame for " + view.getName();
 
