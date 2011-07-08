@@ -1062,5 +1062,9 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    logger.warning(e.getMessage());
 	}
     }
+    public void cleanup(String value)
+        {
+        close(value);
+        }
 
 }

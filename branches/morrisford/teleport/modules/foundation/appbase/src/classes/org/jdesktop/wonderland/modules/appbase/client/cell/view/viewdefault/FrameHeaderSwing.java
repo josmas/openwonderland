@@ -133,7 +133,7 @@ public class FrameHeaderSwing
      * @param view The view the frame encloses.
      * @param closeListeners The listeners to be notified when the header's close button is pressed.
      */
-    public FrameHeaderSwing(View2DCell view) {
+    public FrameHeaderSwing(View2DCell view) throws InterruptedException {
         super("FrameHeaderSwing for " + view, view, null);
 
         this.view = view;
@@ -169,7 +169,7 @@ public class FrameHeaderSwing
      */
     @Override
     public void cleanup() {
-System.out.println("WWWWWWWWW - In cleanup in FarmeHeaderSwing");
+System.out.println("WWWWWWWWW - In cleanup in FrameHeaderSwing");
         headerPanel.removeMouseListener(this);
         headerPanel.removeMouseMotionListener(this);
 
@@ -180,7 +180,7 @@ System.out.println("WWWWWWWWW - In cleanup in FarmeHeaderSwing");
                 JmeClientMain.getFrame().getCanvas3DPanel().remove(headerPanel);
                 headerPanelAllocator.deallocate(headerPanel);
 //MHF
-                headerPanelAllocator.cleanup();
+//                headerPanelAllocator.cleanup();
                 System.out.println("WWWWWWWWWWWWW - at bottom of run in FrameHeaderSwing");
             }
         });
