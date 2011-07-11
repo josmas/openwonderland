@@ -117,7 +117,7 @@
             <checksumfileset file="${core.common.dir}/stun.jar" prefix="webserver"/>
 
             <!-- dtds for local deployments -->
-            <checksumfileset file="${current.dir}/dtds.zip" prefix="webserver/dtds"/>
+            <checksumfileset file="${current.dir}/schemas.zip" prefix="webserver/schemas"/>
 
             <!-- contents of the document root -->
             <checksumfileset dir="${current.dir}/web" prefix="docroot"/>
