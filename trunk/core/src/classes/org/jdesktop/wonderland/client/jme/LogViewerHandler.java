@@ -49,7 +49,7 @@ public class LogViewerHandler extends Handler {
         super();
 
         setLevel(Level.ALL);
-        LogViewerFrame.getInstance().setHandler(this);
+        LogViewer.INSTANCE.setHandler(this);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class LogViewerHandler extends Handler {
         record.getSourceMethodName();
 
         // schedule the update
-        LogViewerFrame.getInstance().addRecord(record);
+        LogViewer.INSTANCE.addRecord(record);
     }
 
     @Override

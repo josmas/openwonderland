@@ -178,8 +178,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         // show the log viewer if visible on startup is selected
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (LogViewerFrame.getInstance().isVisibleOnStartup()) {
-                    LogViewerFrame.getInstance().setVisible(true);
+                if (LogViewer.INSTANCE.isVisibleOnStartup()) {
+                    LogViewer.INSTANCE.setVisible(true);
                 }
             }
         });
@@ -352,8 +352,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 logViewerMI = new JMenuItem(BUNDLE.getString("Log_Viewer"));
                 logViewerMI.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {
-                        LogViewerFrame.getInstance().setVisible(true);
-                        LogViewerFrame.getInstance().toFront();
+                        LogViewer.INSTANCE.setVisible(true);
                     }
                 });
                 addToHelpMenu(logViewerMI, -1);
