@@ -21,7 +21,12 @@
         </pathconvert>
         <for param="copy.jar" list="${copy.jars}" delimiter="${path.separator}">
             <sequential>
-                <copy todir="${webstart.jar.dir}" file="@{copy.jar}"/>
+                <if>
+                    <available file="@{copy.jar}"/>
+                    <then>
+                        <copy todir="${webstart.jar.dir}" file="@{copy.jar}"/>
+                    </then>
+                </if>
             </sequential>
         </for>
         
