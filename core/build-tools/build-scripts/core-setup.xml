@@ -38,6 +38,15 @@
         <!-- Escher -->
         <unpack-lib-zip pkgname="escher"
                         srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
+
+        <!-- add video if the wonderland-video directory exists as a peer of wonderland -->
+        <if>
+            <available file="${top.dir}/../wonderland-video/lib/zip/${ostype}/xuggler.zip"/>
+            <then>
+                <unpack-lib-zip pkgname="xuggler"
+                        srcdir="${top.dir}/../wonderland-video/lib/zip/${ostype}" destdir="${core.lib.os.dir}/.."/>
+            </then>
+        </if>
     </target>
 
     <!--

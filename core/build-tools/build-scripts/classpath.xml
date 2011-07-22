@@ -21,6 +21,10 @@
         <!-- jogl -->
         <path location="${core.lib.os.dir}/jogl.jar"/>
         <path location="${core.lib.os.dir}/gluegen-rt.jar"/>
+
+        <!-- xuggler video (if installed) -->
+        <path location="${top.dir}/../wonderland-video/lib/xuggle-xuggler.jar"/>
+	<path location="${core.common.dir}/commons-cli-1.1.jar"/>
     </pathconvert>
     
     <!-- Other wonderland specific supporting jars -->
