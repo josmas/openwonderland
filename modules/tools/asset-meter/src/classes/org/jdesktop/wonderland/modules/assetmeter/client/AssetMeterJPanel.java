@@ -1,3 +1,21 @@
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
 /*
  * Project Wonderland
  *
@@ -58,19 +76,16 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     private final Map<String, DownloadingAsset> downloadingAssetMap;
 
     /* The default list model */
-    private AssetIndicatorListModel listModel = new AssetIndicatorListModel();
+    private final AssetIndicatorListModel listModel = new AssetIndicatorListModel();
 
     /* The progress listener */
-    private MeterProgressListener progressListener;
+    private final MeterProgressListener progressListener;
 
     /* The ClientPlugin */
-    private AssetMeterClientPlugin plugin;
+    private final AssetMeterClientPlugin plugin;
 
     /* The fade timer in progress */
-    private Timer fadeTimer;
     private Timer dismissTimer;
-    /* The current transparency */
-    private int transparency = 0;
 
     /* Whether this component is enabled */
     private boolean enabled = true;
@@ -88,13 +103,19 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
 
         // Add a listener to the asset manager
         progressListener = new MeterProgressListener();
-        AssetManager manager = AssetManager.getAssetManager();
-        manager.addProgressListener(progressListener);
-
+        
         // Select the right card
         ((CardLayout) getLayout()).show(this, "combined");
     }
 
+    /**
+     * Register the progress listener with the asset manager
+     */
+    public void register() {
+        AssetManager manager = AssetManager.getAssetManager();
+        manager.addProgressListener(progressListener);
+    }
+    
     /**
      * Stop listener for events
      */
@@ -102,7 +123,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
         AssetManager manager = AssetManager.getAssetManager();
         manager.removeProgressListener(progressListener);
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
