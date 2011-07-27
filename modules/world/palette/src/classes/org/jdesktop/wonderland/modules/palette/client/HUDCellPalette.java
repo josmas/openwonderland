@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -151,8 +169,11 @@ public class HUDCellPalette extends javax.swing.JPanel {
                     value, index, isSelected, hasFocus);
             Image icon = imageList.get(index);
             label.setIcon(new ImageIcon(icon));
+
             label.setText("");
             label.setTransferHandler(new ListTransferHandler());
+            CellFactorySPI factory = cellFactoryMap.get((String)value);
+            label.setToolTipText(factory.getDisplayName());
 
 //            // Set up the drag and drop support for the image
 //            DragSource ds = DragSource.getDefaultDragSource();
@@ -199,6 +220,7 @@ public class HUDCellPalette extends javax.swing.JPanel {
                         cellFactoryMap.put(name, cellFactory);
                         // Store the image for the list renderer
                         Image image = createScaledImage(preview, name, SIZE);
+
                         imageList.add(image);
                     }
                 } catch (java.lang.Exception excp) {
