@@ -1,0 +1,27 @@
+# This file is created by JAlbum. It sets custom file filtering and ordering for this image directory.
+# Each row indicate a file and it's order. Files not listed here are added to the end of the album
+# Rows beginning with "-" indicate excluded files.
+# Rows containing a tab character indicate links, where the text before the tab is the logical file name
+ and the path to the right is the target path.
+# Note: This file allows absolute paths to files and directories in other locations and thereby
+# allows you to compile albums consisting of files from several different locations.
+
+2007-11-16_teammtg1.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-11-16_teammtg1.png
+2007-11-29-demorm-mtg1.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-11-29-demorm-mtg1.png
+2007-12-03-shared-apps2.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-12-03-shared-apps2.png
+2007-12-03-multi-apps1.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-12-03-multi-apps1.png
+2007-11-27-teamrm.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-11-27-teamrm.png
+2007-11-29-app-share2.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-11-29-app-share2.png
+MPK20-movie-snap2.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/MPK20-movie-snap2.png
+MPK20-movie-snap3.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/MPK20-movie-snap3.png
+MPK20-movie-snap4.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/MPK20-movie-snap4.png
+MPK20-movie-snap1.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/MPK20-movie-snap1.png
+team-room-multi.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/team-room-multi.png
+Nicole-avatar.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/Nicole-avatar.png
+app-sharing.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/app-sharing.png
+MPK20-movie-confrm.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/MPK20-movie-confrm.png
+PhoneDemo-LAN.png	/Users/nicoley/mc/doc/mpk20/images/demo-video-snaps/PhoneDemo-LAN.png
+2007-11-07-confrm4.png	/Users/nicoley/mc/doc/mpk20/images/Nov2007-07/2007-11-07-confrm4.png
+2007-11-07-confrm2.png	/Users/nicoley/mc/doc/mpk20/images/Nov2007-07/2007-11-07-confrm2.png
+2007-11-28-office2.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-11-28-office2.png
+2007-11-27-team-mtg.png	/Users/nicoley/mc/doc/mpk20/images/2007-12-Wonderland-Various/2007-11-27-team-mtg.png
