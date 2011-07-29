@@ -144,6 +144,11 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Open%20Wonderland%20Communications%20Architecture Communications Architecture]</td>
+  <td class="right">This document describes the Open Wonderland extensible communication architecture.</td>
+</tr>
+
+<tr>
   <td class="left">[http://wiki.java.net/bin/view/Javadesktop/DevelopingWithNetBeansPoint5 Developing With NetBeans]</td>
   <td class="right"> This page describes how to use !NetBeans to develop, run and debug Wonderland 0.5.</td>
 </tr>
