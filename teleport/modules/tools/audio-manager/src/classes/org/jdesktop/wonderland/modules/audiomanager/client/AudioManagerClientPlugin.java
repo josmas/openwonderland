@@ -43,6 +43,7 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
 
     @Override
     public void initialize(ServerSessionManager loginManager) {
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC    in AudioManagerClientPlugin in initialize");
         logger.info("Audio manager initialize");
 
         this.client = new AudioManagerClient();
@@ -53,16 +54,22 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
     @Override
     public void cleanup() {
         super.cleanup();
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC    in AudioManagerClientPlugin in cleanup");
         getSessionManager().removeLifecycleListener(this);
+        client.disconnect();
     }
 
     @Override
     protected void activate() {
+                System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC    in AudioManagerClientPlugin in activate");
+
         client.addMenus();
     }
 
     @Override
-    protected void deactivate() {
+    public void deactivate() {
+                System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC    in AudioManagerClientPlugin in deactivate");
+
         client.removeMenus();
     }
 
@@ -81,6 +88,7 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
     public void sessionStatusChanged(WonderlandSession session,
                                      WonderlandSession.Status status)
     {
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC       AudioManagerClientPlugin in sessionStatusChanged - status = " + status);
         logger.fine("session status changed " + session + " status " + status);
         if (status.equals(WonderlandSession.Status.CONNECTED)) {
             connectClient(session);

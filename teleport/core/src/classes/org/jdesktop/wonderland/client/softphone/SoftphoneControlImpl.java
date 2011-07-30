@@ -90,7 +90,8 @@ public class SoftphoneControlImpl implements SoftphoneControl {
      */
     public String startSoftphone(String username, String registrar,
 	    int registrarTimeout, String localHost) throws IOException {
-    
+
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC enter startSoftphone");
 	this.username = username.replaceAll("\\p{Punct}", "_");
 
 	String previousRegistrar = this.registrar;
@@ -926,6 +927,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
     private boolean closed;
 
     private void close(final String failureMessage) {
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC enter softphone close");
 	if (closed) {
 	    return;
 	}
@@ -1050,6 +1052,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
     public static void main(String args[]) {
 	SoftphoneControlImpl softphoneControlImpl = SoftphoneControlImpl.getInstance();
 
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC         Enter main in SoftphoneControlImpl");
 	try {
 	    String address = softphoneControlImpl.startSoftphone(
 	        System.getProperty("user.name"), "swbridge.east.sun.com:5060", 0, null);
@@ -1064,6 +1067,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
     }
     public void cleanup(String value)
         {
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC           Enter cleanup in SoftphoneControlImpl");
         close(value);
         }
 

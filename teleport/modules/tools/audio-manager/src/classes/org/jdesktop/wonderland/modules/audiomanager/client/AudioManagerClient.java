@@ -171,6 +171,7 @@ public class AudioManagerClient extends BaseConnection implements
      * @throws org.jdesktop.wonderland.client.comms.ConnectionFailureException
      */
     public AudioManagerClient() {
+        System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC                constructor AudioManagerClient");
         AudioMenu.getAudioMenu(this).setEnabled(false);
 
         voiceChatIcon = new ImageIcon(getClass().getResource(
@@ -819,6 +820,7 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (message instanceof GetVoiceBridgeResponseMessage) {
+System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC     in AudioManagerClient start softphone");
             startSoftphone((GetVoiceBridgeResponseMessage) message);
             return;
         }
