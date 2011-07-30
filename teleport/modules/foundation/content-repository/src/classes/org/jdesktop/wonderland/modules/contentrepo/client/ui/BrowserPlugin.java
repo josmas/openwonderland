@@ -58,6 +58,7 @@ public class BrowserPlugin extends BaseClientPlugin {
 
     @Override
     public void initialize(final ServerSessionManager loginInfo) {
+        System.out.println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP    in initialize in BrowserPlugin");
 
         final ContentBrowserListener listener = new ContentBrowserListener() {
 
@@ -140,6 +141,7 @@ public class BrowserPlugin extends BaseClientPlugin {
         // Register the content browser frame with the registry of such panels.
         // Do this within the AWT Event Thread to avoid some exceptions (Issue
         // #442).
+        System.out.println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP    in activate in BrowserPlugin");
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -157,9 +159,11 @@ public class BrowserPlugin extends BaseClientPlugin {
     @Override
     protected void deactivate() {
         // Reset the default content browser back to null
+        System.out.println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP    in deactivate in BrowserPlugin");
         ContentBrowserManager manager =
                 ContentBrowserManager.getContentBrowserManager();
         if (defaultBrowser == manager.getDefaultContentBrowser()) {
+            defaultBrowser.dispose();
             manager.setDefaultContentBrowser(null);
             defaultBrowser = null;
         }
@@ -167,4 +171,10 @@ public class BrowserPlugin extends BaseClientPlugin {
         // remove menu items
         JmeClientMain.getFrame().removeFromToolsMenu(newBrowserItem);
     }
+
+    @Override
+    public void cleanup()
+        {
+        System.out.println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP    in cleanup in BrowserPlugin ");
+        }
 }
