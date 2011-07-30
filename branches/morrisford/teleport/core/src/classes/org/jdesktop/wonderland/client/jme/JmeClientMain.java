@@ -548,9 +548,6 @@ System.out.println("--------------------------    Enter logout in JmeClientMain"
             curSession.logout();
             curSession = null;
             
-            SoftphoneControlImpl softphoneControlImpl = SoftphoneControlImpl.getInstance();
-            softphoneControlImpl.cleanup(null);
-
             System.out.println("----------------------- After disconnect - session = " + curSession);
 
         }
