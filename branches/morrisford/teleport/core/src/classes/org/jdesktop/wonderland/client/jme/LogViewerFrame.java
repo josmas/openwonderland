@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -35,27 +35,19 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.renderer.jogl.JOGLContextCapabilities;
-import com.jme.system.DisplaySystem;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -77,9 +69,6 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
-import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 
 /**
  * A log viewer.
@@ -99,27 +88,10 @@ public class LogViewerFrame extends javax.swing.JFrame {
         Level.ALL, Level.OFF
     };
 
-    /** the log handler */
-    private LogViewerHandler handler;
-
-    /** the list of currently displayed records */
-    private final List<LogEntry> entries = new LinkedList<LogEntry>();
-    
-    /** the maximum number of entries */
-    private int maxEntries = 1000;
-
-    /** whether the viewer is visible on startup */
-    private boolean visibleOnStartup = false;
-
-    /**
-     * Get the global log viewer frame singleton
-     * @return the LogViewerFrame singleton
+    /** 
+     * Creates new form LogViewerFrame -- must be called on AWT event
+     * thread
      */
-    public static LogViewerFrame getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
-
-    /** Creates new form LogViewerFrame */
     protected LogViewerFrame() {
         initComponents();
 
@@ -158,82 +130,10 @@ public class LogViewerFrame extends javax.swing.JFrame {
                     levelTableMinus.setEnabled(false);
                 }
             }   
-        });
-        
-        // restore default values
-        restore();
+        });        
     }
 
-    private void restore() {
-        Preferences prefs = Preferences.userNodeForPackage(LogViewerFrame.class);
-
-        maxEntries = prefs.getInt("maxEntries", maxEntries);
-
-        Logger root = LogManager.getLogManager().getLogger("");
-        Level levelVal = Level.parse(prefs.get("rootLevel", root.getLevel().getName()));
-        root.setLevel(levelVal);
-
-        visibleOnStartup = prefs.getBoolean("visibleOnStartup", visibleOnStartup);
-    }
-    
-    public LogViewerHandler getHandler() {
-        return handler;
-    }
-
-    public void setHandler(LogViewerHandler handler) {
-        this.handler = handler;
-    }
-
-    public int getMaxEntries() {
-        return maxEntries;
-    }
-
-    public void setMaxEntries(int maxEntries) {
-        if (maxEntries <= 0) {
-            throw new IllegalArgumentException("Maximum entries must be " +
-                                               "more than 0");
-        }
-
-        this.maxEntries = maxEntries;
-
-        // save a preference
-        Preferences prefs = Preferences.userNodeForPackage(LogViewerFrame.class);
-        prefs.putInt("maxEntries", maxEntries);
-
-        // make clean up down to the new limit
-        while (entries.size() > getMaxEntries()) {
-            removeOldestRecord();
-        }
-    }
-
-    public Level getRootLogLevel() {
-        return Logger.getLogger("").getLevel();
-    }
-
-    public void setRootLogLevel(Level rootLevel) {
-        Logger.getLogger("").setLevel(rootLevel);
-
-        // save a preference
-        Preferences prefs = Preferences.userNodeForPackage(LogViewerFrame.class);
-        prefs.put("rootLevel", rootLevel.getName());
-    }
-
-    public boolean isVisibleOnStartup() {
-        return visibleOnStartup;
-    }
-
-    public void setVisibleOnStartup(boolean visibleOnStartup) {
-        this.visibleOnStartup = visibleOnStartup;
-
-        // save a preference
-        Preferences prefs = Preferences.userNodeForPackage(LogViewerFrame.class);
-        prefs.putBoolean("visibleOnStartup", visibleOnStartup);
-    }
-
-    protected void addRecord(LogRecord record) {
-        // format the record
-        String str = format(record);
-
+    void addRecord(String str, int removeLen) {
         // update the scrolling information for the panel
         ManualScrollEditorPane mspe = (ManualScrollEditorPane) logPane;
         Position pos = mspe.preModify();
@@ -242,6 +142,12 @@ public class LogViewerFrame extends javax.swing.JFrame {
         // add the new text to the end of the current document
         try {
             final Document doc = logPane.getDocument();
+
+            // if there is text to remove, remove it first
+            if (removeLen > 0) {
+                doc.remove(0, removeLen);
+            }
+
             Position end = doc.getEndPosition();
             doc.insertString(end.getOffset() - 1, str, null);
         } catch (BadLocationException ble) {
@@ -250,65 +156,12 @@ public class LogViewerFrame extends javax.swing.JFrame {
             return;
         }
 
-        // add a record of the text to our list of entries
-        LogEntry entry = new LogEntry();
-        entry.record = record;
-        entry.length = str.length();
-        entries.add(entries.size(), entry);
-
-        // make sure we haven't exceeded the number of entries
-        while (entries.size() > getMaxEntries()) {
-            removeOldestRecord();
-        }
-
         // now that everything is updated, have the panel scroll to the
         // right place
         mspe.postModify(pos, atEnd);
     }
-
-    protected void removeOldestRecord() {
-        // get the oldest record
-        LogEntry entry = entries.remove(0);
-
-        // clear it from the document
-        try {
-            logPane.getDocument().remove(0, entry.length);
-        } catch (BadLocationException ble) {
-            // should never happen
-            logger.log(Level.WARNING, "Bad location", ble);
-            return;
-        }
-    }
-
-    protected String format(LogRecord record) {
-        StringBuffer out = new StringBuffer();
-        out.append(record.getLevel());
-        out.append(" ");
-        out.append(DateFormat.getTimeInstance().format(new Date(record.getMillis())));
-        out.append(" ");
-        out.append(record.getSourceClassName());
-        out.append(" ");
-        out.append(record.getSourceMethodName());
-        out.append("\n");
-
-        if (record.getMessage() != null) {
-            out.append(record.getMessage());
-            out.append("\n");
-        }
-
-        if (record.getThrown() != null) {
-            out.append(formatThrowable(record.getThrown()));
-        }
-
-        return out.toString();
-    }
-
-    protected String formatThrowable(Throwable t) {
-        StringWriter out = new StringWriter();
-        t.printStackTrace(new PrintWriter(out));
-        return out.toString();
-    }
-
+    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -388,6 +241,10 @@ public class LogViewerFrame extends javax.swing.JFrame {
         });
         levelTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(levelTable);
+        levelTable.getColumnModel().getColumn(0).setPreferredWidth(350);
+        levelTable.getColumnModel().getColumn(0).setHeaderValue(bundle.getString("LogViewerFrame.levelTable.columnModel.title0")); // NOI18N
+        levelTable.getColumnModel().getColumn(1).setPreferredWidth(35);
+        levelTable.getColumnModel().getColumn(1).setHeaderValue(bundle.getString("LogViewerFrame.levelTable.columnModel.title1")); // NOI18N
 
         levelTablePlus.setText(bundle.getString("LogViewerFrame.levelTablePlus.text")); // NOI18N
         levelTablePlus.addActionListener(new java.awt.event.ActionListener() {
@@ -430,13 +287,13 @@ public class LogViewerFrame extends javax.swing.JFrame {
                                             .add(levelCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(startupCB)))
                                     .add(jLabel3))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 278, Short.MAX_VALUE))
                             .add(configDialogLayout.createSequentialGroup()
                                 .add(okButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)))
                         .add(configCancelButton))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, configDialogLayout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(levelTableMinus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -466,7 +323,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
                         .add(levelTablePlus)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(levelTableMinus))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(configDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(configCancelButton)
@@ -585,13 +442,13 @@ public class LogViewerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_closeButtonActionPerformed
 
     private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
-        backlogTF.setText(String.valueOf(getMaxEntries()));
+        backlogTF.setText(String.valueOf(LogViewer.INSTANCE.getMaxEntries()));
         
         // get the root logger level
         Logger root = LogManager.getLogManager().getLogger("");
         levelCB.setSelectedItem(root.getLevel());
 
-        startupCB.setSelected(visibleOnStartup);
+        startupCB.setSelected(LogViewer.INSTANCE.isVisibleOnStartup());
 
         // populate the table with any loggers with non-default levels
         LoggerTableModel levelModel = (LoggerTableModel) levelTable.getModel();
@@ -608,13 +465,13 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         // set values for maximum entry count
-        setMaxEntries(Integer.parseInt(backlogTF.getText()));
+        LogViewer.INSTANCE.setMaxEntries(Integer.parseInt(backlogTF.getText()));
 
         // set the root logger level
-        setRootLogLevel((Level) levelCB.getSelectedItem());
+        LogViewer.INSTANCE.setRootLogLevel((Level) levelCB.getSelectedItem());
 
         // save the visible on startup preference
-        setVisibleOnStartup(startupCB.isSelected());
+        LogViewer.INSTANCE.setVisibleOnStartup(startupCB.isSelected());
 
         // set levels for any specified loggers
         LoggerTableModel levelModel = (LoggerTableModel) levelTable.getModel();
@@ -624,7 +481,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void errorReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorReportButtonActionPerformed
-        errorText.setText(generateErrorReport());
+        errorText.setText(LogViewer.INSTANCE.generateErrorReport());
 
         // scroll to the top
         errorText.setCaretPosition(0);
@@ -665,124 +522,17 @@ public class LogViewerFrame extends javax.swing.JFrame {
         levelModel.removeRow(levelTable.getSelectedRow());
     }//GEN-LAST:event_levelTableMinusActionPerformed
 
-    protected String generateErrorReport() {
-        final StringBuffer out = new StringBuffer();
-        out.append("Error report generated " +
-                   DateFormat.getDateTimeInstance().format(new Date()) + "\n");
-        out.append("\n");
-
-        // java version, etc
-        out.append("-------- System Information --------\n");
-        out.append("Java version: " + System.getProperty("java.version") + "\n");
-        out.append("Java vendor:" + System.getProperty("java.vendor") + "\n");
-        out.append("OS:" + System.getProperty("os.name") + "\n");
-        out.append("OS version: " + System.getProperty("os.version") + "\n");
-        out.append("OS architecture: " + System.getProperty("os.arch") + "\n");
-        out.append("\n");
-        out.append("Max memory: " + Runtime.getRuntime().maxMemory() + "\n");
-        out.append("Total memory: " + Runtime.getRuntime().totalMemory() + "\n");
-        out.append("Free memory: " + Runtime.getRuntime().freeMemory() + "\n");
-        out.append("\n");
-
-        // graphics
-        out.append("-------- Graphics Information --------\n");
-
-        // grab display information from the renderer
-        final Semaphore gs = new Semaphore(0);        
-        SceneWorker.addWorker(new WorkCommit() {
-            public void commit() {
-                try {
-                    DisplaySystem ds = DisplaySystem.getDisplaySystem("JOGL");
-                    out.append("Display adapter:  " + ds.getAdapter() + "\n");
-                    out.append("Display vendor:   " + ds.getDisplayVendor() + "\n");
-                    out.append("Driver version:   " + ds.getDriverVersion() + "\n");
-                    out.append("Display renderer: " + ds.getDisplayRenderer() + "\n");
-                    out.append("API Version:      " + ds.getDisplayAPIVersion() + "\n");
-                    out.append("\n\n");
-                } finally {
-                    gs.release();
-                } 
-            }
-        });
-        
-        // wait for the renderer to run the worker
-        try {
-            gs.acquire();
-        } catch (InterruptedException ie) {
-            // ignore
-        }
-        
-        RenderManager rm = WorldManager.getDefaultWorldManager().getRenderManager();
-        JOGLContextCapabilities cap = rm.getContextCaps();
-        out.append("GL_ARB_fragment_program..." + cap.GL_ARB_fragment_program + "\n");
-        out.append("GL_ARB_fragment_shader..." + cap.GL_ARB_fragment_shader + "\n");
-        out.append("GL_ARB_shader_objects..." + cap.GL_ARB_shader_objects + "\n");
-        out.append("GL_ARB_texture_non_power_of_two..." + cap.GL_ARB_texture_non_power_of_two + "\n");
-        out.append("GL_ARB_vertex_buffer_object..." + cap.GL_ARB_vertex_buffer_object + "\n");
-        out.append("GL_ARB_vertex_program..." + cap.GL_ARB_vertex_program + "\n");
-        out.append("GL_ARB_vertex_shader..." + cap.GL_ARB_vertex_shader + "\n");
-        out.append("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB..." + cap.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB + "\n");
-        out.append("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB..." + cap.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB + "\n");
-        out.append("GL_MAX_TEXTURE_COORDS_ARB..." + cap.GL_MAX_TEXTURE_COORDS_ARB + "\n");
-        out.append("GL_MAX_TEXTURE_IMAGE_UNITS_ARB..." + cap.GL_MAX_TEXTURE_IMAGE_UNITS_ARB + "\n");
-        out.append("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT..." + cap.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT + "\n");
-        out.append("GL_MAX_TEXTURE_UNITS..." + cap.GL_MAX_TEXTURE_UNITS + "\n");
-        out.append("GL_MAX_VARYING_FLOATS_ARB..." + cap.GL_MAX_VARYING_FLOATS_ARB + "\n");
-        out.append("GL_MAX_VERTEX_ATTRIBS_ARB..." + cap.GL_MAX_VERTEX_ATTRIBS_ARB + "\n");
-        out.append("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB..." + cap.GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB + "\n");
-        out.append("GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB..." + cap.GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB + "\n");
-        out.append("GL_SGIS_generate_mipmap..." + cap.GL_SGIS_generate_mipmap + "\n");
-        out.append("GL_SHADING_LANGUAGE_VERSION_ARB..." + cap.GL_SHADING_LANGUAGE_VERSION_ARB + "\n");
-        out.append("GL_VERSION_1_2..." + cap.GL_VERSION_1_2 + "\n");
-        out.append("GL_VERSION_2_0..." + cap.GL_VERSION_2_0 + "\n");
-        out.append("GL_VERSION_2_1..." + cap.GL_VERSION_2_1 + "\n");
-        out.append("GL_VERSION_3_0..." + cap.GL_VERSION_3_0 + "\n");
-        out.append("\n");
-
-        // error log
-        out.append("-------- Error Log --------\n");
-        for (LogEntry entry : entries) {
-            out.append(format(entry.record));
-        }
-        out.append("\n");
-
-        // thread dump
-        out.append("-------- Threads --------\n");
-        for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
-            out.append(e.getKey().getName() + " " + e.getKey().getState() + "\n");
-            for (StackTraceElement ste : e.getValue()) {
-                out.append("    " + ste.getClassName());
-                out.append("." + ste.getMethodName());
-                if (ste.isNativeMethod()) {
-                    out.append("(native)");
-                } else {
-                    out.append("(" + ste.getFileName() + ":");
-                    out.append(ste.getLineNumber() + ")");
-                }
-                out.append("\n");
-
-            }
-            out.append("\n");
-
-        }
-        out.append("\n");
-
-        return out.toString();
-    }
-
-    private class LogEntry {
-        LogRecord record;
-        int length;
-    }
-
     private class LoggerTableModel extends DefaultTableModel {
 
         private Map<String, Level> origLevels;
+        private final List<Logger> createdLoggers;
 
         public LoggerTableModel() {
             super(new Object[]{
                         BUNDLE.getString("Logger"),
                         BUNDLE.getString("Level")}, 0);
+
+            createdLoggers = new ArrayList<Logger>();
         }
 
         public void reload() {
@@ -800,7 +550,11 @@ public class LogViewerFrame extends javax.swing.JFrame {
                     // skip loggers with empty names
                     continue;
                 }
-                Level level = logManager.getLogger(loggerName).getLevel();
+
+                // OWF issue #129: make sure the logger is not null
+                // by using Logger.getLogger(), which will create a logger
+                // if necessary
+                Level level = Logger.getLogger(loggerName).getLevel();
                 if (level == null) {
                     // skip loggers with undefined levels
                     continue;
@@ -838,7 +592,11 @@ public class LogViewerFrame extends javax.swing.JFrame {
             // any values left in origLevels need to be reset to the
             // default
             for (String loggerName : origLevels.keySet()) {
-                Logger.getLogger(loggerName).setLevel(null);
+                Logger removeLogger = Logger.getLogger(loggerName);
+                removeLogger.setLevel(null);
+
+                // remove the logger from our list of saved loggers
+                createdLoggers.remove(removeLogger);
             }
         }
 
@@ -849,16 +607,17 @@ public class LogViewerFrame extends javax.swing.JFrame {
             try {
                 for (String loggerName : prefs.keys()) {
                     Level level = Level.parse(prefs.get(loggerName, "WARNING"));
-                    Logger.getLogger(loggerName).setLevel(level);
+                    Logger createLogger = Logger.getLogger(loggerName);
+                    createLogger.setLevel(level);
+
+                    // OWF issue #130: hold a strong reference to the created
+                    // logger, to make sure it isn't garbage collected
+                    createdLoggers.add(createLogger);
                 }
             } catch (BackingStoreException ex) {
                 logger.log(Level.WARNING, "Error restoringing preferences", ex);
             }
         }
-    }
-
-    private static class SingletonHolder {
-        private static LogViewerFrame INSTANCE = new LogViewerFrame();
     }
 
     private class NoWrapEditorKit extends StyledEditorKit {
@@ -871,7 +630,15 @@ public class LogViewerFrame extends javax.swing.JFrame {
                         return new ParagraphView(element) {
                             @Override
                             public void layout(int width, int height) {
-                                super.layout(Short.MAX_VALUE, height);
+                                try {
+                                    super.layout(Short.MAX_VALUE, height);
+                                } catch (Throwable t) {
+                                    // this method sometimes throws an error
+                                    // which prevents the component from
+                                    // initializing. Just ignore any errors.
+                                    logger.log(Level.WARNING, "Error in layout", 
+                                               t);
+                                }
                             }
 
                             @Override
