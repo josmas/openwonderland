@@ -44,6 +44,7 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
     private MainFrame parent;
     private Vector3f initialPosition;
     private Quaternion initialLook;
+    private WonderlandLoginDialog dialog;
 
     public JmeLoginUI(MainFrame parent) {
         this.parent = parent;
@@ -68,7 +69,7 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
             public void run() {
                 LoginPanel lp = new NoAuthLoginPanel(control.getServerURL(),
                                                      control);
-                WonderlandLoginDialog dialog = new WonderlandLoginDialog(
+                dialog = new WonderlandLoginDialog(
                                                    parent.getFrame(), true, lp);
                 dialog.setLocationRelativeTo(parent.getFrame());
                 dialog.setVisible(true);
@@ -94,7 +95,7 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
 
                 LoginPanel lp = new WebServiceAuthLoginPanel(control.getServerURL(),
                                                              control);
-                WonderlandLoginDialog dialog = new WonderlandLoginDialog(
+                dialog = new WonderlandLoginDialog(
                                                    parent.getFrame(), true, lp);
                 dialog.setLocationRelativeTo(parent.getFrame());
                 dialog.setVisible(true);
@@ -133,7 +134,7 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
             public void run() {
                 LoginPanel lp = new EitherLoginPanel(control.getServerURL(),
                                                      control);
-                WonderlandLoginDialog dialog = new WonderlandLoginDialog(
+                dialog = new WonderlandLoginDialog(
                                                    parent.getFrame(), true, lp);
                 dialog.setLocationRelativeTo(parent.getFrame());
                 dialog.setVisible(true);
@@ -154,4 +155,10 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
         session.setInitialPosition(initialPosition, initialLook);
         return session;
     }
+
+    public void cleanup()
+        {
+        System.out.println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL in cleanup in JmeLoginUI");
+        dialog.dispose();
+        }
 }

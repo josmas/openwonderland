@@ -286,6 +286,7 @@ public class JmeClientMain {
 
                     public void run() {
                         JmeClientMain.this.logout();
+
                     }
                 }).start();
             }
@@ -535,18 +536,22 @@ System.out.println("--------------------------    Enter logout in JmeClientMain"
 ////            curSession = null;
             
             frame.connected(false);
-
+            MainFrameImpl mfi = (MainFrameImpl) frame;
+            mfi.dispose();
+            
             // notify listeners that there is no longer a primary server
             LoginManager.setPrimary(null);
 // MHF
             ssm.disconnect();
-//            ClientContext.getGlobalExecutor().shutdownNow();
-//            ClientContext.getGlobalScheduledExecutor().shutdownNow();
 
-//MHF
-//            ClientContext.removeCellCaches();
             curSession.logout();
             curSession = null;
+
+            login.cleanup();
+
+// MHF
+            ClientContext.getGlobalExecutor().shutdownNow();
+            ClientContext.getGlobalScheduledExecutor().shutdownNow();
             
             System.out.println("----------------------- After disconnect - session = " + curSession);
 

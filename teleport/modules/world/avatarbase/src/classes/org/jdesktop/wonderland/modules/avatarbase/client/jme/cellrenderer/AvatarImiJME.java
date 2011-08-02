@@ -246,6 +246,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // If we are increasing to the ACTIVE state, then turn everything on.
         // Add the listeners to the avatar Cell and set the avatar character
         if (status == CellStatus.ACTIVE && increasing == true) {
+            System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB     in AvatarImiJME in setStatus active-incresing");
             boundsDebugger.add(this);
             if (cellMoveListener != null) {
                 // mc should not be null, but sometimes it seems to be
@@ -304,7 +305,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             collisionChangeRequestListener = new CollisionChangeRequestListener();
             ClientContext.getInputManager().addGlobalEventListener(collisionChangeRequestListener);
         } else if (status==CellStatus.DISK && !increasing) {
+            System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB     in AvatarImiJME in setStatus disk-!incresing");
             boundsDebugger.remove(this);
+            boundsDebugger.dispose();
             ClientContext.getInputManager().removeGlobalEventListener(avatarUIEventListener);
             ClientContext.getInputManager().removeGlobalEventListener(collisionChangeRequestListener);
             cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
