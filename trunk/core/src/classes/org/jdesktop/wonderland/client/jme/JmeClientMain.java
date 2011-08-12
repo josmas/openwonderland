@@ -622,6 +622,9 @@ public class JmeClientMain {
                 Thread.currentThread().setUncaughtExceptionHandler(ueh);
             }
         });
+        
+        // try our best to log any uncaught exceptions
+        Thread.setDefaultUncaughtExceptionHandler(ueh);
 
         if (Webstart.isWebstart()) {
             Webstart.webstartSetup();
