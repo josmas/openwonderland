@@ -201,7 +201,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 
 <tr>
   <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=JagWire EZ Script]</td>
-  <td class="right">Documentation for the EZScript module, one of two scripting options for Open Wonderland.</td>
+  <td class="right">Documentation for the EZScript module, one of two scripting options for Open Wonderland. Click on the "Cell Scripting" tab.</td>
 </tr>
 
 <tr>
