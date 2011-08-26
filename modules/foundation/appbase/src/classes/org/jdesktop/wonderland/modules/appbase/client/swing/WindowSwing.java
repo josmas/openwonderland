@@ -525,7 +525,7 @@ public class WindowSwing extends Window2D {
     }
 
     /** Attach the things we need to the given given view. */
-    private void viewInit (View2D view) {
+    protected void viewInit (View2D view) {
         view.addEntityComponent(InputManager.WindowSwingViewMarker.class, new WindowSwingViewMarker());
         view.addEntityComponent(WindowSwingViewReference.class, new WindowSwingViewReference(view));
         view.addEntityComponent(InputManager.WindowSwingEventConsumer.class, 
@@ -533,7 +533,7 @@ public class WindowSwing extends Window2D {
     }
 
     /** Attach the things we use from the given given view. */
-    private void viewCleanup (View2D view) {
+    protected void viewCleanup (View2D view) {
         view.removeEntityComponent(InputManager.WindowSwingViewMarker.class);
         view.removeEntityComponent(WindowSwingViewReference.class);
         view.removeEntityComponent(InputManager.WindowSwingEventConsumer.class); 
