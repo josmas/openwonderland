@@ -44,14 +44,15 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.WorldManager;
@@ -75,9 +76,7 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
 
 /**
@@ -100,6 +99,14 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem frontPersonRB;
     private final Map<JMenuItem, Integer> menuWeights =
             new HashMap<JMenuItem, Integer>();
+    
+    private final List<JMenuItem> systemPlacemarks = 
+            Collections.synchronizedList(new ArrayList<JMenuItem>());
+    private final List<JMenuItem> userPlacemarks = 
+            Collections.synchronizedList(new ArrayList<JMenuItem>());
+    private final List<JMenuItem> managementPlacemarks = 
+            Collections.synchronizedList(new ArrayList<JMenuItem>());
+    
     private JMenu frameRateMenu;
     private int desiredFrameRate = 30;
     private FrameRateListener frameRateListener = null;
@@ -464,17 +471,15 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
-    public void addToMenu(JMenu menu, JMenuItem menuItem, int weight) {
+    public void addToMenu(final JMenu menu, final JMenuItem menuItem, int weight) {
         if (weight < 0) {
             weight = Integer.MAX_VALUE;
         }
 
         final int weightFinal = weight;
-        final JMenu menuFinal = menu;
-        final JMenuItem menuItemFinal = menuItem;
 
-        LOGGER.fine(menuFinal.getText() + " menu: inserting [" +
-                menuItemFinal.getText() + "] with weight: " + weight);
+        LOGGER.fine(menu.getText() + " menu: inserting [" +
+                menuItem.getText() + "] with weight: " + weight);
 
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -482,18 +487,23 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 // find the index of the first menu item with a higher weight or
                 // the same weight and later in the alphabet
                 int index = 0;
-                for (index = 0; index < menuFinal.getItemCount(); index++) {
-                    JMenuItem curItem = menuFinal.getItem(index);
+                for (index = 0; index < menu.getItemCount(); index++) {
+                    JMenuItem curItem = menu.getItem(index);
+                    if (curItem == null || !menuWeights.containsKey(curItem)) {
+                        continue; //Skipping separators & other objects with
+                                  //no weight
+                    }
+                    
                     int curWeight = menuWeights.get(curItem);
                     if (curWeight > weightFinal) {
                         break;
                     } else if (curWeight == weightFinal) {
-                        String currentItemName = curItem.getName();
+                        String currentItemName = curItem.getText();
                         if (currentItemName == null) {
                             break;
                         }
 
-                        String name = menuItemFinal.getName();
+                        String name = menuItem.getText();
                         if ((name != null) &&
                                 name.compareTo(currentItemName) > 0) {
                             break;
@@ -502,14 +512,14 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 }
 
                 // add the item at the right place
-                menuFinal.insert(menuItemFinal, index);
-
+                menu.insert(menuItem, index);
+                
                 // remember the menu's weight
-                menuWeights.put(menuItemFinal, weightFinal);
+                menuWeights.put(menuItem, weightFinal);
             }
         });
     }
-
+    
     /**
      * Remove the given menu item from a menu
      * @param menu the menu to remove from
@@ -639,17 +649,88 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         addToMenu(placemarksMenu, menuItem, -1);
     }
 
-    /**
+     /**
      * {@inheritDoc}
      */
-    public void addToPlacemarksMenu(JMenuItem menuItem, int index) {
+    public void addToPlacemarksMenu(final JMenuItem menuItem, int index, final PlacemarkType placemarkType){
+        
+        if (placemarkType == PlacemarkType.SYSTEM){
+            systemPlacemarks.add(menuItem);
+            synchronized (systemPlacemarks) {
+                Collections.sort(systemPlacemarks, new JMenuItemAlphabeticalComparator());
+            }
+        }
+        else if (placemarkType == PlacemarkType.USER){
+            userPlacemarks.add(menuItem);
+            synchronized (userPlacemarks) {
+                Collections.sort(userPlacemarks, new JMenuItemAlphabeticalComparator());
+            }
+        }
+        else {
+            managementPlacemarks.add(menuItem);
+        }
+
         addToMenu(placemarksMenu, menuItem, index);
+        rebuildPlacemarksMenu(placemarksMenu);
+    }
+
+    private static class JMenuItemAlphabeticalComparator 
+        implements Serializable, Comparator<JMenuItem> 
+    {
+
+        public JMenuItemAlphabeticalComparator() {
+        }
+
+        public int compare(JMenuItem one, JMenuItem other) {
+
+            String textOne = ((JMenuItem) one).getText();
+            String textTwo = ((JMenuItem) other).getText();
+            return textOne.compareTo(textTwo);
+        }
+    }
+
+    private void rebuildPlacemarksMenu(final JMenu menu){
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                menu.removeAll();
+                menu.add(managementPlacemarks.get(0)); //Starting Location
+
+                if (!systemPlacemarks.isEmpty()){
+                    menu.addSeparator();
+                    
+                    synchronized (systemPlacemarks) {
+                        for (JMenuItem jMenuItem : systemPlacemarks) {
+                            menu.add(jMenuItem);
+                        }
+                    }
+                }
+                
+                if (!userPlacemarks.isEmpty()){
+                    menu.addSeparator();
+                    
+                    synchronized (userPlacemarks) {
+                        for (JMenuItem jMenuItem : userPlacemarks) {
+                            menu.add(jMenuItem);
+                        }   
+                    }
+                }
+                
+                menu.addSeparator();
+                menu.add(managementPlacemarks.get(1)); //Add Placemarks
+                menu.add(managementPlacemarks.get(2)); //Manage Placemarks
+            }
+        });
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeFromPlacemarksMenu(JMenuItem menuItem) {
+        systemPlacemarks.remove(menuItem);
+        userPlacemarks.remove(menuItem);
+        managementPlacemarks.remove(menuItem);
         removeFromMenu(placemarksMenu, menuItem);
     }
 

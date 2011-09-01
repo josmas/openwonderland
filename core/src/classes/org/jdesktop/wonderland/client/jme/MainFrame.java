@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -177,13 +195,28 @@ public interface MainFrame {
     public void addToPlacemarksMenu(JMenuItem menuItem);
 
     /**
+     * Three types of Placemarks are expected:
+     *   - Managements placemarks affect management (add, manage) and also include the Starting Location
+     *   - System placemarks are attached to objects through the placemark capability
+     *   - User placemarks are personal and created by the user through the management tools
+     * The reason to declare them here and not in the Placemark API project is that the differences
+     * only matter at the time of displaying them in the Placemark menu. A possible refactoring
+     * could expose the menu bar to modules and let them manage the population of items. In that case
+     * all this code could be moved and contained within the placemark module.
+     */
+    public enum PlacemarkType { MANAGEMENT, SYSTEM, USER }
+
+     /**
      * Add a menu item to the Placemarks menu at the specified index, where -1
-     * adds the menu item to the end of the menu
-     *
+     * adds the menu item to the end of the menu.
+     * Weights are not being used (anymore) for alphabetising placemarks as it was
+     * impossible to use JSeparators(JComponents) in the Menu.
      * @param menuItem
      * @param index the position in the menu
+     * @param placemarkType The type of the placemark (Management, User or System)
+     * used for displaying purposes when organising the menu
      */
-    public void addToPlacemarksMenu(JMenuItem menuItem, int index);
+    public void addToPlacemarksMenu(JMenuItem menuItem, int index, PlacemarkType placemarktype);
 
     /**
      * Remove the specified menu item from the Placemarks menu.
