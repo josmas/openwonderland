@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -39,6 +57,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.MainFrame;
+import org.jdesktop.wonderland.client.jme.MainFrame.PlacemarkType;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
@@ -47,10 +67,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkClientConfigConnection.PlacemarkConfigListener;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkListener;
-import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkType;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
 import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
-import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
 
 /**
  * Client-size plugin for registering items in the Cell Registry that come from
@@ -210,25 +228,15 @@ public class PlacemarkPlugin extends BaseClientPlugin
         PlacemarkRegistry registry = PlacemarkRegistryFactory.getInstance();
         registry.addPlacemarkRegistryListener(listener);
 
-        // Fetch the list of system-wide placemarks and add them to the
-        // Placemark main menu item.
-        PlacemarkList systemList = PlacemarkUtils.getSystemPlacemarkList();
-        for (Placemark placemark : systemList.getPlacemarksAsList()) {
-            registry.registerPlacemark(placemark, PlacemarkType.SYSTEM);
-        }
-
-        // Fetch the list of system-wide placemarks and add them to the
-        // Placemark main menu item.
-        PlacemarkList userList = PlacemarkUtils.getUserPlacemarkList();
-        for (Placemark placemark : userList.getPlacemarksAsList()) {
+        // Fetch the list of user placemarks from WebDav and register them
+        for (Placemark placemark : PlacemarkUtils.getUserPlacemarkList().getPlacemarksAsList()) {
             registry.registerPlacemark(placemark, PlacemarkType.USER);
         }
 
-        // Add the "Manage Placemarks..." and "Add Placemark..." to the main
-        // frame
-        JmeClientMain.getFrame().addToPlacemarksMenu(manageMI, -1);
-        JmeClientMain.getFrame().addToPlacemarksMenu(addMI, -1);
-        JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
+        // Add the MANAGEMENT related Placemarks to the main frame
+        JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0, MainFrame.PlacemarkType.MANAGEMENT);
+        JmeClientMain.getFrame().addToPlacemarksMenu(addMI, -1, MainFrame.PlacemarkType.MANAGEMENT);
+        JmeClientMain.getFrame().addToPlacemarksMenu(manageMI, -1, MainFrame.PlacemarkType.MANAGEMENT);
     }
 
     /**
@@ -412,10 +420,10 @@ public class PlacemarkPlugin extends BaseClientPlugin
             menuItem.addActionListener(listner);
             if (type == PlacemarkType.USER) {
                 userPlacemarkMenuItems.put(placemark, menuItem);
-                JmeClientMain.getFrame().addToPlacemarksMenu(menuItem, 2);
+                JmeClientMain.getFrame().addToPlacemarksMenu(menuItem, 2, MainFrame.PlacemarkType.USER);
             } else {
                 systemPlacemarkMenuItems.put(placemark, menuItem);
-                JmeClientMain.getFrame().addToPlacemarksMenu(menuItem, 1);
+                JmeClientMain.getFrame().addToPlacemarksMenu(menuItem, 1, MainFrame.PlacemarkType.SYSTEM);
             }
         }
 

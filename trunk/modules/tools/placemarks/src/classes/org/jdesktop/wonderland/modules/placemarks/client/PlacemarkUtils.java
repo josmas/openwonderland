@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -26,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
@@ -36,14 +53,13 @@ import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
 
 /**
- * A utility class to load and save placemark information. This is used to
- * populate the Placemarks main menu item.
+ * A utility class to load and save User placemark information. This is used to
+ * populate the Placemarks main menu item (User section).
  * <p>
- * There are two places placemark information is stored: in the user's local
- * webdav directory (under placemarks/) and system-wide (under /system). Each
- * registry entry has a unique placemark name, that also serves as the name of
- * the file. (User-specific and system-wide placemarks may have the same names
- * across each).
+ * User placemark information is stored in the user's local webdav directory
+ * (under placemarks/). Each registry entry has a unique placemark name, that
+ * also serves as the name of the file. (User-specific and System placemarks
+ * (created through the Placemark capability) may have the same names).
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -52,36 +68,12 @@ public class PlacemarkUtils {
     private static Logger logger = Logger.getLogger(PlacemarkUtils.class.getName());
 
     /**
-     * Returns a list of system-wide placemarks.
-     *
-     * @return A PlacemarkList object
-     */
-    public static PlacemarkList getSystemPlacemarkList() {
-        // First fetch the content collection of the system-wide placemarks.
-        // Upon error, log an error and return an empty list. Then fetch the
-        // items from this collection
-        try {
-            ContentCollection sysNode = getSystemPlacemarksContentCollection();
-            if (sysNode == null) {
-                return new PlacemarkList();
-            }
-            return getItemList(sysNode);
-        } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to get system-wide placemarks", excp);
-            return new PlacemarkList();
-        } catch (JAXBException excp) {
-            logger.log(Level.WARNING, "Unable to parse system-wide placemarks", excp);
-            return new PlacemarkList();
-        }
-    }
-
-    /**
      * Returns a list of user-specific placemarks.
      *
      * @return A PlacemarkList object
      */
     public static PlacemarkList getUserPlacemarkList() {
-        // First fetch the content collection of the system-wide placemarks.
+        // First fetch the content collection of user placemarks.
         // Upon error, log an error and return an empty list. Then fetch the
         // items from this collection
         try {
@@ -119,7 +111,19 @@ public class PlacemarkUtils {
         }
         
         Reader r = new InputStreamReader(resource.getInputStream());
-        return PlacemarkList.decode(r);
+        PlacemarkList out = PlacemarkList.decode(r);
+    
+        // Filtering out placemarks that are not for the server we're logged on.
+        // getPlacemarksAsList() returns a copy, so we can safely remove 
+        // placemarks without ConcurrentModificationExceptions 
+        String serverURL = LoginManager.getPrimary().getServerURL();
+        for (Placemark p : out.getPlacemarksAsList()) {
+           if (!p.getUrl().equals(serverURL)) {
+               out.removePlacemark(p.getName());
+           }
+        }
+        
+        return out;
     }
 
     /**
@@ -187,21 +191,6 @@ public class PlacemarkUtils {
     }
 
     /**
-     * Returns the content collection for the system-wide placemarks. This
-     * method creates the directory if it does not yet exist.
-     *
-     * @throw ContentRepositoryException Upon error reading or creating
-     * @return The ContentConnection holding the system-wide placemarks
-     */
-    private static ContentCollection getSystemPlacemarksContentCollection()
-            throws ContentRepositoryException {
-
-        ContentCollection sysRoot = getSystemContentRepository();
-        ContentCollection dir = (ContentCollection)sysRoot.getChild("placemarks");
-        return dir;
-    }
-
-    /**
      * Returns the content collection for the user-specific placemarks. This
      * method creates the directory if it does not yet exist.
      *
@@ -230,18 +219,5 @@ public class PlacemarkUtils {
 
         ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
         return registry.getLocalRepository();
-    }
-
-    /**
-     * Returns the system-wide content repository for the primary session.
-     *
-     * @param The system-wide ContentCollection for the current primary session
-     */
-    private static ContentCollection getSystemContentRepository()
-            throws ContentRepositoryException {
-
-        ServerSessionManager session = LoginManager.getPrimary();
-        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
-        return registry.getRepository(session).getSystemRoot();
     }
 }

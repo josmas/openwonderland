@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -19,7 +37,6 @@ package org.jdesktop.wonderland.modules.placemarks.client;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.Locale;
 import java.util.Set;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -242,6 +259,8 @@ public class AddEditPlacemarkJDialog
 
         jLabel3.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel3.text")); // NOI18N
 
+        urlTextField.setEditable(false);
+
         jLabel4.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel4.text")); // NOI18N
 
         jLabel5.setText(bundle.getString("AddEditPlacemarkJDialog.jLabel5.text")); // NOI18N
@@ -273,7 +292,7 @@ public class AddEditPlacemarkJDialog
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -300,8 +319,8 @@ public class AddEditPlacemarkJDialog
                                 .add(jLabel7)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(zTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
-                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
                         .add(8, 8, 8))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(cancelButton)

@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -18,18 +36,17 @@
 package org.jdesktop.wonderland.modules.placemarks.api.client;
 
 import java.util.Set;
+import org.jdesktop.wonderland.client.jme.MainFrame.PlacemarkType;
 import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
 
 /**
- * The placemarks registry manages a list of user and system-wide placemarks
- * registered.
+ * The placemarks registry manages a list of user and system placemarks
+ * registered. Management placemarks are not expected through the registration
+ * process and they are managed directly within the placemark plugin.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public interface PlacemarkRegistry {
-
-    /** The type of placemark: USER or SYSTEM */
-    public enum PlacemarkType { USER, SYSTEM };
 
     /**
      * Registers a Placemark given its type (USER or SYSTEM).
