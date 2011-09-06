@@ -43,7 +43,7 @@
           <h3>For more information:</h3>
 
           <ul>
-            <li><a href="http://199.17.224.245:8080//quickstartguide/quickstartguide/QuickstartTOC.html">Open Wonderland QuickStart Guides</li>
+            <li><a href="http://quickstart.openwonderland.org">Open Wonderland QuickStart Guides</li>
 
             <li><a href="http://openwonderland.org">Open Wonderland Web Site</a></li>
 
