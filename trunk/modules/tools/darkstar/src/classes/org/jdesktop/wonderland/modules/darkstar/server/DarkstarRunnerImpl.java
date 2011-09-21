@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -152,6 +152,7 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
     private static ThreadLocal<RunnerChecksums> moduleChecksums =
         new ThreadLocal<RunnerChecksums>();
 
+    private DarkstarSnapshotRunner snapshot = null;
     /**
      * Configure this runner.  This method sets values to the default for the
      * Darkstar server.
@@ -223,6 +224,9 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
 
     @Override
     public synchronized void start(Properties props) throws RunnerException {
+        if(snapshot!=null) {
+            throw new IllegalStateException("Snapshot in progress");
+        }
         publicAddress = props.getProperty(PUBLIC_ADDRESS_PROP);
 
         try {
@@ -571,18 +575,27 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
             throw new IllegalStateException("Snapshots require server to " +
                                             "  be stopped");
         }
-
-        // run the snapshot runner using the RunManager
-        DarkstarSnapshotRunner snapshot = new DarkstarSnapshotRunner(name);
-        RunManager.getInstance().start(snapshot, false);
-
-        // wait for the snapshot runner to exit, which it should do
-        // as soon as it finishes starting up
-        StatusWaiter waiter = new StatusWaiter(snapshot, Status.NOT_RUNNING);
+        synchronized(this) {
+            if(snapshot != null) {
+                throw new IllegalStateException("Snapshot in progress");
+            }
+            
+            snapshot = new DarkstarSnapshotRunner(name);
+        }        
         try {
+            // run the snapshot runner using the RunManager
+            RunManager.getInstance().start(snapshot, false);
+
+            // wait for the snapshot runner to exit, which it should do
+            // as soon as it finishes starting up
+            StatusWaiter waiter = new StatusWaiter(snapshot, Status.NOT_RUNNING);
             waiter.waitFor();
         } catch (InterruptedException ie) {
             // not much we can do here...
+        } finally {
+            synchronized(this) {
+                snapshot = null;
+            }
         }
     }
 
