@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -249,16 +249,21 @@ public class ViewManager implements ViewPropertiesListener {
         // Listen for (de)iconification of root window and start/stop the renderer accordingly
         Window w = SwingUtilities.getWindowAncestor(panel);
         if (w != null) {
-            w.addWindowListener(new WindowAdapter() {
-
+            w.addWindowListener(new WindowAdapter() {                
                 @Override
                 public void windowDeiconified(WindowEvent e) {
-                    ClientContextJME.getWorldManager().getRenderManager().setRunning(true);
+                    // OWL issue #22 -- restore the default frame rate
+                    int desiredFrameRate = JmeClientMain.getDesiredFrameRate();
+                    ClientContextJME.getWorldManager().getRenderManager().setDesiredFrameRate(desiredFrameRate);
                 }
 
                 @Override
                 public void windowIconified(WindowEvent e) {
-                    ClientContextJME.getWorldManager().getRenderManager().setRunning(false);
+                    // OWL issue #22 -- instead of stopping the renderer, set 
+                    // the framerate down to 1 fps. This will still allow the 
+                    // system to make progress on tasks that require the
+                    // renderer to update, but should cut CPU usage way down.
+                    ClientContextJME.getWorldManager().getRenderManager().setDesiredFrameRate(1);
                 }
             });
         }
