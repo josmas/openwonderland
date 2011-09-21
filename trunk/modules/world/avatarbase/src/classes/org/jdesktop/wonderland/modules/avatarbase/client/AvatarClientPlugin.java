@@ -599,8 +599,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
         if (menusAdded == false) {
             MainFrame frame = JmeClientMain.getFrame();
             frame.addToWindowMenu(gestureMI, 0);
-            frame.addToToolsMenu(gravityEnabledMI, -1);
-            frame.addToToolsMenu(collisionResponseEnabledMI, -1);
+            frame.addToToolsMenu(gravityEnabledMI, 3);
+            frame.addToToolsMenu(collisionResponseEnabledMI, 2);
             frame.addToEditMenu(avatarConfigMI, 0);
 
             if (frame instanceof MainFrameImpl) { // Only until the MainFrame interface gets this method
