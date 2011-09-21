@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -21,6 +39,8 @@ import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.common.wfs.WorldRootList;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -159,24 +179,8 @@ public class CellImporterUtils {
      * @return A URL consisting of the base URL + the given URL part
      * @throw MalformedURLException Upon an invalid URL
      */
-    private static URL getURL(String urlPart) throws MalformedURLException {
-        urlPart = encodeSpaces(urlPart);
+    private static URL getURL(String urlPart) throws MalformedURLException, URISyntaxException {
+        urlPart = new URI(null, null, urlPart, null).toASCIIString();
         return new URL(getWebServerURL(), urlPart);
-    }
-
-    /**
-     * Replaces all of the spaces (' ') in a URI string with '%20'
-     */
-    private static String encodeSpaces(String uri) {
-        StringBuilder sb = new StringBuilder(uri);
-        int index = 0;
-        while ((index = sb.indexOf(" ", index )) != -1) {
-            // If we find a space at position 'index', then replace the space
-            // and update the value of 'index'. The value of 'index' should be
-            // the next character after the replaced '%20', which is index + 3
-            sb.replace(index, index + 1, "%20");
-            index += 3;
-        }
-        return sb.toString();
     }
 }
