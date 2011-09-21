@@ -100,8 +100,6 @@ public class JmeClientMain {
 
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
-    // user preferences
-    private Preferences userPreferences;
     // standard properties
     private static final String PROPS_URL_PROP = "run.properties.file";
     private static final String CONFIG_DIR_PROP =
@@ -113,7 +111,6 @@ public class JmeClientMain {
     private static final String SERVER_URL_DEFAULT = "http://localhost:8080";
     private static final String DESIRED_FPS_DEFAULT = "30";
     private static final String WINDOW_SIZE_DEFAULT = "800x600";
-    private int desiredFrameRate = Integer.parseInt(DESIRED_FPS_DEFAULT);
   
     // the current Wonderland login and session
     private JmeLoginUI login;
@@ -154,9 +151,6 @@ public class JmeClientMain {
         // load properties in a properties file
         URL propsURL = getPropsURL();
         loadProperties(propsURL);
-
-        // load user preferences for client
-        userPreferences = Preferences.userNodeForPackage(JmeClientMain.class);
 
         // Check whether there is another JVM processing running that is
         // attached to the database. Note we need to do this check AFTER the
@@ -224,28 +218,7 @@ public class JmeClientMain {
         // End HUGE HACK.
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
-
-        String requestedFPS = null;
-        try {
-            if (userPreferences.node(userPreferences.absolutePath()).get("fps", null) != null) {
-                requestedFPS = userPreferences.get("fps", DESIRED_FPS_DEFAULT);
-            } else {
-                requestedFPS = System.getProperty(DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
-            }
-        } catch (Exception e) {
-        }
-
-        if (requestedFPS != null) {
-            try {
-                desiredFrameRate = Integer.parseInt(requestedFPS);
-            } catch (NumberFormatException e) {
-                // No action required, the default has already been set.
-                LOGGER.warning(DESIRED_FPS_PROP
-                        + " property format error for '" + requestedFPS
-                        + "', using default");
-            }
-        }
-        worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
+        worldManager.getRenderManager().setDesiredFrameRate(getDesiredFrameRate());
 
         createUI(worldManager, width, height);
 
@@ -594,6 +567,46 @@ public class JmeClientMain {
     }
 
     /**
+     * Get the current desired framerate
+     * @return the current framerate
+     */
+    static int getDesiredFrameRate() {
+        Preferences prefs = Preferences.userNodeForPackage(JmeClientMain.class);
+        
+        // first try a preference
+        String requestedFPS = null;
+        try {
+            if (prefs.node(prefs.absolutePath()).get("fps", null) != null) {
+                requestedFPS = prefs.get("fps", DESIRED_FPS_DEFAULT);
+            }
+        } catch (Exception e) {
+        }
+        
+        // if the preference was not set, use a system property
+        if (requestedFPS == null) {
+            requestedFPS = System.getProperty(DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
+        }
+
+        try {
+            return Integer.parseInt(requestedFPS);
+        } catch (NumberFormatException e) {
+            LOGGER.warning(DESIRED_FPS_PROP + " property format error for '" + 
+                           requestedFPS + "', using default");
+            return Integer.parseInt(DESIRED_FPS_DEFAULT);
+        }
+    }
+    
+    /**
+     * Set the current desired framerate
+     * @param frameRate the current desired framerate
+     */
+    static void setDesiredFrameRate(int frameRate) {
+        Preferences prefs = Preferences.userNodeForPackage(JmeClientMain.class);
+        prefs.put("fps", String.valueOf(frameRate));
+    }
+    
+    
+    /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -640,8 +653,7 @@ public class JmeClientMain {
     private void processArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-fps")) {
-                desiredFrameRate = Integer.parseInt(args[i + 1]);
-                System.out.println("DesiredFrameRate: " + desiredFrameRate);
+                setDesiredFrameRate(Integer.parseInt(args[i + 1]));
                 i++;
             } else if (args[i].equals("-p")) {
                 System.setProperty(PROPS_URL_PROP, "file:" + args[i + 1]);
@@ -728,7 +740,7 @@ public class JmeClientMain {
             }
         });
 
-        frame.setDesiredFrameRate(desiredFrameRate);
+        frame.setDesiredFrameRate(getDesiredFrameRate());
 
         // OWL issue #146: for full screen, make sure the canvas is actually
         // the right size by forcing a repaint

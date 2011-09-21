@@ -121,15 +121,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private String serverURL;
     private ServerURLListener serverListener;
 
-    // user preferences
-    private Preferences userPreferences;
-
     /** Creates new form MainFrame */
     public MainFrameImpl(WorldManager wm, int width, int height) {
         this.wm = wm;
-
-        // load user preferences for client
-        userPreferences = Preferences.userNodeForPackage(JmeClientMain.class);
 
         GUIUtils.initLookAndFeel();
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
@@ -428,7 +422,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         frameRateListener = addFrameRateListener(desiredFrameRate);
 
         // update user preference
-        userPreferences.put("fps", String.valueOf(desiredFrameRate));
+        JmeClientMain.setDesiredFrameRate(desiredFrameRate);
         
         if (chart != null) {
             chart.setMaxValue(desiredFrameRate);
