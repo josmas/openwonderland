@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -76,7 +76,7 @@ public class BoundsDebuggerFrame extends javax.swing.JFrame {
                 BoundsDebuggerFrame.this.setVisible(true);
             }
         });
-        JmeClientMain.getFrame().addToToolsMenu(editorMI, 2);
+        JmeClientMain.getFrame().addToToolsMenu(editorMI, 6);
     }
 
     /** This method is called from within the constructor to
