@@ -487,6 +487,9 @@ public class JmeClientMain {
         // set the primary session
         lm.setPrimarySession(curSession);
         frame.setServerURL(serverURL);
+  
+        // OWL issue #92: request focus in main window
+        frame.getCanvas().requestFocusInWindow();
     }
 
     /**
