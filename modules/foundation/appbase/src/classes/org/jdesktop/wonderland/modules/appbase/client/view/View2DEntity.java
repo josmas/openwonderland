@@ -1390,6 +1390,7 @@ public abstract class View2DEntity implements View2D {
                 if (ortho) {
                     logger.fine("View is ortho for view " + this);
                     entity.getComponent(RenderComponent.class).setOrtho(true);
+                    entity.getComponent(CollisionComponent.class).setCollidable(false);
 
                     if (type == Type.PRIMARY  || type == Type.UNKNOWN) {
                         // Attach top level ortho views directly to world
@@ -1452,6 +1453,7 @@ public abstract class View2DEntity implements View2D {
                         sgChangeAttachPointSetAddEntity(rc, attachNode, parentEntity, entity);
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                         entity.getComponent(RenderComponent.class).setOrtho(false);
+                        entity.getComponent(CollisionComponent.class).setCollidable(true);
                     }
                 }
             }
@@ -1525,6 +1527,7 @@ public abstract class View2DEntity implements View2D {
             // MTGame: can currently only setOrtho on a visible rc
             if (isActuallyVisible()) {
                 entity.getComponent(RenderComponent.class).setOrtho(ortho);
+                entity.getComponent(CollisionComponent.class).setCollidable(!ortho);
             }
             sgChangeViewNodeOrthoSet(viewNode, ortho);
         }
