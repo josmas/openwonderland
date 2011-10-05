@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -21,6 +39,7 @@ import com.jme.math.Vector2f;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -56,6 +75,7 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbNone;
 
 /**
  * The generic 2D application superclass. Displays the windows of a single 2D
@@ -367,35 +387,40 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     private ContextMenuItem[] windowMenuItemsForNoControl(ContextMenuComponent contextMenuComp) {
         contextMenuComp.setShowStandardMenuItems(true);
 
-        ContextMenuItem[] menuItems = new ContextMenuItem[2];
-
-        menuItems[0] = new SimpleContextMenuItem(
+        List<ContextMenuItem> menuItems = new ArrayList<ContextMenuItem>();
+       
+        // only add take control item if the control arb supports taking 
+        // control
+        if (!(app.getControlArb() instanceof ControlArbNone)) {
+        
+            menuItems.add(new SimpleContextMenuItem(
                                BUNDLE.getString("Take_Control"),
                                new ContextMenuActionListener() {
                                    public void actionPerformed(ContextMenuItemEvent event) {
                                        app.getControlArb().takeControl();
                                    }
-                               });
+                               }));
+        }
 
         if (app.isShownInHUD()) {
-            menuItems[1] = new SimpleContextMenuItem(
+            menuItems.add(new SimpleContextMenuItem(
                                BUNDLE.getString("Remove_from_HUD"),
                                new ContextMenuActionListener() {
                                    public void actionPerformed(ContextMenuItemEvent event) {
                                        app.setShowInHUD(false);
                                    }
-                               });
+                               }));
         } else {
-            menuItems[1] = new SimpleContextMenuItem(
+            menuItems.add(new SimpleContextMenuItem(
                                BUNDLE.getString("Show_in_HUD"),
                                new ContextMenuActionListener() {
                                    public void actionPerformed(ContextMenuItemEvent event) {
                                        app.setShowInHUD(true);
                                    }
-                               });
+                               }));
         }
 
-        return menuItems;
+        return menuItems.toArray(new ContextMenuItem[0]);
     }
 
     /**
