@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,15 +35,18 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.hud.HUDMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
@@ -41,7 +62,9 @@ import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
  */
 @ExperimentalAPI
 public abstract class AppConventionalCell extends App2DCell {
-
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/appbase/client/Bundle");
+    
     /** The session used by the cell cache of this cell to connect to the server */
     private WonderlandSession cellCacheSession;
     /** The user-visible app name. */
@@ -153,12 +176,15 @@ public abstract class AppConventionalCell extends App2DCell {
      * @param message the exited message
      */
     void handleAppExitted(final AppConventionalCellAppExittedMessage message) {
-        try {
-            JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(),
-                                          "App " + message.getAppName() +
-                                          " exitted with exit value = " +
-                                          message.getExitValue());
-        } catch (Exception ex) {}
+        String text = BUNDLE.getString("App_Exit");
+        text = MessageFormat.format(text, message.getAppName(), message.getExitValue());
+        
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        HUDMessage hudMessage = mainHUD.createMessage(text);
+        hudMessage.setPreferredLocation(Layout.NORTHEAST);
+        mainHUD.addComponent(hudMessage);
+        hudMessage.setVisible(true);
+        hudMessage.setVisible(false, 10000);
     }
 
     /**
