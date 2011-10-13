@@ -14,6 +14,15 @@
     <ant dir="web"     inheritall="false"/>
     <ant dir="modules" inheritall="false"/>
 
+    <!-- if wonderland-video exists and is a sibling of wonderland, build
+         it too -->
+    <if>
+        <available file="${wonderland.dir}/../wonderland-video/build.xml"/>
+        <then>
+            <ant dir="${wonderland.dir}/../wonderland-video" inheritall="false"/>
+        </then>
+    </if>
+
     <!-- if wonderland-modules exists and is a sibling of wonderland, build
          it too -->
     <if>
@@ -46,6 +55,15 @@
     <ant dir="core"    target="clean" inheritall="false"/>
     <ant dir="web"     target="clean" inheritall="false"/>
     <ant dir="modules" target="clean" inheritall="false"/>
+
+    <!-- if wonderland-video exists and is a sibling of wonderland, clean
+         it too -->
+    <if>
+        <available file="${wonderland.dir}/../wonderland-video/build.xml"/>
+        <then>
+            <ant dir="${wonderland.dir}/../wonderland-video" target="clean" inheritall="false"/>
+        </then>
+    </if>
 
     <!-- if wonderland-modules exists and is a sibling of wonderland, clean
          it too -->
