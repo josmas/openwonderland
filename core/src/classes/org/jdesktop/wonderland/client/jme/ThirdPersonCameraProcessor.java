@@ -116,13 +116,32 @@ public class ThirdPersonCameraProcessor implements CameraController {
 
     public void commit() {
         if (commitRequired) {
-            cameraNode.setLocalRotation(rotation);
-            cameraNode.setLocalTranslation(translation);
+            setCameraPosition(rotation, translation);
             wm.addToUpdateList(cameraNode);
             commitRequired = false;
         }
     }
 
+    /**
+     * Override this method to add offsets to the camera before the
+     * update is applied.
+     * @param rotation the calculated rotation
+     * @param translation the calculated translation
+     */
+    protected void setCameraPosition(Quaternion rotation,
+                                     Vector3f translation)
+    {
+        cameraNode.setLocalRotation(rotation);
+        cameraNode.setLocalTranslation(translation);
+    }
+    
+    /**
+     * Notify the camera that an update is required
+     */
+    protected void setCommitRequired() {
+        this.commitRequired = true;
+    }
+    
     @Override
     public void viewMoved(CellTransform worldTransform) {
         avatarPos = worldTransform.getTranslation(avatarPos);
