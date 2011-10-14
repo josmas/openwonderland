@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -81,7 +99,10 @@ import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
 public class SceneManager {
     /* The selection policy */
     private SceneManagerPolicy policy = new DefaultSceneManagerPolicy();
-    
+
+    /* The mouse event listener */
+    private final MouseEventListener mouseEventListener;
+
     /*
      * A bunch of member variables to keep track of the hover process: the
      * hoverEntity tracks the entity we are currently hovering over if there
@@ -101,17 +122,27 @@ public class SceneManager {
      * An ordered list of selected entities, in the order that they were
      * selected.
      */
-    private Set<Entity> selectedEntityList;
+    private final Set<Entity> selectedEntityList;
     
     /** Default Constructor */
     public SceneManager() {
         selectedEntityList = Collections.synchronizedSet(new LinkedHashSet());
-        InputManager.inputManager().addGlobalEventListener(new MouseEventListener());
+        mouseEventListener = new MouseEventListener();
+        
+        InputManager.inputManager().addGlobalEventListener(mouseEventListener);
         
         // Uncomment the following line to see an example listener
 //        addSceneListener(new MySelectionListener());
     }
-    
+
+    /**
+     * Clean up this scene manager and remove all registered listeners
+     */
+    public void cleanup() {
+        InputManager.inputManager().removeGlobalEventListener(mouseEventListener);
+        clearSelection();
+    }
+
     /**
      * Singleton to hold instance of SceneManager. This holder class is
      * loader on the first execution of SceneManager.getSelectionManager().
