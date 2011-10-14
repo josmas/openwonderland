@@ -214,6 +214,11 @@ public class SceneManager {
             // issue #1115: ignore the event if it is selecting an object that
             // is already selected
             if (selectedEntityList.contains(entity) == true) {
+                // OWL issue #177: send an empty context event to ensure that
+                // any visible context menus are hidden in this case
+                MouseEvent mouseEvent = (MouseEvent) ((MouseEvent3D) event).getAwtEvent();
+                inputManager.postEvent(new ContextEvent(new LinkedList(), mouseEvent));
+                
                 return;
             }
 
