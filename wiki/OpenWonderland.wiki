@@ -116,7 +116,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This is a reference guide covering the default capabilities that come bundled with Wonderland as well as the common optional capabilities.</td>
 </tr>
 <tr>
-  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Edit.jsp?page=Creating%20Posters Creating Posters]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Creating%20Posters Creating Posters]</td>
   <td>This guide describes how to create in-world posters that include links to external content as well as links to locations within the virtual world.</td>
 </tr>
 
