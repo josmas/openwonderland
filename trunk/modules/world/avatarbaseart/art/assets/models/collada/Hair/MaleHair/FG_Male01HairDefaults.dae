@@ -565,7 +565,7 @@ cameraXFov=0;cameraYFov=1</comments>
   </library_effects>
   <library_images>
     <image id="file2" name="file2">
-      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/TexturesShared/Hair/HairBaseBrown.png</init_from>
+      <init_from>file:///Users/ckendall/Documents/IMI/Avatar/TexturesShared/Hair/HairBase.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>

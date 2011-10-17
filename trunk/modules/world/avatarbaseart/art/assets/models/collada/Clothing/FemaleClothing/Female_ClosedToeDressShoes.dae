@@ -146,7 +146,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="file13" name="file12">
-      <init_from>file:///C:/Documents%20and%20Settings/astahl.SYSTEMS/My%20Documents/maya/projects/IMI/characater/scene/T_Female_ClosedtoeDressShoe_N.tga</init_from>
+      <init_from>file:///C:/Documents%20and%20Settings/astahl.SYSTEMS/My%20Documents/maya/projects/IMI/characater/scene/T_Female_ClosedtoeDressShoe_N.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>

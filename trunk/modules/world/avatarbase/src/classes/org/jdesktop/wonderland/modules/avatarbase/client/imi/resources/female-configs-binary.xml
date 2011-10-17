@@ -12,7 +12,7 @@
         <description>Female_Head_Caucasian</description>
         <model>assets/models/collada/Heads/Binary/FemaleCHead.bhf</model>
         <skin-tone>
-            <r>1.0</r><g>0.5451</g><b>0.3725</b>
+           <r>0.86</r><g>0.54</g><b>0.43</b>
         </skin-tone>
     </heads>
     <heads>
@@ -20,15 +20,17 @@
         <description>Female_Head_Asian</description>
         <model>assets/models/collada/Heads/Binary/AsianFemaleHead.bhf</model>
         <skin-tone>
-            <r>1.0</r><g>0.5451</g><b>0.3725</b>
+            <r>0.86</r><g>0.54</g><b>0.43</b>
         </skin-tone>
     </heads>
+	    <!-- ALERT: FemaleAsianHead.dae works in 3ds Max, but not when used as a head. -->
+		
     <heads>
         <name>AA Head</name>
         <description>Female_Head_AfricanAmerican</description>
         <model>assets/models/collada/Heads/Binary/FemaleAAHead.bhf</model>
         <skin-tone>
-            <r>0.9490</r><g>0.6235</g><b>0.4784</b>
+            <r>0.73</r><g>0.46</g><b>0.34</b>
         </skin-tone>
     </heads>
    
@@ -37,7 +39,7 @@
         <description>Female_Head_Hispanic</description>
         <model>assets/models/collada/Heads/Binary/FemaleHispanicHead.bhf</model>
         <skin-tone>
-            <r>0.9490</r><g>0.6235</g><b>0.4784</b>
+            <r>0.87</r><g>0.56</g><b>0.45</b>
         </skin-tone>
     </heads>
     
@@ -53,17 +55,17 @@
         </skin-tone>
     </heads>
     -->
-    
-     <!-- ALERT: Added Head -->
+        
     <heads>
         <name>FaceGen Low-Poly Head 01</name>
         <description>Female_Head_June_Low_Poly</description>
         <model>assets/models/collada/Heads/Binary/FG_Female01LowPoly.bhf</model>
         <skin-tone>
-            <r>0.9333</r><g>0.6313</g><b>0.5254</b>
+			<r>0.88</r><g>0.56</g><b>0.44</b>
         </skin-tone>
     </heads>
-    
+	
+    <!-- ALERT: FG_Female02HighPoly has 11.5k triangles.  -->
     <heads>
         <name>FaceGen High-Poly Head 02</name>
         <description>Female_Head_April_High_Poly</description>
@@ -72,10 +74,18 @@
             <r>0.5059</r><g>0.2549</g><b>0.1490</b>
         </skin-tone>
     </heads>
+	
+	<heads>
+        <name>FaceGen High-Poly Head 03</name>
+        <description>Female_Head_April_High_Poly2</description>
+        <model>assets/models/collada/Heads/Binary/FG_Female02HighPoly.bhf</model>
+        <skin-tone>
+            <r>0.86</r><g>0.54</g><b>0.43</b>
+        </skin-tone>
+    </heads>
     
     <!-- ALERT: Removed FG_FemaleHead01.bhf -->
-    <!-- ALERT: Removed /FG_FemaleLowPoly_01.bhf -->
-
+    <!-- ALERT: Removed /FG_FemaleLowPoly_01.bhf. Seems to be same mesh as FG_Female01LowPoly.bhf  -->
 
     <!-- HAIR -->
     <hair>

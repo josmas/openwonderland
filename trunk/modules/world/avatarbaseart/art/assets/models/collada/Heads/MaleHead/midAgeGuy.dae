@@ -282,7 +282,7 @@ cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="faceTwoChina_faceOne_file5" name="faceTwoChina_faceOne_file5">
-      <init_from>file:///C:/imiSVN/assets/models/collada/Heads/MaleHead/FG_MaleHead01_D.png</init_from>
+      <init_from>file:///C:/imiSVN/assets/models/collada/Heads/MaleHead/midAgeGuyCLR.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
