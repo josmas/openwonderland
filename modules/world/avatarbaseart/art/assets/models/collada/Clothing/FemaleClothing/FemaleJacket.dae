@@ -28,8 +28,17 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
     </physics_scene>
   </library_physics_scenes>
   <library_images>
-    <image id="file1" name="file1">
+    <image id="file9" name="file9">
       <init_from>../../scenes/Clothing/Female/Textures/FemaleJacketBaseCLR.png</init_from>
+      <extra>
+        <technique profile="MAYA">
+          <dgnode_type>kFile</dgnode_type>
+          <image_sequence>0</image_sequence>
+        </technique>
+      </extra>
+    </image>
+    <image id="file8" name="file8">
+      <init_from>flatNRM.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -39,22 +48,38 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
     </image>
   </library_images>
   <library_materials>
-    <material id="Jacket" name="Jacket">
-      <instance_effect url="#Jacket-fx"/>
+    <material id="lambert3" name="lambert3">
+      <instance_effect url="#lambert3-fx"/>
     </material>
   </library_materials>
   <library_effects>
-    <effect id="Jacket-fx">
+    <effect id="lambert3-fx">
       <profile_COMMON>
-        <newparam sid="file1-surface">
+        <newparam sid="file9-surface">
           <surface type="2D">
-            <init_from>file1</init_from>
+            <init_from>file9</init_from>
             <format>A8R8G8B8</format>
           </surface>
         </newparam>
-        <newparam sid="file1-sampler">
+        <newparam sid="file9-sampler">
           <sampler2D>
-            <source>file1-surface</source>
+            <source>file9-surface</source>
+            <wrap_s>WRAP</wrap_s>
+            <wrap_t>WRAP</wrap_t>
+            <minfilter>NONE</minfilter>
+            <magfilter>NONE</magfilter>
+            <mipfilter>NONE</mipfilter>
+          </sampler2D>
+        </newparam>
+        <newparam sid="file8-surface">
+          <surface type="2D">
+            <init_from>file8</init_from>
+            <format>A8R8G8B8</format>
+          </surface>
+        </newparam>
+        <newparam sid="file8-sampler">
+          <sampler2D>
+            <source>file8-surface</source>
             <wrap_s>WRAP</wrap_s>
             <wrap_t>WRAP</wrap_t>
             <minfilter>NONE</minfilter>
@@ -71,7 +96,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
               <color>0 0 0 1</color>
             </ambient>
             <diffuse>
-              <texture texture="file1-sampler" texcoord="TEX0">
+              <texture texture="file9-sampler" texcoord="TEX0">
                 <extra>
                   <technique profile="MAYA">
                     <blend_mode>NONE</blend_mode>
@@ -87,7 +112,21 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
             </transparency>
           </lambert>
           <extra>
-            <technique profile="FCOLLADA"/>
+            <technique profile="FCOLLADA">
+              <bump>
+                <texture texture="file8-sampler" texcoord="TEX1">
+                  <extra>
+                    <technique profile="MAYA">
+                      <blend_mode>NONE</blend_mode>
+                    </technique>
+                    <technique profile="MAX3D">
+                      <amount>1</amount>
+                      <bumpInterp>1</bumpInterp>
+                    </technique>
+                  </extra>
+                </texture>
+              </bump>
+            </technique>
           </extra>
         </technique>
       </profile_COMMON>
@@ -168,7 +207,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
         <vertices id="Jacket1Shape-vertices">
           <input semantic="POSITION" source="#Jacket1Shape-positions"/>
         </vertices>
-        <triangles material="lambert3SG" count="884">
+        <triangles material="lambert2SG" count="884">
           <input semantic="VERTEX" source="#Jacket1Shape-vertices" offset="0"/>
           <input semantic="NORMAL" source="#Jacket1Shape-normals" offset="1"/>
           <input semantic="TANGENT" source="#Jacket1Shape-geotangent" offset="1"/>
@@ -235,21 +274,6 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
   </library_controllers>
   <library_visual_scenes>
     <visual_scene id="VisualSceneNode" name="FemaleJacket">
-      <node id="Jacket1" name="Jacket1" type="NODE">
-        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
-        <instance_controller url="#Jacket1Shape-skin">
-          <skeleton>#Hips</skeleton>
-          <skeleton>#leftOuterLip</skeleton>
-          <skeleton>#rightOuterLip</skeleton>
-          <bind_material>
-            <technique_common>
-              <instance_material symbol="lambert3SG" target="#Jacket">
-                <bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0"/>
-              </instance_material>
-            </technique_common>
-          </bind_material>
-        </instance_controller>
-      </node>
       <node id="Hips" name="Hips" sid="bone0" type="JOINT">
         <matrix sid="transform">1 0 0 0 0 1 0 1.10598 0 0 1 0 0 0 0 1</matrix>
         <node id="leftUpLeg" name="leftUpLeg" sid="bone1" type="JOINT">
@@ -1068,9 +1092,24 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
           <matrix sid="transform">1 0 0 0 0 1 0 1.52488 0 0 1 0.003761 0 0 0 1</matrix>
         </node>
       </node>
+	  <node id="Jacket1" name="Jacket1" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_controller url="#Jacket1Shape-skin">
+          <skeleton>#Hips</skeleton>
+          <skeleton>#leftOuterLip</skeleton>
+          <skeleton>#rightOuterLip</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert2SG" target="#lambert3">
+                <bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0"/>
+                <bind_vertex_input semantic="TEX1" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
       <extra>
         <technique profile="MAYA">
-          <layer name="Geometry">Jacket1</layer>
           <layer name="Skeleton">Hips</layer>
           <layer name="Eff">humanIK1</layer>
         </technique>

@@ -47,7 +47,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="pasted__file7" name="pasted__file7">
-      <init_from>../../scenes/Clothing/Female/Textures/FemaleShortsPlaidBLKCLR.png</init_from>
+      <init_from>../../scenes/Clothing/Female/Textures/FemaleShortsSolidBLKCLR.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>

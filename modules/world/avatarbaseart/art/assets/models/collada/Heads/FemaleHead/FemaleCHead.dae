@@ -343,7 +343,7 @@ cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="file3" name="file3">
-      <init_from>file:///imiSVN/assets/models/collada/Heads/FemaleHead/FG_FemaleHead_T01.png</init_from>
+      <init_from>file:///imiSVN/assets/models/collada/Heads/FemaleHead/female2_skin_Hi.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
