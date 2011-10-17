@@ -97,7 +97,10 @@
             <case value="windows-x86">
                 <property name="sgs.bdb.platform" value="win32-x86"/>
             </case>
-
+            <case value="windows-amd64">
+                <property name="sgs.bdb.platform" value="win32-amd64"/>
+            </case>
+            
             <case value="linux-i386">
                 <property name="sgs.bdb.platform" value="linux-x86"/>
             </case>
