@@ -13,7 +13,7 @@
 <html>
     <head>
         <link href="runner.css" rel="stylesheet" type="text/css" media="screen" />
-        <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
+        <script src="/wonderland-web-front/javascript/prototype.js" type="text/javascript"></script>
         <script type="text/javascript">
             function selectLocal() {
                 var locationTF = $('locationField');
