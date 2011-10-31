@@ -8,7 +8,7 @@
         <file name="darkstar/build.xml"/>
         <file name="security-group/build.xml"/>
         <file name="security-session-common/build.xml"/>
-        <!--file name="security-session-noauth/build.xml"/-->
+        <file name="security-session-noauth/build.xml"/>
         <file name="presence-manager/build.xml"/>
         <file name="text-chat/build.xml"/>
         <file name="orb/build.xml"/>
