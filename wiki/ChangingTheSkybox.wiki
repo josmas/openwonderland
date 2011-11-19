@@ -44,6 +44,12 @@ directions:
 	6.jpg = top
 }}}
 
+Visually, they should be arranged like this:
+
+http://openwonderland.org/images/skyboxorder.png
+
+Note that the top edge of image 4 must match up with the bottom edge of image 6.
+
 5. Resize the new skybox images to dimensions 512 x 512
 
 6. Overwrite the old skybox image files by copying the new skybox
@@ -62,4 +68,3 @@ replace it. Just leave the old skybox image.
 8. Launch and enjoy your new skybox!
 
 http://lh3.ggpht.com/_4iskP_xs9eE/TJqJ-q7uh6I/AAAAAAAAEN4/LlOS5t4lEnI/s800/Picture%202.png
-
