@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -617,7 +617,7 @@ class ViewCache {
                     // root is in the cache. See addOrRemoveSubgraphImpl()
                     // below for details.
                     synchronized (rootCells) {
-                        if (rootCells.containsKey(cell)) {
+                        if (rootCells.containsKey(cell.getRoot())) {
                             revalidateCells.add(new CellDesc(cell.getCellID()));
                         }
                     }
