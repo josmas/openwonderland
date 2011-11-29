@@ -87,6 +87,10 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This guide explains how to connect a Wonderland installation to the telephone network. For original documentation see: [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandPhoneSetup Project Wonderland Phone Setup Guide] and [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandTelephoneAdmin?TWIKISID=85e154924b7dd7b9d15444109d6af36b Telephone Integration]</td>
 </tr>
 <tr>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Creating%20Backups Creating Backups]</td>
+  <td>Several strategies for backing up your Wonderland worlds.</td>
+</tr>
+<tr>
   <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sysadmin%20Tips Sys Admin Tips]</td>
   <td>Some tips for managing Wonderland-related processes.</td>
 </tr>
@@ -119,11 +123,15 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Creating%20Posters Creating Posters]</td>
   <td>This guide describes how to create in-world posters that include links to external content as well as links to locations within the virtual world.</td>
 </tr>
-
 <tr>
   <td>ExportingBlenderModels</td>
   <td>Matthew Schmidt provides advice on how to export models from Blender to import into Wonderland.</td>
 </tr>
+<tr>
+  <td>[http://blogs.openwonderland.org/2011/09/20/subsnapshot-importer-exporter-module-available/ Saving Work with Subsnapshots]</td>
+  <td>This blog post explains Subsnapshots and how to use this import/export functionality to save work on your own computer.</td>
+</tr>
+
 <tr><td></td></tr>
 </table>
 
