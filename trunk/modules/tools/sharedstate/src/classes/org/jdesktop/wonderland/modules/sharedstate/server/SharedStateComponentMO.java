@@ -422,6 +422,11 @@ public class SharedStateComponentMO extends CellComponentMO {
             
             // now create or merge all remaining maps
             for (MapEntry mergeMap : merge) {
+                if (mergeMap.getData() == null) {
+                    // fix a problem for maps with no data
+                    continue;
+                }
+                
                 // merge map asynchronously
                 mergeMap(getMap(mergeMap.getName(), true), mergeMap.getData());
             }
