@@ -54,19 +54,19 @@ There are two ways components are programmatically added to Cells.
 
 By using two simple annotations, developers can specify that a cell component should be automatically added to a cell when the cell is created. Here, the tooltip cell component is added to a cell:
 
-{code}
+{{{
 @DependsOnCellComponentMO(TooltipCellComponentMO.class)
 public class MyCellMO extends CellMO {
-{code}
+}}}
 
 If you also wish to have a reference to the instance of the CellComponentMO object, you can use the @UsesCellComponentMO annotation instead. Note that in this second case, you do not need the @DependsOnCellComponentMO annotation, however, there is no harm if it also is present:
 
-{code}
+{{{
 public class MyCellMO extends CellMO {
 	@UsesCellComponentMO(TooltipCellComponentMO.class)
       private ManagedReference<TooltipCellComponentMO> tooltipMO;
 }
-{code}
+}}}
 
 Cell components themselves may also use the @DependsOnCellComponentMO and @UsesCellComponentMO annotations if they depend upon other cell components. Note, however, that support for this use case is not complete: while dependent cell components are added to the cell, they are not removed if the declaring cell component is removed from the cell.
 
@@ -95,7 +95,7 @@ Much like a Cell, a Cell Component also has both a server and client state that 
 
 The tooltip's server state consists of the string text and the timeout used to hide the tooltip after it hovers over a cell for some number of milliseconds.
 
-{code}
+{{{
 @XmlRootElement(name="tooltip-cell-component")
 @ServerState
 public class TooltipCellComponentServerState extends CellComponentServerState {
@@ -120,7 +120,7 @@ public class TooltipCellComponentServerState extends CellComponentServerState {
     @XmlTransient public int getTimeout() { return timeout; }
     public void setTimeout(int timeout) { this.timeout = timeout; }
 }
-{code}
+}}}
 
 The getServerComponentClassName() method is the string name of the server-side CellComponentMO class. Since the server state class resides in the common package and cannot depend upon the server-side code, it must specify the server-side class name as a hard-coded string.
 
@@ -130,7 +130,7 @@ The Tooltip Server-Side CellComponentMO Class
 
 The TooltipCellComponentMO class extends the CellComponentMO base class and stores the state of the cell component. Instances of this class are kept by the cell in its CellMO object and managed by the Darkstar transactional middleware layer. It's similar in spirit to CellMO classes.
 
-{code}
+{{{
 public class TooltipCellComponentMO extends CellComponentMO {
 
     private String text = null;
@@ -174,7 +174,7 @@ public class TooltipCellComponentMO extends CellComponentMO {
         timeout = ((TooltipCellComponentServerState) state).getTimeout();
     }
 }
-{code}
+}}}
 
 The getClientClass() method returns the subclass of CellComponent that represents the client-side cell component class. Since TooltipCellComponentMO exists in the server package, it cannot depend upon the client package and must hard-code the client class name.
 
@@ -186,7 +186,7 @@ The Tooltip Client-Side CellComponent Class
 
 The classes that implement the client-side functionality are the most complicated aspect of the tooltip component. Every cell component has a client-side class that extends CellComponent and keeps the state of the cell component.
 
-{code}
+{{{
 public class TooltipCellComponent extends CellComponent {
 
     private String text = null;
@@ -206,13 +206,13 @@ public class TooltipCellComponent extends CellComponent {
     public String getText() { return text; }
     public int getTimeout() { return timeout; }
 }
-{code}
+}}}
 
 The setClientState() method takes an instance of the CellComponentClientState object and stores the two attributes (text, timeout) in separate variables.
 
 Every cell component must also implement the CellComponentFactorySPI interface if, as in the case of the tooltip component, it should appear in the list of available components in the Object Editor so that users may select them and add them to cells. (However, for cell component that shouldn't be explicitly added by users, for example the channel and moveable components, should not have a cell component factory class.
 
-{code}
+{{{
 @CellComponentFactory
 public class TooltipCellComponentFactory implements CellComponentFactorySPI {
 
@@ -226,7 +226,7 @@ public class TooltipCellComponentFactory implements CellComponentFactorySPI {
         return (T) state;
     }
 }
-{code}
+}}}
 
 [Figure showing the tooltip component appearing in the "Add" dialog]
 
@@ -239,7 +239,7 @@ The SceneManager singleton object in the Wonderland client delivers input-relate
 
 The tooltip client plugin is defined as follows:
 
-{code}
+{{{
 @Plugin
 public class TooltipClientPlugin extends BaseClientPlugin {
 
@@ -268,13 +268,13 @@ public class TooltipClientPlugin extends BaseClientPlugin {
         tooltipPanel = null;
     }
 }
-{code}
+}}}
 
 As with all plugins, the TooltipClientPlugin class is annotated with @Plugin and overrides the initialize(), activate(), and deactivate() methods. The SceneManager event is added and removed in activate() and deactivate(), respectively. Upon deactivate(), the HUDComponent that displays the tooltip is also removed, if it exists (so that, if by chance, a tooltip is displayed while you navigate away or transport from your current world to another).
 
 The TooltipHoverListener reacts to hover events delivered by the SceneManager, and is an inner class to TooltipClientPlugin (so that is sees the hudComponent and tooltipPanel member variables).
 
-{code}
+{{{
     private class TooltipHoverListener extends EventClassListener {
 
         @Override
@@ -367,7 +367,7 @@ The TooltipHoverListener reacts to hover events delivered by the SceneManager, a
             });
         }
     }
-{code}
+}}}
 
 The hover event is delivered to the commit() method, whose argument is HoverEvent. Its getPrimaryCell() method returns the Cell over which the mouse hovers; its isStart() method returns true if the hover has just begun and false if the hover has just ended. The remainder of the commit() method fetches text from the TooltipComponent object that exists on the Cell and converts the (x, y) position in the mouse event into the coordinates relative to the canvas in which the 3D Wonderland world is drawn.
 
@@ -381,7 +381,7 @@ To set component-specific properties, such as the text and timeout in the toolti
 
 Parts of the TooltipCellComponentProperties class is given below:
 
-{code}
+{{{
 @PropertiesFactory(TooltipCellComponentServerState.class)
 public class TooltipCellComponentProperties extends JPanel implements PropertiesFactorySPI {
 
@@ -391,7 +391,7 @@ public class TooltipCellComponentProperties extends JPanel implements Properties
     public JPanel getPropertiesJPanel() { return this; }
     public void setCellPropertiesEditor(CellPropertiesEditor editor) { this.editor = editor; }
 }
-{code}
+}}}
 
 The getPropertiesJPanel() method returns the property JPanel to display, in this case, the same object. The setCellPropertiesEditor() method is used to inject an instance of the CellPropertiesEditor class that represents the editor window. The CellPropertiesEditor object has methods to fetch the current Cell being edited, its CellServerState object, and methods to manage property updates for each component, as discussed below.
 
@@ -405,7 +405,7 @@ Every properties panel has a life-cycle that mimics the actions a user can take 
 
 For the tooltip component, the open() method is implemented below. It simply fetches the values from the TooltipCellComponentServerState, stores away the original values, and updates the GUI (a text area and timeout spinner).
 
-{code}
+{{{
     public void open() {
         CellServerState state = editor.getCellServerState();
         CellComponentServerState compState = state.getComponentServerState(TooltipCellComponentServerState.class);
@@ -428,19 +428,19 @@ For the tooltip component, the open() method is implemented below. It simply fet
             }
         }
     }
-{code}
+}}}
 
 Since the tooltip does not need to perform any cleanup when the property panel is closed, the close() method is left empty:
 
-{code}
+{{{
     public void close() {
         // Do nothing for now.
     }
-{code}
+}}}
 
 The apply() method for the tooltip component must fetch the current values in the GUI, update the TooltipCellComponentServerState with these new values, and tell the CellPropertiesEditor that its properties have changed.
 
-{code}
+{{{
     public void apply() {
         CellServerState state = editor.getCellServerState();
         CellComponentServerState compState = state.getComponentServerState(TooltipCellComponentServerState.class);
@@ -455,13 +455,13 @@ The apply() method for the tooltip component must fetch the current values in th
 
         editor.addToUpdateList(compState);
     }
-{code}
+}}}
 
 The addToUpdateList() method takes an instance of a CellComponentServerState object; when the new state of a Cell and its components are transmitted to the server, only the state of those components that have changed are included.
 
 The restore() method simply updates the GUI with the original values (text, timeout):
 
-{code}
+{{{
     public void restore() {
         tooltipTextArea.setText(originalText);
         if (originalTimeout == -1) {
@@ -475,11 +475,11 @@ The restore() method simply updates the GUI with the original values (text, time
             timeoutSpinner.setValue((Integer) originalTimeout);
         }
     }
-{code}
+}}}
 
 One final note about The TooltipCellComponentProperties class. The Object Editor enables and disables the Apply and Restore buttons based upon whether property values have actually been modified in the GUI. In order for this to work, each property sheet must tell it when values in its panel have been modified. For example, the following DocumentListener is placed on the text field containing the tooltip text:
 
-{code}
+{{{
     class InfoTextFieldListener implements DocumentListener {
 
         public void insertUpdate(DocumentEvent e) { checkDirty(); }
@@ -496,14 +496,6 @@ One final note about The TooltipCellComponentProperties class. The Object Editor
             }
         }
     }
-{code}
+}}}
 
 Here, the current text in the JTextArea is compared with the original text. If different, then CellPropertyEditor.setPanelDirty() is passed true, otherwise, it is passed false. Note that the first argument of the setPanelDirty() method takes the Class for the property sheet; the Object Editor keeps tracks of the "dirty" state for each property sheet individually so that is may properly enable and disable buttons such as Apply and Restore.
-
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
