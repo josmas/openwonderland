@@ -1,56 +1,52 @@
 #summary A tutorial describing how to develop a Cell Component (aka Capability) in Wonderland, using the tooltip module as an example
 
-= Introduction =
+=UNDER CONSTRUCTION=
 
-*UNDER CONSTRUCTION*
+==Developing a New Cell Component (aka Capability)==
+*by Jordan Slott*
 
+===Purpose===
 
-Developing a New Cell Component (aka Capability)
-by Jordan Slott
+In this tutorial, you will learn how to develop new cell components. A cell component is add-on functionality that can be attached to any kind of cell. The [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities] tutorial describes cell components in more detail from the user's perspective.
 
-Purpose
-
-In this tutorial, you will learn how to develop new Cell Components. A Cell Component is add-on functionality that can be attached to any kind of Cell. The Using Capabilities {LINK} tutorial describes Cell Components in more detail from the user's perspective.
-
-Cell Components are termed "Capabilities" in the Wonderland client: the name "Component" was used by the Wonderland core team before adding support for them in the UI. The team felt "Capability" was a more apt term for users, however kept the name "Component" on the programmatic level. This remainder of this tutorial uses the "Component" terminology.
+ *Note:* Cell components are termed _capabilities_ in the Wonderland client: the name _component_ was used by the Wonderland core team before adding support for them in the UI. The team felt _capability_ was a more apt term for users, however kept the name _component_ on the programmatic level. This remainder of this tutorial uses the _component_ terminology.
 
 This tutorial is designed or the Project Wonderland v0.5 Release.
 
-In this tutorial you will develop the "tooltip" Cell Component. This component displays a configurable tooltip message when a user's mouse hovers over a Cell which has this component attached. You can find the entire source for this module in the "stable" section of the Project Wonderland modules workspace. For instructions on downloading this workspace, see Download, Build, and Deploy Project Wonderland v0.5 Modules. {LINK}
+In this tutorial you will develop the "tooltip" cell component. This component displays a configurable tooltip message when a user's mouse hovers over a cell which has this component attached. You can find the entire source for this module in the "stable" section of the Project Wonderland modules workspace. For instructions on downloading this workspace, see [DownloadBuildModules05 Download, Build, and Deploy Project Wonderland v0.5 Modules].
 
-Expected Duration: 60 minutes
+*Expected Duration: 60 minutes*
 
-Prerequisites
+====Prerequisites====
 
 Before completing this tutorial you should have already completed the following:
 
-* Project Wonderland v0.5: Developing a New Cell (Parts 1 - 4)
-* Using Capabilities
+* [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05Part1.pdf Project Wonderland v0.5: Developing a New Cell (Parts 1 - 4)]
+* [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities]
 
-Cell Component Architecture
+===Cell Component Architecture===
 
-Figure 1 illustrates Wonderland's Cell Component architecture.
+Figure 1 illustrates Wonderland's cell component architecture.
 
 << FIGURE 1 >>
 
-Every Cell may have zero or more Cell Components attached, once attached they add to the functionality of the Cell. Similar to the architecture of Cells themselves, Cell Components have a server piece, a client piece, a server state piece, and a client state piece.
+Every cell may have zero or more cell components attached, once attached they add to the functionality of the cell. Similar to the architecture of cells themselves, cell components have a server piece, a client piece, a server state piece, and a client state piece.
 
-Table 1 illustrates the objects and interfaces for the Cell Component mechanism and their analogous Cell object and interface.
+Table 1 illustrates the objects and interfaces for the cell component mechanism and their analogous cell object and interface.
 
 
 << TABLE 1>
 
-On the server, a CellComponentMO can either be "live" or "not live", similar to the state of CellMO. A list CellComponentMO indicates that the CellMO in which it is attached is added to the world. When a CellMO transitions from the "not live" to "live" state (or visa versa), it iterates through all of its attached CellComponentMO objects and sets their "live" state accordingly.
+On the server, a CellComponentMO can either be "live" or "not live", similar to the state of CellMO. A live CellComponentMO indicates that the CellMO in which it is attached is present in the world. When a CellMO transitions from the "not live" to "live" state (or visa versa), it iterates through all of its attached CellComponentMO objects and sets their "live" state accordingly.
 
-Every CellMO can have at most one CellComponentMO of a particular type, as determined by the java.lang.Class of the CellComponentMO object. A list of (Darkstar references too) all components may be obtained via the CellMO.getAllComponentRefs(); an individual component is obtained via the getComponent() method by giving a java.lang.Class. The CellMO object also supports listeners on changes to the attached components on it via the ComponentChangeListenerSrv interface. 
+Every CellMO can have at most one CellComponentMO of a particular type, as determined by the java.lang.Class of the CellComponentMO object. A list of (Darkstar references to) all components may be obtained via the CellMO.getAllComponentRefs() method; an individual component is obtained via the getComponent() method by giving a java.lang.Class. The CellMO object also supports listeners on changes to the attached components on it via the ComponentChangeListenerSrv interface. 
 
-Adding Cell Components to a Cell
+===Adding Cell Components to a Cell===
 
 There are two ways components are programmatically added to Cells.
 
-1. Via the CellMO.addComponent() method, if the component does not already exist on the Cell. After being added, a ComponentChangeListenerSrv method (with type ChangeType.ADDED) is delivered to all listeners and the component is made "live" if the Cell is also "live". A message is sent to all clients that the component has been added to the Cell; each client will then add the corresponding client-side component object to its client-side Cell object. When users add components via the GUI (i.e. via the Object Editor), a message is sent from the client to invoke CellMO.addComponent(). To remove a component, developers can use the CellMO.removeComponent() method.
-
-2. Via dependency injection and the @DependsOnCellComponentMO and UsesCellComponentMO annotations. 
+   # Via the CellMO.addComponent() method, if the component does not already exist on the Cell. After being added, a ComponentChangeListenerSrv method (with type ChangeType.ADDED) is delivered to all listeners and the component is made "live" if the Cell is also "live". A message is sent to all clients that the component has been added to the Cell; each client will then add the corresponding client-side component object to its client-side Cell object. When users add components via the GUI (i.e. via the Object Editor), a message is sent from the client to invoke CellMO.addComponent(). To remove a component, developers can use the CellMO.removeComponent() method.
+   # Via dependency injection and the @DependsOnCellComponentMO and UsesCellComponentMO annotations. 
 
 By using two simple annotations, developers can specify that a cell component should be automatically added to a cell when the cell is created. Here, the tooltip cell component is added to a cell:
 
@@ -70,18 +66,18 @@ public class MyCellMO extends CellMO {
 
 Cell components themselves may also use the @DependsOnCellComponentMO and @UsesCellComponentMO annotations if they depend upon other cell components. Note, however, that support for this use case is not complete: while dependent cell components are added to the cell, they are not removed if the declaring cell component is removed from the cell.
 
-"Special" Cell Components
+==="Special" Cell Components===
 
 Cell components are used by Wonderland itself to implement core functionality. These component are often automatically added to cells. For example, the system automatically attaches a special "channel" Cell Component that enables communication between the client and server Cell objects. A table of core cell components is given below:
 
-||Server Class Name||Description||
-|ChannelComponentMO|Enables the communication of messages between the client and server Cell objects.|
-|MovableComponentMO|Enables the client to transform the position, rotation, and scaling of a Cell.|
-|MovableAvatarComopnentMO|Enables the client to communicate a change in position for an avatar Cell.|
-|ProximityComponentMO|Notifies listeners when avatars enter or leave a bounds around a Cell.|
-|CellPhysicsPropertiesComponentMO|Maintains physics-related properties for a Cell.|
+||*Server Class Name*||*Description*||
+||ChannelComponentMO||Enables the communication of messages between the client and server Cell objects.||
+||MovableComponentMO||Enables the client to transform the position, rotation, and scaling of a Cell.||
+||MovableAvatarComopnentMO||Enables the client to communicate a change in position for an avatar Cell.||
+||ProximityComponentMO||Notifies listeners when avatars enter or leave a bounds around a Cell.||
+||CellPhysicsPropertiesComponentMO||Maintains physics-related properties for a Cell.||
 
-Developing the Tooltip Cell Component
+===Developing the Tooltip Cell Component===
 
 The tooltip cell component allows users to add tooltips to cells: when a user's mouse hovers over a cell a text message is display in a small window. The tooltip disappears when the user subsequently moves his or her mouse (Figure 1). The use of the tooltip cell component is further described in the Tooltips in Wonderland [http://blogs.openwonderland.org/2010/01/25/tooltips-in-wonderland/] blog.
 
@@ -89,7 +85,7 @@ The tooltip component source code is found in the "stable" section of the wonder
 
 Rather than take you step-by-step through developing this module from scratch, this tutorial assumes you have the complete source code and will highlight the important parts.
 
-The Tooltip Component Server and Client State
+===The Tooltip Component Server and Client State===
 
 Much like a Cell, a Cell Component also has both a server and client state that serves a similar purpose. The server state class must extend CellComponentServerState and is annotated with JAXB annotations so that its state is written to XML in the Wonderland File System (WFS) when a snapshot of the world is taken. Because the tooltip's state is stored along with the cell's XML description in a world snapshot, the cell component will be automatically added to the cell and its state set when a world snapshot is loaded.
 
@@ -126,7 +122,7 @@ The getServerComponentClassName() method is the string name of the server-side C
 
 The tooltip's client state is almost identical to its server state, without the need for the JAXB annotations.
 
-The Tooltip Server-Side CellComponentMO Class
+===The Tooltip Server-Side CellComponentMO Class===
 
 The TooltipCellComponentMO class extends the CellComponentMO base class and stores the state of the cell component. Instances of this class are kept by the cell in its CellMO object and managed by the Darkstar transactional middleware layer. It's similar in spirit to CellMO classes.
 
@@ -182,7 +178,7 @@ The getServerState() method fills a given CellComponentServerState object (if nu
 
 The getClientState() method fills a given CellComponentClientState object (if null, then this method should create an instance of TooltipCellComponentClientState).
 
-The Tooltip Client-Side CellComponent Class
+===The Tooltip Client-Side CellComponent Class===
 
 The classes that implement the client-side functionality are the most complicated aspect of the tooltip component. Every cell component has a client-side class that extends CellComponent and keeps the state of the cell component.
 
@@ -233,7 +229,7 @@ public class TooltipCellComponentFactory implements CellComponentFactorySPI {
 The getDisplayName() and getDescription() return the text strings that appear in the Object Editor when adding new components to cells. These strings are found in resource files, so they may be localized for different languages. The getDefaultCellComponentServerState() returns an instance of the CellComponentServerState object that can be sent to the server to tell it how to create the proper CellComponentMO with a valid default state.
 
 
-Displaying the Tooltip On Cell Hover
+===Displaying the Tooltip On Cell Hover===
 
 The SceneManager singleton object in the Wonderland client delivers input-related events to interested modules. One such input event it detects is "hover". The tooltip module installs a client plugin to setup a listener on the SceneManager for hover events. (For an explanation on developing "plugins" for Wonderland, see XXXX).
 
@@ -375,7 +371,7 @@ The showTooltipHUDComponent() and hideTooltipHUDComponent() methods show and hid
 
 The tooltip is displayed in the world using the Wonderland HUD (Heads-up Display) and setting its specific location using the HUDComponent.setLocation() method. For more information on using the HUD, please see XXXX. Note that the timeout associated with the tooltip is handed entirely by the HUD.
 
-The Tooltip Properties Panel
+===The Tooltip Properties Panel===
 
 To set component-specific properties, such as the text and timeout in the tooltip component, the Object Editor can display a custom JPanel defined in the component's module. Classes that properties such properties panels are annotated with @PropertiesFactory and implement the PropertiesFactorySPI interface. While the PropertiesFactorySPI class and the property's JPanel can be two separate classes, the tooltip component combines them into a single class, TooltipCellComponentProperties.
 
