@@ -59,7 +59,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../lib/glassfish/glassfish-embedded-all-3.0-b74b.jar:../utils/dist/wonderland-web-utils.jar:../modules/dist/wonderland-modules-core.jar:../../core/build/lib/wonderland-common.jar:../runner/dist/wonderland-runner-core.jar</classpath>
+                <classpath mode="compile">../lib/glassfish/glassfish-embedded-all-3.0-b74b.jar:../utils/dist/wonderland-web-utils.jar:../modules/dist/wonderland-modules-core.jar:../../core/build/lib/wonderland-common.jar:../runner/dist/wonderland-runner-core.jar:../../utils/wonderland-version/dist/wonderland-version.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
