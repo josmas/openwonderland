@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -49,7 +49,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -61,6 +60,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
+import org.jdesktop.wonderland.utils.version.Version;
 
 /**
  * Main entry point for Wonderland embedded web server.  This class extracts
@@ -164,6 +164,11 @@ public class WebServerLauncher {
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING, "Error setting up log config", ioe);
         }
+        
+        // print the version at the top of the log
+        LOGGER.log(Level.WARNING, "Launching Open Wonderland version " +
+                   Version.VERSION + " rev. " + Version.REVISION + 
+                   " (" + Version.DATE + ")");
    
         // If the web server port property has not been set at this point, then
         // set it to the default

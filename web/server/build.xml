@@ -17,6 +17,7 @@
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
             <path path="${core.dir}/build/lib/wonderland-client.jar"/>
             <path path="${web.dir}/runner/dist/wonderland-runner-core.jar"/>
+            <path path="${top.dir}/utils/wonderland-version/dist/wonderland-version.jar"/>
         </pathconvert>
     </target>
 
@@ -83,6 +84,8 @@
                 <include name="org/jdesktop/wonderland/utils/FileListUtil*.class"/>
                 <include name="org/jdesktop/wonderland/utils/SystemPropertyUtil*.class"/>
             </zipfileset>
+            
+            <zipfileset src="${top.dir}/utils/wonderland-version/dist/wonderland-version.jar"/>
 
             <!-- we also need ScannedClassloader from wonderland-common -->
             <zipfileset src="${top.dir}/core/build/lib/wonderland-common.jar">
@@ -107,7 +110,6 @@
             <checksumfileset file="${web.dir}/front/dist/wonderland-webadmin-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/runner/lib/winp-1.14.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/wfs/dist/wonderland-wfs.jar" prefix="webserver"/>
-            <checksumfileset file="${top.dir}/utils/wonderland-version/dist/wonderland-version.jar" prefix="webserver"/>
 
             <!-- include wonderland client from core, since many web apps will
                  act as clients of the Wonderland system -->
