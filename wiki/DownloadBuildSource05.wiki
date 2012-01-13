@@ -66,7 +66,7 @@ You can build the Open Wonderland source code by running the *ant* command in a 
 % ant
 }}}
 
-Run this command in the _wonderland_ directory created by checking out the source, either _~/src/wonderland/trunk/wonderland_ or _~/src/wonderland/0.5-preview4/wonderland_.
+Run this command in the _wonderland_ directory created by checking out the source, either _~/src/wonderland/trunk/wonderland_ or _~/src/wonderland/0.5-r4260/wonderland_.
 
 ===Running Open Wonderland===
 
