@@ -38,18 +38,24 @@ The most recent version of the code is called the _trunk_. To download the sourc
 
 This will download the Open Wonderland source into the directory _~/src/wonderland/trunk/wonderland_.
 
-====Download User Preview 4====
+====Download the source for a stable release====
 
-If you wish to work with a more stable version of Open Wonderland, you may download the most recent "preview" release. To download the User Preview 4, inside a terminal window from your home directory, after you have created the _src/wonderland/_ subdirectory:
+Most developers should use the trunk of Open Wonderland, which is typically quite stable. If you need to find the source corresponding to a particular stable release, start the stable release from the command line and look at the first line of output. It should be something like:
+
+{{{
+Launching Open Wonderland version 0.5 rev. 4260 (January 10, 2012)
+}}}
+
+You can checkout this specific version based on the revision number, inside a terminal window from your home directory, after you have created the _src/wonderland/_ subdirectory:
 
 {{{
 % cd ~/src/wonderland
-% mkdir 0.5-preview4
-% cd 0.5-preview4
-% svn checkout https://openwonderland.googlecode.com/svn/branches/0.5-preview4 wonderland
+% mkdir 0.5-r4260
+% cd 0.5-r4260
+% svn checkout -r 4260 https://openwonderland.googlecode.com/svn/trunk wonderland
 }}}
 
-This will download the Open Wonderland source into the directory _~/src/wonderland/0.5-preview4/wonderland_.
+This will download the Open Wonderland source into the directory _~/src/wonderland/0.5-r4260/wonderland_. Note that updating the source using _svn update_ will not make any changes. If you want to restore the trunk version, use _svn update -r HEAD_.
 
 
 ===Building Open Wonderland===
