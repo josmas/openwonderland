@@ -9,20 +9,22 @@
 
 In this tutorial, you will learn how to develop new cell components. A cell component is add-on functionality that can be attached to any kind of cell. The [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities] tutorial describes cell components in more detail from the user's perspective.
 
- *Note:* Cell components are termed _capabilities_ in the Wonderland client: the name _component_ was used by the Wonderland core team before adding support for them in the UI. The team felt _capability_ was a more apt term for users, however kept the name _component_ on the programmatic level. This remainder of this tutorial uses the _component_ terminology.
+||*Note:* Cell components are termed _capabilities_ in the Wonderland client: the name _component_ was used by the Wonderland core team before adding support for them in the UI. The team felt _capability_ was a more apt term for users, however kept the name _component_ on the programmatic level. This remainder of this tutorial uses the _component_ terminology.||
 
 This tutorial is designed or the Project Wonderland v0.5 Release.
 
 In this tutorial you will develop the "tooltip" cell component. This component displays a configurable tooltip message when a user's mouse hovers over a cell which has this component attached. You can find the entire source for this module in the "stable" section of the Project Wonderland modules workspace. For instructions on downloading this workspace, see [DownloadBuildModules05 Download, Build, and Deploy Project Wonderland v0.5 Modules].
 
+<p align=center>
 *Expected Duration: 60 minutes*
+</p>
 
 ====Prerequisites====
 
 Before completing this tutorial you should have already completed the following:
 
-* [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05Part1.pdf Project Wonderland v0.5: Developing a New Cell (Parts 1 - 4)]
-* [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities]
+   * [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05Part1.pdf Project Wonderland v0.5: Developing a New Cell (Parts 1 - 4)]
+   * [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities]
 
 ===Cell Component Architecture===
 
@@ -39,13 +41,13 @@ Table 1 illustrates the objects and interfaces for the cell component mechanism 
 
 On the server, a CellComponentMO can either be "live" or "not live", similar to the state of CellMO. A live CellComponentMO indicates that the CellMO in which it is attached is present in the world. When a CellMO transitions from the "not live" to "live" state (or visa versa), it iterates through all of its attached CellComponentMO objects and sets their "live" state accordingly.
 
-Every CellMO can have at most one CellComponentMO of a particular type, as determined by the java.lang.Class of the CellComponentMO object. A list of (Darkstar references to) all components may be obtained via the CellMO.getAllComponentRefs() method; an individual component is obtained via the getComponent() method by giving a java.lang.Class. The CellMO object also supports listeners on changes to the attached components on it via the ComponentChangeListenerSrv interface. 
+Every CellMO can have at most one CellComponentMO of a particular type, as determined by the java.lang.Class of the CellComponentMO object. A list of (Darkstar references to) all components may be obtained via the CellMO.getAllComponentRefs() method; an individual component is obtained via the getComponent() method by giving a java.lang.Class. The CellMO object also supports listeners on changes to the attached components on it via the !ComponentChangeListenerSrv interface. 
 
 ===Adding Cell Components to a Cell===
 
 There are two ways components are programmatically added to Cells.
 
-   # Via the CellMO.addComponent() method, if the component does not already exist on the Cell. After being added, a ComponentChangeListenerSrv method (with type ChangeType.ADDED) is delivered to all listeners and the component is made "live" if the Cell is also "live". A message is sent to all clients that the component has been added to the Cell; each client will then add the corresponding client-side component object to its client-side Cell object. When users add components via the GUI (i.e. via the Object Editor), a message is sent from the client to invoke CellMO.addComponent(). To remove a component, developers can use the CellMO.removeComponent() method.
+   # Via the CellMO.addComponent() method, if the component does not already exist on the Cell. After being added, a !ComponentChangeListenerSrv method (with type ChangeType.ADDED) is delivered to all listeners and the component is made "live" if the Cell is also "live". A message is sent to all clients that the component has been added to the Cell; each client will then add the corresponding client-side component object to its client-side Cell object. When users add components via the GUI (i.e. via the Object Editor), a message is sent from the client to invoke CellMO.addComponent(). To remove a component, developers can use the CellMO.removeComponent() method.
    # Via dependency injection and the @DependsOnCellComponentMO and UsesCellComponentMO annotations. 
 
 By using two simple annotations, developers can specify that a cell component should be automatically added to a cell when the cell is created. Here, the tooltip cell component is added to a cell:
@@ -87,7 +89,7 @@ Rather than take you step-by-step through developing this module from scratch, t
 
 ===The Tooltip Component Server and Client State===
 
-Much like a Cell, a Cell Component also has both a server and client state that serves a similar purpose. The server state class must extend CellComponentServerState and is annotated with JAXB annotations so that its state is written to XML in the Wonderland File System (WFS) when a snapshot of the world is taken. Because the tooltip's state is stored along with the cell's XML description in a world snapshot, the cell component will be automatically added to the cell and its state set when a world snapshot is loaded.
+Much like a Cell, a Cell Component also has both a server and client state that serves a similar purpose. The server state class must extend !CellComponentServerState and is annotated with JAXB annotations so that its state is written to XML in the Wonderland File System (WFS) when a snapshot of the world is taken. Because the tooltip's state is stored along with the cell's XML description in a world snapshot, the cell component will be automatically added to the cell and its state set when a world snapshot is loaded.
 
 The tooltip's server state consists of the string text and the timeout used to hide the tooltip after it hovers over a cell for some number of milliseconds.
 
@@ -174,13 +176,13 @@ public class TooltipCellComponentMO extends CellComponentMO {
 
 The getClientClass() method returns the subclass of CellComponent that represents the client-side cell component class. Since TooltipCellComponentMO exists in the server package, it cannot depend upon the client package and must hard-code the client class name.
 
-The getServerState() method fills a given CellComponentServerState object (if null, then this method should create an instance of TooltipCellComponentServerState). The setServerState() stores the state given by the server state object into the TooltipCellComponentMO object. In this example, the individual state values (text and timeout) are stored in their own variables, however simply keeping a reference to the state object is a valid alternative.
+The getServerState() method fills a given !CellComponentServerState object (if null, then this method should create an instance of !TooltipCellComponentServerState). The setServerState() stores the state given by the server state object into the TooltipCellComponentMO object. In this example, the individual state values (text and timeout) are stored in their own variables, however simply keeping a reference to the state object is a valid alternative.
 
-The getClientState() method fills a given CellComponentClientState object (if null, then this method should create an instance of TooltipCellComponentClientState).
+The getClientState() method fills a given !CellComponentClientState object (if null, then this method should create an instance of !TooltipCellComponentClientState).
 
 ===The Tooltip Client-Side CellComponent Class===
 
-The classes that implement the client-side functionality are the most complicated aspect of the tooltip component. Every cell component has a client-side class that extends CellComponent and keeps the state of the cell component.
+The classes that implement the client-side functionality are the most complicated aspect of the tooltip component. Every cell component has a client-side class that extends !CellComponent and keeps the state of the cell component.
 
 {{{
 public class TooltipCellComponent extends CellComponent {
@@ -204,7 +206,7 @@ public class TooltipCellComponent extends CellComponent {
 }
 }}}
 
-The setClientState() method takes an instance of the CellComponentClientState object and stores the two attributes (text, timeout) in separate variables.
+The setClientState() method takes an instance of the !CellComponentClientState object and stores the two attributes (text, timeout) in separate variables.
 
 Every cell component must also implement the CellComponentFactorySPI interface if, as in the case of the tooltip component, it should appear in the list of available components in the Object Editor so that users may select them and add them to cells. (However, for cell component that shouldn't be explicitly added by users, for example the channel and moveable components, should not have a cell component factory class.
 
@@ -226,12 +228,12 @@ public class TooltipCellComponentFactory implements CellComponentFactorySPI {
 
 [Figure showing the tooltip component appearing in the "Add" dialog]
 
-The getDisplayName() and getDescription() return the text strings that appear in the Object Editor when adding new components to cells. These strings are found in resource files, so they may be localized for different languages. The getDefaultCellComponentServerState() returns an instance of the CellComponentServerState object that can be sent to the server to tell it how to create the proper CellComponentMO with a valid default state.
+The getDisplayName() and getDescription() return the text strings that appear in the Object Editor when adding new components to cells. These strings are found in resource files, so they may be localized for different languages. The getDefaultCellComponentServerState() returns an instance of the !CellComponentServerState object that can be sent to the server to tell it how to create the proper CellComponentMO with a valid default state.
 
 
 ===Displaying the Tooltip On Cell Hover===
 
-The SceneManager singleton object in the Wonderland client delivers input-related events to interested modules. One such input event it detects is "hover". The tooltip module installs a client plugin to setup a listener on the SceneManager for hover events. (For an explanation on developing "plugins" for Wonderland, see XXXX).
+The !SceneManager singleton object in the Wonderland client delivers input-related events to interested modules. One such input event it detects is "hover". The tooltip module installs a client plugin to setup a listener on the !SceneManager for hover events. (For an explanation on developing "plugins" for Wonderland, see XXXX).
 
 The tooltip client plugin is defined as follows:
 
@@ -266,9 +268,9 @@ public class TooltipClientPlugin extends BaseClientPlugin {
 }
 }}}
 
-As with all plugins, the TooltipClientPlugin class is annotated with @Plugin and overrides the initialize(), activate(), and deactivate() methods. The SceneManager event is added and removed in activate() and deactivate(), respectively. Upon deactivate(), the HUDComponent that displays the tooltip is also removed, if it exists (so that, if by chance, a tooltip is displayed while you navigate away or transport from your current world to another).
+As with all plugins, the !TooltipClientPlugin class is annotated with @Plugin and overrides the initialize(), activate(), and deactivate() methods. The !SceneManager event is added and removed in activate() and deactivate(), respectively. Upon deactivate(), the HUDComponent that displays the tooltip is also removed, if it exists (so that, if by chance, a tooltip is displayed while you navigate away or transport from your current world to another).
 
-The TooltipHoverListener reacts to hover events delivered by the SceneManager, and is an inner class to TooltipClientPlugin (so that is sees the hudComponent and tooltipPanel member variables).
+The !TooltipHoverListener reacts to hover events delivered by the !SceneManager, and is an inner class to !TooltipClientPlugin (so that is sees the hudComponent and tooltipPanel member variables).
 
 {{{
     private class TooltipHoverListener extends EventClassListener {
@@ -365,7 +367,7 @@ The TooltipHoverListener reacts to hover events delivered by the SceneManager, a
     }
 }}}
 
-The hover event is delivered to the commit() method, whose argument is HoverEvent. Its getPrimaryCell() method returns the Cell over which the mouse hovers; its isStart() method returns true if the hover has just begun and false if the hover has just ended. The remainder of the commit() method fetches text from the TooltipComponent object that exists on the Cell and converts the (x, y) position in the mouse event into the coordinates relative to the canvas in which the 3D Wonderland world is drawn.
+The hover event is delivered to the commit() method, whose argument is !HoverEvent. Its getPrimaryCell() method returns the Cell over which the mouse hovers; its isStart() method returns true if the hover has just begun and false if the hover has just ended. The remainder of the commit() method fetches text from the !TooltipComponent object that exists on the Cell and converts the (x, y) position in the mouse event into the coordinates relative to the canvas in which the 3D Wonderland world is drawn.
 
 The showTooltipHUDComponent() and hideTooltipHUDComponent() methods show and hide the tooltip, respectively. They use the TooltipJPanel class that simply displays text in a JLabel. Since this code interacts with Swing, all display updates must be performed on the AWT Event Dispatch Thread, by invoking the SwingUtilities.invokeLater() method.
 
@@ -373,9 +375,9 @@ The tooltip is displayed in the world using the Wonderland HUD (Heads-up Display
 
 ===The Tooltip Properties Panel===
 
-To set component-specific properties, such as the text and timeout in the tooltip component, the Object Editor can display a custom JPanel defined in the component's module. Classes that properties such properties panels are annotated with @PropertiesFactory and implement the PropertiesFactorySPI interface. While the PropertiesFactorySPI class and the property's JPanel can be two separate classes, the tooltip component combines them into a single class, TooltipCellComponentProperties.
+To set component-specific properties, such as the text and timeout in the tooltip component, the Object Editor can display a custom JPanel defined in the component's module. Classes that properties such properties panels are annotated with @PropertiesFactory and implement the PropertiesFactorySPI interface. While the PropertiesFactorySPI class and the property's JPanel can be two separate classes, the tooltip component combines them into a single class, !TooltipCellComponentProperties.
 
-Parts of the TooltipCellComponentProperties class is given below:
+Parts of the !TooltipCellComponentProperties class is given below:
 
 {{{
 @PropertiesFactory(TooltipCellComponentServerState.class)
@@ -389,17 +391,17 @@ public class TooltipCellComponentProperties extends JPanel implements Properties
 }
 }}}
 
-The getPropertiesJPanel() method returns the property JPanel to display, in this case, the same object. The setCellPropertiesEditor() method is used to inject an instance of the CellPropertiesEditor class that represents the editor window. The CellPropertiesEditor object has methods to fetch the current Cell being edited, its CellServerState object, and methods to manage property updates for each component, as discussed below.
+The getPropertiesJPanel() method returns the property JPanel to display, in this case, the same object. The setCellPropertiesEditor() method is used to inject an instance of the !CellPropertiesEditor class that represents the editor window. The !CellPropertiesEditor object has methods to fetch the current Cell being edited, its CellServerState object, and methods to manage property updates for each component, as discussed below.
 
 Every properties panel has a life-cycle that mimics the actions a user can take with the Object Editor GUI. The PropertiesFactorySPI interface has methods to be implemented by the component developer to handle each stage in the property panel life-cycle. The four life-cycle stages -- open, close, restore, and apply -- are described in the table below.
 
 ||*Lifecycle stage method*||*Description*||
-|open()|Called when a Cell is selected for editing the Object Editor GUI, and after apply() so that panels may refresh themselves. Property panels should update their GUIs to reflect the most recent values. When open() is called, the getCellServerState() method always returns the most recent state of the selected Cell.|
-|close()|Called when a Cell is no longer being edited in the Object Editor GUI. Property panels should perform any necessary cleanup in this method.|
-|restore()|Called when the values of a component are restored to their last applied values, typically when the user hits the Restore button. Property panels should update their GUIs to reflect the last applied values.|
-|apply()|Called when the edited values of a component should be saved, typically when the user hits the Apply button. Property panels can use the addToUpdateList() method in the CellPropertiesEditor object to indicate new values have been set for a component's properties.|
+||open()||Called when a Cell is selected for editing the Object Editor GUI, and after apply() so that panels may refresh themselves. Property panels should update their GUIs to reflect the most recent values. When open() is called, the getCellServerState() method always returns the most recent state of the selected Cell.||
+||close()||Called when a Cell is no longer being edited in the Object Editor GUI. Property panels should perform any necessary cleanup in this method.||
+||restore()||Called when the values of a component are restored to their last applied values, typically when the user hits the Restore button. Property panels should update their GUIs to reflect the last applied values.||
+||apply()||Called when the edited values of a component should be saved, typically when the user hits the Apply button. Property panels can use the addToUpdateList() method in the CellPropertiesEditor object to indicate new values have been set for a component's properties.||
 
-For the tooltip component, the open() method is implemented below. It simply fetches the values from the TooltipCellComponentServerState, stores away the original values, and updates the GUI (a text area and timeout spinner).
+For the tooltip component, the open() method is implemented below. It simply fetches the values from the !TooltipCellComponentServerState, stores away the original values, and updates the GUI (a text area and timeout spinner).
 
 {{{
     public void open() {
@@ -434,7 +436,7 @@ Since the tooltip does not need to perform any cleanup when the property panel i
     }
 }}}
 
-The apply() method for the tooltip component must fetch the current values in the GUI, update the TooltipCellComponentServerState with these new values, and tell the CellPropertiesEditor that its properties have changed.
+The apply() method for the tooltip component must fetch the current values in the GUI, update the !TooltipCellComponentServerState with these new values, and tell the !CellPropertiesEditor that its properties have changed.
 
 {{{
     public void apply() {
@@ -453,7 +455,7 @@ The apply() method for the tooltip component must fetch the current values in th
     }
 }}}
 
-The addToUpdateList() method takes an instance of a CellComponentServerState object; when the new state of a Cell and its components are transmitted to the server, only the state of those components that have changed are included.
+The addToUpdateList() method takes an instance of a !CellComponentServerState object; when the new state of a Cell and its components are transmitted to the server, only the state of those components that have changed are included.
 
 The restore() method simply updates the GUI with the original values (text, timeout):
 
@@ -473,7 +475,7 @@ The restore() method simply updates the GUI with the original values (text, time
     }
 }}}
 
-One final note about The TooltipCellComponentProperties class. The Object Editor enables and disables the Apply and Restore buttons based upon whether property values have actually been modified in the GUI. In order for this to work, each property sheet must tell it when values in its panel have been modified. For example, the following DocumentListener is placed on the text field containing the tooltip text:
+One final note about The !TooltipCellComponentProperties class. The Object Editor enables and disables the Apply and Restore buttons based upon whether property values have actually been modified in the GUI. In order for this to work, each property sheet must tell it when values in its panel have been modified. For example, the following DocumentListener is placed on the text field containing the tooltip text:
 
 {{{
     class InfoTextFieldListener implements DocumentListener {
