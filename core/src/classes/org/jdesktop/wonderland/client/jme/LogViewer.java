@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -22,6 +22,7 @@ import com.jme.system.DisplaySystem;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -396,7 +397,8 @@ public enum LogViewer {
         builder.append("\n");
 
         if (record.getMessage() != null) {
-            builder.append(record.getMessage());
+            // apply parameter substitutions
+            builder.append(MessageFormat.format(record.getMessage(), record.getParameters()));
             builder.append("\n");
         }
 
