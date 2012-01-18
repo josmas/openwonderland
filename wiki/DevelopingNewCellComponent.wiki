@@ -28,9 +28,9 @@ Before completing this tutorial you should have already completed the following:
 
 ===Cell Component Architecture===
 
-Figure 1 illustrates Wonderland's cell component architecture.
+Figure 1 illustrates Wonderland's cell component architecture. There is an aggregation relationship between a Cell and a number of Cell Components that provide more functionlity to that Cell.
 
-<< FIGURE 1 >>
+http://faithhold.dyndns.org:8080/JSPWiki/attach/Sample%20Component%20Tutorial/cell_cellcomponent.png
 
 Every cell may have zero or more cell components attached, once attached they add to the functionality of the cell. Similar to the architecture of cells themselves, cell components have a server piece, a client piece, a server state piece, and a client state piece.
 
