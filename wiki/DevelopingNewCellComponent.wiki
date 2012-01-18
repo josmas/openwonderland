@@ -39,7 +39,7 @@ Table 1 illustrates the objects and interfaces for the cell component mechanism 
 
 << TABLE 1>
 
-On the server, a CellComponentMO can either be "live" or "not live", similar to the state of CellMO. A live CellComponentMO indicates that the CellMO in which it is attached is present in the world. When a CellMO transitions from the "not live" to "live" state (or visa versa), it iterates through all of its attached CellComponentMO objects and sets their "live" state accordingly.
+On the server, a CellComponentMO can either be "live" or "not live", similar to the state of CellMO. A live CellComponentMO indicates that the CellMO in which it is attached is present in the world. When a CellMO transitions from the "not live" to "live" state (or vice versa), it iterates through all of its attached CellComponentMO objects and sets their "live" state accordingly.
 
 Every CellMO can have at most one CellComponentMO of a particular type, as determined by the java.lang.Class of the CellComponentMO object. A list of (Darkstar references to) all components may be obtained via the CellMO.getAllComponentRefs() method; an individual component is obtained via the getComponent() method by giving a java.lang.Class. The CellMO object also supports listeners on changes to the attached components on it via the !ComponentChangeListenerSrv interface. 
 
