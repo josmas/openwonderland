@@ -179,13 +179,13 @@ public class TooltipCellComponentMO extends CellComponentMO {
 }
 }}}
 
-The getClientClass() method returns the subclass of CellComponent that represents the client-side cell component class. Since TooltipCellComponentMO exists in the server package, it cannot depend upon the client package and must hard-code the client class name.
+The getClientClass() method returns the subclass of !CellComponent that represents the client-side cell component class. Since TooltipCellComponentMO exists in the server package, it cannot depend upon the client package and must hard-code the client class name.
 
 The getServerState() method fills a given !CellComponentServerState object (if null, then this method should create an instance of !TooltipCellComponentServerState). The setServerState() stores the state given by the server state object into the TooltipCellComponentMO object. In this example, the individual state values (text and timeout) are stored in their own variables, however simply keeping a reference to the state object is a valid alternative.
 
 The getClientState() method fills a given !CellComponentClientState object (if null, then this method should create an instance of !TooltipCellComponentClientState).
 
-===The Tooltip Client-Side CellComponent Class===
+===The Tooltip Client-Side !CellComponent Class===
 
 The classes that implement the client-side functionality are the most complicated aspect of the tooltip component. Every cell component has a client-side class that extends !CellComponent and keeps the state of the cell component.
 
