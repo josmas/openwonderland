@@ -36,11 +36,11 @@ Every cell may have zero or more cell components attached, once attached they ad
 
 Table 1 illustrates the objects and interfaces for the cell component mechanism and their analogous cell object and interface.
 
-|| *Package* || *Cell class*       || *CellComponent class*      ||
-|| Client        || Cell                  || CellComponent                  ||
-|| Common   || CellClientState  || CellComponentClientState ||
-|| Common   || CellServerState || CellComponentServerState ||
-|| Server       || CellMO             || CellComponentMO             ||
+|| *Package* || *Cell class*       || *!CellComponent class*      ||
+|| Client        || Cell                  || !CellComponent                  ||
+|| Common   || !CellClientState  || !CellComponentClientState ||
+|| Common   || !CellServerState || !CellComponentServerState ||
+|| Server       || CellMO             || !CellComponentMO             ||
 
 Note that Components can also have associated CellComponentFactorySPI classes, and make use of server and client [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandWritingPlugin05.pdf plugins]. Additionally a component will have a properties panel to be used within the object editor, and might have an associated display class (see the use of TooltipJPanel below).
 
