@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -43,11 +43,14 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -111,10 +114,8 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         // check if this user has permission to view the cells in this
         // collection, and then generate load messages for any that we
         // do have permission for
-        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
-        SecurityManager security = AppContext.getManager(SecurityManager.class);
         ResourceMap rm = new ResourceMap();
-
+       
         // a map of all the cells. The cells that we don't have permission
         // to see wil be removed by the LoadCellsTask below.
         // OWL issue #95: this map must maintain the ordering of the original
@@ -123,30 +124,12 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         Map<CellID, CellDescription> cellsMap =
                 new LinkedHashMap<CellID, CellDescription>();
 
-        // check if each cell has an associated resource, and if so, add
-        // it to the list of cells to check
-        for (CellDescription cell : cells) {
-            // add to the map of cells
-            cellsMap.put(cell.getCellID(), cell);
-
-            Resource resource = crm.getCellResource(cell.getCellID());
-            if (resource != null) {
-                // if there is a resource associated with this cell, add it
-                // to the resource map to check
-                Resource r = new CellIDResource(cell.getCellID(), resource);
-                rm.put(r.getId(), new ActionMap(r, new ViewAction()));
-            }
-        }
-
-        // see if we need to check any of the cells
-        if (!rm.isEmpty()) {
-            // we do need to do this securely -- start a task
-            SecureTask checkLoad = new LoadCellsTask(cellsMap, this);
-            security.doSecure(rm, checkLoad);
-        } else {
-            // just send the messages directly
-            sendLoadMessages(cells);
-        }
+        // convert to a mutable list for processing
+        List<CellDescription> processList = new ArrayList<CellDescription>(cells);
+        
+        // schedule a task to process
+        AppContext.getTaskManager().scheduleTask(new CellResourcesTask(
+                processList, cellsMap, rm, new LoadCellsTask(this)));  
     }
 
     /**
@@ -159,8 +142,6 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         // check if this user has permission to view the cells in this
         // collection, and then generate load messages for any that we
         // do have permission for
-        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
-        SecurityManager security = AppContext.getManager(SecurityManager.class);
         ResourceMap rm = new ResourceMap();
 
         // cells we need to check for permission
@@ -171,22 +152,12 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         Map<CellID, CellDescription> cellsMap =
                 new LinkedHashMap<CellID, CellDescription>();
 
-        // get the resource for each cell and add it to the security check
-        for (CellDescription cell : cells) {
-            // add to the map of cells
-            cellsMap.put(cell.getCellID(), cell);
-
-            Resource resource = crm.getCellResource(cell.getCellID());
-            if (resource != null) {
-                // add the resource to the security check
-                Resource r = new CellIDResource(cell.getCellID(), resource);
-                rm.put(r.getId(), new ActionMap(r, new ViewAction()));
-            } 
-        }
-
-        // start a task to perform the checks
-        SecureTask checkCells = new RevalidateCellsTask(cellsMap, this);
-        security.doSecure(rm, checkCells);
+        // convert to a mutable list for processing
+        List<CellDescription> processList = new ArrayList<CellDescription>(cells);
+        
+        // schedule a task to process
+        AppContext.getTaskManager().scheduleTask(new CellResourcesTask(
+                processList, cellsMap, rm, new RevalidateCellsTask(this)));
     }
 
     /**
@@ -291,16 +262,95 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         }
     }
 
-    private static final class LoadCellsTask implements SecureTask, Serializable {
+    private interface CellResourceTask extends SecureTask {
+        public void setCells(Map<CellID, CellDescription> cells);
+    }
+    
+    private static class CellResourcesTask implements Task, Serializable {
+        private static final int COUNT = 10;
+        
+        private final List<CellDescription> processList;
         private final Map<CellID, CellDescription> cells;
-        private final ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+        private final ResourceMap rm;
+        private final CellResourceTask task;
+        
+        public CellResourcesTask(List<CellDescription> processList, 
+                                 Map<CellID, CellDescription> cells,
+                                 ResourceMap rm,
+                                 CellResourceTask task)
+        {
+            this.processList = processList;
+            this.cells = cells;
+            this.rm = rm;
+            this.task = task;
+        }
 
-        public LoadCellsTask(Map<CellID, CellDescription> cells,
-                             ViewCellCacheMO viewCellCache)
+        public void run() throws Exception {
+            int items = Math.min(COUNT, processList.size());
+            for (int i = 0; i < items; i++) {
+                CellDescription cell = processList.remove(0);
+                processCell(cell);
+            }
+            
+            // figure out the next task
+            Task next;
+            if (!processList.isEmpty()) {
+                // still ids to process
+                next = new CellResourcesTask(processList, cells, rm, task);
+            } else {
+                // all done -- perform task
+                next = new CellResourceTaskRunner(cells, rm, task);
+            }
+            
+            AppContext.getTaskManager().scheduleTask(next);
+        }
+        
+        private void processCell(CellDescription cell) {
+            // add to the map of cells
+            cells.put(cell.getCellID(), cell);
+
+            CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+            Resource resource = crm.getCellResource(cell.getCellID());
+            if (resource != null) {
+                // add the resource to the security check
+                Resource r = new CellIDResource(cell.getCellID(), resource);
+                rm.put(r.getId(), new ActionMap(r, new ViewAction()));
+            } 
+        }
+    }
+    
+    private static class CellResourceTaskRunner implements Task, Serializable {
+        private final Map<CellID, CellDescription> cells;
+        private final ResourceMap rm;
+        private final CellResourceTask task;
+        
+        public CellResourceTaskRunner(Map<CellID, CellDescription> cells,
+                                      ResourceMap rm, CellResourceTask task)
         {
             this.cells = cells;
-
+            this.rm = rm;
+            this.task = task;
+        }
+        
+        public void run() throws Exception {
+            task.setCells(cells);
+            
+            SecurityManager security = AppContext.getManager(SecurityManager.class);
+            security.doSecure(rm, task);
+        }
+    }
+    
+    private static final class LoadCellsTask implements CellResourceTask, Serializable {
+        private final ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+        private Map<CellID, CellDescription> cells;
+        
+        public LoadCellsTask(ViewCellCacheMO viewCellCache)
+        {
             viewCellCacheRef = AppContext.getDataManager().createReference(viewCellCache);
+        }
+        
+        public void setCells(Map<CellID, CellDescription> cells) {
+            this.cells = cells;
         }
 
         public void run(ResourceMap grants) {
@@ -323,17 +373,19 @@ public abstract class ViewCellCacheMO implements ManagedObject, Serializable {
         }
     }
 
-    private static final class RevalidateCellsTask implements SecureTask, Serializable {
-        private final Map<CellID, CellDescription> cells;
+    private static final class RevalidateCellsTask implements CellResourceTask, Serializable {
         private final ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+        private Map<CellID, CellDescription> cells;
 
-        public RevalidateCellsTask(Map<CellID, CellDescription> cells,
-                                  ViewCellCacheMO viewCellCache)
+        public RevalidateCellsTask(ViewCellCacheMO viewCellCache)
         {
-            this.cells = cells;
             viewCellCacheRef = AppContext.getDataManager().createReference(viewCellCache);
         }
 
+        public void setCells(Map<CellID, CellDescription> cells) {
+            this.cells = cells;
+        }
+        
         public void run(ResourceMap grants) {
             Map<CellID, CellDescription> unloadCells =
                     new LinkedHashMap<CellID, CellDescription>(cells);
