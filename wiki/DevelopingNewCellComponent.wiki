@@ -13,7 +13,7 @@ In this tutorial, you will learn how to develop new cell components. A cell comp
 
 This tutorial is designed for the Open Wonderland v0.5 Release.
 
-In this tutorial you will develop the "tooltip" cell component. This component displays a configurable tooltip message when a user's mouse hovers over a cell which has this component attached. You can find the entire source for this module in the "stable" section of the Project Wonderland modules workspace. For instructions on downloading this workspace, see [DownloadBuildModules05 Download, Build, and Deploy Project Wonderland v0.5 Modules].
+In this tutorial you will develop the "tooltip" cell component. This component displays a configurable tooltip message when a user's mouse hovers over a cell which has this component attached. You can find the entire source for this module in the "stable" section of the Open Wonderland modules workspace. For instructions on downloading this workspace, see [DownloadBuildModules05 Download, Build, and Deploy Project Wonderland v0.5 Modules].
 
 <p align=center>
 *Expected Duration: 60 minutes*
