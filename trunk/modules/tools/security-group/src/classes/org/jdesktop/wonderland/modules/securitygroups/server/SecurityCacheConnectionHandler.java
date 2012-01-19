@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -28,6 +46,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.modules.security.server.service.GroupMemberResource;
+import org.jdesktop.wonderland.modules.security.server.service.UserPrincipals;
 import org.jdesktop.wonderland.modules.securitygroups.common.InvalidateGroupMessage;
 import org.jdesktop.wonderland.modules.securitygroups.common.SecurityCacheConnectionType;
 import org.jdesktop.wonderland.server.UserMO;
@@ -92,8 +111,8 @@ public class SecurityCacheConnectionHandler
         InvalidateGroupMessage igm = (InvalidateGroupMessage) message;
 
         // invalidate all users identified in the message
-        WebServiceUserPrincipalResolver resolver =
-                WebServiceUserPrincipalResolver.getInstance();
+        WebServiceUserPrincipalResolver resolver = (WebServiceUserPrincipalResolver)
+                UserPrincipals.getUserPrincipalResolver();
         for (String username : igm.getUsernames()) {
             resolver.invalidate(username);
         }
