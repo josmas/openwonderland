@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -93,7 +111,13 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
 
         // see if we are allowed to block to find a result
         if (blocking) {
-            return getRemotePrincipals(username);
+            Set<Principal> out = getRemotePrincipals(username);
+            
+            // add to the cache
+            synchronized (cache) {
+                cache.put(username, new AgedValue(out));
+            }
+            return out;
         }
 
         // not cached and can't block -- return null
@@ -117,11 +141,6 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
                     GroupUtils.getGroupsForUser(BASE_URL, username, false, cm);
             for (GroupDTO g : groups) {
                 out.add(new Principal(g.getId(), Type.GROUP));
-            }
-
-            // add to the cache
-            synchronized (cache) {
-                cache.put(username, new AgedValue(out));
             }
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Error reading groups for " + username +

@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -572,12 +572,14 @@ public class CellResourceService extends AbstractService {
             }
 
             CellResourceImpl cur = resources.get(0);
-            if (cur.getPermission(userPrincipals, action)) {
-                // we have permission
+            Access result = cur.getPermission(userPrincipals, action);
+            if (result == Access.GRANT) {
                 return true;
+            } else if (result == Access.DENY) {
+                return false;
             }
 
-            // if we don't have permission, move up to the parent. First
+            // if the permission is unspecified, move up to the parent. First
             // make sure the action is a top-level action: we don't
             // query sub-actions on the parent
             action = getTopLevelAction(action);
@@ -604,7 +606,7 @@ public class CellResourceService extends AbstractService {
         private Set<Principal> owners;
         private Set<Action> allActions;
         private CellID parentID;
-
+        
         public CellResourceImpl(String cellID) {
             this.cellID = cellID;
         }
@@ -643,7 +645,7 @@ public class CellResourceService extends AbstractService {
                                                      false);
             if (userPrincipals == null) {
                 return Result.SCHEDULE;
-            } else if (getPermission(userPrincipals, action)) {
+            } else if (getPermission(userPrincipals, action) == Access.GRANT) {
                 return Result.GRANT;
             } else {
                 return Result.DENY;
@@ -656,33 +658,36 @@ public class CellResourceService extends AbstractService {
             Set<Principal> userPrincipals =
                     UserPrincipals.getUserPrincipals(identity.getUsername(),
                                                      true);
-            return getPermission(userPrincipals, action);
+            return (getPermission(userPrincipals, action) == Access.GRANT);
         }
-
+        
         /**
-         * Return true if any of the given principals have the requested
-         * permission.
+         * Return Access.GRANT if any of the given principals have the 
+         * requested permission. Returns Access.DENY if permission is 
+         * specifically denied for the given principal.  Returns null if the
+         * result is unspecified.
          * @param userPrincipals a set of principals to check.
          * @param action the action to check for.
-         * @return true if any of the specified principals have the given
-         * permission, or false if the result is denied or undefined.
+         * @return Access.GRANT if any of the specified principals have the 
+         * given permission, or ACCESS.DENY if the result is denied,
+         * or null if unspecified.
          */
-        protected boolean getPermission(Set<Principal> userPrincipals,
-                                        Action action)
+        protected Access getPermission(Set<Principal> userPrincipals,
+                                       Action action)
         {
             // collect all permissions
             List<Permission> myPerms = new ArrayList<Permission>();
             for (Principal p : userPrincipals) {
                 // first, check if this principal is an owner
                 if (owners.contains(p)) {
-                    return true;
+                    return Access.GRANT;
                 }
 
                 // if this is the admin group, always return true
                 if (p.getType() == Principal.Type.GROUP &&
                         p.getId().equals("admin"))
                 {
-                    return true;
+                    return Access.GRANT;
                 }
 
                 // find the permission for this principal
@@ -693,7 +698,7 @@ public class CellResourceService extends AbstractService {
                     // this user, and therefore should be applied directly
                     // and not combined with any other permissions.
                     if (perm.getPrincipal().getType() == Principal.Type.USER) {
-                        return (perm.getAccess() == Access.GRANT);
+                        return perm.getAccess();
                     }
 
                     // if the permission is a group or everybody permission,
@@ -715,7 +720,7 @@ public class CellResourceService extends AbstractService {
                     i.remove();
 
                     if (perm.getAccess() == Access.GRANT) {
-                        return true;
+                        return Access.GRANT;
                     }
                 }
             }
@@ -726,7 +731,7 @@ public class CellResourceService extends AbstractService {
             // that had permission, but was part of at least one group that
             // was denied permission.  In this case, we should deny access.
             if (hasGroupPerm) {
-                return false;
+                return Access.DENY;
             }
 
             // last, we check for any remaining permissionm, which must
@@ -734,13 +739,13 @@ public class CellResourceService extends AbstractService {
             // just go with whatever the first one says (hopefully there is
             // only one)
             for (Permission perm : myPerms) {
-                return (perm.getAccess() == Access.GRANT);
+                return perm.getAccess();
             }
             
             // if we get here, it means that there were no permissions for
             // this user, any of the user's groups or everybody.  In that case,
-            // deny access.
-            return false;
+            // return undefined (null).
+            return null;
         }
 
         /**
@@ -801,12 +806,12 @@ public class CellResourceService extends AbstractService {
             setActions(allActions);
         }
 
-        // always return false
+        // always return unspecified
         @Override
-        protected boolean getPermission(Set<Principal> userPrincipals,
-                                        Action action)
+        protected Access getPermission(Set<Principal> userPrincipals,
+                                       Action action)
         {
-            return false;
+            return null;
         }
 
         @Override
