@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -46,7 +64,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
     // The original values for the field-of-view, front/back clip to use upon
     // revert.
     private int originalFieldOfView = 0;
-    private int originalFrontClip = 0;
+    private float originalFrontClip = 0;
     private int originalBackClip = 0;
     // The view manager's properties
     private ViewProperties viewProperties = null;
@@ -141,9 +159,9 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
                             "fov text field value");
                     setTextFieldsLocal = true;
                     try {
-                        int clip = frontClipSlider.getValue();
-                        frontClipField.setValue((long) clip);
-                        viewProperties.setFrontClip((float) clip);
+                        float clip = frontClipSlider.getValue() / 200.0f;
+                        frontClipField.setValue(clip);
+                        viewProperties.setFrontClip(clip);
                         setApplyEnabled();
                     } finally {
                         setTextFieldsLocal = false;
@@ -170,9 +188,9 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
                             "setting front clip slider value");
                     setSlidersLocal = true;
                     try {
-                        long clipValue = (Long) frontClipField.getValue();
-                        frontClipSlider.setValue((int) clipValue);
-                        viewProperties.setFrontClip((float) clipValue);
+                        float clipValue = ((Number) frontClipField.getValue()).floatValue();
+                        frontClipSlider.setValue((int) (clipValue * 200));
+                        viewProperties.setFrontClip(clipValue);
                         setApplyEnabled();
                     } finally {
                         setSlidersLocal = false;
@@ -280,7 +298,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         // from the view manager's properties
         if (isVisible) {
             originalFieldOfView = (int) viewProperties.getFieldOfView();
-            originalFrontClip = (int) viewProperties.getFrontClip();
+            originalFrontClip = viewProperties.getFrontClip();
             originalBackClip = (int) viewProperties.getBackClip();
             updateGUI();
             setApplyEnabled();
@@ -302,8 +320,8 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         try {
             fovSlider.setValue((int) originalFieldOfView);
             fovField.setValue((long) originalFieldOfView);
-            frontClipSlider.setValue((int) originalFrontClip);
-            frontClipField.setValue((long) originalFrontClip);
+            frontClipSlider.setValue((int) (originalFrontClip * 200));
+            frontClipField.setValue(originalFrontClip);
             rearClipSlider.setValue((int) originalBackClip);
             rearClipField.setValue((long) originalBackClip);
         } finally {
@@ -330,8 +348,8 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
             return true;
         }
 
-        long frontClipValue = (Long) frontClipField.getValue();
-        if ((int) frontClipValue != originalFrontClip) {
+        float frontClipValue = ((Number) frontClipField.getValue()).floatValue();
+        if (frontClipValue != originalFrontClip) {
             return true;
         }
 
@@ -455,8 +473,8 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         mainPanel.add(fovField, gridBagConstraints);
 
-        frontClipField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
-        frontClipField.setText("0");
+        frontClipField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#,##0.##"))));
+        frontClipField.setText(bundle.getString("ViewPropertiesJDialog.frontClipField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
@@ -482,12 +500,12 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(346, Short.MAX_VALUE)
+                .addContainerGap(404, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okButton)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 586, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
