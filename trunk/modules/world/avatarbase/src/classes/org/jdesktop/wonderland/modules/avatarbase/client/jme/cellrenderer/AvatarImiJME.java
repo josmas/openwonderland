@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -137,7 +137,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private ProcessorComponent cameraChainedProcessor = null;  // The processor to which the camera is chained
 
     private CellMoveListener cellMoveListener = null;
-
+    private CellTransform delayedMove = null;
+    
     private Entity rootEntity = null;
 
     private CollisionChangeRequestListener collisionChangeRequestListener;
@@ -307,7 +308,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                                     Thread.dumpStack();
                                     return;
                                 }
+                                
+                                if (delayedMove != null) {
+                                    delayedMove = null;
+                                    logger.fine(cell.getCellID() + ": remove delayed move for: " + transform.toString());
+                                }
                                 avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1, 1, 1)));
+                            } else {
+                                logger.fine(cell.getCellID() + ": delaying move: " + transform.toString());
+                                // we tried to move before loading the avatar.
+                                // record the new position to apply when we
+                                // actually load
+                                delayedMove = transform;
                             }
                         }
                     }
@@ -420,7 +432,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         // Set the initial location of the avatar if there is one
         if (currentLocation != null && avatarCharacter.getModelInst() != null) {
+            logger.fine(cell.getCellID() + " Using current location: " + currentLocation);
             avatarCharacter.getModelInst().setTransform(new PTransform(currentLocation));
+        } else if (delayedMove != null && avatarCharacter.getModelInst() != null) {
+            // there was no previous avatar, but there was a move that
+            // happened while the avatar was null. Apply the move now
+            logger.fine(cell.getCellID() + " using delayed move: " + delayedMove.toString());
+            PTransform trans = new PTransform(delayedMove.getRotation(null), 
+                                              delayedMove.getTranslation(null), 
+                                              new Vector3f(1, 1, 1));
+            avatarCharacter.getModelInst().setTransform(trans);
         }
 
         // Attach the name tag to the new avatar and add the avatar entity to
@@ -522,27 +543,27 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     @Override
     public void cellTransformUpdate(CellTransform transform) {
         // Don't call super, we don't use a MoveProcessor for avatars
-
-        if (!selectedForInput && avatarCharacter != null && avatarCharacter.getContext().getController().getModelInstance()!=null ) {
-            // If the user is being steered by AI, do not mess it up
-            // (objects that the AI is dealing with gota be synced)
-//            System.err.println("Steering "+avatarCharacter.getContext().getSteering().isEnabled()+"  "+avatarCharacter.getContext().getSteering().getCurrentTask());
-            if (avatarCharacter.getContext().getBehaviorManager().isEnabled()
-                    && avatarCharacter.getContext().getBehaviorManager().getCurrentTask() != null) {
-            } else {
-                Vector3f pos = transform.getTranslation(null);
-                Vector3f dir = new Vector3f(0, 0, -1);
-                transform.getRotation(null).multLocal(dir);
-//                System.err.println("Setting pos "+pos);
-                PMatrix local = avatarCharacter.getContext().getController().getModelInstance().getTransform().getLocalMatrix(true);
-                final Vector3f currentPosition = local.getTranslation();
-                float currentDistance = currentPosition.distance(pos);
-                if (currentDistance < positionMaxDistanceForPull) {
-                    pos.set(currentPosition);
-                }
-
-            }
-        }
+//
+//        if (!selectedForInput && avatarCharacter != null && avatarCharacter.getContext().getController().getModelInstance()!=null ) {
+//            // If the user is being steered by AI, do not mess it up
+//            // (objects that the AI is dealing with gota be synced)
+////            System.err.println("Steering "+avatarCharacter.getContext().getSteering().isEnabled()+"  "+avatarCharacter.getContext().getSteering().getCurrentTask());
+//            if (avatarCharacter.getContext().getBehaviorManager().isEnabled()
+//                    && avatarCharacter.getContext().getBehaviorManager().getCurrentTask() != null) {
+//            } else {
+//                Vector3f pos = transform.getTranslation(null);
+//                Vector3f dir = new Vector3f(0, 0, -1);
+//                transform.getRotation(null).multLocal(dir);
+////                System.err.println("Setting pos "+pos);
+//                PMatrix local = avatarCharacter.getContext().getController().getModelInstance().getTransform().getLocalMatrix(true);
+//                final Vector3f currentPosition = local.getTranslation();
+//                float currentDistance = currentPosition.distance(pos);
+//                if (currentDistance < positionMaxDistanceForPull) {
+//                    pos.set(currentPosition);
+//                }
+//
+//            }
+//        }
     }
 
     public void loadAndChangeAvatar(final AvatarConfigInfo avatarConfigInfo) {
