@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -89,6 +89,7 @@ public class VoicebridgeRunner extends BaseRunner {
         Collection<String> out = super.getDeployFiles();
         out.add("voicebridge-dist.zip");
         out.add("bridge-recorder.zip");
+        out.add("bridge-echo.zip");
         return out;
     }
     
