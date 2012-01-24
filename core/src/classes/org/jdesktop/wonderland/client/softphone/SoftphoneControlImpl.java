@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -482,23 +482,23 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	}
     }
 
-    public void recordReceivedAudio(String recordingPath)
+    public void recordAudio(String recordingPath, boolean recordMic)
             throws IOException {
 
-        sendCommandToSoftphone("recordReceivedAudio="
-            + recordingPath);
+        sendCommandToSoftphone("recordAudio="
+            + recordingPath + ":" + recordMic);
     }
 
-    public void pauseRecordingReceivedAudio() throws IOException {
-        sendCommandToSoftphone("pauseRecordingReceivedAudio");
+    public void pauseRecordingAudio() throws IOException {
+        sendCommandToSoftphone("pauseRecordingAudio");
     }
 
-    public void resumeRecordingReceivedAudio() throws IOException {
-        sendCommandToSoftphone("resumeRecordingReceivedAudio");
+    public void resumeRecordingAudio() throws IOException {
+        sendCommandToSoftphone("resumeRecordingAudio");
     }
 
-    public void stopRecordingReceivedAudio() throws IOException {
-        sendCommandToSoftphone("stopRecordingReceivedAudio");
+    public void stopRecordingAudio() throws IOException {
+        sendCommandToSoftphone("stopRecordingAudio");
     }
 
     public void sendCommandToSoftphone(String cmd) throws IOException {
