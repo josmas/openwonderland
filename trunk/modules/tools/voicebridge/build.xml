@@ -9,6 +9,8 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.voicebridge"/>
     <property name="bridge-recorder.build.dir" value="build/bridge-recorder"/>
     <property name="bridge-recorder.zipname" value="bridge-recorder.zip"/>
+    <property name="echo.build.dir" value="build/bridge-echo"/>
+    <property name="echo.zipname" value="bridge-echo.zip"/>
     
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
@@ -20,7 +22,9 @@
     </pathconvert>   
        
     <pathconvert property="module-recorder.classpath">
-        <path location = "${modules.dir}/tools/audio-manager/lib/voip.jar"/>
+        <path location = "${current.dir}/build/lib/bridge/voip.jar"/>
+        <path location = "${current.dir}/build/lib/bridge/bridge.jar"/>
+        
         <path location = "${top.dir}/core/ext/common/commons-httpclient-3.0.1.jar"/>
         <path location = "${top.dir}/core/build/lib/wonderland-client.jar"/>
         <path location = "${top.dir}/core/build/lib/wonderland-common.jar"/>
@@ -28,14 +32,44 @@
         <path location = "${modules.dir}/tools/webdav/build/client/webdav-client.jar"/>
         <path location = "${modules.dir}/tools/webdav/lib/webdavclient4j-core-0.92.jar"/>
     </pathconvert>
-    
-    <target name="build" depends="-module-init,  -module-compile-server,
-                                                 -module-compile-recorder"/>
 
-    <target name="-module-compile-recorder" depends="-module-init, -module-compile-common">
+    <target name="-bridge-init" depends="-module-init, -check-bridge-zip" 
+            unless="bridge.uptodate">
+        <!-- unzip bridge jars into build/lib/bridge -->
+        <mkdir dir="${build.lib.dir}/bridge"/>
+        
+        <unzip src="${current.dir}/lib/zip/voicebridge-dist.zip" 
+               dest="${build.lib.dir}/bridge"/>
+        <touch file="${build.lib.dir}/bridge/unzip.timestamp"/>
+    </target>
+    
+    <target name="-check-bridge-zip">
+        <uptodate property="bridge.uptodate"
+                  srcfile="${current.dir}/lib/zip/voicebridge-dist.zip"
+                  targetfile="${build.lib.dir}/bridge/unzip.timestamp"/>
+                  
+    </target>
+    
+    <target name="build" depends="-bridge-init,  -module-compile-server,
+                                                 -module-compile-recorder,
+                                                 -module-compile-echo"/>
+
+    <target name="-module-compile-recorder" depends="-bridge-init, -module-compile-common">
         <wl-compile>
             <compile-classes>
                 <include name="${module.src}/recorder/**"/>
+            </compile-classes>
+            <compile-classpath>
+                <pathelement path="${module-recorder.classpath}"/>
+                <!--<pathelement path="${module-web.classpath}"/>-->
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="-module-compile-echo" depends="-bridge-init, -module-compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/echo/**"/>
             </compile-classes>
             <compile-classpath>
                 <pathelement path="${module-recorder.classpath}"/>
@@ -89,7 +123,26 @@
         </zip>
     </target>
     
-    <target name="dist" depends="build, -jar-bridge-recorder">
+    <target name="-jar-echo" depends="-module-compile-echo">
+        <!-- create the bridge-recorder.jar -->
+        <mkdir dir="${current.dir}/${echo.build.dir}"/>
+        <jar destfile="${current.dir}/${echo.build.dir}/bridge-echo.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="${module.src}/echo/**"/>
+            </fileset>
+            <manifest>
+                <attribute name="Bridge-Module-Info" value="org.jdesktop.wonderland.modules.voicebridge.echo.BridgeEchoInitializer"/>
+            </manifest>
+        </jar>
+
+        <!--create bridge-recorder.zip-->
+        <zip destfile="${current.dir}/lib/zip/${echo.zipname}">
+            <!-- include the jar file -->
+            <zipfileset file="${current.dir}/${echo.build.dir}/bridge-echo.jar" prefix="modules"/>
+        </zip>
+    </target>
+    
+    <target name="dist" depends="build, -jar-bridge-recorder, -jar-echo">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="${module.name}" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.name}.jar"
@@ -100,6 +153,7 @@
             <part name="runner" dir="${current.dir}/lib/zip">
                 <include name="voicebridge-dist.zip"/>
                 <include name="${bridge-recorder.zipname}"/>
+                <include name="${echo.zipname}"/>
             </part>
 
             <part name="weblib">
