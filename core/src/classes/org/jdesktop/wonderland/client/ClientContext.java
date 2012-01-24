@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -181,7 +181,19 @@ public class ClientContext {
         // a default value based on the Wonderland version
         if (userDirName == null) {
             String version = System.getProperty("wonderland.version");
-            userDirName = System.getProperty("user.home") + File.separator + 
+
+            // on Windows, we probably want to use the profile directory
+            // rather than the home directory, as described in Java bug
+            // 4787931
+            String homeDir = System.getProperty("user.home");
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                String profileDir = System.getenv("UserProfile");
+                if (profileDir != null && profileDir.indexOf("%") == -1) {
+                    homeDir = profileDir;
+                }
+            }
+
+            userDirName = homeDir + File.separator + 
                           ".wonderland" + File.separator + version;
         }
         
