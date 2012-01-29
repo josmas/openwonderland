@@ -42,7 +42,7 @@ Table 1 illustrates the objects and interfaces for the cell component mechanism 
 || Common   || !CellServerState || !CellComponentServerState ||
 || Server       || CellMO             || CellComponentMO             ||
 
-Note that Components can also have associated CellComponentFactorySPI classes, and make use of server and client [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandWritingPlugin05.pdf plugins]. Additionally a component will have a properties panel to be used within the object editor, and might have an associated display class (see the use of TooltipJPanel below).
+Note that Components can also have associated CellComponentFactorySPI classes, and make use of server and client [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandWritingPlugin05.pdf plugins]. Additionally a component will have a properties panel to be used within the object editor, and might have an associated display class (see the use of TooltipCellComponentProperties below).
 
 On the server, a CellComponentMO can either be "live" or "not live", similar to the state of CellMO. A live CellComponentMO indicates that the CellMO in which it is attached is present in the world. When a CellMO transitions from the "not live" to "live" state (or vice versa), it iterates through all of its attached CellComponentMO objects and sets their "live" state accordingly.
 
@@ -377,13 +377,13 @@ The !TooltipHoverListener reacts to hover events delivered by the !SceneManager,
 
 The hover event is delivered to the commit() method, whose argument is !HoverEvent. Its getPrimaryCell() method returns the Cell over which the mouse hovers; its isStart() method returns true if the hover has just begun and false if the hover has just ended. The remainder of the commit() method fetches text from the !TooltipComponent object that exists on the Cell and converts the (x, y) position in the mouse event into the coordinates relative to the canvas in which the 3D Wonderland world is drawn.
 
-The showTooltipHUDComponent() and hideTooltipHUDComponent() methods show and hide the tooltip, respectively. They use the TooltipJPanel class that simply displays text in a JLabel. Since this code interacts with Swing, all display updates must be performed on the AWT Event Dispatch Thread, by invoking the SwingUtilities.invokeLater() method.
+The showTooltipHUDComponent() and hideTooltipHUDComponent() methods show and hide the tooltip, respectively. They use the TooltipJPanel class that simply displays text in a JLabel. Since this code interacts with Swing, all display updates must be performed on the AWT Event Dispatch Thread, by invoking the !SwingUtilities.invokeLater() method.
 
-The tooltip is displayed in the world using the Wonderland HUD (Heads-up Display) and setting its specific location using the HUDComponent.setLocation() method. For more information on using the HUD, please see XXXX. Note that the timeout associated with the tooltip is handed entirely by the HUD.
+The tooltip is displayed in the world using the Wonderland HUD (Heads-up Display) and setting its specific location using the HUDComponent.setLocation() method. For more information on using the HUD, please see [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sample%20HUD%20Tutorial Sample HUD Tutorial]. Note that the timeout associated with the tooltip is handed entirely by the HUD.
 
 ===The Tooltip Properties Panel===
 
-To set component-specific properties, such as the text and timeout in the tooltip component, the Object Editor can display a custom JPanel defined in the component's module. Classes that properties such properties panels are annotated with @PropertiesFactory and implement the PropertiesFactorySPI interface. While the PropertiesFactorySPI class and the property's JPanel can be two separate classes, the tooltip component combines them into a single class, !TooltipCellComponentProperties.
+To set component-specific properties, such as the text and timeout in the tooltip component, the Object Editor can display a custom JPanel defined in the component's module. Classes that provide such properties panels are annotated with @PropertiesFactory and implement the PropertiesFactorySPI interface. While the PropertiesFactorySPI class and the property's JPanel can be two separate classes, the tooltip component combines them into a single class, !TooltipCellComponentProperties.
 
 Parts of the !TooltipCellComponentProperties class is given below:
 
