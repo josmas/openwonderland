@@ -231,14 +231,17 @@ public class TooltipCellComponentFactory implements CellComponentFactorySPI {
 }
 }}}
 
-[Figure showing the tooltip component appearing in the "Add" dialog]
 
-The getDisplayName() and getDescription() return the text strings that appear in the Object Editor when adding new components to cells. These strings are found in resource files, so they may be localized for different languages. The getDefaultCellComponentServerState() returns an instance of the !CellComponentServerState object that can be sent to the server to tell it how to create the proper CellComponentMO with a valid default state.
+The getDisplayName() and getDescription() methods return the text strings that appear in the Object Editor when adding new components to cells. These strings are found in resource files, so they may be localized for different languages. The getDefaultCellComponentServerState() method returns an instance of the !CellComponentServerState object that can be sent to the server to tell it how to create the proper CellComponentMO with a valid default state.
+
+The "Add" dialog for the tooltip component can be seen in the following screen shot:
+
+[http://faithhold.dyndns.org:8080/JSPWiki/attach/Sample%20Component%20Tutorial/add_tooltip_component.png]
 
 
 ===Displaying the Tooltip On Cell Hover===
 
-The !SceneManager singleton object in the Wonderland client delivers input-related events to interested modules. One such input event it detects is "hover". The tooltip module installs a client plugin to setup a listener on the !SceneManager for hover events. (For an explanation on developing "plugins" for Wonderland, see XXXX).
+The !SceneManager singleton object in the Wonderland client delivers input-related events to interested modules. One such input event it detects is "hover". The tooltip module installs a client plugin to setup a listener on the !SceneManager for hover events. (For an explanation on developing "plugins" for Wonderland, see [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandWritingPlugin05.pdf Writing Plugins]).
 
 The tooltip client plugin is defined as follows:
 
