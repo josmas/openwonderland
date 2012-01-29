@@ -178,6 +178,12 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="left">[http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05.pdf Developing a New Cell]</td>
   <td class="right">The primary means to extend Open Wonderland is by developing a new kind of Cell. There are a number of tutorials, from basic and advanced on this page. The following four-part tutorial series goes in-depth for developers on how to create a new Cell: [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05Part1.pdf Part 1], [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05Part2.pdf Part 2], [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05Part3.pdf Part 3], [http://openwonderland.googlecode.com/svn/www/wiki/backup/pdf/ProjectWonderlandDevelopingNewCell05Part4.pdf Part 4].</td>
 </tr>
+
+<tr>
+  <td class="left">[http://code.google.com/p/openwonderland/wiki/DevelopingNewCellComponent Developing a New Cell Component (aka Capability)]</td>
+  <td class="right">In this tutorial, you will learn how to develop new cell components. A cell component is add-on functionality that can be attached to any kind of cell.</td>
+</tr>
+
 <tr>
   <td class="left">[http://docs.google.com/Doc?docid=0Adt0T7CUKzB9ZGNrODdxOXBfMjhncmZkM3doYg&hl=en Writing 2D Applications]</td>
   <td class="right">This tutorial describes how to develop 2D applications in-world that use the Java Swing GUI toolkit.</td>
