@@ -86,7 +86,7 @@ Cell components are used by Wonderland itself to implement core functionality. T
 
 ===Developing the Tooltip Cell Component===
 
-The tooltip cell component allows users to add tooltips to cells: when a user's mouse hovers over a cell a text message is display in a small window. The tooltip disappears when the user subsequently moves his or her mouse (Figure 1). The use of the tooltip cell component is further described in the Tooltips in Wonderland [http://blogs.openwonderland.org/2010/01/25/tooltips-in-wonderland/] blog.
+The tooltip cell component allows users to add tooltips to cells: when a user's mouse hovers over a cell a text message is displayed in a small window. The tooltip disappears when the user subsequently moves his or her mouse (Figure 1). The use of the tooltip cell component is further described in the Tooltips in Wonderland [http://blogs.openwonderland.org/2010/01/25/tooltips-in-wonderland/] blog.
 
 The tooltip component source code is found in the "stable" section of the wonderland-modules source code repository. See XXXX on how to download the modules workspace.
 
