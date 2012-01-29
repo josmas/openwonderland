@@ -399,7 +399,7 @@ public class TooltipCellComponentProperties extends JPanel implements Properties
 }
 }}}
 
-The getPropertiesJPanel() method returns the property JPanel to display, in this case, the same object. The setCellPropertiesEditor() method is used to inject an instance of the !CellPropertiesEditor class that represents the editor window. The !CellPropertiesEditor object has methods to fetch the current Cell being edited, its CellServerState object, and methods to manage property updates for each component, as discussed below.
+The getPropertiesJPanel() method returns the property JPanel to display, in this case, the same object. The setCellPropertiesEditor() method is used to inject an instance of the !CellPropertiesEditor class that represents the editor window. The !CellPropertiesEditor object has methods to fetch the current Cell being edited, its !CellServerState object, and methods to manage property updates for each component, as discussed below.
 
 Every properties panel has a life-cycle that mimics the actions a user can take with the Object Editor GUI. The PropertiesFactorySPI interface has methods to be implemented by the component developer to handle each stage in the property panel life-cycle. The four life-cycle stages -- open, close, restore, and apply -- are described in the table below.
 
@@ -407,7 +407,7 @@ Every properties panel has a life-cycle that mimics the actions a user can take 
 ||open()||Called when a Cell is selected for editing the Object Editor GUI, and after apply() so that panels may refresh themselves. Property panels should update their GUIs to reflect the most recent values. When open() is called, the getCellServerState() method always returns the most recent state of the selected Cell.||
 ||close()||Called when a Cell is no longer being edited in the Object Editor GUI. Property panels should perform any necessary cleanup in this method.||
 ||restore()||Called when the values of a component are restored to their last applied values, typically when the user hits the Restore button. Property panels should update their GUIs to reflect the last applied values.||
-||apply()||Called when the edited values of a component should be saved, typically when the user hits the Apply button. Property panels can use the addToUpdateList() method in the CellPropertiesEditor object to indicate new values have been set for a component's properties.||
+||apply()||Called when the edited values of a component should be saved, typically when the user hits the Apply button. Property panels can use the addToUpdateList() method in the !CellPropertiesEditor object to indicate new values have been set for a component's properties.||
 
 For the tooltip component, the open() method is implemented below. It simply fetches the values from the !TooltipCellComponentServerState, stores away the original values, and updates the GUI (a text area and timeout spinner).
 
@@ -483,7 +483,7 @@ The restore() method simply updates the GUI with the original values (text, time
     }
 }}}
 
-One final note about The !TooltipCellComponentProperties class. The Object Editor enables and disables the Apply and Restore buttons based upon whether property values have actually been modified in the GUI. In order for this to work, each property sheet must tell it when values in its panel have been modified. For example, the following DocumentListener is placed on the text field containing the tooltip text:
+One final note about The !TooltipCellComponentProperties class. The Object Editor enables and disables the Apply and Restore buttons based upon whether property values have actually been modified in the GUI. In order for this to work, each property sheet must tell it when values in its panel have been modified. For example, the following !DocumentListener is placed on the text field containing the tooltip text:
 
 {{{
     class InfoTextFieldListener implements DocumentListener {
@@ -504,4 +504,4 @@ One final note about The !TooltipCellComponentProperties class. The Object Edito
     }
 }}}
 
-Here, the current text in the JTextArea is compared with the original text. If different, then CellPropertyEditor.setPanelDirty() is passed true, otherwise, it is passed false. Note that the first argument of the setPanelDirty() method takes the Class for the property sheet; the Object Editor keeps tracks of the "dirty" state for each property sheet individually so that is may properly enable and disable buttons such as Apply and Restore.
+Here, the current text in the JTextArea is compared with the original text. If different, then !CellPropertyEditor.setPanelDirty() is passed true, otherwise, it is passed false. Note that the first argument of the setPanelDirty() method takes the Class for the property sheet; the Object Editor keeps tracks of the "dirty" state for each property sheet individually so that is may properly enable and disable buttons such as Apply and Restore.
