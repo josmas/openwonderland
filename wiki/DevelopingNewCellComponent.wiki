@@ -1,7 +1,5 @@
 #summary A tutorial describing how to develop a Cell Component (aka Capability) in Wonderland, using the tooltip module as an example
 
-=UNDER CONSTRUCTION=
-
 ==Developing a New Cell Component (aka Capability)==
 *by Jordan Slott*
 
