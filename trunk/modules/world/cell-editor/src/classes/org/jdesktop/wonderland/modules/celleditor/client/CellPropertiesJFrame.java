@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -35,6 +35,11 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
@@ -48,6 +53,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -90,9 +96,15 @@ import org.jdesktop.wonderland.client.cell.properties.PropertiesManager;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
+import org.jdesktop.wonderland.client.cell.utils.CellPlacementUtils;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.content.ContentExportManager;
+import org.jdesktop.wonderland.client.content.spi.ContentExporterSPI;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.ViewProperties;
 import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
@@ -344,6 +356,8 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         if (selectedCell == null) {
             addCapabilityButton.setEnabled(false);
             removeCellButton.setEnabled(false);
+            goToButton.setEnabled(false);
+            exportButton.setEnabled(false);
             return;
         }
 
@@ -361,8 +375,21 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
 
         // Disable the remove button for the environment cell, enable it
         // otherwise
-        removeCellButton.setEnabled(!cell.getCellID().equals(CellID.getEnvironmentCellID()));
-
+        boolean isEnvironment = cell.getCellID().equals(CellID.getEnvironmentCellID());
+        removeCellButton.setEnabled(!isEnvironment);
+        goToButton.setEnabled(!isEnvironment);
+        
+        // see if we have a valid exporter
+        ContentExporterSPI exporter = 
+                ContentExportManager.INSTANCE.getContentExporter(selectedCell.getClass());
+        exportButton.setEnabled(!isEnvironment && exporter != null);
+        if (exporter == null) {
+            exportButton.setToolTipText(BUNDLE.getString("No_Exporter"));
+        } else {
+            exportButton.setToolTipText(null);
+        }
+        
+        
         // Update the panel set based upon the elements in the server state
         updatePanelSet();
         if (isVisible() == true) {
@@ -466,6 +493,8 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         treeScrollPane = new javax.swing.JScrollPane();
         cellHierarchyTree = new javax.swing.JTree();
         removeCellButton = new javax.swing.JButton();
+        goToButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle"); // NOI18N
         setTitle(bundle.getString("CellPropertiesJFrame.title")); // NOI18N
@@ -615,7 +644,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -634,10 +663,32 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.3;
         cellHierarchyPanel.add(removeCellButton, gridBagConstraints);
+
+        goToButton.setText(bundle.getString("CellPropertiesJFrame.goToButton.text")); // NOI18N
+        goToButton.setEnabled(false);
+        goToButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goToButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.weightx = 0.3;
+        cellHierarchyPanel.add(goToButton, gridBagConstraints);
+
+        exportButton.setText(bundle.getString("CellPropertiesJFrame.exportButton.text")); // NOI18N
+        exportButton.setEnabled(false);
+        exportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 0.3;
+        cellHierarchyPanel.add(exportButton, gridBagConstraints);
 
         leftSplitPanePanel.setTopComponent(cellHierarchyPanel);
 
@@ -719,6 +770,61 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         }
     }//GEN-LAST:event_refreshButtonActionPerformed
 
+    private void goToButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goToButtonActionPerformed
+        try {
+            CellTransform gotoTransform = getGotoLocation(selectedCell);
+            ClientContextJME.getClientMain().gotoLocation(null,
+                    gotoTransform.getTranslation(null),
+                    gotoTransform.getRotation(null));
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Error in goto " + selectedCell, ex);
+        }
+    }//GEN-LAST:event_goToButtonActionPerformed
+
+    private CellTransform getGotoLocation(Cell cell) {
+        // get the bounds of the cell we are going to
+        BoundingVolume bv = cell.getWorldBounds();
+        if (isLarge(bv)) {
+            // if the cell is big, go to the center rather than very
+            // far away
+            return cell.getWorldTransform();
+        }
+        
+        // use the view properties to calculate the idea distance away
+        ViewProperties vp = ViewManager.getViewManager().getViewProperties();
+        float fov = vp.getFieldOfView();
+        float min = vp.getFrontClip();
+        float max = 30f;
+        float distance = CellPlacementUtils.getDistance(bv, fov, min, max);
+        
+        // calculate the look vector to this cell -- we only care about the y axis
+        // rotation
+        Quaternion rotation = cell.getWorldTransform().getRotation(null);
+        Vector3f lookVec = CellPlacementUtils.getLookDirection(rotation, null);
+
+        // translate into a quaternion using lookAt
+        Quaternion look = new Quaternion();
+        look.lookAt(lookVec.negate(), Vector3f.UNIT_Y);
+
+        // find the origin by translating the look vector
+        Vector3f origin = lookVec.mult(distance);
+        origin.addLocal(cell.getWorldTransform().getTranslation(null));
+        return new CellTransform(look, origin);
+    }
+    
+    private boolean isLarge(BoundingVolume bounds) {
+        if (bounds instanceof BoundingBox) {
+            BoundingBox box = (BoundingBox) bounds;
+            return (box.xExtent > 20 || box.zExtent > 20);
+        } else if (bounds instanceof BoundingSphere) {
+            BoundingSphere sphere = (BoundingSphere) bounds;
+            return (sphere.radius > 20);
+        } else {
+            // unknown bounds type
+            return true;
+        }
+    }
+    
     /**
      * Inner class to deal with selection on the capability list.
      */
@@ -763,6 +869,25 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             propertyPanel.repaint();
         }
     }
+
+    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        // find an exporter for the selected cell
+        ContentExporterSPI exporter = 
+                ContentExportManager.INSTANCE.getContentExporter(selectedCell.getClass());
+        
+        // find the origin, which is the same as the location we would use to
+        // go to the given cell
+        CellTransform origin = getGotoLocation(selectedCell);
+        
+        // adjust the height so the export is relative to the avatar's current
+        // height
+        Vector3f translation = origin.getTranslation(null);
+        CellTransform avatarTransform = ViewManager.getViewManager().getPrimaryViewCell().getWorldTransform();
+        translation.y = avatarTransform.getTranslation(null).getY();
+        origin.setTranslation(translation);
+        
+        exporter.exportCells(new Cell[] { selectedCell }, origin);       
+    }//GEN-LAST:event_exportButtonActionPerformed
 
     /**
      * Applies the values stored in the GUI to the cell. Loops through each
@@ -1473,6 +1598,8 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
     private javax.swing.JPanel capabilityPanel;
     private javax.swing.JPanel cellHierarchyPanel;
     private javax.swing.JTree cellHierarchyTree;
+    private javax.swing.JButton exportButton;
+    private javax.swing.JButton goToButton;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane leftSplitPanePanel;
