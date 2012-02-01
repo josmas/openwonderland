@@ -3,17 +3,22 @@
     <listener>
         <listener-class>org.jdesktop.wonderland.modules.snapshot.web.servlet.SnapshotManagerServlet</listener-class>
     </listener>
-
     <servlet>
         <servlet-name>SnapshotManager</servlet-name>
         <servlet-class>org.jdesktop.wonderland.modules.snapshot.web.servlet.SnapshotManagerServlet</servlet-class>
     </servlet>
-
+    <servlet>
+        <servlet-name>SnapshotResource</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>SnapshotManager</servlet-name>
         <url-pattern>/SnapshotManager</url-pattern>
     </servlet-mapping>
-
+    <servlet-mapping>
+        <servlet-name>SnapshotResource</servlet-name>
+        <url-pattern>/resources/*</url-pattern>
+    </servlet-mapping>
     <security-constraint>
         <display-name>Require Admin</display-name>
         <web-resource-collection>
