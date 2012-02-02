@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -48,6 +48,7 @@ import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -309,7 +310,7 @@ class WindowSwingEmbeddedToolkit
             width = x1 - x0;
             height = y1 - y0;
 
-            paintOnWindow(windowSwing, x, y, width, height);
+            paintOnWindow(windowSwing, x, y, width +1, height+1);
         }
 
         void setWindowSwing(WindowSwing windowSwing) {
