@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -241,7 +241,14 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_downButtonActionPerformed
 
     private void fadeIn() {
-        plugin.getHUDComponent().setVisible(true);
+        // OWL issue #241 - fade in on AWT event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                plugin.getHUDComponent().setVisible(true);
+            }
+        });
+        
+        
 //        if (fadeTimer != null) {
 //            fadeTimer.stop();
 //        }
@@ -257,23 +264,29 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     }
 
     private void fadeOut() {
-        // wait 10 seconds before dismissing meter to prevent meter from
-        // popping in and out of view
-        if (dismissTimer == null) {
-            dismissTimer = new Timer(10000, new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    if (downloadingAssetMap.size() == 0) {
-                        plugin.getHUDComponent().setVisible(false);
-                        dismissTimer = null;
-                    } else {
-                        dismissTimer.restart();
-                    }
+        // OWL issue #241 - fade out on AWT event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // wait 10 seconds before dismissing meter to prevent meter from
+                // popping in and out of view
+                if (dismissTimer == null) {
+                    dismissTimer = new Timer(10000, new ActionListener() {
+                        
+                        public void actionPerformed(ActionEvent e) {
+                            if (downloadingAssetMap.size() == 0) {
+                                plugin.getHUDComponent().setVisible(false);
+                                dismissTimer = null;
+                            } else {
+                                dismissTimer.restart();
+                            }
+                        }
+                    });
+                    dismissTimer.setRepeats(false);
+                    dismissTimer.start();
                 }
-            });
-            dismissTimer.setRepeats(false);
-            dismissTimer.start();
-        }
+            }
+        });
+        
 //        if (fadeTimer != null && fadeTimer.isRunning()) {
 //            fadeTimer.stop();
 //        }
