@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -39,6 +39,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 /**
@@ -92,7 +93,8 @@ public class TextChatPanel extends javax.swing.JPanel {
      * @param userName The user name from which the message originated
      */
     public void appendTextMessage(String message, String userName) {
-        String msg = userName + ": " + message + "\n";
+        String time = new SimpleDateFormat("h:mm").format(new Date());
+        String msg = "[" + time + "] " + userName + ": " + message + "\n";
         messageTextArea.append(msg);
         messageTextArea.setCaretPosition(messageTextArea.getText().length());
     }
@@ -161,20 +163,20 @@ public class TextChatPanel extends javax.swing.JPanel {
         messageTextField = new javax.swing.JTextField();
         sendButton = new javax.swing.JButton();
 
-        setPreferredSize(new java.awt.Dimension(360, 135));
+        setPreferredSize(new java.awt.Dimension(460, 200));
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         messageTextArea.setColumns(20);
         messageTextArea.setEditable(false);
-        messageTextArea.setFont(messageTextArea.getFont().deriveFont(messageTextArea.getFont().getStyle() | java.awt.Font.BOLD));
+        messageTextArea.setFont(messageTextArea.getFont().deriveFont(messageTextArea.getFont().getStyle() | java.awt.Font.BOLD, messageTextArea.getFont().getSize()+4));
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(6);
         messageTextArea.setTabSize(4);
         messageTextArea.setWrapStyleWord(true);
         jScrollPane1.setViewportView(messageTextArea);
 
-        messageTextField.setFont(messageTextField.getFont().deriveFont(messageTextField.getFont().getStyle() | java.awt.Font.BOLD));
+        messageTextField.setFont(messageTextField.getFont().deriveFont(messageTextField.getFont().getStyle() | java.awt.Font.BOLD, messageTextField.getFont().getSize()+3));
         messageTextField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         messageTextField.setEnabled(false);
 
@@ -187,7 +189,7 @@ public class TextChatPanel extends javax.swing.JPanel {
         textEntryPanelLayout.setHorizontalGroup(
             textEntryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, textEntryPanelLayout.createSequentialGroup()
-                .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sendButton)
                 .addContainerGap())
@@ -204,12 +206,12 @@ public class TextChatPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(textEntryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(textEntryPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -221,4 +223,8 @@ public class TextChatPanel extends javax.swing.JPanel {
     private javax.swing.JButton sendButton;
     private javax.swing.JPanel textEntryPanel;
     // End of variables declaration//GEN-END:variables
+
+    public JTextField getMessageTextField() {
+        return messageTextField;
+    }
 }
