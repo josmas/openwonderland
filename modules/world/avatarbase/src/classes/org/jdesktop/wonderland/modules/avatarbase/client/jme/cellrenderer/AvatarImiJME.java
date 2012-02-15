@@ -60,7 +60,6 @@ import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarController;
 import imi.character.avatar.AvatarCollisionListener;
 import imi.character.statemachine.GameContextListener;
-import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
 import imi.collision.CollisionController;
 import imi.input.DefaultCharacterControls;
@@ -68,6 +67,7 @@ import imi.scene.PMatrix;
 import imi.scene.PTransform;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.logging.Logger;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionInfo;
@@ -148,6 +148,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners = new FastList();
 
     private AvatarUIEventListener avatarUIEventListener;
+    private static final Logger LOGGER = Logger.getLogger(AvatarImiJME.class.getName());
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -206,12 +207,19 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     currentPressed = pressed;
                 }
                 
-                GameState state = avatarCharacter.getContext().getCurrentState();
-                String animationName=null;
-                if (state instanceof CycleActionState) {
-                    animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
-                }
+                String animationName = null;
                 
+                // OWL issue #237 - regardless of the current state, send the
+                // animation that is currently set in CycleActionState. This
+                // is consistent with the behavior of 
+                // WlAvatarContext.setMiscAnimation() used in the trigger()
+                // method below
+                CycleActionState cas = (CycleActionState) 
+                        avatarCharacter.getContext().getState(CycleActionState.class);
+                if (cas != null) {
+                    animationName = cas.getAnimationName();
+                }
+                                
                 float height = avatarCharacter.getController().getHeight();
                 boolean collision = avatarCharacter.getController().isColliding();
                 
@@ -942,7 +950,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 if (currentTrigger == trigger && currentPressed == pressed) {
                     return;
                 }
-
+                
                 try {
                     if (pressed) {
                         if (animationName != null) {
