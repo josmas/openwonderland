@@ -20,7 +20,6 @@
         <file name="artimport/build.xml"/>
         <file name="coneofsilence/build.xml"/>
         <file name="phone/build.xml"/>
-        <file name="artimport/build.xml"/>
         <file name="snapshot-manager/build.xml"/>
         <file name="asset-meter/build.xml"/>
         <file name="xapps-config/build.xml"/>
