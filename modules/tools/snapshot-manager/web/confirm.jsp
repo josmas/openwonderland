@@ -30,22 +30,22 @@
                     autoOpen: false,
                     resizable: false,
                     height: 280,
-                    modal: true,
-                    buttons: [{
-                         id: "doneButton",
-                        text: "Done",
-                        click: function() {                            
-                            $(this).dialog('close');
-                            window.location.href="./SnapshotManager";
-                        }
-                    },
-                    {   
-                        id: "cancel-DialogButton",
-                        text: "Cancel",
-                        click: function() {
-                            $(this).dialog('close');
-                        }
-                    }]
+                    modal: true
+//                    buttons: [{
+//                         id: "doneButton",
+//                        text: "Done",
+//                        click: function() {                            
+//                            $(this).dialog('close');
+//                            window.location.href="./SnapshotManager";
+//                        }
+//                    },
+//                    {   
+//                        id: "cancel-DialogButton",
+//                        text: "Cancel",
+//                        click: function() {
+//                            $(this).dialog('close');
+//                        }
+//                    }]
                     
                 });
                 
@@ -55,7 +55,7 @@
                 $("#OK").click(function() {
                     $("#dialog").dialog('open');
                     $("#doneButton").button("disable");
-                    $("#progressbar").progressbar('value',25);
+                    $("#progressbar").progressbar('value',20);
                     $("#status").text("Stopping server!");
                     stopServer();
                  });
@@ -73,7 +73,7 @@
                       success: function(data) {
                           //update progress bar: taking snapshot
                           if($("#actionID").val() == "snapshot") {
-                            $("#progressbar").progressbar('value', 50);
+                            $("#progressbar").progressbar('value', 40);
                             $("#status").text("Stopped. Creating snapshot...");
                             takeSnapshot();
                           } else if ($("#actionID").val() == "current") {
@@ -118,27 +118,44 @@
               
               function makeSnapshotCurrent() {
                   var str = $("#rootID").val();
+                  alert("rootID: "+str);
                     $.ajax({
                       type: 'GET',
                       url: 'resources/snapshot/make/current/'+str.replace("/", "&"),
                       success: function(data) {
-                          $("#progressbar").progressbar('value', 75);
+                          $("#progressbar").progressbar('value', 80);
                             $("#status").text("Snapshot changed. Restarting server!");
                             startServer();            
                       }
                   });
               }
               
+              function makeSnapshotCurrentWithData(data) {
+                  var str = data
+                    $.ajax({
+                      type: 'GET',
+                      url: 'resources/snapshot/make/current/'+str.replace("/", "&"),
+                      success: function(data) {
+                          $("#progressbar").progressbar('value', 80);
+                            $("#status").text("Snapshot changed. Restarting server!");
+                            startServer();            
+                      }
+                  });
+              }              
+              
+              
               function takeSnapshot() {
                   $.ajax({
                       type: 'GET',
                       url: 'resources/snapshot/take/snapshot',
+                      dataType: "text",
                       success: function(data) {
                           //update progress bar: starting server
                           if($("#actionID").val() == "snapshot") {
-                            $("#progressbar").progressbar('value', 75);
-                            $("#status").text("Snapshot taken. Restarting server!");
-                            startServer();                     
+                            $("#progressbar").progressbar('value', 60);
+                            $("#status").text("Snapshot taken. Making snapshot current!");
+                            //startServer();                     
+                            makeSnapshotCurrentWithData(data);                            
                           }
                       }   
                   });
@@ -157,7 +174,12 @@
                           } else {
                             $("#status").text("Server started!");
                           }
-                          $("#doneButton").button("enable");
+                          
+                          window.setTimeout(function() { 
+                            window.location.href="./SnapshotManager";
+                            },
+                            2000);
+               
                       }
                   });
               }
