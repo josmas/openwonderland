@@ -16,22 +16,47 @@
   <head>
     <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
     <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
-<script src="/wonderland-web-front/javascript/prototype.js" type="text/javascript">
-</script>
-<script type="text/javascript">
+    <link href="/wonderland-web-front/css/wonderland-theme/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="/wonderland-web-front/javascript/jquery.min.js"></script>
+    <script src="/wonderland-web-front/javascript/jquery-ui.min.js"></script>
+    <script type="text/javascript">
     var pe;
+    var intervalID;
+    var worldInfo;
     
+    $(function() {   
+        
+        $("#dialog").dialog({
+                    autoOpen: false,
+                    resizable: false,
+                    height: 280,
+                    modal: true                                        
+                });
+        
+        $("#progressbar").progressbar();
+        
+        
+        updateServices();
+        setUpdatePeriod(15);
+        updateSnapshot();
+    });
+        
     function updateServices() {
-        new Ajax.Request('services/list', { 
-            method:'get', 
-            requestHeaders: { Accept:'application/json' },
-            onSuccess: function(response){
-                var services = response.responseText.evalJSON(true);
-                if (services.service.length > 1) {
-                    for (var i = 0; i < services.service.length; i++) {
+
+        $.ajax({
+            type: 'GET',
+            url: 'services/list',
+            dataType: 'json',
+            success: function(data) {
+                var services = data;
+                if(services.service.length > 1) {
+                    $(".servicerow").remove();
+                    for(var i = 0; i < services.service.length; i++) {
+                        
                         updateService(services.service[i], i);
                     }
                 } else {
+                    $(".servicerow").remove();
                     updateService(services.service, 0);
                 }
             }
@@ -41,47 +66,28 @@
     function updateService(service, index) {
         processStatus(service);
         
-        var row = $('runnerTable').down('tr', index + 1);
-        if (row == null) {
-            row = new Element('tr');
-            row.insert(new Element('td', { 'class': 'installed' }));
-            row.insert(new Element('td', { 'class': 'installed' }));
-            row.insert(new Element('td', { 'class': 'installed' }));
-            row.insert(new Element('td', { 'class': 'installed' }));
-            $('runnerTable').insert(row);
-        }
-        
-        row.down('td', 0).update(service.name);
-        row.down('td', 1).update(service.location);
-        row.down('td', 2).update(service.status_text);
-        
-        var actions = row.down('td', 3);
-        actions.update();
-        for (var i = 0; i < service.link.length; i++) {
-            actions.insert(service.link[i]);
-            actions.insert(' ');
-        }
+        $("#runnerTable").append(constructServiceRow(service));
     }
     
     function processStatus(service) {
+        service.link = new Array();
         switch (service.status) {
+            
              case 'NOT_RUNNING':
                 service.status_text = 'Not Running';
-                service.link = [ new Element('a', { 'href': 'javascript:void(0);',
-                                                  'onclick': 'setStatus(\'' + service.name + '\', \'start\')' }).update("start") ];
+                                 
+                service.link.push(constructServiceLink(service, "start "));
                 break;
              case 'STARTING_UP':
                 service.status_text = 'Starting Up';
-                service.link = [ new Element('a', { 'href': 'javascript:void(0);',
-                                                     'onclick': 'setStatus(\'' + service.name + '\', \'stop\')' }).update("stop") ];
+
+                service.link.push( constructServiceLink(service, "stop "));
                 break;
              case 'RUNNING':
                 service.status_text = 'Running';
-                service.link = [ new Element('a', { 'href': 'javascript:void(0);',
-                                                     'onclick': 'setStatus(\'' + service.name + '\', \'stop\')' }).update("stop"),
-                                                                                
-                                 new Element('a', { 'href': 'javascript:void(0);',
-                                                     'onclick': 'setStatus(\'' + service.name + '\', \'restart\')' }).update("restart") ];
+
+                service.link.push(constructServiceLink(service, "stop "));
+                service.link.push(constructServiceLink(service, "restart "));
                 break;
                 
              default:
@@ -89,8 +95,8 @@
                 service.link = [];
         }
         
-        service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name=' + service.name,
-                                             'target': '_top'}).update("edit"));
+
+          service.link.push( "<a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name="+service.name+" \">edit </a>");
 
         // if the service isn't runnable, remove the previous links
         if (service.runnable != "true") {
@@ -98,30 +104,31 @@
         }
         
         if (service.hasLog) {
-            service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name=' + service.name,
-                                                 'target': '_top'}).update("log"));
+            service.link.push(" <a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name="+service.name+" \">log</a>");
         }
     }
     
     function setStatus(service, action) {
-        new Ajax.Request('services/runner/' + service + "/" + action, {
-            method:'get', 
-            requestHeaders: { Accept:'application/json' },
-            onSuccess: function(response){
+        
+        $.ajax({
+            type: 'GET',
+            url: 'services/runner/'+service+'/'+action,
+            dataType: 'json',
+            success: function(data) {
                 updateServices();
             }
         });
     }
     
     function setUpdatePeriod(period) {
-        if (pe) { pe.stop(); }
+        if (intervalID) { clearInterval(intervalID); }
         if (period > 0) {
-            pe = new PeriodicalExecuter(updateServices, period);
+            setInterval(updateServices, period*1000);
         }
     
         // clear the list
-        $('periods').update("refresh: ");
-        
+        $("#periods").children().remove();
+        $("#periods").text("refresh: ");
         var times = [0, 15, 60];
         for (var i = 0; i < times.length; i++) {
             var timeStr = times[i] + " sec.";
@@ -130,22 +137,45 @@
             }
             
             if (times[i] == period) {
-                $('periods').insert(timeStr);    
+                $("#periods").append(timeStr);
+                
             } else {
-                $('periods').insert(new Element('a', { 'href': 'javascript:void(0);',
-                                                'onclick' : 'setUpdatePeriod(' + times[i] +')'}
-                                               ).update(timeStr));
+                var link = "<a href=\"javascript:void(0);\" onclick=\"setUpdatePeriod(\'"+times[i]+"\')\"'>"+timeStr+"</a>";
+                $("#periods").append(link);
             }
             
-            $('periods').insert(' ');
+            $("#periods").append(" ");
         }
     }
+    
+    function constructServiceRow(service) {
+        var row = "<tr class=\"servicerow\" >";
+        row += "<td class=\"installed\">"+service.name+"</td>";
+        row += "<td class=\"installed\">"+service.location+"</td>";
+        row += "<td class=\"installed\">"+service.status_text+"</td>";
+        row += "<td class=\"installed\">";
+        for(var i = 0; i < service.link.length; i++) {
+            row += service.link[i];
+        }
+        row += "</td>";
+        row += "</tr>";
+        
+        return row;
+    }
+    
+    function constructServiceLink(service, link_text) {
+        return "<a href=\"javascript:void(0);\" onclick=\"setStatus(\'"+service.name+"\',\'"+link_text+"\')\">"+link_text+"</a>";
+    }
+    
+
+
+   
 </script>
 
     <title>Manage Server</title>
   </head>
 
-  <body onload="updateServices(); setUpdatePeriod(15);">
+  <body>
       <h2>Manage Server</h2>
 
       <table class="installed" id="runnerTable">
@@ -163,5 +193,11 @@
       <div id="actionLinks">
           <a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>, <a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
       </div>
+      <br/>
+      <br />
+
+      <c:forEach var="script" items="${requestScope['StatusPageScripts']}">          
+          <c:import url="${script.url}" context="${script.context}"/>
+      </c:forEach>
   </body>
 </html>

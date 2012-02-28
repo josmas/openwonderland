@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -23,6 +41,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,12 +51,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.jdesktop.wonderland.front.admin.StatusPageRegistration;
 import org.jdesktop.wonderland.runner.DeploymentEntry;
 import org.jdesktop.wonderland.runner.DeploymentManager;
 import org.jdesktop.wonderland.runner.DeploymentPlan;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;
+
 
 /**
  *
@@ -69,6 +90,19 @@ public class RunnerServlet extends HttpServlet {
         if (runnerName != null) {
             runner = RunManager.getInstance().get(runnerName);
         }
+        
+        List<StatusPageRegistration> registry = StatusPageRegistration.getRegistry(this.getServletContext());
+        if(registry == null) {
+            logger.warning("REGISTRY IS NULL!");
+        }
+        
+        logger.warning("SIZE OF REGISTRY: "+registry.size());
+        
+        request.setAttribute("StatusPageScripts", registry);
+        
+        
+        
+        
               
         if (action.equalsIgnoreCase("log")) {
             doLog(request, response, runner);
