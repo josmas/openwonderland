@@ -96,7 +96,7 @@
         }
         
 
-          service.link.push( "<a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name="+service.name+"\" target="_top">edit</a>");
+          service.link.push( "<a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name="+service.name+"\" target=\"_top\">edit</a>");
 
         // if the service isn't runnable, remove the previous links
         if (service.runnable != "true") {
@@ -104,7 +104,7 @@
         }
         
         if (service.hasLog) {
-            service.link.push(" <a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name="+service.name+"\" target="_top">log</a>");
+            service.link.push(" <a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name="+service.name+"\" target=\"_top\">log</a>");
         }
     }
     
