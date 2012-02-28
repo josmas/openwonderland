@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -49,6 +49,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jdesktop.wonderland.front.admin.AdminRegistration.RegistrationFilter;
+import org.jdesktop.wonderland.front.admin.FrontPageRegistration;
+import org.jdesktop.wonderland.front.admin.StatusPageRegistration;
 import org.jdesktop.wonderland.utils.version.Version;
 
 /**
@@ -158,6 +160,8 @@ public class AdminServlet extends HttpServlet implements ServletContextListener 
     public void contextInitialized(ServletContextEvent sce) {
         // create the registry
         List<AdminRegistration> registry = new ArrayList<AdminRegistration>();
+        List<StatusPageRegistration> statusRegistry = new ArrayList<StatusPageRegistration>();
+        List<FrontPageRegistration> frontRegistry = new ArrayList<FrontPageRegistration>();
 
         // add the home item to the top of the list
         AdminRegistration home = new AdminRegistration("home", "Home",
@@ -191,6 +195,10 @@ public class AdminServlet extends HttpServlet implements ServletContextListener 
         // add the registry to the context
         ServletContext sc = sce.getServletContext();
         sc.setAttribute(AdminRegistration.ADMIN_REGISTRY_PROP, registry);
+        sc.setAttribute(StatusPageRegistration.STATUS_PAGE_REGISTRY_PROP, statusRegistry);
+        sc.setAttribute(FrontPageRegistration.FRONT_PAGE_REGISTRY_PROP, frontRegistry);
+        
+        
     }
 
     public void contextDestroyed(ServletContextEvent arg0) {
