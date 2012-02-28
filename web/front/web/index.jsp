@@ -1,8 +1,11 @@
 
 
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<%@ taglib  uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
@@ -70,6 +73,11 @@
             <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandConfigureFirewall05">Configuring Open Wonderland for Firewalls, NATs, and Proxies</a></li>
           </ul>
         </div>
+          
+          <c:forEach var="script" items="${requestScope['WelcomeScripts']}">  
+              <c:import url="${script.url}" context="${script.context}" />
+          </c:forEach>
+          
       </div>
 
       <div id="footer">
