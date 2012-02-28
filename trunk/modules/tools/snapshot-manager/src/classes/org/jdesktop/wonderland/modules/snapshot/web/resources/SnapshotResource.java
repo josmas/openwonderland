@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
@@ -56,6 +57,7 @@ public class SnapshotResource {
     
     @GET
     @Path("/take/snapshot")
+    @Produces({"application/xml", "application/json"})
     public Response takeSnapshot() {
         DarkstarRunner runner = getRunner();
         if(runner == null || runner.getStatus() != Status.NOT_RUNNING) {
@@ -74,7 +76,8 @@ public class SnapshotResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).cacheControl(NO_CACHE).build();
         }
         
-        return Response.ok().cacheControl(NO_CACHE).build();
+        LOGGER.warning("Snapshot taken! (SUCCESS)");
+        return Response.ok("snapshots/"+snapshotName).cacheControl(NO_CACHE).build();
     }
     
     @GET
@@ -89,6 +92,7 @@ public class SnapshotResource {
         WFSManager m = WFSManager.getWFSManager();
         WFSRoot root = getRoot(snapshotID);
         runner.setWFSName(root.getRootPath());
+        
         
         return Response.ok().cacheControl(NO_CACHE).build();
     }
@@ -109,6 +113,7 @@ public class SnapshotResource {
 
         
         runner.setWFSName(root.getRootPath());
+        LOGGER.warning("Snapshot made current! (SUCCESS)");
         return Response.ok().cacheControl(NO_CACHE).build();
     }
     
