@@ -76,18 +76,18 @@
              case 'NOT_RUNNING':
                 service.status_text = 'Not Running';
                                  
-                service.link.push(constructServiceLink(service, "start "));
+                service.link.push(constructServiceLink(service, "start"));
                 break;
              case 'STARTING_UP':
                 service.status_text = 'Starting Up';
 
-                service.link.push( constructServiceLink(service, "stop "));
+                service.link.push( constructServiceLink(service, "stop"));
                 break;
              case 'RUNNING':
                 service.status_text = 'Running';
 
-                service.link.push(constructServiceLink(service, "stop "));
-                service.link.push(constructServiceLink(service, "restart "));
+                service.link.push(constructServiceLink(service, "stop"));
+                service.link.push(constructServiceLink(service, "restart"));
                 break;
                 
              default:
@@ -96,7 +96,7 @@
         }
         
 
-          service.link.push( "<a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name="+service.name+" \">edit </a>");
+          service.link.push( "<a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name="+service.name+"\" target="_top">edit</a>");
 
         // if the service isn't runnable, remove the previous links
         if (service.runnable != "true") {
@@ -104,7 +104,7 @@
         }
         
         if (service.hasLog) {
-            service.link.push(" <a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name="+service.name+" \">log</a>");
+            service.link.push(" <a href=\"/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name="+service.name+"\" target="_top">log</a>");
         }
     }
     
