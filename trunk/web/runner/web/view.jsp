@@ -123,7 +123,7 @@
     function setUpdatePeriod(period) {
         if (intervalID) { clearInterval(intervalID); }
         if (period > 0) {
-            setInterval(updateServices, period*1000);
+            intervalID = setInterval(updateServices, period*1000);
         }
     
         // clear the list
@@ -164,7 +164,7 @@
     }
     
     function constructServiceLink(service, link_text) {
-        return "<a href=\"javascript:void(0);\" onclick=\"setStatus(\'"+service.name+"\',\'"+link_text+"\')\">"+link_text+"</a>";
+        return "<a href=\"javascript:void(0);\" onclick=\"setStatus(\'"+service.name+"\',\'"+link_text+"\')\">"+link_text+"</a> ";
     }
     
 
