@@ -38,7 +38,6 @@
         
         updateServices();
         setUpdatePeriod(15);
-        updateSnapshot();
     });
         
     function updateServices() {
