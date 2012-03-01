@@ -22,6 +22,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -32,6 +33,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner.Status;
@@ -76,8 +79,10 @@ public class SnapshotResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).cacheControl(NO_CACHE).build();
         }
         
+
         LOGGER.warning("Snapshot taken! (SUCCESS)");
         return Response.ok("snapshots/"+snapshotName).cacheControl(NO_CACHE).build();
+
     }
     
     @GET
@@ -113,7 +118,9 @@ public class SnapshotResource {
 
         
         runner.setWFSName(root.getRootPath());
+
         LOGGER.warning("Snapshot made current! (SUCCESS)");
+
         return Response.ok().cacheControl(NO_CACHE).build();
     }
     
@@ -163,6 +170,132 @@ public class SnapshotResource {
         
         return Response.ok().cacheControl(NO_CACHE).build();
         
+    }
+    
+    @GET
+    @Path("/current")
+    @Produces({"application/xml", "application/json"})
+    public Response getCurrentSnapshot() {
+        WFSManager manager = WFSManager.getWFSManager();
+        
+        List<WFSRoot> roots = manager.getWFSRoots();
+        List<WFSSnapshot> snapshots = manager.getWFSSnapshots();
+        
+        WFSRoot current = getCurrentRoot(roots, snapshots);
+        
+        if(current == null) {
+            LOGGER.warning("Darkstar is pointing toward missing WFSROOT!");
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                    
+        }                                
+        WFSRootInfo info = new WFSRootInfo();
+        if(current instanceof WFSSnapshot) {
+            info.setIsRoot(false);
+            WFSSnapshot snapshot = (WFSSnapshot)current;
+            info.setDate(snapshot.getTimestamp().toString());
+            info.setDescription(snapshot.getDescription());
+        } 
+        info.setPath(current.getRootPath());
+        info.setRootName(current.getName());
+        
+        return Response.ok(info).build();
+    }
+    
+    protected WFSRoot getCurrentRoot(List<WFSRoot> roots,
+                                     List<WFSSnapshot> snapshots)
+    {
+        DarkstarRunner dr = getRunner();
+        if (dr == null) {
+            return null;
+        }
+
+        System.out.println("Get current root: " + dr.getWFSName());
+
+        if (dr.getWFSName() == null) {
+            return new EmptyWorld();
+        }
+
+        for (WFSRoot root : roots) {
+            if (root.getRootPath().equals(dr.getWFSName())) {
+                return root;
+            }
+        }
+
+        for (WFSRoot root : snapshots) {
+            if (root.getRootPath().equals(dr.getWFSName())) {
+                return root;
+            }
+        }
+
+        // not found
+        return null;
+    }
+    
+    
+    @XmlRootElement(name="RootInfo")
+    static class WFSRootInfo {
+        private boolean isRoot = true;
+        private String date = "";
+        private String description = "";
+        private String path = "";
+        private String rootName = "";
+        
+        public WFSRootInfo() {
+            isRoot = true;
+            date = "";
+            description = "";
+            path = "";
+            rootName = "";
+        }
+
+        @XmlElement
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        @XmlElement
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        @XmlElement
+        public boolean isIsRoot() {
+            return isRoot;
+        }
+
+        public void setIsRoot(boolean isRoot) {
+            this.isRoot = isRoot;
+        }
+
+        @XmlElement
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        @XmlElement
+        public String getRootName() {
+            return rootName;
+        }
+
+        public void setRootName(String rootName) {
+            this.rootName = rootName;
+        }
+                
+        
+                
+               
     }
     
     

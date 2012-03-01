@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -35,6 +53,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
+import org.jdesktop.wonderland.front.admin.StatusPageRegistration;
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
@@ -61,6 +80,8 @@ public class SnapshotManagerServlet extends HttpServlet
     // our registration with the webadmin system
     private AdminRegistration reg;
 
+    private StatusPageRegistration statusRegistry;
+    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -555,11 +576,15 @@ public class SnapshotManagerServlet extends HttpServlet
                                     "/snapshot-manager/snapshot/SnapshotManager");
         reg.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(reg, sce.getServletContext());
+        
+        statusRegistry = new StatusPageRegistration("/snapshot-manager/snapshot", "/current.jspf");
+        StatusPageRegistration.register(statusRegistry, sce.getServletContext());
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
         // unregister
         AdminRegistration.unregister(reg, sce.getServletContext());
+        StatusPageRegistration.unregister(statusRegistry, sce.getServletContext());
     }
 
     class SnapshotResult {

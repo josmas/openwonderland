@@ -1,0 +1,160 @@
+
+<script type="text/javascript">
+
+    function updateSnapshot() {
+        $.ajax({
+            type: 'GET',            
+            url: '../snapshot-manager/snapshot/resources/snapshot/current',
+            dataType: 'json',
+            success: function(data) {
+                 worldInfo = data;
+                var info = data;
+                var tableContent;
+                if(info.isRoot == "true") {
+                    tableContent = constructWorldTable(info.rootName, info.path);
+                } else {
+                    tableContent = constructSnapshotTable(info.rootName, info.date, info.description);
+                }
+                $("#worldTable").append(tableContent);
+            }
+        });
+    }
+
+    function constructWorldTable(name, path) {
+        
+        var markup = "<caption><span class=\"heading\">Current World</span></caption>";
+        //header and titles
+        markup += "<tr class=\"header\">";
+        markup +=   "<td class=\"installed\">World Name</td>";
+        markup +=   "<td class=\"installed\">Path</td>";
+        markup +=   "<td class=\"installed\">Actions</td>";
+        markup += "</tr>";
+        
+        //body
+        markup += "<tr>";
+        markup +=   "<td class=\"installed\">"+name+"</td>";
+        markup +=   "<td class=\"installed\">"+path+"</td>";
+        markup +=   "<td class=\"installed\">";
+        markup +=       "<a href=\"javascript:void(0);\" onclick=\"restoreSnapshot()\">Restore</a>";    
+        markup +=   "</td>"
+        markup += "</tr>";
+        
+        return markup;
+        
+        
+    }
+    
+    function constructSnapshotTable(name, date, description) {
+        var markup = "<caption><span class=\"heading\">Current Snapshot</span></caption>";
+        //header and titles
+        markup += "<tr class=\"header\">";
+        markup +=   "<td class=\"installed\">Name</td>";
+        markup +=   "<td class=\"installed\">Date</td>";
+        markup +=   "<td class=\"installed\">Description</td>";
+        markup +=   "<td class=\"installed\">Actions</td>";
+        markup += "</tr>";
+        
+        //body
+        markup += "<tr>";
+        markup +=   "<td class=\"installed\">"+name+"</td>";
+        markup +=   "<td class=\"installed\">"+date+"</td>";
+        markup +=   "<td class=\"instealled\">"+description+"</td>";
+        markup +=   "<td class=\"installed\">";
+        markup +=       "<a href=\"javascript:void(0);\" onclick=\"restoreSnapshot()\">Restore</a>";    
+        markup +=   "</td>"
+        markup += "</tr>";
+        
+        return markup;
+    }
+
+    function restoreSnapshot() {
+        //start the snapshot restoration process:
+        //1) stopServer()...on success calls restore()
+        //2) restore() ...on success calls start()
+        //3) start() ... on success hides the dialog();
+    
+        $("#dialog").dialog('open');
+        $("#progressbar").progressbar('value', 25);
+        $("#status").text("Stopping server!");
+        stopServer();
+    }
+       
+    function stopServer() {
+        
+        
+        
+        
+        $.ajax({
+            type: 'GET',
+            url: '../wonderland-web-runner/services/runner/all/stop',
+            success: function(data) {
+                //update progress bar: taking snapshot
+
+                //restore was pressed
+                $("#progressbar").progressbar('value', 50);
+                $("#status").text("Stopped. Restoring snapshot.");
+                restore();
+            }
+                      
+        });
+    }
+    
+    function restore() {
+        var str = worldInfo.path;
+        
+        //if we're using a snapshot
+        if(worldInfo.isRoot != "true") {
+            //remove the end of the path: snapshots/blah/world-wfs
+             str = str.replace("/world-wfs", "");
+        
+            //str now = snapshots/blah
+        }
+        //replace any slashes with &
+        str = str.replace(/\//g, "&");
+        
+        //str now = snapshots&blah
+        
+        $.ajax({
+            type: 'GET',
+            url: '../../snapshot-manager/snapshot/resources/snapshot/restore/'+str,
+            success: function(data) {
+                $("#progressbar").progressbar('value', 75);
+                $("#status").text("Snapshot restored. Restarting server!");
+                start();            
+            }
+        });
+    }
+    
+    function start() {
+        $.ajax({
+            type: 'GET',
+            url: '../../wonderland-web-runner/services/runner/all/start',
+            success: function(data) {
+                //update progressbar to 100%: server started.
+
+                $("#progressbar").progressbar('value', 100);
+
+                $("#status").text("Server started!");
+                
+                setTimeout(function() { 
+                    $("#dialog").dialog("close");
+                }, 1500);
+                
+            }
+        });
+    }
+
+    $(function() {
+      updateSnapshot();
+    });
+</script>
+
+<table class="installed" id="worldTable">
+
+</table>
+
+
+<div id="dialog" title="Server Status">
+    <div><h5 id="status">status</h5></div>
+    <div id="progressbar"></div>
+</div>
