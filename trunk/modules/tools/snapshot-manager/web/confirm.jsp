@@ -69,7 +69,7 @@
               function stopServer() {
                   $.ajax({
                       type: 'GET',
-                      url: 'resources/snapshot/stop',
+                      url: '../../wonderland-web-runner/services/runner/all/stop',
                       success: function(data) {
                           //update progress bar: taking snapshot
                           if($("#actionID").val() == "snapshot") {
@@ -118,7 +118,6 @@
               
               function makeSnapshotCurrent() {
                   var str = $("#rootID").val();
-                  alert("rootID: "+str);
                     $.ajax({
                       type: 'GET',
                       url: 'resources/snapshot/make/current/'+str.replace("/", "&"),
@@ -164,7 +163,7 @@
               function startServer() {
                   $.ajax({
                       type: 'GET',
-                      url: 'resources/snapshot/start',
+                      url: '../../wonderland-web-runner/services/runner/all/start',
                       success: function(data) {
                           //update progressbar to 100%: server started.
                          
@@ -178,7 +177,7 @@
                           window.setTimeout(function() { 
                             window.location.href="./SnapshotManager";
                             },
-                            2000);
+                            1500);
                
                       }
                   });
@@ -191,8 +190,7 @@
             });
             
         </script>
-        
-        
+
     </head>
     <body>
         <c:set var="action" value="${param['action']}"/>

@@ -23,6 +23,56 @@
 
         <c:set var="currentRoot" value="${requestScope['currentroot']}"/>
 
+        <table class="installed" id="currentSnapshot">
+            <caption>
+                <span class="heading">Current Snapshot</span>
+            </caption>
+             <c:forEach var="r" items="${requestScope['roots']}">
+                 <c:choose>
+                     <c:when test="${currentroot == r}">
+                        <tr class="header">
+                            <td class="installed">World Name</td>
+                            <td class="installed">Path</td>                            
+                            <td class="installed">Actions</td>
+                        </tr>
+                        <tr>
+                            <td>${currentroot.name}</td>                                                                       
+                            <td>${currentroot.rootPath}</td>
+                            <td>Current <a href="?action=restore&root=worlds/${currentroot.name}">restore</a></td>
+                        </tr>
+                    </c:when>
+                    <c:otherwise>
+                    </c:otherwise>
+                </c:choose>
+            </c:forEach>
+            <c:forEach var="s" items="${requestScope['snapshots']}">
+                <c:choose>
+                    <c:when test="${currentroot == s}">
+                        <tr class="header">
+                            <td class="installed">Name</td>
+                            <td class="installed">Date</td>
+                            <td class="installed">Description</td>
+                            <td class="installed">Actions</td>
+                        </tr>
+                        <tr>
+                            <td>${currentroot.name}</td>
+                            <td><fmt:formatDate value="${currentroot.timestamp}" type="both"/></td>
+                            <td>${currentRoot.description}</td>
+                            <td>Current <a href="?action=restore&root=snapshots/${currentroot.name}">restore</a>
+                                        <a href="?action=edit&root=snapshots/${currentroot.name}">edit</a>
+                                        <a href="?action=remove&root=snapshots/${currentroot.name}">remove</a>
+                            </td>
+                        </tr>                                                                                                
+                    </c:when>
+                    <c:otherwise>
+                    </c:otherwise>
+                </c:choose>                
+            </c:forEach>
+        </table>
+        <a href="?action=snapshot">Create snapshot</a> 
+        <br/><br/>
+        
+        
         <table class="installed" id="runnerTable">
             <caption>
               <span class="heading">Initial Worlds</span>
