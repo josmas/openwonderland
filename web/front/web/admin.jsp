@@ -19,24 +19,13 @@
     <meta name="description" content="Open Wonderland Server Administration" />
     <link href="css/base.css" rel="stylesheet" type="text/css" media="screen" />
     <link href="css/admin.css" rel="stylesheet" type="text/css" media="screen" />
-    <script type="text/javascript">
-            function resizeIframe() {
-                var height = document.documentElement.clientHeight;
-                height -= document.getElementById('contentFrame').offsetTop;
-                height -= 0; // bottom margin
-    
-                document.getElementById('contentFrame').style.height = height + "px"; 
-            };
-    
-            window.onresize = resizeIframe;
-    </script>
     <!--[if lt IE 7]>
 	<link href="css/patch.css" rel="stylesheet" type="text/css" />
 	<![endif]-->
 
   </head>
 
-  <body onload="resizeIframe()">
+  <body>
     <div id="page">
       <div id="head">
         <a href="http://openwonderland.org"><img alt="Open Wonderland logo" src="images/idy_admin.png" /></a><h1>Server Admin</h1>

@@ -1,11 +1,17 @@
+html {
+        height: 100%;
+}
+
 body {
 	background-color: #adb7c1;
 	background-image: none;
+        height: 100%;
 }
 
 #page { 
 	margin: 0;
 	width: 100%;
+        min-height: 100%;
 }
 
 #head { background: #576573 url('../images/headbg_admin.png') repeat-x;}
