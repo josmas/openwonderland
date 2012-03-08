@@ -79,7 +79,11 @@ html>body #moduleMenu li a { width: auto; }
 }
 
 #content {
-	padding-left: 200px;
+        position: absolute;
+        top: 100px;
+        bottom: 0px;
+        left: 200px;
+        right: 0px;
 }
 
 #footer {
