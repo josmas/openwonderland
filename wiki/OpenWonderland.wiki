@@ -23,7 +23,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>The blog features articles from the open source community describing projects and events related to Open Wonderland. </td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Topics Community Wiki]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Topics Community Wiki]</td>
   <td>This wiki contains a constantly growing collection of documentation, notes from community meetings, video links, and other useful resources.</td>
 </tr>
 
@@ -45,7 +45,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">Introductory user-focused tutorial explaining how to start Wonderland and use the basic features.</td>
 </tr>
 <tr>
-  <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=Troubleshooting%20and%20Testing Troubleshooting and Testing]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Troubleshooting%20and%20Testing Troubleshooting and Testing]</td>
   <td class="right">This document contains troubleshooting information applicable to everyone as well as more advanced topics for system administrators and developers.</td>
 </tr>
 <tr>
@@ -71,7 +71,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>Leads you step-by-step to download, install, configure, and run Open Wonderland.</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Server%20Administration%20Console%20Guide Wonderland Server Administration Console Guide]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Server%20Administration%20Console%20Guide Wonderland Server Administration Console Guide]</td>
   <td>A reference guide for configuring and administering the Open Wonderland server via a web-based interface.</td>
 </tr>
 <tr>
@@ -79,19 +79,19 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This tutorial describes how to configure Open Wonderland if your server is behind a firewall or NAT.</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Open%20Wonderland%20v0.5%20Configuring%20Authentication Configuring Authentication]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Open%20Wonderland%20v0.5%20Configuring%20Authentication Configuring Authentication]</td>
   <td>This tutorial describes how to configure authentication for Open Wonderland</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Connecting%20to%20the%20Telephone%20Network Connecting to the Telephone Network]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Connecting%20to%20the%20Telephone%20Network Connecting to the Telephone Network]</td>
   <td>This guide explains how to connect a Wonderland installation to the telephone network. For original documentation see: [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandPhoneSetup Project Wonderland Phone Setup Guide] and [http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandTelephoneAdmin?TWIKISID=85e154924b7dd7b9d15444109d6af36b Telephone Integration]</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Creating%20Backups Creating Backups]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Creating%20Backups Creating Backups]</td>
   <td>Several strategies for backing up your Wonderland worlds.</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Sysadmin%20Tips Sys Admin Tips]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sysadmin%20Tips Sys Admin Tips]</td>
   <td>Some tips for managing Wonderland-related processes.</td>
 </tr>
 <tr><td></td></tr>
@@ -108,19 +108,19 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This tutorial provides an introduction to assembling worlds. You may insert new objects into your world and move, rotate, and resize them.</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Building%20an%20Open%20Wonderland%20World%20From%20Scratch Building an Open Wonderland World From Scratch]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Building%20an%20Open%20Wonderland%20World%20From%20Scratch Building an Open Wonderland World From Scratch]</td>
   <td>This tutorial explains how to start with an empty world, populate it with content, and save a snapshot.</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Creating%20and%20Importing%20Artwork%20for%20Non-Artists Creating and Importing Artwork for Non-Artists]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Creating%20and%20Importing%20Artwork%20for%20Non-Artists Creating and Importing Artwork for Non-Artists]</td>
   <td>Learn to use Google !SketchUp to create simple, but attractive 3D models and import them into Wonderland.</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Using%20Capabilities Using Capabilities]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Using%20Capabilities Using Capabilities]</td>
   <td>This is a reference guide covering the default capabilities that come bundled with Wonderland as well as the common optional capabilities.</td>
 </tr>
 <tr>
-  <td>[http://wiki.openwonderland.org/Wiki.jsp?page=Creating%20Posters Creating Posters]</td>
+  <td>[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Creating%20Posters Creating Posters]</td>
   <td>This guide describes how to create in-world posters that include links to external content as well as links to locations within the virtual world.</td>
 </tr>
 <tr>
@@ -156,7 +156,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
-  <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=Open%20Wonderland%20Communications%20Architecture Communications Architecture]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Open%20Wonderland%20Communications%20Architecture Communications Architecture]</td>
   <td class="right">This document describes the Open Wonderland extensible communication architecture.</td>
 </tr>
 
@@ -194,7 +194,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">This tutorial describes how to write client and server plugins for Open Wonderland. Plugins are code that runs when either the client or server is first initialized.</td>
 </tr>
 <tr>
-  <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=Sample%20HUD%20Tutorial Sample HUD Tutorial]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sample%20HUD%20Tutorial Sample HUD Tutorial]</td>
   <td class="right">This tutorial describes the basics of creating a window on the HUD (Heads-up display).</td>
 </tr>
 <tr>
@@ -208,7 +208,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
-  <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=CreateModuleFromSnapshot How to Create Modules from Snapshots]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=CreateModuleFromSnapshot How to Create Modules from Snapshots]</td>
   <td class="right">Learn how to convert a snapshot into a module that will show up in the "Initial Worlds" section of the Manage Worlds page in the Server Admin Console.</td>
 </tr>
 
@@ -218,7 +218,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
-  <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=JagWire EZ Script]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=JagWire EZ Script]</td>
   <td class="right">Documentation for the EZScript module, one of two scripting options for Open Wonderland. Click on the "Cell Scripting" tab.</td>
 </tr>
 
@@ -228,7 +228,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
 </tr>
 
 <tr>
-  <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=JMonkeyEngine%28jME%29%20Resources jMonkeyEngine (jME) Resources]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=JMonkeyEngine%28jME%29%20Resources jMonkeyEngine (jME) Resources]</td>
   <td class="right">This page provides a collection of web links to tutorials and documentation for jMonkeyEngine, the 3D rendering API used by Open Wonderland.</td>
 </tr>
 <tr>
@@ -244,7 +244,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">This is a guide to collecting troubleshooting data and documenting bugs.</td>
 </tr>
 <tr>
-  <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=Topics  Community Documentation]</td>
+  <td class="left">[http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Topics  Community Documentation]</td>
   <td class="right">A wiki containing documents for features being worked on by the community including [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Development%20tips%20and%20tricks Development Tips and Tricks], [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Sysadmin%20Tips System Admin Tips], and [http://faithhold.dyndns.org:8080/JSPWiki/Wiki.jsp?page=Groups%20Security%20Tips Group Security Tips]. ([http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCommunity05 Old Community Wiki])</td>
 </tr>
 <tr>
