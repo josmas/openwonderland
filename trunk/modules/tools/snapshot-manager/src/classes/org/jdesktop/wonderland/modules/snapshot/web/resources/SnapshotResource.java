@@ -66,11 +66,10 @@ public class SnapshotResource {
         if(runner == null || runner.getStatus() != Status.NOT_RUNNING) {
             return Response.status(Response.Status.BAD_REQUEST).cacheControl(NO_CACHE).build();
         }
-        String snapshotName = "";
         
         // use a default name based on the current data
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SS");
-        snapshotName = df.format(new Date());
+        String snapshotName = df.format(new Date());
                
         try {
             runner.createSnapshot(snapshotName);            
@@ -80,8 +79,8 @@ public class SnapshotResource {
         }
         
 
-        LOGGER.warning("Snapshot taken! (SUCCESS)");
-        return Response.ok("snapshots/"+snapshotName).cacheControl(NO_CACHE).build();
+        LOGGER.info("Snapshot taken! (SUCCESS)");
+        return Response.ok("snapshots/" + snapshotName).cacheControl(NO_CACHE).build();
 
     }
     
@@ -94,10 +93,10 @@ public class SnapshotResource {
             return Response.status(Response.Status.BAD_REQUEST).cacheControl(NO_CACHE).build();
                     
         }
-        WFSManager m = WFSManager.getWFSManager();
+
         WFSRoot root = getRoot(snapshotID);
         runner.setWFSName(root.getRootPath());
-        
+        runner.forceColdstart();
         
         return Response.ok().cacheControl(NO_CACHE).build();
     }
@@ -107,19 +106,15 @@ public class SnapshotResource {
     public Response makeSnapshotCurrent(@PathParam("snapshotID") String snapshotID) {
         snapshotID = snapshotID.replace("&", "/");
         DarkstarRunner runner = getRunner();
-        LOGGER.warning("received: " +snapshotID);
+        LOGGER.info("received: " +snapshotID);
         if(runner == null || runner.getStatus() != Status.NOT_RUNNING) {
             return Response.status(Response.Status.BAD_REQUEST).cacheControl(NO_CACHE).build();
-        
         }
-        WFSManager m = WFSManager.getWFSManager();
-        WFSRoot root = getRoot(snapshotID);
-        WFSSnapshot snapshot = null;
 
-        
+        WFSRoot root = getRoot(snapshotID);
         runner.setWFSName(root.getRootPath());
 
-        LOGGER.warning("Snapshot made current! (SUCCESS)");
+        LOGGER.info("Snapshot made current! (SUCCESS)");
 
         return Response.ok().cacheControl(NO_CACHE).build();
     }
@@ -291,17 +286,10 @@ public class SnapshotResource {
 
         public void setRootName(String rootName) {
             this.rootName = rootName;
-        }
-                
-        
-                
-               
+        }    
     }
     
-    
-    
-    
-        /**
+    /**
      * Get a Darkstar runner.  For now, this returns the first valid
      * runner.
      * XXX TODO: Deal with multiple runners XXX
@@ -315,79 +303,6 @@ public class SnapshotResource {
         }
 
         return runners.iterator().next();
-    }
-    
-    SnapshotResult requestRestart(
-                                  DarkstarRunner runner,
-                                  String action)
-        throws IOException, ServletException
-    {
-        // make sure the runner exists
-        if (runner == null) {
-            return new SnapshotResult("No Darkstar servers available", null);
-        }
-
-        // find out whether we can stop the server
-        boolean restart = true;
-//        String restartStr = request.getParameter("restart");
-//        if (restartStr != null) {
-//            restart = Boolean.parseBoolean(restartStr);
-//        }
-
-        if (runner.getStatus() != Status.NOT_RUNNING) {
-            if (restart) {
-                try {
-                    // stop the runner, and wait for it to stop
-                    StatusWaiter sw = RunManager.getInstance().stop(runner, true);
-                    sw.waitFor();
-                } catch (RunnerException re) {
-                    LOGGER.log(Level.WARNING, "Error stopping " + runner, re);
-                    return new SnapshotResult("Error stopping runner", null);
-                } catch (InterruptedException ie) {
-                    // just ignore?
-                    LOGGER.log(Level.WARNING, "Status wait interrupted", ie);
-                }
-            } else {
-                //no problems
-                return new SnapshotResult(null, "/confirm.jsp");
-            }
-        }
-
-        // everything is OK
-        return null;
-    }
-            /**
-     * Complete a previous restart request
-     * @param request the request
-     * @param runner the runner to restart
-     */
-    protected void completeRestart(HttpServletRequest request,
-                                   DarkstarRunner runner)
-        throws IOException, ServletException
-    {
-        // make sure the runner exists
-        if (runner == null) {
-            return;
-        }
-
-        // find out whether we can stop the server
-        boolean restart = false;
-        String restartStr = request.getParameter("restart");
-        if (restartStr != null) {
-            restart = Boolean.parseBoolean(restartStr);
-        }
-
-        // start back up
-        if (runner.getStatus() == Status.NOT_RUNNING) {
-            if (restart) {
-                // start the runner, don't wait for it though
-                try {
-                    RunManager.getInstance().start(runner, false);
-                } catch (RunnerException re) {
-                    throw new ServletException(re);
-                }
-            }
-        }
     }
     
     protected WFSRoot getRoot(String id) {
