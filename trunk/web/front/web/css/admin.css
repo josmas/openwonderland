@@ -84,6 +84,7 @@ html>body #moduleMenu li a { width: auto; }
         bottom: 0px;
         left: 200px;
         right: 0px;
+        background: white;
 }
 
 #footer {
