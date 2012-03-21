@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -81,6 +99,7 @@ public class WlContentAssetRepository implements AssetRepository {
         // it.
         URLConnection urlConnection = null;
         int response;
+        long responseLastModified;
         try {
             URL url = new URL(urlString);
             urlConnection = url.openConnection();
@@ -89,6 +108,7 @@ public class WlContentAssetRepository implements AssetRepository {
             }
             urlConnection.connect();
             response = ((HttpURLConnection) urlConnection).getResponseCode();
+            responseLastModified = urlConnection.getLastModified();
         } catch (IOException excp) {
             logger.log(Level.WARNING, "Unable to open URL for asset " +
                     urlString, excp);
@@ -98,7 +118,15 @@ public class WlContentAssetRepository implements AssetRepository {
         // Check to see whether the resopnse is HTTP_NOT_MODIFIED and use
         // the cached version if so. If we are ok, then create an asset stream
         // ready for download.
-        if (response == HttpURLConnection.HTTP_NOT_MODIFIED) {
+        //
+        // In Java 7, more aggressive caching means sometimes the response
+        // is OK instead of NOT_MODIFIED, even when the stream has not changed.
+        // Detect this case and use the existing cache.
+        if (response == HttpURLConnection.HTTP_NOT_MODIFIED ||
+                (response == HttpURLConnection.HTTP_OK &&
+                 responseLastModified != -1 &&
+                 responseLastModified == lastModified)) 
+        {
             logger.fine("Opening asset stream, asset is already cached " +
                     assetURI.toExternalForm());
             return new WlContentAssetStream(AssetResponse.ASSET_CACHED, assetURI);

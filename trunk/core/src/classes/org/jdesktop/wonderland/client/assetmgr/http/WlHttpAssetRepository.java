@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -100,6 +100,7 @@ public class WlHttpAssetRepository implements AssetRepository {
         // it.
         URLConnection urlConnection = null;
         int response;
+        String responseChecksum = null;
         try {
             URL url = new URL(urlString);
             urlConnection = url.openConnection();
@@ -111,6 +112,11 @@ public class WlHttpAssetRepository implements AssetRepository {
             
             urlConnection.connect();
             response = ((HttpURLConnection) urlConnection).getResponseCode();
+            
+            if (cs != null) {
+                responseChecksum = cs.get((HttpURLConnection) urlConnection);
+            }
+            
         } catch (IOException excp) {
             logger.log(Level.WARNING, "Unable to open URL for asset " +
                     urlString, excp);
@@ -120,7 +126,15 @@ public class WlHttpAssetRepository implements AssetRepository {
         // Check to see whether the resopnse is HTTP_NOT_MODIFIED and use
         // the cached version if so. If we are ok, then create an asset stream
         // ready for download.
-        if (response == HttpURLConnection.HTTP_NOT_MODIFIED) {
+        //
+        // In Java 7, more aggressive caching means sometimes the response
+        // is OK instead of NOT_MODIFIED, even when the stream has not changed.
+        // Detect this case and use the existing cache.
+        if (response == HttpURLConnection.HTTP_NOT_MODIFIED ||
+                (response == HttpURLConnection.HTTP_OK && 
+                 responseChecksum != null && 
+                 responseChecksum.equals(checksum))) 
+        {
             logger.fine("Opening asset stream, asset is already cached " +
                     assetURI.toExternalForm());
             return new WlHttpAssetStream(AssetResponse.ASSET_CACHED, assetURI);
