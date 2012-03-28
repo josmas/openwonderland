@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -38,24 +38,26 @@ package org.jdesktop.wonderland.client.cell.utils;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellCreatedMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * A collection of useful utility routines pertaining to Cells.
@@ -79,9 +81,9 @@ public class CellUtils {
      * @param state The cell server state for the new cell
      * @throw CellCreationException Upon error creating the cell
      */
-    public static void createCell(CellServerState state)
-            throws CellCreationException {
-
+    public static CellID createCell(CellServerState state)
+            throws CellCreationException 
+    {
         // Find the parent cell for this creation (may be null)
         CellID parentID = null;
         Cell parent = CellCreationParentRegistry.getCellCreationParent();
@@ -89,9 +91,8 @@ public class CellUtils {
             parentID = parent.getCellID();
             logger.info("Using parent with Cell ID " + parentID.toString());
         }
-
-        // Go ahead and create the Cell with the parent ID we found
-        createCell(state, parentID);
+        
+        return createCell(state, parentID);  
     }
 
     /**
@@ -105,14 +106,14 @@ public class CellUtils {
      * @param parentCellID The Cell ID of the parent, of null for world root
      * @throw CellCreationException Upon error creating the cell
      */
-    public static void createCell(CellServerState state, CellID parentCellID)
-            throws CellCreationException {
-
+    public static CellID createCell(CellServerState state, CellID parentCellID)
+            throws CellCreationException 
+    {
         // Check to see if the Cell server state is null, and fail quietly if
         // so
         if (state == null) {
             logger.fine("Creating cell with null server state. Returning.");
-            return;
+            return null;
         }
 
         // Fetch the transform of the view (avatar) Cell and its "look at"
@@ -204,7 +205,21 @@ public class CellUtils {
         CellEditChannelConnection connection = (CellEditChannelConnection)
                 session.getConnection(CellEditConnectionType.CLIENT_TYPE);
         CellCreateMessage msg = new CellCreateMessage(parentCellID, state);
-        connection.send(msg);
+//        connection.send(msg);
+        ResponseMessage response = null;
+        try {
+            response = connection.sendAndWait(msg);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CellUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(response == null || !(response instanceof CellCreatedMessage)) {
+            //handle here.
+            return null;
+        }
+        
+        //if things went okay, go ahead and cast and return;
+        CellCreatedMessage ccm = (CellCreatedMessage)response;
+        return ccm.getCellID();   
     }
 
     /**
@@ -215,7 +230,6 @@ public class CellUtils {
      * any response to the cell delete message.
      */
     public static boolean deleteCell (Cell cell) {
-
         WonderlandSession session = cell.getCellCache().getSession();
         CellEditChannelConnection connection = (CellEditChannelConnection)
             session.getConnection(CellEditConnectionType.CLIENT_TYPE);
