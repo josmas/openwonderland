@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="error-report" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.error-report}"/>
+
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+    <property file="${current.dir}/../../modules-stable.properties"/>
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="web.dir" location="${modules.dir}/../web"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+    </pathconvert>
+    
+    <pathconvert property="module-web.classpath">
+        <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${modules.dir}/foundation/content-repository/build/lib/contentrepo-spi.jar"/>
+    </pathconvert>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client,
+                                                -module-compile-web"/>
+                                  
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="${module.name}" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
+                moduleDescription="${module.description}" builddir="${build.dir}">
+
+            <client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                    
+                    <!-- include resources -->
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**"/>
+                    </fileset>
+                </clientjar>
+            </client>
+            
+            <part name="web">
+                <jar name="${module.name}.war">
+                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                        <include name="${module.src}/web/**"/>
+                        <include name="${module.src}/common/**"/>
+                    </zipfileset>
+
+                    <fileset dir="${current.dir}/web"/>
+                </jar>
+            </part>
+        </module>
+    </target>
+                                  
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean">
+        <delete file="art/client-test-tests.jar"/>
+    </target>
+</project>

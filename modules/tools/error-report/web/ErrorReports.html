@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/wonderland-theme/jquery-ui.css" rel="stylesheet" type="text/css" media="screen" />
+
+        <script src="/wonderland-web-front/javascript/jquery.min.js" type="text/javascript"></script>
+        <script src="/wonderland-web-front/javascript/jquery-ui.min.js" type="text/javascript"></script>
+
+        <script src="scripts/date.js" type="text/javascript"></script>
+        
+<script type="text/javascript">
+    $(function() {
+        $('#view-report-form').dialog({
+            autoOpen: false,
+            resizable: true,
+            width: 720,
+            height: 600,
+            modal: true,
+            buttons: {
+                "Download": function() {
+                    download($("#view-id").val());
+                },
+                "OK": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+        
+        update();
+        
+        $('#refreshButton').click(function() {
+            update();
+        });
+    });
+    
+    function update() {
+        $.get('resources/errorReports', function(data) {
+            if (!(data.logs instanceof Array)) {
+                data.logs = [data.logs];
+            }
+            
+            data.logs.sort(function(a, b) {
+                var tsa = Date.parse(a.timeStamp);
+                var tsb = Date.parse(b.timeStamp);
+                
+                return tsb - tsa;
+            });
+            
+            $('#logsTable').html('<tr class="header">' + 
+                '<td class="installed">Date</td>' +
+                '<td class="installed">Submitter</td>' +
+                '<td class="installed">Actions</td>' +
+              '</tr>');
+            
+            for (var i = 0; i < data.logs.length; i++) {
+                var report = data.logs[i];
+                
+                var row = $('<tr>');
+                var date = new Date(Date.parse(report.timeStamp));
+                $('<td class="installed">' + date.format() + "</td>").appendTo(row);
+                $('<td class="installed">' + report.creator + "</td>").appendTo(row);
+                
+                var actions = $('<td class="installed"></td>');
+             
+                createLink(report, "view", view).appendTo(actions);
+                createLink(report, "raw", raw).appendTo(actions);
+                createLink(report, "download", download).appendTo(actions);
+                createLink(report, "delete", deleteReport).appendTo(actions);
+                
+                actions.appendTo(row);   
+                $('#logsTable').append(row);
+            }
+        }).complete(function() {
+            updating = false;
+        });
+    }
+    
+    function createLink(report, name, fun) {
+        return $('<a href="#">' + name + ' </a>').click(function() {
+            fun(report.id);
+        });
+    }
+    
+    function view(id) {
+        $.getJSON('resources/errorReports/get/' + id).success(function(report) {
+            $('#view-id').val(report.id);
+            $('#view-user').val(report.creator);
+            $('#view-date').val(new Date(Date.parse(report.timeStamp)).format());
+            $('#view-comments').val(report.comments);
+            $('#view-report').val(report.content);
+        
+            $('#view-report-form').dialog("open");
+        });
+    }
+    
+    function raw(id) {
+        window.location = 'resources/errorReports/download/' + id + "?attachment=false";
+    }
+    
+    function download(id) {
+        $("#downloadFrame").attr('src', 'resources/errorReports/download/' + id);
+    }
+    
+    function deleteReport(id) {
+        $.getJSON('resources/errorReports/delete/' + id).success(function() {
+            window.location.reload();
+        });
+    }
+</script>
+</head>
+<body>
+    <h2 style="display: inline;">Error Reports</h2>
+    (<a href="#" id="refreshButton">Refresh</a>)
+    <table class="installed" id="logsTable">
+    </table>
+    
+    <div id="view-report-form" title="View Error Report">
+        <input type="hidden" id="view-id">
+        
+        <label for="view-user">User:</label>
+        <input style="width: 65%" type="text" name="view-user" readonly="true" id="view-user" class="ui-widget-content ui-corner-all" />
+        <br>
+        
+        <label for="view-date">Date:</label>
+        <input style="width: 65%" type="text" name="view-date" readonly="true" id="view-date" class="ui-widget-content ui-corner-all" />
+        <br>
+        
+        <label for="view-comments">Comments:</label>
+        <br>
+        <textarea style="width: 97%;" rows="4" name="view-comments" id="view-comments" readonly="true" class="ui-widget-content ui-corner-all"></textarea>
+        <br>
+        
+        <label for="view-report">Report:</label>
+        <br>
+        <textarea style="width: 97%;" rows="10" name="view-report" id="view-report" readonly="true" class="ui-widget-content ui-corner-all"></textarea>
+    </div>
+    
+    <iframe style="display:none" id="downloadFrame"></iframe>
+</body>
