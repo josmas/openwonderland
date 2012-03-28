@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -37,11 +37,13 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -53,10 +55,9 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -69,6 +70,7 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
+import org.jdesktop.wonderland.client.jme.LogViewer.LogViewerButton;
 
 /**
  * A log viewer.
@@ -87,6 +89,9 @@ public class LogViewerFrame extends javax.swing.JFrame {
         Level.FINE, Level.FINER, Level.FINEST,
         Level.ALL, Level.OFF
     };
+    
+    private final Map<LogViewerButton, JButton> buttonMap =
+            new HashMap<LogViewerButton, JButton>();
 
     /** 
      * Creates new form LogViewerFrame -- must be called on AWT event
@@ -96,13 +101,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
         initComponents();
 
         logPane.setEditorKit(new NoWrapEditorKit());
-        errorText.addCaretListener(new CaretListener() {
-            public void caretUpdate(CaretEvent ce) {
-                String sel = errorText.getSelectedText();
-                errorCopyButton.setEnabled(sel != null);
-            }
-        });
-
+       
         // make sure the logPane starts scrolled to the bottom
         ((ManualScrollEditorPane) logPane).scrollToEnd();
         
@@ -130,9 +129,14 @@ public class LogViewerFrame extends javax.swing.JFrame {
                     levelTableMinus.setEnabled(false);
                 }
             }   
-        });        
+        });
+        
+        // add buttons
+        for (LogViewerButton button : LogViewer.INSTANCE.getButtons()) {
+            addButton(button);
+        }
     }
-
+    
     void addRecord(String str, int removeLen) {
         // update the scrolling information for the panel
         ManualScrollEditorPane mspe = (ManualScrollEditorPane) logPane;
@@ -161,6 +165,34 @@ public class LogViewerFrame extends javax.swing.JFrame {
         mspe.postModify(pos, atEnd);
     }
     
+    void addButton(LogViewerButton button) {
+        final LogViewerButton fb = button;
+            
+        JButton b = new JButton(button.getButtonText());
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                fb.activate(LogViewer.INSTANCE.getEntries(), ae);
+            }
+        });
+
+        buttonPanel.add(b, 0);
+        buttonMap.put(button, b);
+        
+        buttonPanel.invalidate();
+        validate();
+        repaint();
+    }
+
+    void removeButton(LogViewerButton button) {
+        JButton b = buttonMap.remove(button);
+        if (b != null) {
+            buttonPanel.remove(b);
+            
+            buttonPanel.invalidate();
+            validate();
+            repaint();
+        }
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -185,18 +217,12 @@ public class LogViewerFrame extends javax.swing.JFrame {
         levelTableMinus = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         startupCB = new javax.swing.JCheckBox();
-        errorReportDialog = new javax.swing.JDialog();
-        errorScrollPane = new javax.swing.JScrollPane();
-        errorText = new javax.swing.JTextArea();
-        errorCloseButton = new javax.swing.JButton();
-        errorCopyButton = new javax.swing.JButton();
-        errorSelectButton = new javax.swing.JButton();
         logScrollPane = new javax.swing.JScrollPane();
         logPane = new ManualScrollEditorPane();
         logPane.setText("");
+        buttonPanel = new javax.swing.JPanel();
         configureButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
-        errorReportButton = new javax.swing.JButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/Bundle"); // NOI18N
         configDialog.setTitle(bundle.getString("LogViewerFrame.configDialog.title")); // NOI18N
@@ -330,64 +356,14 @@ public class LogViewerFrame extends javax.swing.JFrame {
                     .add(okButton)))
         );
 
-        errorReportDialog.setTitle(bundle.getString("LogViewerFrame.errorReportDialog.title")); // NOI18N
-
-        errorText.setColumns(20);
-        errorText.setEditable(false);
-        errorText.setRows(5);
-        errorText.setWrapStyleWord(true);
-        errorScrollPane.setViewportView(errorText);
-
-        errorCloseButton.setText(bundle.getString("LogViewerFrame.errorCloseButton.text")); // NOI18N
-        errorCloseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                errorCloseButtonActionPerformed(evt);
-            }
-        });
-
-        errorCopyButton.setText(bundle.getString("LogViewerFrame.errorCopyButton.text")); // NOI18N
-        errorCopyButton.setEnabled(false);
-        errorCopyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                errorCopyButtonActionPerformed(evt);
-            }
-        });
-
-        errorSelectButton.setText(bundle.getString("LogViewerFrame.errorSelectButton.text")); // NOI18N
-        errorSelectButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                errorSelectButtonActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout errorReportDialogLayout = new org.jdesktop.layout.GroupLayout(errorReportDialog.getContentPane());
-        errorReportDialog.getContentPane().setLayout(errorReportDialogLayout);
-        errorReportDialogLayout.setHorizontalGroup(
-            errorReportDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, errorReportDialogLayout.createSequentialGroup()
-                .add(305, 305, 305)
-                .add(errorSelectButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(errorCopyButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(errorCloseButton))
-            .add(errorScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
-        );
-        errorReportDialogLayout.setVerticalGroup(
-            errorReportDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, errorReportDialogLayout.createSequentialGroup()
-                .add(errorScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(errorReportDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(errorCloseButton)
-                    .add(errorCopyButton)
-                    .add(errorSelectButton)))
-        );
-
         setTitle(bundle.getString("LogViewerFrame.title")); // NOI18N
+
+        logScrollPane.setPreferredSize(new java.awt.Dimension(600, 400));
 
         logPane.setEditable(false);
         logScrollPane.setViewportView(logPane);
+
+        buttonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING));
 
         configureButton.setText(bundle.getString("LogViewerFrame.configureButton.text")); // NOI18N
         configureButton.addActionListener(new java.awt.event.ActionListener() {
@@ -395,6 +371,7 @@ public class LogViewerFrame extends javax.swing.JFrame {
                 configureButtonActionPerformed(evt);
             }
         });
+        buttonPanel.add(configureButton);
 
         closeButton.setText(bundle.getString("LogViewerFrame.closeButton.text")); // NOI18N
         closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -402,36 +379,21 @@ public class LogViewerFrame extends javax.swing.JFrame {
                 closeButtonActionPerformed(evt);
             }
         });
-
-        errorReportButton.setText(bundle.getString("LogViewerFrame.errorReportButton.text")); // NOI18N
-        errorReportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                errorReportButtonActionPerformed(evt);
-            }
-        });
+        buttonPanel.add(closeButton);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(logScrollPane)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(335, Short.MAX_VALUE)
-                .add(errorReportButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(configureButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(closeButton))
+            .add(logScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(logScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                .add(4, 4, 4)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(closeButton)
-                    .add(configureButton)
-                    .add(errorReportButton)))
+                .add(logScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -479,38 +441,6 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
         configDialog.setVisible(false);
     }//GEN-LAST:event_okButtonActionPerformed
-
-    private void errorReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorReportButtonActionPerformed
-        errorText.setText(LogViewer.INSTANCE.generateErrorReport());
-
-        // scroll to the top
-        errorText.setCaretPosition(0);
-
-        errorReportDialog.pack();
-        errorReportDialog.setVisible(true);
-        errorReportDialog.toFront();
-    }//GEN-LAST:event_errorReportButtonActionPerformed
-
-    private void errorCloseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorCloseButtonActionPerformed
-        errorReportDialog.setVisible(false);
-    }//GEN-LAST:event_errorCloseButtonActionPerformed
-
-    private void errorSelectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorSelectButtonActionPerformed
-        Position end = errorText.getDocument().getEndPosition();
-
-        errorText.getCaret().setDot(0);
-        errorText.getCaret().moveDot(end.getOffset() - 1);
-        errorText.getCaret().setSelectionVisible(true);
-    }//GEN-LAST:event_errorSelectButtonActionPerformed
-
-    private void errorCopyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorCopyButtonActionPerformed
-        StringSelection sel = new StringSelection(errorText.getSelectedText());
-        getToolkit().getSystemClipboard().setContents(sel, sel);
-
-        // clear the selection
-        int end = errorText.getCaretPosition();
-        errorText.getCaret().setDot(end - 1);
-    }//GEN-LAST:event_errorCopyButtonActionPerformed
 
     private void levelTablePlusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_levelTablePlusActionPerformed
         DefaultTableModel levelModel = (DefaultTableModel) levelTable.getModel();
@@ -763,17 +693,11 @@ public class LogViewerFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField backlogTF;
+    private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton closeButton;
     private javax.swing.JButton configCancelButton;
     private javax.swing.JDialog configDialog;
     private javax.swing.JButton configureButton;
-    private javax.swing.JButton errorCloseButton;
-    private javax.swing.JButton errorCopyButton;
-    private javax.swing.JButton errorReportButton;
-    private javax.swing.JDialog errorReportDialog;
-    private javax.swing.JScrollPane errorScrollPane;
-    private javax.swing.JButton errorSelectButton;
-    private javax.swing.JTextArea errorText;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

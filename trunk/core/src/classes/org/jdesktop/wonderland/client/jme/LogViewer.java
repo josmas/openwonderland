@@ -17,31 +17,23 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.renderer.jogl.JOGLContextCapabilities;
-import com.jme.system.DisplaySystem;
+import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
-import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 
 /**
  * Singleton data store for viewing logs
@@ -57,7 +49,7 @@ public enum LogViewer {
     private List<LogRecord> workQueue = new LinkedList<LogRecord>();
 
     /** the list of currently displayed records */
-    private final List<LogEntry> entries = new LinkedList<LogEntry>();
+    private final List<LogEntry> entries = Collections.synchronizedList(new LinkedList<LogEntry>());
     
     /** the maximum number of entries */
     private int maxEntries = 1000;
@@ -65,17 +57,15 @@ public enum LogViewer {
     /** whether the viewer is visible on startup */
     private boolean visibleOnStartup = false;
     
+    /** any additional buttons */
+    private final List<LogViewerButton> buttons = new LinkedList<LogViewerButton>();
+    
     /** the actual log viewer frame */
     private LogViewerFrame frame;
     
     LogViewer() {
         // restore default values
         restore();
-    }
-    
-    private class LogEntry {
-        LogRecord record;
-        int length;
     }
     
     private void restore() {
@@ -174,6 +164,45 @@ public enum LogViewer {
     }
     
     /**
+     * Add a new button to the log viewer
+     */
+    public void addButton(final LogViewerButton button) {
+        buttons.add(button);
+        
+        // if the frame is already visible, add the button directly
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (frame != null) {
+                    frame.addButton(button);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Remove a button from the log viewer
+     */
+    public void removeButton(final LogViewerButton button) {
+        buttons.remove(button);
+    
+        // if the frame is already visible, remove the button directly
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (frame != null) {
+                    frame.removeButton(button);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Get all buttons
+     */
+    protected List<LogViewerButton> getButtons() {
+        return buttons;
+    }
+    
+    /**
      * Get the frame associated with this viewer. Must be called on AWT
      * event thread, since the frame is created if it doesn't exist.
      * @param create if true, create the frame if it doesn't exist
@@ -189,11 +218,13 @@ public enum LogViewer {
             frame = new LogViewerFrame();
             
             // initialize with existing records
-            StringBuilder str = new StringBuilder();
-            for (LogEntry entry : entries) {
-                format(entry.record, str);
+            synchronized (entries) {
+                StringBuilder str = new StringBuilder();
+                for (LogEntry entry : entries) {
+                    format(entry.record, str);
+                }
+                frame.addRecord(str.toString(), 0);
             }
-            frame.addRecord(str.toString(), 0);
         }
         
         return frame;
@@ -253,18 +284,19 @@ public enum LogViewer {
             int length = format(record, str);
 
             // add it to the list of records
-            LogEntry entry = new LogEntry();
-            entry.record = record;
-            entry.length = length;
+            LogEntry entry = new LogEntry(record, length);
             entries.add(entries.size(), entry);
         }
 
         // if we are now over the maximum number of entries, remove as many
         // as we need
         int removeLen = 0;
-        while (entries.size() > getMaxEntries()) {
-            LogEntry entry = entries.remove(0);
-            removeLen += entry.length;
+        
+        synchronized (entries) {
+            while (entries.size() > getMaxEntries()) {
+                LogEntry entry = entries.remove(0);
+                removeLen += entry.length;
+            }
         }
 
         // add data to the frame, if it exists
@@ -274,117 +306,19 @@ public enum LogViewer {
         }
     }
     
-    protected String generateErrorReport() {
-        final StringBuilder out = new StringBuilder();
-        out.append("Error report generated ").
-                append(DateFormat.getDateTimeInstance().format(new Date())).
-                append("\n");
-        out.append("\n");
-
-        // java version, etc
-        out.append("-------- System Information --------\n");
-        out.append("Java version: ").append(System.getProperty("java.version")).append("\n");
-        out.append("Java vendor:").append(System.getProperty("java.vendor")).append("\n");
-        out.append("OS:").append(System.getProperty("os.name")).append("\n");
-        out.append("OS version: ").append(System.getProperty("os.version")).append("\n");
-        out.append("OS architecture: ").append(System.getProperty("os.arch")).append("\n");
-        out.append("\n");
-        out.append("Max memory: ").append(Runtime.getRuntime().maxMemory()).append("\n");
-        out.append("Total memory: ").append(Runtime.getRuntime().totalMemory()).append("\n");
-        out.append("Free memory: ").append(Runtime.getRuntime().freeMemory()).append("\n");
-        out.append("\n");
-
-        // graphics
-        out.append("-------- Graphics Information --------\n");
-
-        // grab display information from the renderer
-        final Semaphore gs = new Semaphore(0);        
-        SceneWorker.addWorker(new WorkCommit() {
-            public void commit() {
-                try {
-                    DisplaySystem ds = DisplaySystem.getDisplaySystem("JOGL");
-                    out.append("Display adapter:  ").append(ds.getAdapter()).append("\n");
-                    out.append("Display vendor:   ").append(ds.getDisplayVendor()).append("\n");
-                    out.append("Driver version:   ").append(ds.getDriverVersion()).append("\n");
-                    out.append("Display renderer: ").append(ds.getDisplayRenderer()).append("\n");
-                    out.append("API Version:      ").append(ds.getDisplayAPIVersion()).append("\n");
-                    out.append("\n\n");
-                } finally {
-                    gs.release();
-                } 
-            }
-        });
-        
-        // wait for the renderer to run the worker
-        try {
-            gs.acquire();
-        } catch (InterruptedException ie) {
-            // ignore
-        }
-        
-        RenderManager rm = WorldManager.getDefaultWorldManager().getRenderManager();
-        JOGLContextCapabilities cap = rm.getContextCaps();
-        out.append("GL_ARB_fragment_program...").append(cap.GL_ARB_fragment_program).append("\n");
-        out.append("GL_ARB_fragment_shader...").append(cap.GL_ARB_fragment_shader).append("\n");
-        out.append("GL_ARB_shader_objects...").append(cap.GL_ARB_shader_objects).append("\n");
-        out.append("GL_ARB_texture_non_power_of_two...").append(cap.GL_ARB_texture_non_power_of_two).append("\n");
-        out.append("GL_ARB_vertex_buffer_object...").append(cap.GL_ARB_vertex_buffer_object).append("\n");
-        out.append("GL_ARB_vertex_program...").append(cap.GL_ARB_vertex_program).append("\n");
-        out.append("GL_ARB_vertex_shader...").append(cap.GL_ARB_vertex_shader).append("\n");
-        out.append("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB...").append(cap.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB).append("\n");
-        out.append("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB...").append(cap.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB).append("\n");
-        out.append("GL_MAX_TEXTURE_COORDS_ARB...").append(cap.GL_MAX_TEXTURE_COORDS_ARB).append("\n");
-        out.append("GL_MAX_TEXTURE_IMAGE_UNITS_ARB...").append(cap.GL_MAX_TEXTURE_IMAGE_UNITS_ARB).append("\n");
-        out.append("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT...").append(cap.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT).append("\n");
-        out.append("GL_MAX_TEXTURE_UNITS...").append(cap.GL_MAX_TEXTURE_UNITS).append("\n");
-        out.append("GL_MAX_VARYING_FLOATS_ARB...").append(cap.GL_MAX_VARYING_FLOATS_ARB).append("\n");
-        out.append("GL_MAX_VERTEX_ATTRIBS_ARB...").append(cap.GL_MAX_VERTEX_ATTRIBS_ARB).append("\n");
-        out.append("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB...").append(cap.GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB).append("\n");
-        out.append("GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB...").append(cap.GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB).append("\n");
-        out.append("GL_SGIS_generate_mipmap...").append(cap.GL_SGIS_generate_mipmap).append("\n");
-        out.append("GL_SHADING_LANGUAGE_VERSION_ARB...").append(cap.GL_SHADING_LANGUAGE_VERSION_ARB).append("\n");
-        out.append("GL_VERSION_1_2...").append(cap.GL_VERSION_1_2).append("\n");
-        out.append("GL_VERSION_2_0...").append(cap.GL_VERSION_2_0).append("\n");
-        out.append("GL_VERSION_2_1...").append(cap.GL_VERSION_2_1).append("\n");
-        out.append("GL_VERSION_3_0...").append(cap.GL_VERSION_3_0).append("\n");
-        out.append("\n");
-
-        // error log
-        out.append("-------- Error Log --------\n");
-        for (LogEntry entry : entries) {
-            format(entry.record, out);
-        }
-        out.append("\n");
-
-        // thread dump
-        out.append("-------- Threads --------\n");
-        for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
-            out.append(e.getKey().getName()).append(" ").append(e.getKey().getState()).append("\n");
-            for (StackTraceElement ste : e.getValue()) {
-                out.append("    ").append(ste.getClassName());
-                out.append(".").append(ste.getMethodName());
-                if (ste.isNativeMethod()) {
-                    out.append("(native)");
-                } else {
-                    out.append("(").append(ste.getFileName()).append(":");
-                    out.append(ste.getLineNumber()).append(")");
-                }
-                out.append("\n");
-
-            }
-            out.append("\n");
-
-        }
-        out.append("\n");
-
-        return out.toString();
+    /**
+     * Get an unmodifiable copy of the list of entries
+     * @return the list of log entries
+     */
+    public List<LogEntry> getEntries() {
+        return entries;
     }
     
     /**
      * Format the given record, and add it to the given string builder. Return
      * the length of text added to the builder.
      */
-    static int format(LogRecord record, StringBuilder builder) {
+    public static int format(LogRecord record, StringBuilder builder) {
         int startLen = builder.length();
         
         builder.append(record.getLevel());
@@ -410,10 +344,48 @@ public enum LogViewer {
         return builder.length() - startLen;
     }
 
-    static String formatThrowable(Throwable t) {
+    public static String formatThrowable(Throwable t) {
         StringWriter out = new StringWriter();
         t.printStackTrace(new PrintWriter(out));
         return out.toString();
     }
-
+    
+    public class LogEntry {
+        final LogRecord record;
+        final int length;
+    
+        public LogEntry(LogRecord record, int length) {
+            this.record = record;
+            this.length = length;
+        }
+        
+        public LogRecord getRecord() {
+            return record;
+        }
+        
+        public int getLength() {
+            return length;
+        }
+    }
+    
+    
+    /**
+     * An extension of the log viewer that adds a button to the frame.
+     * When the button is pressed, the activate() method is called with
+     * the current formatted error report.
+     */
+    public interface LogViewerButton {
+        /**
+         * Get the text that should appear on the button
+         * @return text that will appear on the button
+         */
+        String getButtonText();
+        
+        /**
+         * Activate this button. The current set of log records and
+         * event triggering the report are passed in.
+         * @param report the formatted error report
+         */
+        void activate(List<LogEntry> entries, ActionEvent ae);
+    }
 }
