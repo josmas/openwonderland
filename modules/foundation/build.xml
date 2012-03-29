@@ -12,6 +12,7 @@
         <file name="hud/build.xml"/>
         <file name="darkstar-api/build.xml"/>
         <file name="placemarks-api/build.xml"/>
+        <file name="sharedstate/build.xml"/>
 
         <file name="xremwin/build.xml"/>
         <file name="sas/build.xml"/>
