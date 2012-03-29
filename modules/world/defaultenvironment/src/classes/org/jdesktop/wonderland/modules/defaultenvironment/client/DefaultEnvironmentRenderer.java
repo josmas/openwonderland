@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -36,8 +36,8 @@
 package org.jdesktop.wonderland.modules.defaultenvironment.client;
 
 import com.jme.image.Texture;
-import com.jme.light.LightNode;
 import com.jme.light.DirectionalLight;
+import com.jme.light.LightNode;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Skybox;
@@ -50,55 +50,71 @@ import com.jme.scene.state.ZBufferState;
 import com.jme.util.TextureManager;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.SkyboxComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.EnvironmentCell;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.defaultenvironment.client.DefaultEnvironmentCell.MapReceivedListener;
+import org.jdesktop.wonderland.modules.defaultenvironment.common.SharedDirectionLight;
+import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 
 /**
  * Renders the default environment, including lights and skybox. Adapted from
  * DefaultEnvironment.
  * @author paulby
  * @author Jonathan Kaplan <jonathankap@gmail.com>
+ * @author JagWire
  */
 public class DefaultEnvironmentRenderer implements CellRendererJME,
-        ViewManagerListener, TransformChangeListener
+        ViewManagerListener, TransformChangeListener, MapReceivedListener
 {
-    private static final Logger logger =
+    private static final Logger LOGGER =
             Logger.getLogger(DefaultEnvironmentRenderer.class.getName());
 
-    private final EnvironmentCell cell;
+    private final DefaultEnvironmentCell cell;
 
     private CellStatus status = CellStatus.DISK;
 
     private Skybox skybox = null;
     private Entity skyboxEntity = null;
-    private Set<LightNode> globalLights = new HashSet<LightNode>();
     private Vector3f translation = new Vector3f();
 
     private ViewCell curViewCell = null;
     private SkyboxProcessor skyboxProcessor;
 
+    
+    /**
+     * This field is used to hold default 'magic lights' created within
+     * addGlobalLights(). Those lights will be placed here and added to the
+     * cell's mapping on RENDERING if no lights currently exist in the cell's
+     * map.
+     */
+    private Map<String, LightNode> initialLights = new LinkedHashMap<String, LightNode>();
+    
     public DefaultEnvironmentRenderer(Cell cell) {
-        this.cell = (EnvironmentCell) cell;
+        this.cell = (DefaultEnvironmentCell) cell;
+        this.cell.addMapReceivedListener(this);
+        LOGGER.fine("Registered map received listener in renderer!");
     }
 
     public synchronized Entity getEntity() {
@@ -110,6 +126,10 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
         return skyboxEntity;
     }
 
+    public Skybox getSkybox() {
+        return skybox;
+    }
+    
     public void cellTransformUpdate(CellTransform localTransform) {
         // ignore -- shouldn't happen
     }
@@ -117,7 +137,67 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
     public void setStatus(CellStatus status, boolean increasing) {
         this.status = status;
 
-        if (status == CellStatus.INACTIVE && increasing) {
+        if (status == CellStatus.RENDERING && increasing) {
+            //Re-add lights from state
+
+            Map<String, LightNode> m = cell.getLightMap();
+
+            //if our cell lightmap is null, promptly return as there is an error.
+            if(m == null) {
+                LOGGER.warning("CELL LIGHT MAP IS NULL!");
+                return;
+                //otherwise, it's just empty.
+            } else if(m.isEmpty()) {
+                LOGGER.warning("CELL LIGHT MAP IS EMPTY!!");
+                //if the cell lightmap is empty, and the temp lightmap is empty, return as there is an error.
+                if(initialLights.isEmpty()) {
+                    LOGGER.warning("RENDERER TMP MAP IS EMPTY!");
+                    return;
+                } else {
+                    //if the tempt lightmap isn't empty, populate the cell light map with their values.
+                    m.putAll(initialLights);
+//                    logger.warning("CREATING DEFAULT LIGHTS!");
+
+                }
+            }
+            
+//            for(LightNode value: tmpLights.values()) {
+//                addLightToRenderer(value);
+//            }
+            
+            if(cell.getSharedLightMap() != null) {
+                LOGGER.fine("POPULATING LIGHTS WITH SHARED VALUES!");
+                SharedMapCli smc = cell.getSharedLightMap();
+                for(Map.Entry<String, SharedData> data:smc.entrySet()) {
+                    LOGGER.fine("POPULATING LIGHT: "+data.getKey());
+                    if (initialLights.containsKey(data.getKey())) {
+                        LightNode node = initialLights.get(data.getKey());
+                        SharedDirectionLight light = (SharedDirectionLight) data.getValue();
+
+                        updateLight(node, buildLightFromState(light));
+                    } else {
+                        //there's a light in the shared map that isn't in the
+                        //tmp lights map.
+                        LOGGER.warning("LIGHT: "+data.getKey()+" DOES NOT EXIST IN ENVIRONMENT!");
+                    }
+
+                }
+            } else {
+                LOGGER.warning("CELL SHARED LIGHT MAP IS NULL!");
+            }
+            
+            
+            
+            
+            
+            //clear the lighting so we can add our own.
+//            removeGlobalLights();
+//            for(LightNode value: m.values()) {                
+//                addLightToRenderer(value);
+//            }
+            
+            
+        } else if (status == CellStatus.INACTIVE && increasing) {                                                
             ClientContextJME.getWorldManager().addEntity(getEntity());
         } else if (status == CellStatus.INACTIVE && !increasing) {
             removeGlobalLights();
@@ -125,17 +205,80 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
         }
     }
 
+    public void addLight(String key, LightNode value) {
+//        ClientContextJME.getWorldManager().getRenderManager().addLight(key, value);
+        addLightToRenderer(value);
+    }
+    
+    public void updateLight(final LightNode lightToBeUpdated, final LightNode updatedLightInfo) {
+//        removeLightFromRenderer(lightToBeReplaced);
+//        addLightToRenderer(lightToBeInserted);
+        final DirectionalLight originalLight = (DirectionalLight)lightToBeUpdated.getLight();
+        final DirectionalLight freshLight = (DirectionalLight)updatedLightInfo.getLight();
+        
+        SceneWorker.addWorker(new WorkCommit() { 
+            public void commit() {
+                originalLight.setAmbient(freshLight.getAmbient());
+                originalLight.setDiffuse(freshLight.getDiffuse());
+                originalLight.setSpecular(freshLight.getSpecular());
+                originalLight.setShadowCaster(freshLight.isShadowCaster());
+                originalLight.setDirection(freshLight.getDirection());
+                lightToBeUpdated.setLocalTranslation(updatedLightInfo.getLocalTranslation());
+            }
+        });
+    }
+    
+    public void removeLight(String key) {
+//        ClientContextJME.getWorldManager().getRenderManager().removeLight(key);
+    }
+    
+    public HashMap<String, SharedDirectionLight> 
+            getMapWithSharedDataFromLights(Map<String, LightNode> lights) {
+        
+        HashMap<String, SharedDirectionLight> sharedLights =
+                new HashMap<String, SharedDirectionLight>();
+        
+        for(Map.Entry<String, LightNode> light: lights.entrySet()) {
+            sharedLights.put(light.getKey(), buildSharedLightFromLightNode(light.getValue()));
+        }
+        return null;
+    }
+    
+    private SharedDirectionLight buildSharedLightFromLightNode(LightNode node) {
+        return SharedDirectionLight.valueOf(node.getLight().getAmbient(),
+                                            node.getLight().getDiffuse(),
+                                            node.getLight().getSpecular(),
+                                            node.getLocalTranslation(),
+                                            ((DirectionalLight)node.getLight()).getDirection(),
+                                            false);//ColorRGBA.blue, ColorRGBA.yellow, translation, translation, true)
+    }
+    
     public CellStatus getStatus() {
         return status;
     }
 
+    private LightNode buildLightFromState(SharedDirectionLight state) {
+            DirectionalLight light = new DirectionalLight();
+            LightNode lightNode = new LightNode();
+            
+            light.setAmbient(state.getAmbient());
+            light.setDiffuse(state.getDiffuse());
+            light.setSpecular(state.getSpecular());
+            light.setDirection(state.getDirection());
+            light.setShadowCaster(state.isCastShadows());
+            lightNode.setLight(light);
+            lightNode.setLocalTranslation(state.getTranslation());
+            
+            return lightNode;
+        }
+    
     /**
      * Add global lights
      */
     protected void addGlobalLights() {
-        LightNode globalLight1 = null;
-        LightNode globalLight2 = null;
-        LightNode globalLight3 = null;
+        LightNode globalLight1;
+        LightNode globalLight2;
+        LightNode globalLight3;
 
         float radius = 75.0f;
         float lheight = 30.0f;
@@ -149,13 +292,16 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
         z = (float)(radius*Math.sin(3*Math.PI/2));
         globalLight3 = createLight(x, lheight, z);
 
-        globalLights.add(globalLight1);
-        globalLights.add(globalLight2);
-        globalLights.add(globalLight3);
+        initialLights.put("LIGHT-1", globalLight1);
+        initialLights.put("LIGHT-2", globalLight2);
+        initialLights.put("LIGHT-3", globalLight3);
+        
+        LOGGER.fine("ADDING GLOBAL LIGHTS!");
+        for(LightNode value: initialLights.values()) {
+            addLightToRenderer(value);
+        }
+        
 
-        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight1);
-        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight2);
-        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight3);
     }
 
     private LightNode createLight(float x, float y, float z) {
@@ -175,18 +321,16 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
      * @{inheritDoc}
      */
     protected void removeGlobalLights() {
-        for (LightNode node : globalLights) {
-            ClientContextJME.getWorldManager().getRenderManager().removeLight(node);
+        for(LightNode node: getLightsFromRenderer()) {
+            removeLightFromRenderer(node);
         }
-
-        globalLights.clear();
     }
 
     /**
      * @{@inheritDoc}
      */
     protected void createSkybox() {
-        logger.fine("[DefaultEnvironment] add skybox to " + this);
+        LOGGER.fine("[DefaultEnvironment] add skybox to " + this);
 
         if (skyboxEntity == null) {
             skyboxEntity = createSkyboxEntity();
@@ -196,7 +340,7 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
     }
 
     public void removeSkybox() {
-        logger.fine("[DefaultEnvironment] remove skybox from " + this +
+        LOGGER.fine("[DefaultEnvironment] remove skybox from " + this +
                     " curViewCell: " + curViewCell);
 
         ClientContextJME.getWorldManager().removeEntity(skyboxEntity);
@@ -212,7 +356,7 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
     }
 
     public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
-        logger.fine("[DefaultEnvironment] primary view changed for " + this +
+        LOGGER.fine("[DefaultEnvironment] primary view changed for " + this +
                     ".  Old: " + oldViewCell + " new: " + newViewCell);
 
         if (curViewCell != null) {
@@ -228,8 +372,8 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
     }
 
     public void transformChanged(Cell cell, ChangeSource source) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("[DefaultEnvironment] transform changed for " + this);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("[DefaultEnvironment] transform changed for " + this);
         }
 
         skyboxProcessor.viewMoved(cell.getWorldTransform().getTranslation(translation));
@@ -240,10 +384,43 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
             }
         }, cell);
     }
+    /**
+     * Apply a new skybox to our entity. Method assumes that CullState,
+     * ZBufferState, and FogState have already been attached.
+     * 
+     * @param skybox
+     * @return Entity reflecting new skybox. 
+     */
+    private Entity createSkyboxEntity(Skybox skybox) {
+        WorldManager wm = ClientContextJME.getWorldManager();
+        
+        skybox.setLightCombineMode(Spatial.LightCombineMode.Off);
+        skybox.setCullHint(Spatial.CullHint.Never);
+        skybox.setTextureCombineMode(TextureCombineMode.Replace);
+        skybox.updateRenderState();
+        skybox.lockBounds();    
+    
+        Entity e = new Entity("Skybox");
+        SkyboxComponent sbc = wm.getRenderManager().createSkyboxComponent(skybox, true);
+        e.addComponent(SkyboxComponent.class, sbc);
 
+        skyboxProcessor = new SkyboxProcessor(wm, skybox);
+        e.addComponent(SkyboxProcessor.class, skyboxProcessor);
+        return e;
+
+    }
+    
+    public void updateSkybox(Skybox skybox) {
+//        Entity update = createSkyboxEntity(skybox);
+        ClientContextJME.getWorldManager().removeEntity(skyboxEntity);
+        skyboxEntity = createSkyboxEntity(skybox);
+        ClientContextJME.getWorldManager().addEntity(skyboxEntity);
+        
+    }
     private Entity createSkyboxEntity() {
         try {
             /* Form the asset URIs */
+            
             URL northURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/1.jpg", cell);
             URL southURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/3.jpg", cell);
             URL eastURL = AssetUtils.getAssetURL("wla://defaultenvironment/skybox1/2.jpg", cell);
@@ -286,7 +463,7 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
             SkyboxComponent sbc = wm.getRenderManager().createSkyboxComponent(skybox, true);
             e.addComponent(SkyboxComponent.class, sbc);
 
-            skyboxProcessor = new SkyboxProcessor(wm);
+            skyboxProcessor = new SkyboxProcessor(wm, skybox);
             e.addComponent(SkyboxProcessor.class, skyboxProcessor);
 
             return e;
@@ -297,14 +474,64 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
         return null;
     }
 
+    private List<LightNode> getLightsFromRenderer() {
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        
+        int numberOfLights = rm.numLights();
+        List<LightNode> lights = new ArrayList<LightNode>();
+        for(int i = 0; i < numberOfLights; i++) {
+            lights.add(rm.getLight(i));
+        }
+        
+        return lights;        
+    }
+    
+    private void addLightToRenderer(LightNode lightNode) {
+        ClientContextJME.getWorldManager().getRenderManager().addLight(lightNode);
+    }
+    
+    private void removeLightFromRenderer(LightNode lightNode) {
+        ClientContextJME.getWorldManager().getRenderManager().removeLight(lightNode);        
+    }
+    
+    public void mapReceived(SharedMapCli map) {
+        LOGGER.fine("MAP RECEIVED: "+map.getName());
+        //process the shared data from the map first.
+        Map<String, LightNode> processed = new LinkedHashMap<String, LightNode>();
+  
+//            if(map == null) {
+//                return;
+//            } else if(map.isEmpty()) {
+//                if(tmpLights.isEmpty()) {
+//                    return;
+//                } else {
+//                    
+//                }
+//            }
+//            for(Map.Entry<String, SharedData> e: map.entrySet()) {
+//                SharedDirectionLight sdl = (SharedDirectionLight)e.getValue();
+//                tmpLights.put(e.getKey(), sdl.toLightNode());
+//            }
+//            
+//            
+//            //clear the lighting so we can add our own.
+//            removeGlobalLights();
+//            for(LightNode value: tmpLights.values()) {                
+//                addLightToRenderer(value);
+//            }
+    }
+    
     class SkyboxProcessor extends ProcessorComponent {
 
         private Vector3f translation=new Vector3f();
         private boolean translationDirty = false;
         private final WorldManager worldManager;
-
-        public SkyboxProcessor(WorldManager worldManager) {
+        private Skybox skybox;
+        
+        
+        public SkyboxProcessor(WorldManager worldManager, Skybox skybox) {
             this.worldManager = worldManager;
+            this.skybox = skybox;
         }
 
         @Override
@@ -312,13 +539,11 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
         }
 
         @Override
-        public void commit(ProcessorArmingCollection arg0) {
-            synchronized(translation) {
-                if (translationDirty) {
-                    skybox.setLocalTranslation(translation);
-                    worldManager.addToUpdateList(skybox);
-                    translationDirty = false;
-                }
+        public synchronized void commit(ProcessorArmingCollection arg0) {
+            if (translationDirty) {
+                skybox.setLocalTranslation(translation);
+                worldManager.addToUpdateList(skybox);
+                translationDirty = false;
             }
         }
 
@@ -327,11 +552,9 @@ public class DefaultEnvironmentRenderer implements CellRendererJME,
             setArmingCondition(new NewFrameCondition(this));
         }
 
-        private void viewMoved(Vector3f translation) {
-            synchronized(translation) {
-                this.translation.set(translation);
-                translationDirty = true;
-            }
+        private synchronized void viewMoved(Vector3f translation) {
+            this.translation.set(translation);
+            translationDirty = true;
         }
 
     }
