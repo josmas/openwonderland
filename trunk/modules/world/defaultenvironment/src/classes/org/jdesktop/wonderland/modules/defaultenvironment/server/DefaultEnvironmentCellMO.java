@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -22,13 +22,16 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.defaultenvironment.common.DefaultEnvironmentCellServerState;
+import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO;
 import org.jdesktop.wonderland.server.cell.EnvironmentCellMO;
+import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * CellMO for default environment
  * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
+@DependsOnCellComponentMO(SharedStateComponentMO.class)
 public class DefaultEnvironmentCellMO extends EnvironmentCellMO {
     public DefaultEnvironmentCellMO() {
         setLocalTransform(new CellTransform());
@@ -51,6 +54,4 @@ public class DefaultEnvironmentCellMO extends EnvironmentCellMO {
 
         return super.getServerState(setup);
     }
-
-
 }

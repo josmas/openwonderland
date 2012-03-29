@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -17,18 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.defaultenvironment.client;
 
+import com.jme.light.LightNode;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
-import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.defaultenvironment.common.DefaultEnvironmentCellServerState;
 
 /**
  * Property sheet
  * @author Jonathan Kaplan <jonathankap@gmail.com>
+ * @author JagWire
  */
 @PropertiesFactory(DefaultEnvironmentCellServerState.class)
 public class DefaultEnvironmentProperties
@@ -73,28 +75,85 @@ public class DefaultEnvironmentProperties
     public void open() {
         // Fetch the current state from the cell's server state and update
         // the GUI.
-        CellServerState state = editor.getCellServerState();
+        
+        
+        DefaultEnvironmentCell cell = (DefaultEnvironmentCell)editor.getCell();
+        Map<String, LightNode> lights = cell.getLightMap();
+        
+        //remove any existing panels.
+        tabbedPane.removeAll();
+        
+        for(Map.Entry<String, LightNode> e: lights.entrySet()) {
+            tabbedPane.add(e.getKey(), new DirectionalLightPropertiesPanel(e.getValue(), cell, e.getKey(), this.editor));
+        
+        }
+        
+        tabbedPane.add("Skybox", new SkyboxProperties(cell, editor));
     }
 
     /**
      * @inheritDoc()
      */
     public void close() {
-        // Do nothing for now.
+        LOGGER.fine("Running on thread: "+Thread.currentThread().getName());
+        DirectionalLightPropertiesPanel p1 = getLightPanelFromString("LIGHT-1");
+        DirectionalLightPropertiesPanel p2 = getLightPanelFromString("LIGHT-2");
+        DirectionalLightPropertiesPanel p3 = getLightPanelFromString("LIGHT-3");
+        SkyboxProperties skybox = getSkyboxProperties();
+        
+        p1.close();
+        p2.close();
+        p3.close();
+        skybox.close();
     }
 
     /**
      * @inheritDoc()
      */
     public void apply() {
-        // Take the value from the shape type and populate the server state
-        // with it.
+        DirectionalLightPropertiesPanel p1 = getLightPanelFromString("LIGHT-1");
+        DirectionalLightPropertiesPanel p2 = getLightPanelFromString("LIGHT-2");
+        DirectionalLightPropertiesPanel p3 = getLightPanelFromString("LIGHT-3");
+        SkyboxProperties skybox = getSkyboxProperties();
+        
+        p1.applyIfNeeded();
+        p2.applyIfNeeded();
+        p3.applyIfNeeded();
+        skybox.applyIfNeeded();
     }
 
     /**
      * @inheritDoc()
      */
     public void restore() {
+        DirectionalLightPropertiesPanel p1 = getLightPanelFromString("LIGHT-1");
+        DirectionalLightPropertiesPanel p2 = getLightPanelFromString("LIGHT-2");
+        DirectionalLightPropertiesPanel p3 = getLightPanelFromString("LIGHT-3");
+        SkyboxProperties skybox = getSkyboxProperties();
+        
+        p1.restore();
+        p2.restore();
+        p3.restore();
+        skybox.restore();
+    }
+    
+    private DirectionalLightPropertiesPanel getLightPanelFromString(String key) {
+        int index = tabbedPane.indexOfTab(key);
+        LOGGER.fine("Got index: "+index+" for light: "+key);
+        if(tabbedPane.getComponentAt(index) == null) {
+            LOGGER.warning("NULL component at index: "+index);
+            return null;
+        }
+        return (DirectionalLightPropertiesPanel)tabbedPane.getComponentAt(index);
+    }
+    
+    private SkyboxProperties getSkyboxProperties() {
+        int index = tabbedPane.indexOfTab("Skybox");
+        if(tabbedPane.getComponentAt(index) == null) {
+            LOGGER.warning("NULL component at index: "+index);
+            return null;
+        }
+        return (SkyboxProperties)tabbedPane.getComponentAt(index);
     }
 
     /** This method is called from within the constructor to
@@ -107,6 +166,7 @@ public class DefaultEnvironmentProperties
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        tabbedPane = new javax.swing.JTabbedPane();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/defaultenvironment/client/Bundle"); // NOI18N
         jLabel1.setText(bundle.getString("DefaultEnvironmentProperties.jLabel1.text_1")); // NOI18N
@@ -115,22 +175,19 @@ public class DefaultEnvironmentProperties
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(152, Short.MAX_VALUE))
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addComponent(jLabel1)
-                .addContainerGap(149, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
 }
