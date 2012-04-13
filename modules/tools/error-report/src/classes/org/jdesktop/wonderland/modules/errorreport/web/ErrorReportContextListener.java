@@ -130,7 +130,7 @@ public class ErrorReportContextListener implements ServletContextListener {
                     groups.createChild("users", ContentNode.Type.COLLECTION);
         }
 
-        ContentCollection dir = (ContentCollection) groups.getChild(ErrorReport.DIR_NAME);
+        ContentCollection dir = (ContentCollection) users.getChild(ErrorReport.DIR_NAME);
         if (dir == null) {
             users.createChild(ErrorReport.DIR_NAME, ContentNode.Type.COLLECTION);
         }

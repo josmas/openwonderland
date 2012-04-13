@@ -51,7 +51,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.errorreport.common.ErrorReport;
@@ -454,7 +454,7 @@ public class ErrorReportFrame extends javax.swing.JFrame
             } while (dir.getChild(fileName) != null);
         
             file = (ContentResource) 
-                dir.createChild(fileName, Type.RESOURCE);
+                dir.createChild(fileName, ContentNode.Type.RESOURCE);
         } else {
             // update an existing file
             file = (ContentResource) dir.getChild(report.getId());
