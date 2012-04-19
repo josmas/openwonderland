@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,7 +35,11 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.client;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -27,32 +49,26 @@ import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellTransformRequestMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellTransformResponseMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedAliasMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
-
-import java.util.ArrayList;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangedAliasMessage;
 
 /**
  *
@@ -154,21 +170,47 @@ public class PresenceManagerClient extends BaseConnection implements
     }
 
     public Vector3f getCellPosition(CellID cellID) {
-        Message request = new CellLocationRequestMessage(cellID);
+        CellTransform transform = getCellTransform(cellID);
+        if (transform == null) {
+            return null;
+        }
+        
+        return transform.getTranslation(null);
+    }
+    
+    public Quaternion getCellRotation(CellID cellID) {
+        CellTransform transform = getCellTransform(cellID);
+        if (transform == null) {
+            return null;
+        }
+        
+        return transform.getRotation(null);
+    }
+    
+    public Vector3f getCellScale(CellID cellID) {
+        CellTransform transform = getCellTransform(cellID);
+        if (transform == null) {
+            return null;
+        }
+        
+        return transform.getScaling(null);
+    }
+    
+    public CellTransform getCellTransform(CellID cellID) {
+        Message request = new CellTransformRequestMessage(cellID);
 
         try {
             ResponseMessage rm = sendAndWait(request);
-            if (rm instanceof CellLocationResponseMessage) {
-                return ((CellLocationResponseMessage) rm).getLocation();
+            if (rm instanceof CellTransformResponseMessage) {
+                return ((CellTransformResponseMessage) rm).getTransform();
             } else if (rm instanceof ErrorMessage) {
-                logger.log(Level.WARNING, "Error getting location of " +
+                logger.log(Level.WARNING, "Error getting transform of " +
                         cellID + ": " + ((ErrorMessage) rm).getErrorMessage());
             }
         } catch (InterruptedException ie) {
             // ignore
         }
-
-        // if we get here, there was an error getting the value
+        
         return null;
     }
 
@@ -390,5 +432,4 @@ public class PresenceManagerClient extends BaseConnection implements
     public ConnectionType getConnectionType() {
         return PresenceManagerConnectionType.CONNECTION_TYPE;
     }
-
 }

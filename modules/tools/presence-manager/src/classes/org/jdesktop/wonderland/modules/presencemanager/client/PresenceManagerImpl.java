@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,26 +35,28 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.client;
 
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.math.BigInteger;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeAliasMessage;
 
 public class PresenceManagerImpl implements PresenceManager {
@@ -252,7 +272,28 @@ public class PresenceManagerImpl implements PresenceManager {
     public Vector3f getCellPosition(CellID cellID) {
         return PresenceManagerClient.getInstance().getCellPosition(cellID);
     }
-
+    
+   /**
+    * Get the rotation of a cell
+    */
+    public Quaternion getCellRotation(CellID cellID) {
+        return PresenceManagerClient.getInstance().getCellRotation(cellID);
+    }
+    
+    /**
+     * Get the scaling of a cell
+     */
+    public Vector3f getCellScale(CellID cellID) {
+        return PresenceManagerClient.getInstance().getCellScale(cellID);
+    }
+    
+    /**
+     * Get the full world transform of a cell.
+     */
+    public CellTransform getCellTransform(CellID cellID) {
+        return PresenceManagerClient.getInstance().getCellTransform(cellID);
+    }
+    
     /**
      * Get the WonderlandIdentity list of cells in range of the specified cellID.
      * @param CellID the CellID of the requestor
