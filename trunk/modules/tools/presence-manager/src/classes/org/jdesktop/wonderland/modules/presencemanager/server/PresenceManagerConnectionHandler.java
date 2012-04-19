@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,26 +35,26 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.server;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Properties;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
-import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationRequestMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellLocationResponseMessage;
+import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellTransformRequestMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellTransformResponseMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeAliasMessage;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import java.util.logging.Logger;
-import java.util.Properties;
-import java.io.Serializable;
-import java.util.Collection;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeAliasMessage;
 
 /**
  * Presence Manager
@@ -76,8 +94,8 @@ public class PresenceManagerConnectionHandler implements
             handleClientConnect(sender, clientID, (ClientConnectMessage) message);
         } else if (message instanceof PresenceInfoChangeAliasMessage) {
             handleChangeAlias(sender, clientID, (PresenceInfoChangeAliasMessage) message);
-        } else if (message instanceof CellLocationRequestMessage) {
-            handleLocationRequest(sender, clientID, (CellLocationRequestMessage) message);
+        } else if (message instanceof CellTransformRequestMessage) {
+            handleTransformRequest(sender, clientID, (CellTransformRequestMessage) message);
         } else {
             throw new UnsupportedOperationException("Unknown message: " + message);
         }
@@ -107,17 +125,18 @@ public class PresenceManagerConnectionHandler implements
         pm.setUsernameAlias(clientID.getID(), message.getAlias());
     }
 
-    private void handleLocationRequest(WonderlandClientSender sender,
-	    WonderlandClientID clientID, CellLocationRequestMessage message)
+    private void handleTransformRequest(WonderlandClientSender sender,
+	    WonderlandClientID clientID, CellTransformRequestMessage message)
     {
-        CellID cellID = ((CellLocationRequestMessage) message).getRequestCellID();
+        CellID cellID = ((CellTransformRequestMessage) message).getRequestCellID();
         CellMO cell = CellManagerMO.getCell(cellID);
         if (cell == null || !cell.isLive()) {
             sender.send(clientID, new ErrorMessage(message.getMessageID(),
                         "Cell " + cellID + " not found"));
         } else {
-            sender.send(clientID, new CellLocationResponseMessage(message.getMessageID(),
-                        cell.getWorldTransform(null).getTranslation(null)));
+            sender.send(clientID,
+                    new CellTransformResponseMessage(
+                        message.getMessageID(), cell.getWorldTransform(null)));
         }
     }
 

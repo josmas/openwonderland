@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,11 +35,13 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.client;
 
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
 
 /**
 * Presence API.  This interfaces defines methods for mapping between
@@ -84,13 +104,48 @@ public interface PresenceManager {
     public PresenceInfo getAliasPresenceInfo(String usernameAlias);
 
     /**
-     * Get the location of a cell by id
+     * Get the location of a cell by id. This is a convenience method
+     * that calls <code>getCellTransform(cellID).getTranslation(null)</code>.
+     * To get multiple fields, use <code>getCellTransform()</code> directly
+     * to avoid multiple round trips to the server.
+     * 
      * @param cellId the id of the cell to get the location of
      * @return the cell location, or null if the location of this cell can't
      * be found
      */
     public Vector3f getCellPosition(CellID cellID);
 
+    /**
+     * Get the rotation of a cell by id. This is a convenience method
+     * that calls <code>getCellTransform(cellID).getRotation(null)</code>.
+     * To get multiple fields, use <code>getCellTransform()</code> directly
+     * to avoid multiple round trips to the server.
+     * 
+     * @param cellID the id of the cell to get the orientation of
+     * @return the cell rotation, or null if the location of this cell can't
+     * be found.
+     */
+    public Quaternion getCellRotation(CellID cellID);
+    
+    /**
+     * Get the scale of a cell by id. This is a convenience method
+     * that calls <code>getCellTransform(cellID).getScaling(null)</code>.
+     * To get multiple fields, use <code>getCellTransform()</code> directly
+     * to avoid multiple round trips to the server.
+     * 
+     * @param cellID the id of the cell to get the scale of
+     * @return the cell scale, or null if the scale of the cell can't be found
+     */
+    public Vector3f getCellScale(CellID cellID);
+    
+    /**
+     * Get the world transform of a cell by id, including
+     * @param cellID the id of the cell to get the transform of
+     * @return the cell's world transform, or null if the transform of this 
+     * cell can't be found.
+     */
+    public CellTransform getCellTransform(CellID cellID);
+    
     /**
      * Request that the server change this user's alias.
      * @param alias the alias to change
