@@ -10,9 +10,7 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
-    <target name="build" depends="-module-init, -module-compile-common, 
-                                                -module-compile-server,
-                                                -module-compile-client"/>
+    <target name="build" depends="-module-init"/>
     
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
