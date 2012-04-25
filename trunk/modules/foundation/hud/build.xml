@@ -37,9 +37,7 @@
  	                moduleDescription="${module.description}" builddir="${build.dir}">
             
             <requires name="animationbase" version="0" minorVersion="5"/>
-            <client dir="${current.dir}/lib">
-                <include name="*.jar"/>
-
+            <client>
                 <clientjar name="hud-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <fileset dir="${current.dir}/src/classes">

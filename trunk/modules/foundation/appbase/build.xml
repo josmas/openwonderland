@@ -20,7 +20,7 @@
         <module name="appbase" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="2D application API and library" builddir="${build.dir}">
         
-            <client dir="${current.dir}/lib">
+            <client>
                 <clientjar name="appbase-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/client/gui/**"/>
@@ -49,8 +49,6 @@
                   <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
-            
-            <art dir="${current.dir}/art"/>
         </module>
     </target>                                                       
                                            

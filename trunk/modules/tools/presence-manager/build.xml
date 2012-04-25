@@ -32,7 +32,7 @@
                 moduleDescription="Presence manager API and library"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
-            <client dir="${current.dir}/lib">
+            <client>
                 <clientjar name="presencemanager-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
