@@ -17,4 +17,11 @@
         <path location="${wonderland.lib.dir}/ant/ant.jar"/>
         <path location="${wonderland.lib.dir}/ant/ant-launcher.jar"/>
     </pathconvert>
+    
+    <!-- test jars -->
+    <pathconvert property="test.classpath">
+        <path location="${wonderland.lib.dir}/test/junit.jar"/>
+        <path location="${wonderland.lib.dir}/test/mockito.jar"/>
+        <path location="${wonderland.lib.dir}/test/objenesis.jar"/>
+    </pathconvert>
 </project>

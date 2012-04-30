@@ -22,6 +22,8 @@
         <attribute name="source" default="${build.source.version}"/>
         <attribute name="target" default="${build.target.version}"/>
         <attribute name="bootclasspath" default="${build.boot.class.path}"/>
+        <attribute name="srcdir" default="${javasrc.dir}"/>
+        <attribute name="destdir" default="${build.classes.dir}"/>
         
         <element name="compile-classes"/>
         <element name="compile-classpath"/>
@@ -30,11 +32,11 @@
             <javac  debug="${build.debug}"
                 debuglevel="${build.debuglevel}"
                 deprecation="${build.showdeprecation}"
-                destdir="${build.classes.dir}"
                 nowarn="true"
                 source="@{source}"
                 target="@{target}"
-                srcdir="${javasrc.dir}">
+                srcdir="@{srcdir}"
+                destdir="@{destdir}">
             
                 <compile-classes/>
                 

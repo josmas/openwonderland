@@ -30,7 +30,8 @@
         <property name="module-client.classpath" value=""/>
         <property name="module-server.classpath" value=""/>
         <property name="module-web.classpath" value=""/>
-
+        <property name="module-test.classpath" value=""/>
+        
         <!-- set defaults for other properties.  May be overridden by
              subclasses -->
         <property name="module.jarname" value="${module.name}"/>
@@ -84,7 +85,7 @@
             </compile-classes>
             
             <compile-classpath>
-            <pathelement path="${core-server.classpath}"/>
+                <pathelement path="${core-server.classpath}"/>
                 <pathelement path="${module-server.classpath}"/>
             </compile-classpath>
         </wl-compile>
@@ -115,7 +116,50 @@
             </compile-classpath>
         </wl-compile>
     </target>
+ 
+    <target name="-module-compile-test" depends="-module-init">
+        <mkdir dir="${build.dir}/test"/>
+        
+        <wl-compile srcdir="${src.dir}/test"
+                    destdir="${build.dir}/test">
+            
+            <compile-classes>
+                <include name="${module.src}/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${build.classes.dir}"/>
                 
+                <pathelement path="${test.classpath}"/>
+                <pathelement path="${module-test.classpath}"/>
+                
+                <pathelement path="${core-common.classpath}"/>
+                <pathelement path="${module-common.classpath}"/>
+                
+                <pathelement path="${core-server.classpath}"/>
+                <pathelement path="${module-server.classpath}"/>
+                
+                
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+                
+                <pathelement path="${web.classpath}"/>
+                <pathelement path="${module-web.classpath}"/>
+                
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="-module-test" depends="-module-compile-test">
+        <module-run-tests>
+            <tests>
+                <fileset dir="${build.dir}/test">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </tests>
+        </module-run-tests>
+    </target>
+
     <target name="-module-deploy">
         <deploy module="${module.dist.dir}/${module.jarname}.jar"
                 serverurl="${wonderland.web.url}"
@@ -131,4 +175,37 @@
         <delete dir="${build.dir}"/>
         <delete dir="${module.dist.dir}"/>
     </target>
+    
+    <macrodef name="module-run-tests">
+        <attribute name="dir" default="${build.dir}/test"/>
+        <element name="tests"/>
+       
+        <sequential>
+            <junit fork="yes" haltonfailure="yes" printsummary="yes">
+                <classpath>
+                    <pathelement path="${build.classes.dir}"/>
+                    <pathelement path="@{dir}"/>
+                    
+                    <pathelement path="${test.classpath}"/>
+                    <pathelement path="${module-test.classpath}"/>
+
+                    <pathelement path="${core-common.classpath}"/>
+                    <pathelement path="${module-common.classpath}"/>
+
+                    <pathelement path="${core-server.classpath}"/>
+                    <pathelement path="${module-server.classpath}"/>
+
+
+                    <pathelement path="${core-client.classpath}"/>
+                    <pathelement path="${module-client.classpath}"/>
+                </classpath>
+
+                <formatter type="plain" usefile="false"/>
+
+                <batchtest>
+                    <tests/>
+                </batchtest>
+            </junit>
+        </sequential>
+    </macrodef>
 </project>
