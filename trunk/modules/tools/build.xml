@@ -16,6 +16,7 @@
         <file name="voicebridge/build.xml"/>
         <file name="server-manager/build.xml"/>
         <file name="audio-manager/build.xml"/>
+        <file name="user-list/build.xml"/>
         <file name="artimport/build.xml"/>
         <file name="coneofsilence/build.xml"/>
         <file name="phone/build.xml"/>
