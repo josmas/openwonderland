@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -174,14 +174,11 @@ public class AudioManagerClient extends BaseConnection implements
     private PresenceControls controls;
     private ContextMenuListener ctxListener;
 
-    private JMenuItem userListJMenuItem;
     private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
     private HashMap<String, ArrayList<MemberChangeListener>> memberChangeListeners =
             new HashMap();
     private List<UserInRangeListener> userInRangeListeners =
             Collections.synchronizedList(new ArrayList());
-    private HUDComponent userListHUDComponent;
-    private UserListPanel userListPanel;
     
     private boolean miniVUMeter = true;
     private HUDComponent vuMeterComponent;
@@ -209,22 +206,7 @@ public class AudioManagerClient extends BaseConnection implements
         voiceChatIcon = new ImageIcon(getClass().getResource(
                 "/org/jdesktop/wonderland/modules/audiomanager/client/" +
                 "resources/UserListChatVoice32x32.png"));
-        userListIcon = new ImageIcon(getClass().getResource(
-                "/org/jdesktop/wonderland/modules/audiomanager/client/" +
-                "resources/GenericUsers32x32.png"));
-
-        userListJMenuItem = new javax.swing.JCheckBoxMenuItem();
-        userListJMenuItem.setText(BUNDLE.getString("Users"));
-        userListJMenuItem.setSelected(false);
-        userListJMenuItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-           		// issue #174 hud visibility management
-           		showUsers(evt);
-            }
-        });
-        userListJMenuItem.setEnabled(false);
-
+        
         ctxListener = new ContextMenuListener() {
             public void contextMenuDisplayed(ContextMenuEvent event) {
                 // only deal with invocations on AvatarCell
@@ -355,69 +337,9 @@ public class AudioManagerClient extends BaseConnection implements
         }
     }
 
-    public void showUsers(java.awt.event.ActionEvent evt) {
-        if (presenceInfo == null) {
-            return;
-        }
-
-        if (userListHUDComponent == null) {
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            
-            if (Boolean.parseBoolean(System.getProperty(TABBED_PANEL_PROP))) {
-                HUDTabbedPanel tabbedPanel = HUDTabbedPanel.getInstance();
-                tabbedPanel.configInstance(controls, cell);
-                userListHUDComponent = mainHUD.createComponent(tabbedPanel);
-                tabbedPanel.setHUDComponent(userListHUDComponent);
-                userListPanel = tabbedPanel;
-            } else {
-                UserListHUDPanel userListHUDPanel = new UserListHUDPanel(controls, cell);
-                userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
-                userListHUDPanel.setHUDComponent(userListHUDComponent);
-                userListPanel = userListHUDPanel;
-            }
-
-            userListHUDComponent.setPreferredLocation(Layout.NORTHWEST);
-            userListHUDComponent.setName(BUNDLE.getString("Users") + " (0)");
-            userListHUDComponent.setIcon(userListIcon);
-            
-            mainHUD.addComponent(userListHUDComponent);
-            userListHUDComponent.addEventListener(new HUDEventListener() {
-                // modified for fixing issue #174 hud visibility management
-                public void HUDObjectChanged(HUDEvent event) {
-                	HUDEventType hudEventType = event.getEventType();
-                    if (hudEventType == HUDEventType.CLOSED
-                    		|| hudEventType == HUDEventType.MINIMIZED
-                    		|| hudEventType == HUDEventType.DISAPPEARED) {
-                    	userListJMenuItem.setSelected(false);
-                    } else 
-                    if (hudEventType == HUDEventType.MAXIMIZED) {
-                    	userListJMenuItem.setSelected(true);
-                    } 
-                }                
-            });
-        }
-
-        userListPanel.setUserList();
-        
-        //userListHUDComponent.setVisible(usersMenuSelected);
-        if (userListJMenuItem.isSelected()) {
-    		userListHUDComponent.setMaximized();
-    		userListHUDComponent.setVisible(true);
-        } else {
-        	userListHUDComponent.setVisible(false);
-        }
-        
-    }
-
     public void removeDialogs() {
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-
-        if (userListHUDComponent != null) {
-            userListHUDComponent.setVisible(false);
-            mainHUD.removeComponent(userListHUDComponent);
-            userListHUDComponent = null;
-        }
-
+        
         if (vuMeterComponent != null) {
             vuMeterComponent.setVisible(false);
             mainHUD.removeComponent(vuMeterComponent);
@@ -454,7 +376,6 @@ public class AudioManagerClient extends BaseConnection implements
 
         // enable the menus
         AudioMenu.getAudioMenu(this).setEnabled(true);
-        userListJMenuItem.setEnabled(true);
 
 	audioProblemJFrame = new AudioProblemJFrame(this);
 
@@ -483,7 +404,6 @@ public class AudioManagerClient extends BaseConnection implements
     @Override
     public void disconnected() {
         super.disconnected();
-        HUDTabbedPanel.getInstance().uninitialize();
 	connected = false;
 
         // remove open dialogs
@@ -515,7 +435,6 @@ public class AudioManagerClient extends BaseConnection implements
     public void addMenus() {
         MainFrame mainFrame = JmeClientMain.getFrame();
         mainFrame.addToToolsMenu(AudioMenu.getAudioMenuItem(this), 1);
-        mainFrame.addToWindowMenu(userListJMenuItem, 5);
 
         AudioMenu.getAudioMenu(this).addMenus();
 
@@ -528,7 +447,6 @@ public class AudioManagerClient extends BaseConnection implements
     public void removeMenus() {
         MainFrame mainFrame = JmeClientMain.getFrame();
         mainFrame.removeFromToolsMenu(AudioMenu.getAudioMenuItem(this));
-        mainFrame.removeFromWindowMenu(userListJMenuItem);
 
         AudioMenu.getAudioMenu(this).removeMenus();
 
@@ -616,15 +534,6 @@ public class AudioManagerClient extends BaseConnection implements
             if (cell.getComponent(ProximityComponent.class) == null) {
                 cell.addComponent(new ProximityComponent(cell));
             }
-
-            // OWL issue #140: make sure to show the window on the
-            // AWT event thread
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    userListJMenuItem.setSelected(true);
-                    showUsers(null);
-                }
-            });
         }
     }
 
