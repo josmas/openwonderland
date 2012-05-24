@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -36,6 +36,7 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
@@ -141,8 +142,27 @@ public class ProximityComponent extends CellComponent
      * @param listener the listener to remove
      */
     public void removeProximityListener(ProximityListener listener) {
+        // dummy record to compare against
+        ProximityListenerRecord comp = new ProximityListenerRecord(
+                new ClientProximityListenerWrapper(cell, listener), new BoundingVolume[0]);
+        ProximityListenerRecord found = null;
+        
         synchronized(listenerRecords) {
-            listenerRecords.remove(new ProximityListenerRecord(new ClientProximityListenerWrapper(cell, listener), new BoundingVolume[0]));
+            // find and cleanup the record
+            for (ProximityListenerRecord rec : listenerRecords) {
+                if (rec.equals(comp)) {
+                    found = rec;
+                    break;
+                }
+            }
+            
+            listenerRecords.remove(comp);
+            
+            if (found != null) {
+                // clean up the listener so an exit event is generated
+                Cell viewCell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                found.cleanup(viewCell.getCellID());
+            }            
         }
     }
     
@@ -172,6 +192,13 @@ public class ProximityComponent extends CellComponent
                         primaryViewCellChanged(vm.getPrimaryViewCell(), null);
 
                         cell.removeTransformChangeListener(cellTransformListener);
+                    }
+                    
+                    synchronized (listenerRecords) {
+                        for (ProximityListenerRecord rec : listenerRecords) {
+                            rec.cleanup(vm.getPrimaryViewCell().getCellID());
+                        }
+                        listenerRecords.clear();
                     }
                     break;
             }

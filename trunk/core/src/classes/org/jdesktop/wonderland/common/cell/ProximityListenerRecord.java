@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -19,6 +37,7 @@ package org.jdesktop.wonderland.common.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -26,8 +45,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.Math3DUtils;
-
-import com.jme.math.FastMath;
 
 /**
  *
@@ -141,13 +158,31 @@ public class ProximityListenerRecord implements Serializable {
      * @param cell
      */
     public void viewCellMoved(CellID viewCellID, CellTransform viewCellTransform) {
+        viewCellMoved(viewCellID, viewCellTransform, false);
+    }
+    
+    /**
+     * Cleanup this record, generating any exit events that needs to happen
+     */
+    public void cleanup(CellID viewCellID) {
+        viewCellMoved(viewCellID, new CellTransform(), true);
+    }
+    
+    /**
+     * The view cells transform has changed so update our internal structures
+     * @param cleanup in cleanup mode, we are removing the record, so we force
+     * an 
+     */
+    protected void viewCellMoved(CellID viewCellID, CellTransform viewCellTransform,
+                                 boolean cleanup)
+    {
         Vector3f viewCellWorldTranslation = viewCellTransform.getTranslation(null);
 
         // View Cell has moved
         synchronized(lock) {
             int currentContainerIndex = -1;      // -1 = not in any bounding volume
             int i = 0;
-            while(i < worldProxBounds.length) {
+            while(!cleanup && i < worldProxBounds.length) {
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.finest("Checking if " + worldProxBounds[i] + 
                                   " contains " + viewCellWorldTranslation + 
