@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -72,6 +72,7 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedLong;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedShort;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
+import org.jdesktop.wonderland.modules.sharedstate.common.annotation.SharedStateTransient;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.ChangeValueMessage;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.GetRequestMessage;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.GetResponseMessage;
@@ -177,6 +178,12 @@ public class SharedStateComponentMO extends CellComponentMO {
             List<SharedDataEntry> l = new ArrayList<SharedDataEntry>();
 
             for (Entry<String, SharedData> de : e.getValue().get().entrySet()) {
+                // if the value is transient, don't include it
+                Class clazz = de.getValue().getClass();
+                if (clazz.isAnnotationPresent(SharedStateTransient.class)) {
+                    continue;
+                }
+                
                 l.add(new SharedDataEntry(de.getKey(), de.getValue()));
             }
 
