@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -47,13 +65,13 @@ import java.util.zip.ZipFile;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
-import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
 import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
 
 /**
  *
@@ -273,7 +291,6 @@ class KmzLoader extends JmeColladaLoader {
             kmzFilename = kmzFilename.substring(kmzFilename.lastIndexOf('/')+1);
             deployedModel.setModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+((KmzImportedModel)importedModel).getPrimaryModel()+".gz");
             deployedModel.setLoaderDataURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".ldr");
-            deployedModel.setModelBounds(importedModel.getModelBG().getWorldBound());
             deployDeploymentData(targetDir, deployedModel, kmzFilename);
             importedModel.setDeployedModelURL(importedModel.getDeploymentBaseURL()+kmzFilename+"/"+kmzFilename+".dep");
             state.setDeployedModelURL(importedModel.getDeployedModelURL());
