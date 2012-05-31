@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.userlist.client;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -54,8 +55,8 @@ public enum WonderlandUserList implements PresenceManagerListener {
     private Cell cell;
     private PresenceInfo localPresenceInfo;
     private ModelChangedListener listener;
-    private LinkedHashSet<PresenceInfo> usersInRange = null;
-    private LinkedHashSet<PresenceInfo> usersNotInRange = null;
+    private Set<PresenceInfo> usersInRange = null;
+    private Set<PresenceInfo> usersNotInRange = null;
     
     
     private ConcurrentHashMap<String, String> usernameMap;
@@ -72,8 +73,8 @@ public enum WonderlandUserList implements PresenceManagerListener {
         this.cell = ClientContextJME.getViewManager().getPrimaryViewCell();
         this.localPresenceInfo = manager.getPresenceInfo(cell.getCellID());
         
-        usersInRange = new LinkedHashSet<PresenceInfo>();
-        usersNotInRange = new LinkedHashSet<PresenceInfo>();
+        usersInRange = Collections.synchronizedSet(new LinkedHashSet<PresenceInfo>());
+        usersNotInRange =Collections.synchronizedSet(new LinkedHashSet<PresenceInfo>());
         usernameMap = new ConcurrentHashMap<String, String>();
 //        usersInRange.add(localPresenceInfo);
         
