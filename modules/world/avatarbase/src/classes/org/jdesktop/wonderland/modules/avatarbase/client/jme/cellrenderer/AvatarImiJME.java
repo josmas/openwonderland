@@ -603,11 +603,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
 
             return loadAvatarInternal(avatarConfigInfo);
-        } catch (java.lang.Exception excp) {
-            // Loger and error and return null
+        } catch (Throwable t) {
+            
+            // make sure to catch *all* errors here -- anything that gets
+            // thrown can cause a stuck message in Darkstar. See 
+            // OWL issue #263 for details.
+            
+            // Log an error and return null
             String url = avatarConfigInfo == null ? "null" : avatarConfigInfo.getAvatarConfigURL();
             logger.log(Level.WARNING, "Failed to load avatar character for " +
-                    "url " + url, excp);
+                       "url " + url, t);
             return null;
         } finally {
             LoadingInfo.finishedLoading(cell.getCellID(), username);
