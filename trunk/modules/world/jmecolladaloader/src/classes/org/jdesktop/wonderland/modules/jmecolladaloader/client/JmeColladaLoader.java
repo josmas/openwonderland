@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -87,6 +105,9 @@ public class JmeColladaLoader implements ModelLoader {
 
     private static final Logger logger = Logger.getLogger(JmeColladaLoader.class.getName());
         
+    // maximum model size, as a radius in meters
+    private static final float MAX_RADIUS = 100;
+    
     /**
      * Load a Collada file and return the graph root
      * @param file
@@ -296,18 +317,24 @@ public class JmeColladaLoader implements ModelLoader {
             ModelCellComponentServerState setup = new ModelCellComponentServerState();
             cellSetup.addComponentServerState(setup);
             cellSetup.setName(importedModel.getWonderlandName());
+            
+            
             BoundingVolume modelBounds = importedModel.getModelBG().getWorldBound();
+            float scale = scaleBounds(modelBounds);
+            modelBounds = modelBounds.transform(new Quaternion(), Vector3f.ZERO, 
+                                                new Vector3f(scale, scale, scale));
+            
             cellSetup.setBoundingVolumeHint(new BoundingVolumeHint(false, modelBounds));
             deployedModel.setModelBounds(modelBounds);
 
             Vector3f offset = importedModel.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
-            Vector3f boundsCenter = importedModel.getRootBG().getWorldBound().getCenter();
+            Vector3f boundsCenter = modelBounds.getCenter();
 
             offset.subtractLocal(boundsCenter);
             deployedModel.setModelTranslation(offset);
             deployedModel.setModelRotation(importedModel.getModelBG().getLocalRotation());
-            deployedModel.setModelScale(importedModel.getModelBG().getLocalScale());
+            deployedModel.setModelScale(importedModel.getModelBG().getLocalScale().multLocal(scale));
 
 //            System.err.println("BOUNDS CENTER "+boundsCenter);
 //            System.err.println("OFfset "+offset);
@@ -320,7 +347,7 @@ public class JmeColladaLoader implements ModelLoader {
             // matches the bounds in the cell.
 
             // Center the worldBounds on the cell (ie 0,0,0)
-            BoundingVolume worldBounds = importedModel.getModelBG().getWorldBound();
+            BoundingVolume worldBounds = modelBounds.clone(null);
             worldBounds.setCenter(new Vector3f(0,0,0));
             position.setBounds(worldBounds);
             cellSetup.addComponentServerState(position);
@@ -340,6 +367,23 @@ public class JmeColladaLoader implements ModelLoader {
         return null;
     }
 
+    protected float scaleBounds(BoundingVolume bounds) {
+        float radius = 1f;
+        
+        if (bounds instanceof BoundingBox) {
+            BoundingBox bb = (BoundingBox) bounds;
+            radius = Math.max(bb.xExtent, Math.max(bb.yExtent, bb.zExtent));
+        } else if (bounds instanceof BoundingSphere) {
+            radius = ((BoundingSphere) bounds).getRadius();
+        }
+        
+        if (radius > MAX_RADIUS) {
+            return MAX_RADIUS / radius;
+        } else {
+            return 1f;
+        }
+    }
+    
     protected void deployDeploymentData(File targetDir, 
             DeployedModel deployedModel,
             String filename) {
@@ -620,7 +664,7 @@ public class JmeColladaLoader implements ModelLoader {
 
             // Try to locate using resourceName as is.
             try {
-                String spec = URLEncoder.encode( resourceName, "UTF-8" );
+                String spec = new URI(null, null, resourceName, null).toASCIIString();
                 //this fixes a bug in JRE1.5 (file handler does not decode "+" to spaces)
 //                spec = spec.replaceAll( "\\+", "%20" );
 
@@ -632,6 +676,8 @@ public class JmeColladaLoader implements ModelLoader {
             } catch (IOException e) {
                 // URL wasn't valid in some way, so try up a path.
             } catch (IllegalArgumentException e) {
+                // URL wasn't valid in some way, so try up a path.
+            } catch (URISyntaxException e) {
                 // URL wasn't valid in some way, so try up a path.
             }
 
