@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -30,9 +48,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
-import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.utils.RunUtil;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  *TBD
@@ -51,15 +69,15 @@ public class WFSManager {
     private static final String WFS_ROOT_PROPERTY = "wonderland.webserver.wfs.root";
     
     /* A map of WFS worlds (given by name and root object) */
-    private Map<String, WFSRoot> wfsRoots = new LinkedHashMap();
+    private final Map<String, WFSRoot> wfsRoots = new LinkedHashMap();
 
     /* A map of all snapshots of worlds (given by name and recording object) */
     // NEED TO MAKE MT SAFE XXXX
-    private Map<String, WFSSnapshot> wfsSnapshots = new LinkedHashMap();
+    private final Map<String, WFSSnapshot> wfsSnapshots = new LinkedHashMap();
 
     /* A map of all recordings of worlds (given by name and recording object) */
     // NEED TO MAKE MT SAFE XXXX
-    private Map<String, WFSRecording> wfsRecordings = new LinkedHashMap();
+    private final Map<String, WFSRecording> wfsRecordings = new LinkedHashMap();
     
     /*
      * A map of all wfs, worlds, recordings and snapshots of worlds, where the key
@@ -68,7 +86,7 @@ public class WFSManager {
      * names.
      */
     // NEED TO MAKE MT SAFE XXX
-    private Map<String, WFS> wfsMap = new HashMap();
+    private final Map<String, WFS> wfsMap = new HashMap();
 
     /* The logger for the module manager */
     private static final Logger logger = Logger.getLogger(WFSManager.class.getName());
@@ -127,7 +145,10 @@ public class WFSManager {
         loadWFSs();
         loadSnapshots();
         loadRecordings();
-        return wfsMap.get(rootPath);
+       
+        synchronized (this) {
+            return wfsMap.get(rootPath);
+        }
     }
     
     /**
@@ -149,7 +170,10 @@ public class WFSManager {
      */
     public List<WFSRoot> getWFSRoots() {
         loadWFSs();
-        return new ArrayList<WFSRoot>(wfsRoots.values());
+        
+        synchronized (this) {
+            return new ArrayList<WFSRoot>(wfsRoots.values());
+        }
     }
 
     /**
@@ -160,7 +184,10 @@ public class WFSManager {
      */
     public WFSRoot getWFSRoot(String name) {
         loadWFSs();
-        return wfsRoots.get(name);
+        
+        synchronized (this) {
+            return wfsRoots.get(name);
+        }
     }
 
     /**
@@ -169,7 +196,10 @@ public class WFSManager {
      */
     public List<WFSSnapshot> getWFSSnapshots() {
         loadSnapshots();
-        return new ArrayList<WFSSnapshot>(wfsSnapshots.values());
+        
+        synchronized (this) {
+            return new ArrayList<WFSSnapshot>(wfsSnapshots.values());
+        }
     }
 
     /**
@@ -178,7 +208,10 @@ public class WFSManager {
      */
     public List<WFSRecording> getWFSRecordings() {
         loadRecordings();
-        return new ArrayList<WFSRecording>(wfsRecordings.values());
+        
+        synchronized (this) {
+            return new ArrayList<WFSRecording>(wfsRecordings.values());
+        }
     }
 
     /**
@@ -189,7 +222,10 @@ public class WFSManager {
      */
     public WFSSnapshot getWFSSnapshot(String name) {
         loadSnapshots();
-        return wfsSnapshots.get(name);
+        
+        synchronized (this) {
+            return wfsSnapshots.get(name);
+        }
     }
 
     /**
@@ -199,13 +235,19 @@ public class WFSManager {
      * with the given name
      */
     public WFSRecording getWFSRecording(String name) {
-        WFSRecording recording = wfsRecordings.get(name);
-        if (recording != null) {
-            return recording;
+        synchronized (this) {
+            WFSRecording recording = wfsRecordings.get(name);
+            if (recording != null) {
+                return recording;
+            }
         }
+        
         //If it's not already loaded, try loading all the recordings from scratch
         loadRecordings();
-        return wfsRecordings.get(name);
+        
+        synchronized (this) {
+            return wfsRecordings.get(name);
+        }
     }
 
     /**
@@ -226,8 +268,10 @@ public class WFSManager {
                 snapshot.setTimestamp(new Date());
 
                 // update our internal records
-                wfsSnapshots.put(snapshot.getName(), snapshot);
-                wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
+                synchronized (this) {
+                    wfsSnapshots.put(snapshot.getName(), snapshot);
+                    wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
+                }
             }
 
             return snapshot;
@@ -260,8 +304,10 @@ public class WFSManager {
                 recording.setDescription("WFS Recording named: " + name);
 
                 // update our internal records
-                wfsRecordings.put(recording.getName(), recording);
-                wfsMap.put(recording.getRootPath(), recording.getWfs());
+                synchronized (this) {
+                    wfsRecordings.put(recording.getName(), recording);
+                    wfsMap.put(recording.getRootPath(), recording.getWfs());
+                }
             }
 
             return recording;
@@ -276,13 +322,15 @@ public class WFSManager {
      * @param name the name of the recording to remove
      */
     public void removeWFSRecording(String name) {
-        WFSRecording recording = wfsRecordings.remove(name);
-        if (recording == null) {
-            return;
+        synchronized (this) {
+            WFSRecording recording = wfsRecordings.remove(name);
+            if (recording == null) {
+                return;
+            }
+
+            wfsMap.remove(recording.getRootPath());
         }
-
-        wfsMap.remove(recording.getRootPath());
-
+        
         File recordingDir = new File(recordingFile, name);
         if (recordingDir.exists()) {
             RunUtil.deleteDir(recordingDir);
@@ -294,13 +342,15 @@ public class WFSManager {
      * @param name the name of the snapshot to remove
      */
     public void removeWFSSnapshot(String name) {
-        WFSSnapshot snapshot = wfsSnapshots.remove(name);
-        if (snapshot == null) {
-            return;
+        synchronized (this) {
+            WFSSnapshot snapshot = wfsSnapshots.remove(name);
+            if (snapshot == null) {
+                return;
+            }
+
+            wfsMap.remove(snapshot.getRootPath());
         }
-
-        wfsMap.remove(snapshot.getRootPath());
-
+        
         File snapshotDir = new File(snapshotFile, name);
         if (snapshotDir.exists()) {
             RunUtil.deleteDir(snapshotDir);
@@ -313,13 +363,15 @@ public class WFSManager {
      * @param newname the new name
      */
     void renameSnapshot(String oldname, String oldpath, WFSSnapshot snapshot) {
-        // remove information about the old snapshot
-        wfsSnapshots.remove(oldname);
-        wfsMap.remove(oldpath);
+        synchronized (this) {
+            // remove information about the old snapshot
+            wfsSnapshots.remove(oldname);
+            wfsMap.remove(oldpath);
 
-        // add the new information
-        wfsSnapshots.put(snapshot.getName(), snapshot);
-        wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
+            // add the new information
+            wfsSnapshots.put(snapshot.getName(), snapshot);
+            wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
+        }
     }
 
     /**
@@ -328,13 +380,15 @@ public class WFSManager {
      * @param newname the new name
      */
     void renameRecording(String oldname, String oldpath, WFSRecording recording) {
-        // remove information about the old recording
-        wfsRecordings.remove(oldname);
-        wfsMap.remove(oldpath);
+        synchronized (this) {
+            // remove information about the old recording
+            wfsRecordings.remove(oldname);
+            wfsMap.remove(oldpath);
 
-        // add the new information
-        wfsRecordings.put(recording.getName(), recording);
-        wfsMap.put(recording.getRootPath(), recording.getWfs());
+            // add the new information
+            wfsRecordings.put(recording.getName(), recording);
+            wfsMap.put(recording.getRootPath(), recording.getWfs());
+        }
     }
 
     /**
@@ -342,50 +396,67 @@ public class WFSManager {
      * to the internal list.
      */
     private void loadWFSs() {
-        // clear out the existing list -- make sure to clean up both
-        // wfsRoots and the wfsMap.  Use an iterator here to avoid concurrent
-        // modification problems
-        for (Iterator<WFSRoot> i = wfsRoots.values().iterator(); i.hasNext();) {
-            WFSRoot root = i.next();
-            i.remove();
-            wfsMap.remove(root.getRootPath());
-        }
-        
+        // first, grab a snapshot of the roots to add
+        List<WFSRoot> toAdd = new ArrayList<WFSRoot>();
         for (File rootDir : this.getWFSRootDirectories()) {
             try {
-                WFSRoot root = WFSRoot.getInstance(rootDir);
-
-                wfsRoots.put(root.getName(), root);
-                wfsMap.put(root.getRootPath(), root.getWfs());
+                toAdd.add(WFSRoot.getInstance(rootDir));
             } catch (java.lang.Exception excp) {
                 logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
             }
-        }   
+        }
+        
+        // clear out the existing list -- make sure to clean up both
+        // wfsRoots and the wfsMap.  Use an iterator here to avoid concurrent
+        // modification problems
+        synchronized (this) {
+            for (Iterator<WFSRoot> i = wfsRoots.values().iterator(); i.hasNext();) {
+                WFSRoot root = i.next();
+                i.remove();
+                wfsMap.remove(root.getRootPath());
+            }
+        
+            // add new entries from snapshot
+            for (WFSRoot root : toAdd) {
+                wfsRoots.put(root.getName(), root);
+                wfsMap.put(root.getRootPath(), root.getWfs());
+            }
+        }
     }
     
     /**
      * Loads in all of the snapshots of wfs. Adds to the internal list
      */
     private void loadSnapshots() {
+        // first, grab a snapshot of the roots to add
+        List<WFSSnapshot> toAdd = new ArrayList<WFSSnapshot>();
+        for (File rootDir : this.getSnapshotDirectories()) {
+            try {
+                toAdd.add(WFSSnapshot.getInstance(rootDir));
+            } catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
+            }
+        }
+        
         // clear out the existing list -- make sure to clean up both
         // wfsSnapshotss and the wfsMap.  Use an iterator here to avoid
         // concurrent modification problems
-        for (Iterator<WFSSnapshot> i = wfsSnapshots.values().iterator();
-             i.hasNext();)
-        {
-            WFSSnapshot snapshot = i.next();
-            i.remove();
-            wfsMap.remove(snapshot.getRootPath());
-        }
+        synchronized (this) {
+            for (Iterator<WFSSnapshot> i = wfsSnapshots.values().iterator();
+                i.hasNext();)
+            {
+                WFSSnapshot snapshot = i.next();
+                i.remove();
+                wfsMap.remove(snapshot.getRootPath());
+            }
 
-        for (File root : this.getSnapshotDirectories()) {
-            try {
-                WFSSnapshot snapshot = WFSSnapshot.getInstance(root);
-                
-                wfsSnapshots.put(snapshot.getName(), snapshot);
-                wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
-            } catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
+            for (WFSSnapshot snapshot : toAdd) {
+                try {
+                    wfsSnapshots.put(snapshot.getName(), snapshot);
+                    wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
+                } catch (java.lang.Exception excp) {
+                    logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
+                }
             }
         }
     }
@@ -394,25 +465,35 @@ public class WFSManager {
      * Loads in all of the recordings of wfs. Adds to the internal list
      */
     private void loadRecordings() {
+        // first, grab a snapshot of the roots to add
+        List<WFSRecording> toAdd = new ArrayList<WFSRecording>();
+        for (File rootDir : this.getRecordingDirectories()) {
+            try {
+                toAdd.add(WFSRecording.getInstance(rootDir));
+            } catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
+            }
+        }
+        
         // clear out the existing list -- make sure to clean up both
         // wfsRecordings and the wfsMap.  Use an iterator here to avoid
         // concurrent modification problems
-        for (Iterator<WFSRecording> i = wfsRecordings.values().iterator();
-             i.hasNext();)
-        {
-            WFSRecording recording = i.next();
-            i.remove();
-            wfsMap.remove(recording.getRootPath());
-        }
-
-        for (File root : this.getRecordingDirectories()) {
-            try {
-                WFSRecording recording = WFSRecording.getInstance(root);
-
-                wfsRecordings.put(recording.getName(), recording);
-                wfsMap.put(recording.getRootPath(), recording.getWfs());
-            } catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
+        synchronized (this) {
+            for (Iterator<WFSRecording> i = wfsRecordings.values().iterator();
+                 i.hasNext();)
+            {
+                WFSRecording recording = i.next();
+                i.remove();
+                wfsMap.remove(recording.getRootPath());
+            }
+            
+            for (WFSRecording recording : toAdd) {
+                try {
+                    wfsRecordings.put(recording.getName(), recording);
+                    wfsMap.put(recording.getRootPath(), recording.getWfs());
+                } catch (java.lang.Exception excp) {
+                    logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
+                }
             }
         }
     }
