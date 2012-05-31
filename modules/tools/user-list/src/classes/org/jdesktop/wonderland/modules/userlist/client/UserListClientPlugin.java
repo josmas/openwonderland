@@ -58,6 +58,11 @@ public class UserListClientPlugin extends BaseClientPlugin
         super.cleanup();
     }
     
+    @Override
+    public void deactivate() {
+        cleanup();
+    }
+    
     public void viewConfigured(LocalAvatar localAvatar) {
         WonderlandUserList.INSTANCE.initialize();
         UserListPresenterManager.INSTANCE.intialize();

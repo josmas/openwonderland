@@ -87,6 +87,7 @@ public enum UserListPresenterManager implements HUDEventListener {
                 hudComponent = main.createComponent(tabbedPanel);
                 tabbedPanel.addTab("Users", view);
                 tabbedPanel.getTabbedPanel().setSelectedIndex(0);
+                tabbedPanel.setHUDComponent(hudComponent);
             } else {
                 hudComponent = main.createComponent(view);
             }

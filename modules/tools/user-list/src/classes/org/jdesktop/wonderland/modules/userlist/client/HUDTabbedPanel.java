@@ -104,6 +104,15 @@ public class HUDTabbedPanel extends javax.swing.JPanel
     public JTabbedPane getTabbedPanel() {
         return tabbedPanel;
     }
+    
+    public void setHUDComponent(HUDComponent component) {
+        this.hudComponent = component;
+    }
+    
+    public HUDComponent getHUDComponent() {
+        return hudComponent;
+        
+    }
 
 
     public void addTab(String caption, JPanel newTab) {
