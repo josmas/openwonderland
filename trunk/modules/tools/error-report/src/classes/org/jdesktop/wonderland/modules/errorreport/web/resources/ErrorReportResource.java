@@ -18,13 +18,18 @@
 package org.jdesktop.wonderland.modules.errorreport.web.resources;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FilterReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -59,6 +64,8 @@ import org.jdesktop.wonderland.modules.errorreport.common.ErrorReport;
  */
 @Path("/errorReports")
 public class ErrorReportResource {
+    private static final Logger LOGGER = 
+            Logger.getLogger(ErrorReportResource.class.getName());
     private static JAXBContext context;
     
     private final WebContentRepository repo;
@@ -95,20 +102,23 @@ public class ErrorReportResource {
             
             for (ContentNode node : dir.getChildren()) {
                 if (node instanceof ContentResource) {
-                    ErrorReport report = read((ContentResource) node);
-                    if (!includeContent) {
-                        report.setContent(null);
-                    }
+                    try {
+                        ErrorReport report = read((ContentResource) node);
+                        if (!includeContent) {
+                            report.setContent(null);
+                        }
                     
-                    reports.add(report);
+                        reports.add(report);
+                    } catch (JAXBException je) {
+                        LOGGER.log(Level.WARNING, "Error reading " + node.getName(),
+                                   je);
+                    }
                 }
             }
             
             return Response.ok(new ErrorReportList(reports)).build();
         } catch (ContentRepositoryException ce) {
             throw new WebApplicationException(ce, Response.Status.INTERNAL_SERVER_ERROR);
-        } catch (JAXBException je) {
-            throw new WebApplicationException(je, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
     
@@ -234,7 +244,11 @@ public class ErrorReportResource {
             throws JAXBException, ContentRepositoryException 
     {
         Unmarshaller unmarshaller = getContext().createUnmarshaller();
-        ErrorReport report = (ErrorReport) unmarshaller.unmarshal(resource.getInputStream());
+        
+        // reports may contain illegal characters. Add a filter to
+        // ignore all these characters.
+        Reader in = new EscapeBadCharsReader(new InputStreamReader(resource.getInputStream()));
+        ErrorReport report = (ErrorReport) unmarshaller.unmarshal(in);
         report.setId(resource.getName());
         return report;
     }
@@ -278,6 +292,38 @@ public class ErrorReportResource {
         @XmlElement
         public List<ErrorReport> getLogs() {
             return logs;
+        }
+    }
+    
+    static class EscapeBadCharsReader extends FilterReader {
+        public EscapeBadCharsReader(Reader r) {
+            super (r);
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            int res = super.read(cbuf, off, len);
+            for (int i = off; i < len; i++) {
+                int idx = off + i;
+                cbuf[idx] = escape(cbuf[idx]);
+            }
+            
+            return res;
+        }
+        
+        private char escape(char c) {
+            if((c == 0x9)
+                || (c == 0xA) 
+                || (c == 0xD) 
+                || ((c >= 0x20) && (c <= 0xD7FF)) 
+                || ((c >= 0xE000) && (c <= 0xFFFD)) 
+                || ((c >= 0x10000) && (c <= 0x10FFFF)))
+            {
+                // valid
+                return c;
+            } else {
+                return '.';
+            }
         }
     }
 }
