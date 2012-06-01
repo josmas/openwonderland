@@ -463,6 +463,7 @@ public class ErrorReportFrame extends javax.swing.JFrame
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Marshaller m = getContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         m.marshal(report, baos);
     
         file.put(baos.toByteArray());
