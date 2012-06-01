@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -34,10 +52,7 @@ class HeaderPanelAllocator implements Runnable {
     private static final int SIZE = 10;
 
     private Thread thread;
-
     private LinkedBlockingQueue<HeaderPanel> headers = new LinkedBlockingQueue<HeaderPanel>();
-
-    private HeaderPanel newlyCreatedHeader;
 
     HeaderPanelAllocator () {
         initialize();
@@ -79,16 +94,23 @@ class HeaderPanelAllocator implements Runnable {
     }
 
     private HeaderPanel createHeader () {
+        final HeaderHolder holder = new HeaderHolder();
+        
         try {
             SwingUtilities.invokeAndWait(new Runnable () {
                 public void run () {
-                    newlyCreatedHeader = new HeaderPanel();
+                    synchronized (holder) {
+                        holder.panel = new HeaderPanel();
+                    }
                 }
             });
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-        return newlyCreatedHeader;
+        
+        synchronized (holder) {
+            return holder.panel;
+        }
     }
 
     public void run () {
@@ -107,5 +129,9 @@ class HeaderPanelAllocator implements Runnable {
             } catch (InterruptedException ex) {
             }
         }
+    }
+    
+    private static class HeaderHolder {
+        public HeaderPanel panel;
     }
 }
