@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -73,7 +73,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
 
     private final Map<CellID, Integer> indexMap = 
             Collections.synchronizedMap(new HashMap<CellID, Integer>());
-    private transient final ThreadLocal<MapUpdateTransactionParticipant> mutp =
+    private static final ThreadLocal<MapUpdateTransactionParticipant> mutp =
             new ThreadLocal<MapUpdateTransactionParticipant>();
 
     ServerProximityListenerRecord(ServerProximityListenerWrapper proximityListener, BoundingVolume[] localBounds, String id) {
