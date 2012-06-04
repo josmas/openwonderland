@@ -44,7 +44,7 @@ import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.state.CullState;
-import com.jme.scene.state.RenderState;
+import com.jme.system.DisplaySystem;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
@@ -56,16 +56,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -74,10 +72,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.mtgame.util.GraphOptimizer;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
@@ -158,8 +153,7 @@ public class JmeColladaLoader implements ModelLoader {
         importer.load(in);
         modelNode = importer.getModel();
 
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        CullState culls = (CullState) rm.createRendererState(RenderState.StateType.Cull);
+        CullState culls = DisplaySystem.getDisplaySystem().getRenderer().createCullState();
         culls.setCullFace(CullState.Face.Back);
         modelNode.setRenderState(culls);
 
@@ -203,7 +197,7 @@ public class JmeColladaLoader implements ModelLoader {
             LoaderData data=null;
             if (deployedModel.getLoaderDataURL()==null) {
                 logger.warning("No Loader data for model "+deployedModel.getModelURL());
-            } else {
+            } else if (deployedModel.getLoaderData() == null) {
                 URL url = AssetUtils.getAssetURL(deployedModel.getLoaderDataURL());
                 in = url.openStream();
                 if (in==null) {
@@ -211,6 +205,7 @@ public class JmeColladaLoader implements ModelLoader {
                 } else {
                     try {
                         data = LoaderData.decode(in);
+                        deployedModel.setLoaderData(data);
                     } catch (JAXBException ex) {
                         Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Error parsing loader data "+url.toExternalForm(), ex);
                     }
@@ -600,6 +595,45 @@ public class JmeColladaLoader implements ModelLoader {
         return cellSetup;
     }
 
+    public List<URL> getAssets(DeployedModel model) throws IOException {
+        List<URL> out = new LinkedList<URL>();
+        
+        // return the URLs of the model and of the loader data
+        if (model.getModelURL() != null) {
+            out.add(AssetUtils.getAssetURL(model.getModelURL()));
+        }
+        
+        if (model.getLoaderDataURL() != null) {
+            out.add(AssetUtils.getAssetURL(model.getLoaderDataURL()));
+        }
+        
+        return out;
+    }
+
+    public List<URL> assetLoaded(DeployedModel model, URL url, InputStream loaded) 
+            throws IOException
+    {
+        List<URL> out = new LinkedList<URL>();
+        
+        // see if this is the loader data URL
+        if (model.getLoaderDataURL() != null) {
+            URL modelLoaderURL = AssetUtils.getAssetURL(model.getLoaderDataURL());
+            if (modelLoaderURL.equals(url)) {
+                try {
+                    LoaderData data = LoaderData.decode(loaded);
+                    URL modelURL = AssetUtils.getAssetURL(model.getModelURL());
+                    for (String textureURL : data.getDeployedTextures().values()) {
+                        out.add(new URL(modelURL, textureURL));
+                    }
+                } catch (JAXBException ex) {
+                    throw new IOException(ex);
+                }
+            }
+        }
+        
+        return out;
+    }
+    
     /**
      * Locate resource for deployed models
      */

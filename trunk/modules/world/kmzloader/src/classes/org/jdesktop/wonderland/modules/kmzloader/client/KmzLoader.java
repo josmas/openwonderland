@@ -308,7 +308,8 @@ class KmzLoader extends JmeColladaLoader {
     @Override
     protected void deployTextures(File targetDir, Map<String, String> deploymentMapping, ImportedModel importedModel) {
         URL modelURL = importedModel.getImportSettings().getModelURL();
-
+        String modelPath = "/" + ((KmzImportedModel)importedModel).getPrimaryModel() + ".gz";
+        
         if (!modelURL.getProtocol().equalsIgnoreCase("file")) {
             final String modelURLStr = modelURL.toExternalForm();
             SwingUtilities.invokeLater(new Runnable() {
@@ -324,7 +325,7 @@ class KmzLoader extends JmeColladaLoader {
         }
         try {
             ZipFile zipFile = new ZipFile(new File(modelURL.toURI()));
-            deployZipTextures(zipFile, targetDir);
+            deployZipTextures(zipFile, targetDir, modelPath, deploymentMapping);
         } catch (ZipException ex) {
             Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -340,7 +341,9 @@ class KmzLoader extends JmeColladaLoader {
      * with the name of the original model.
      * @param moduleArtRootDir
      */
-    private void deployZipTextures(ZipFile zipFile, File targetDir) {
+    private void deployZipTextures(ZipFile zipFile, File targetDir,
+                                   String modelPath, Map<String, String> deploymentMapping) 
+    {
         try {
             // TODO generate checksums to check for image duplication
 //            String targetDirName = targetDir.getAbsolutePath();
@@ -351,6 +354,10 @@ class KmzLoader extends JmeColladaLoader {
                 target.createNewFile();
 //                logger.fine("Texture file " + target.getAbsolutePath());
                 copyAsset(zipFile, t.getValue(), target, false);
+                
+                String deployedPath = t.getKey().getPath();
+                String relativePath = KmzLoaderFactory.getRelativePath(modelPath, deployedPath);
+                deploymentMapping.put(relativePath, relativePath);
             }
         } catch (ZipException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -389,7 +396,7 @@ class KmzLoader extends JmeColladaLoader {
             }
         }
     }
-
+    
     class ZipResourceLocator implements ResourceLocator {
 
         private String zipHost;

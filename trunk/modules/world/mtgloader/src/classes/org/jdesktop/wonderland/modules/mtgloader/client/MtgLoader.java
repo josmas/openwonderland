@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -22,23 +40,26 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ConfigInstance;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager.ConfigLoadListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
+import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
 
 /**
  *
@@ -121,6 +142,12 @@ class MtgLoader implements ModelLoader {
     public ModelCellServerState getCellServerState(String deployedURL, Vector3f modelTranslation, Quaternion modelRotation, Vector3f modelScale, Map<String, Object> properties) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    public List<URL> getAssets(DeployedModel model) throws IOException {
+        return Collections.EMPTY_LIST;
+    }
 
-
+    public List<URL> assetLoaded(DeployedModel model, URL url, InputStream loaded) throws IOException {
+        return Collections.EMPTY_LIST;
+    }
 }

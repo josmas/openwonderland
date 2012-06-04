@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -22,10 +40,11 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.ModelCellComponent;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 
 /**
@@ -76,6 +95,26 @@ public interface ModelLoader {
             Quaternion modelRotation,
             Vector3f modelScale,
             Map<String, Object> properties);
+    
+    /**
+     * Get a list of asset URLs for the given model
+     * @param model the model to get URLs for
+     * @return the asset URLs to load, or an empty list if there
+     * are no URLs.
+     */
+    public List<URL> getAssets(DeployedModel model) throws IOException;
+    
+    /**
+     * Get a list of additional assets based on loading the given asset
+     * @param model the model to load urls for
+     * @param url the URL that was loaded
+     * @param loaded the input stream of data
+     * @return the additional asset URLs to load, or an empty list if
+     * there are no URLs
+     */
+     public List<URL> assetLoaded(DeployedModel model, URL url, 
+                                  InputStream loaded)
+             throws IOException;
     
     /**
      * Add a model loader component for the specified deployed model to the cell. Use this method if

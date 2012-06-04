@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -83,5 +101,45 @@ public class KmzLoaderFactory extends ModelLoaderFactory
     @Override
     public String getLoaderClassname() {
         return KmzLoader.class.getName();
+    }
+    
+    /**
+     * Find a relative path between two files
+     * @param model the model path
+     * @param texture the texture path
+     * @return the location of the texture relative to the model
+     */
+    public static String getRelativePath(String model, String texture) {
+        String[] modelParts = model.split("/");
+        String[] textureParts = texture.split("/");
+        
+        StringBuilder out = new StringBuilder();
+        
+        // eliminate all common directories
+        int index = 0;
+        while (index < Math.min(modelParts.length, textureParts.length) &&
+               modelParts[index].equals(textureParts[index])) 
+        {
+            index++;
+        }
+        
+        // how many segments are left in the model?
+        if (index == modelParts.length - 1) {
+            // we are at the model file
+            out.append("./");
+        } else {
+            // we need to back up some
+            for (int i = index; i < modelParts.length - 1; i++) {
+                out.append("../");
+            }
+        }
+        
+        // add anything left in the image path
+        for (int i = index; i < textureParts.length - 1; i++) {
+            out.append(textureParts[i]).append("/");
+        }
+        out.append(textureParts[textureParts.length - 1]);
+        
+        return out.toString();
     }
 }
