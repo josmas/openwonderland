@@ -22,6 +22,10 @@
 
     <pathconvert property="module-web.classpath">
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${web.dir}/server/build/lib/wonderland-webserver.jar"/>
+        
+        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-common.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 

@@ -54,6 +54,13 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
+        <jar jarfile="${build.lib.dir}/webdav-spi.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="${module.src}/web/FileWebContentRepository**"/>
+                <include name="${module.src}/common/**"/>
+            </fileset>
+        </jar>
+        
         <module name="${module.name}" majorVersion="0" minorVersion="5" miniVersion="1" jarfile="${module.dist.dir}/${module.name}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
 

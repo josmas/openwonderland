@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -28,6 +46,8 @@
 package org.jdesktop.wonderland.modules.contentrepo.client.ui;
 
 import java.awt.Cursor;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -43,6 +63,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import org.jdesktop.swingworker.SwingWorker;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
@@ -123,7 +144,7 @@ public class AsynchronousJTree extends javax.swing.JTree {
         // which we always do in the AWT Event Thread.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                rootNode.insert(node, rootNode.getChildCount());
+                rootNode.add(node);
                 ((DefaultTreeModel)getModel()).nodeStructureChanged(rootNode);
             }
         });
@@ -412,10 +433,10 @@ public class AsynchronousJTree extends javax.swing.JTree {
      * This holds the display name of the node and the ContentNode to which
      * it is associated.
      */
-    private class TreeNodeHolder {
+    private class TreeNodeHolder implements Comparable<TreeNodeHolder> {
 
-        public String displayName = null;
-        public ContentNode contentNode = null;
+        private final String displayName;
+        private final ContentNode contentNode;
 
         public TreeNodeHolder(String displayName, ContentNode contentNode) {
             this.displayName = displayName;
@@ -425,6 +446,10 @@ public class AsynchronousJTree extends javax.swing.JTree {
         @Override
         public String toString() {
             return displayName;
+        }
+
+        public int compareTo(TreeNodeHolder o) {
+            return displayName.compareTo(o.displayName);
         }
     }
 
@@ -455,6 +480,42 @@ public class AsynchronousJTree extends javax.swing.JTree {
             String thisDisplayName = holder.contentNode.getName();
             String otherDisplayName = contentNode.getName();
             return thisDisplayName.equals(otherDisplayName);
+        }
+
+        // update all mutators to sort list of children
+
+        @Override
+        public void add(MutableTreeNode newChild) {
+            super.add(newChild);
+            sortChildren();
+        }
+
+        @Override
+        public void insert(MutableTreeNode newChild, int childIndex) {
+            super.insert(newChild, childIndex);
+            sortChildren();
+        }
+
+        private void sortChildren() {
+            Collections.sort(children, new Comparator<DefaultMutableTreeNode>() {
+
+                public int compare(DefaultMutableTreeNode o1,
+                                   DefaultMutableTreeNode o2)
+                {
+                    TreeNodeHolder u1 = (TreeNodeHolder) o1.getUserObject();
+                    TreeNodeHolder u2 = (TreeNodeHolder) o2.getUserObject();
+
+                    if (u1 == null && u2 == null) {
+                        return 0;
+                    } else if (u1 == null) {
+                        return -1;
+                    } else if (u2 == null) {
+                        return 1;
+                    } else {
+                        return u1.compareTo(u2);
+                    }
+                }
+            });
         }
     }
 
@@ -579,11 +640,14 @@ public class AsynchronousJTree extends javax.swing.JTree {
         protected List<ContentNode> doInBackground() throws Exception {
             // From the node, find the "User Object" and then the content
             // node from the user object
-            TreeNodeHolder holder = (TreeNodeHolder) node.getUserObject();
-            ContentNode contentNode = (ContentNode) holder.contentNode;
-            if (contentNode instanceof ContentCollection) {
-                return ((ContentCollection) contentNode).getChildren();
+            if (node.getUserObject() instanceof TreeNodeHolder) {
+                TreeNodeHolder holder = (TreeNodeHolder) node.getUserObject();
+                ContentNode contentNode = (ContentNode) holder.contentNode;
+                if (contentNode instanceof ContentCollection) {
+                    return ((ContentCollection) contentNode).getChildren();
+                }
             }
+            
             return new LinkedList();
         }
 

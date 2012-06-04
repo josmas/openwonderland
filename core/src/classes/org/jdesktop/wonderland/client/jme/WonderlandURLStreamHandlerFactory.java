@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -36,6 +54,13 @@ public class WonderlandURLStreamHandlerFactory implements URLStreamHandlerFactor
     private static final Logger logger =
             Logger.getLogger(WonderlandURLStreamHandlerFactory.class.getName());
 
+    private static final String DEFAULT_PACKAGE = "org.jdesktop.wonderland.client.protocols";
+    private static String handlerPackage = DEFAULT_PACKAGE;
+    
+    public static void setHandlerPackage(String handlerPackage) {
+        WonderlandURLStreamHandlerFactory.handlerPackage = handlerPackage;
+    }
+    
     public URLStreamHandler createURLStreamHandler(String protocol) {
         URLStreamHandler u = null;
 
@@ -48,9 +73,7 @@ public class WonderlandURLStreamHandlerFactory implements URLStreamHandlerFactor
         };
         for (String p : protocols) {
             if (p.equalsIgnoreCase(protocol)) {
-                String className =
-                        "org.jdesktop.wonderland.client.protocols" +
-                        "." + p + ".Handler";
+                String className = handlerPackage + "." + p + ".Handler";
                 try {
                     Class clazz = Class.forName(className);
                     u = (URLStreamHandler) clazz.newInstance();
