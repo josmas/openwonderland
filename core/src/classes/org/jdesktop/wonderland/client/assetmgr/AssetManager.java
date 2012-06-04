@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -105,6 +105,9 @@ public class AssetManager {
     /* The number of threads to use for each of the downloading service */
     private static final int NUMBER_THREADS = 10;    
     private final ExecutorService downloadService = Executors.newFixedThreadPool(AssetManager.NUMBER_THREADS);
+    
+    /** Statistics */
+    private AssetStatisticsSPI stats = new NoopAssetStatisticsSPI();
     
     /* Receive updates every 10 KB during downloads */
     private static final int UPDATE_BYTE_INTERVAL = 1024 * 10;
@@ -236,7 +239,8 @@ public class AssetManager {
      * @return An Asset object
      */
     public Asset getAsset(AssetURI assetURI, AssetRepositoryFactory factory) {
-
+        long startTime = System.currentTimeMillis();
+        
         synchronized(loadingAssets) {
             // Formulate the id (uri + checksum) of the asset we wish to download.
             // We need this to see if we are already downloading the same asset.
@@ -272,12 +276,16 @@ public class AssetManager {
                 // asynchronous. We immediately return the Asset object here
                 logger.fine("Spawning service to download asset " + assetURI);
                 Asset asset = assetFactory.assetFactory(AssetType.FILE, assetID);
-
+                
                 AssetLoader loader = new AssetLoader(asset, factory);
                 loadingAssets.put(assetID, loader);
                 Future f = downloadService.submit(loader);
                 loader.setFuture(f);
 
+                // record time
+                long submitTime = System.currentTimeMillis() - startTime;
+                getStatsProvider().assetStatistic(assetURI, AssetStat.SUBMIT, submitTime);
+                
                 return asset;
             }
         }
@@ -358,6 +366,25 @@ public class AssetManager {
         }
     }
 
+    /**
+     * Set the asset statistics provider
+     * @param provider the provider
+     */
+    public synchronized void setStatsProvider(AssetStatisticsSPI provider) {
+        if (provider == null) {
+            this.stats = new NoopAssetStatisticsSPI();
+        } else {
+            this.stats = provider;
+        }
+    }
+    
+    /**
+     * Get the current statistics provider
+     */
+    public synchronized AssetStatisticsSPI getStatsProvider() {
+        return this.stats;
+    }
+    
     /**
      * Synchronously download an asset from a server, given the input stream
      * to read the asset, and the Asset object.
@@ -659,6 +686,8 @@ public class AssetManager {
                 logger.fine("Seeing if repository " + repository.toString() +
                         " has asset " + assetURI);
 
+                long startTime = System.currentTimeMillis();
+                
                 // Try to open the output stream. If the repository tells
                 // us we already have the most up-to-date version, then we
                 // simply return that. Otherwise, we attempt to download
@@ -668,16 +697,26 @@ public class AssetManager {
                 logger.fine("Got an asset stream with response " + response +
                         " for asset " + uriString);
 
+                // record statistic
+                long streamTime = System.currentTimeMillis() - startTime;
+                getStatsProvider().assetStatistic(assetURI, AssetStat.OPEN_STREAM, streamTime);
+                startTime = System.currentTimeMillis();
+                
                 if (response == AssetResponse.ASSET_CACHED) {
                     // The asset is already cache, so we just return that
                     // version. We first need to set up the location of the
                     // cache file first
                     AssetID assetID = new AssetID(assetURI, asset.getChecksum());
                     asset.setLocalCacheFile(new File(getAssetCache().getAssetCacheFileName(assetID)));
-                    return loadAssetFromCache(asset, originalChecksum);
+                    Asset out = loadAssetFromCache(asset, originalChecksum);
+                
+                    // statistic
+                    long cacheTime = System.currentTimeMillis() - startTime;
+                    getStatsProvider().assetStatistic(assetURI, AssetStat.GET_FROM_CACHE, cacheTime);
+                    
+                    return out;
                 }
                 else if (response == AssetResponse.STREAM_READY) {
-
                     // The asset stream is ready to be downloaded, so we go
                     // ahead and download the asset. Once we do that we
                     // need to add the asset to the cache and then fetch
@@ -687,7 +726,13 @@ public class AssetManager {
                         loadAssetFromServer(asset, stream);
                         getAssetCache().addAsset(asset, stream.getCachePolicy());
                         stream.close();
-                        return loadAssetFromCache(asset, originalChecksum);
+                        Asset out = loadAssetFromCache(asset, originalChecksum);
+                    
+                        // statistic
+                        long serverTime = System.currentTimeMillis() - startTime;
+                        getStatsProvider().assetStatistic(assetURI, AssetStat.GET_FROM_SERVER, serverTime);
+                        
+                        return out;
                     } catch (java.io.IOException excp) {
                         logger.log(Level.WARNING, "Failed to download asset " +
                                 "from this stream " + uriString, excp);
@@ -757,6 +802,35 @@ public class AssetManager {
          * @param asset The Asset whose download has completed
          */
         public void downloadCompleted(Asset asset);
+    }
+    
+    /**
+     * Provider that will be notified of asset statistics
+     */
+    public interface AssetStatisticsSPI {
+        /**
+         * Asset statistic value.
+         * @param uri the uri of the asset
+         * @param stat the statistic
+         * @param time the time in milliseconds
+         */
+        public void assetStatistic(AssetURI uri, AssetStat stat, long time);
+    }
+    
+    /**
+     * No-op default implementation
+     */
+    private static class NoopAssetStatisticsSPI implements AssetStatisticsSPI {
+        public void assetStatistic(AssetURI uri, AssetStat stat, long time) {
+            // ignore
+        }
+    }
+    
+    /**
+     * Asset statistic
+     */
+    public enum AssetStat {
+        SUBMIT, OPEN_STREAM, GET_FROM_CACHE, GET_FROM_SERVER; 
     }
 
     /* URLs to download */
