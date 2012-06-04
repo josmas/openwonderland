@@ -159,6 +159,8 @@ public class ErrorReportFrame extends javax.swing.JFrame
         out.append("GL_ARB_vertex_buffer_object...").append(cap.GL_ARB_vertex_buffer_object).append("\n");
         out.append("GL_ARB_vertex_program...").append(cap.GL_ARB_vertex_program).append("\n");
         out.append("GL_ARB_vertex_shader...").append(cap.GL_ARB_vertex_shader).append("\n");
+        out.append("GL_ARB_imaging...").append(cap.GL_ARB_imaging).append("\n");
+        out.append("GL_EXT_blend_color...").append(cap.GL_EXT_blend_color).append("\n");
         out.append("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB...").append(cap.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB).append("\n");
         out.append("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB...").append(cap.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB).append("\n");
         out.append("GL_MAX_TEXTURE_COORDS_ARB...").append(cap.GL_MAX_TEXTURE_COORDS_ARB).append("\n");
