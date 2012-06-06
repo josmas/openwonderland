@@ -1,17 +1,26 @@
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
 /*
- * Sample code form JME wiki, http://jmonkeyengine.com/wiki/doku.php?id=billboard_awt_label
+ * Adapted from sample code form JME wiki:
+ * http://jmonkeyengine.com/wiki/doku.php?id=billboard_awt_label
  */
 package org.jdesktop.wonderland.client.jme.utils;
-
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
-import java.util.Arrays;
 
 import com.jme.image.Texture;
 import com.jme.image.Texture.MagnificationFilter;
@@ -23,12 +32,21 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial.LightCombineMode;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.BlendState;
-import com.jme.scene.state.TextureState;
 import com.jme.scene.state.RenderState.StateType;
+import com.jme.scene.state.TextureState;
 import com.jme.system.DisplaySystem;
 import com.jme.util.TextureManager;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
+import java.util.Arrays;
 
 public class TextLabel2D extends Node {
 
@@ -51,7 +69,7 @@ public class TextLabel2D extends Node {
     private float imgFactor = 0f;
 
     public TextLabel2D(String text) {
-        this(text, new Color(1f, 1f, 1f), new Color(0f, 0f, 0f), 0.3f, false, null);
+        this(text, new Color(1f, 1f, 1f), new Color(0f, 0f, 0f), 0.3f, true, null);
     }
 
     public TextLabel2D(String text, Color foreground, Color background,
@@ -66,7 +84,12 @@ public class TextLabel2D extends Node {
             font = Font.decode("Sans PLAIN");
         }
         setFont(font);
-        attachChild(getBillboard());
+        
+        if (billboard) {
+            attachChild(getBillboard());
+        } else {
+            attachChild(getQuad());
+        }
     }
 
     public void setFont(Font font) {
