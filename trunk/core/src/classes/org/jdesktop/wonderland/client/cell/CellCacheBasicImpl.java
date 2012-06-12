@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -668,7 +669,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     }
     
     private class ParallelCellStatusManager 
-        implements CellStatusChangeListener, CellStatusManager 
+        implements CellStatusChangeListener, CellChildrenChangeListener,
+                   CellStatusManager 
     {
         private final Map<CellID, CellStatusEntry> waiting =
                 new LinkedHashMap<CellID, CellStatusEntry>();
@@ -710,6 +712,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             // if the cell is not ready, add it to our map of
             // waiting cells
             waiting.put(cell.getCellID(), entry);
+            
+            // listen for child changes
+            cell.addChildrenChangeListener(this);
             
             // if the cell needs downloading, start now
             if (!entry.isDownloaded()) {
@@ -764,6 +769,24 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
         
         /**
+         * When a cell's children change, it may become eligible for a status
+         * change. Check.
+         */
+        public void childAdded(Cell cell, Cell child) {
+            checkCell(cell.getCellID());
+            checkCell(child.getCellID());
+        }
+
+        /**
+         * When a cell's children change, it may become eligible for a status
+         * change. Check.
+         */
+        public void childRemoved(Cell cell, Cell child) {
+            checkCell(cell.getCellID());
+            checkCell(child.getCellID());
+        }
+        
+        /**
          * Check a particular entry in the map, and update it as needed
          * @param cellID this id of the cell to check
          */
@@ -771,6 +794,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             CellStatusEntry entry = waiting.get(cellID);
             if (entry != null && eligible(entry)) {
                 waiting.remove(cellID);
+                
+                // stop listening for child changes
+                entry.getCell().removeChildChangeListener(this);
+                
                 executor.submit(new CellStatusChanger(entry.getCell(), entry.getStatus()));
             }
         }
