@@ -73,8 +73,13 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
 
     private final Map<CellID, Integer> indexMap = 
             Collections.synchronizedMap(new HashMap<CellID, Integer>());
-    private static final ThreadLocal<MapUpdateTransactionParticipant> mutp =
-            new ThreadLocal<MapUpdateTransactionParticipant>();
+    private static final ThreadLocal<Map<String, MapUpdateTransactionParticipant>> mutp =
+            new ThreadLocal<Map<String, MapUpdateTransactionParticipant>>() {
+                @Override
+                protected Map<String, MapUpdateTransactionParticipant> initialValue() {
+                    return new HashMap<String, MapUpdateTransactionParticipant>();
+                }
+            };
 
     ServerProximityListenerRecord(ServerProximityListenerWrapper proximityListener, BoundingVolume[] localBounds, String id) {
         super(proximityListener, localBounds);        
@@ -160,14 +165,17 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         // simple transaction participant stored in a thread-local
         // variable to do that.
 
-        MapUpdateTransactionParticipant p = mutp.get();
+        // since the threadlocal is static, it applies to all server
+        // objects. Create a map for information about a particular
+        // id
+        MapUpdateTransactionParticipant p = mutp.get().get(id);
         if (p == null) {
             // this is the first time we are accessing the thread-local
             // variable, so create it and join the transaction currently
             // in progress. After the join(), we are guaranteed to get
             // either a commit or an abort.
             final MapUpdateTransactionParticipant fp =
-                    new MapUpdateTransactionParticipant(indexMap, mutp);
+                    new MapUpdateTransactionParticipant(id, indexMap);
 
             AppContext.getManager(UniverseManager.class).runTxnRunnable(
                     new UniverseTxnRunnable()
@@ -180,7 +188,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
                 }
             });
 
-            mutp.set(fp);
+            mutp.get().put(id, fp);
             p = fp;
         }
 
@@ -204,8 +212,8 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             extends HashMap<CellID, Integer> 
             implements NonDurableTransactionParticipant, Serializable
     {
+        private final String recordID;
         private final Map<CellID, Integer> globalMap;
-        private final ThreadLocal<MapUpdateTransactionParticipant> tl;
 
         private final Map<CellID, MapChange> changes = 
                 new HashMap<CellID, MapChange>();
@@ -214,11 +222,10 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         // equals() and hashcode()
         private final Object id = new Object();
         
-        public MapUpdateTransactionParticipant(Map<CellID, Integer> globalMap,
-            ThreadLocal<MapUpdateTransactionParticipant> tl)
+        public MapUpdateTransactionParticipant(String recordID, Map<CellID, Integer> globalMap)
         {
+            this.recordID = recordID;
             this.globalMap = globalMap;
-            this.tl = tl;
         }
 
         @Override
@@ -281,14 +288,14 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
                 }
             }
 
-            tl.remove();
+            mutp.get().remove(recordID);
         }
 
         public void abort(Transaction t) {
             logger.fine(this + " abort " + t + " on " + globalMap);
 
             // make no changes to the global map
-            tl.remove();
+            mutp.get().remove(recordID);
         }
         
         public void prepareAndCommit(Transaction t) throws Exception {
