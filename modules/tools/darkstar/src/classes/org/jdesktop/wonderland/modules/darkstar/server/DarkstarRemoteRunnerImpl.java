@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -64,6 +64,7 @@ public class DarkstarRemoteRunnerImpl extends BaseRemoteRunner
     private String hostname;
     private String hostnameInternal;
     private int port;
+    private int portInternal;
     private String wfsName;
 
     private String webserverURL;
@@ -112,6 +113,18 @@ public class DarkstarRemoteRunnerImpl extends BaseRemoteRunner
 
         return port;
     }
+    
+    /**
+     * Get the internal Darkstar port
+     * @return the port number of the internal darkstar server
+     */
+    public int getInternalPort() {
+        if (getStatus() == Status.NOT_CONNECTED) {
+            throw new IllegalStateException("Darkstar server not connected");
+        }
+
+        return portInternal;
+    }
 
     @Override
     public void configure(Properties props)
@@ -136,6 +149,7 @@ public class DarkstarRemoteRunnerImpl extends BaseRemoteRunner
         this.hostname = info.getProperty(DarkstarRunnerImpl.HOSTNAME_PROP);
         this.hostnameInternal = info.getProperty(DarkstarRunnerImpl.HOSTNAME_INTERNAL_PROP);
         this.port = Integer.parseInt(info.getProperty(DarkstarRunnerImpl.PORT_PROP));
+        this.portInternal = Integer.parseInt(info.getProperty(DarkstarRunnerImpl.PORT_INTERNAL_PROP));
         this.wfsName = info.getProperty(DarkstarRunnerImpl.WFSNAME_PROP);
 
         // set the basic information
