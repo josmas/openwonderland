@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -110,7 +110,7 @@ public class DarkstarServerContextListener
             for (DarkstarRunner dr : darkstarRunners) {
                 if (dr.getStatus() == Runner.Status.RUNNING) {
                     external.add(new DarkstarServer(dr.getHostname(), dr.getPort()));
-                    internal.add(new DarkstarServer(dr.getInternalHostname(), dr.getPort()));
+                    internal.add(new DarkstarServer(dr.getInternalHostname(), dr.getInternalPort()));
                 }
             }
         }

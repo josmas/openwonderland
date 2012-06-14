@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -91,6 +91,7 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
     static final String HOSTNAME_PROP = "hostname";
     static final String HOSTNAME_INTERNAL_PROP = "hostnameInternal";
     static final String PORT_PROP = "port";
+    static final String PORT_INTERNAL_PROP = "portInternal";
     static final String WFSNAME_PROP = "wfsname";
 
     /** the files to save WFS URLs in */
@@ -122,6 +123,9 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
     /** the property to check for a public hostname */
     private static final String PUBLIC_ADDRESS_PROP = "darkstar.host.public";
 
+    /** the property to check for a public port */
+    private static final String PUBLIC_PORT_PROP = "darkstar.port.public";
+    
     /** the logger */
     private static final Logger logger =
             Logger.getLogger(DarkstarRunnerImpl.class.getName());
@@ -132,6 +136,9 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
     /** the sgs port.  Only valid when starting up or running */
     private int currentPort;
 
+    /** the internal port. Only valid when starting up or running */
+    private int currentInternalPort;
+    
     /** managers and services found as we deployed files */
     private List<String> managers;
     private List<String> services;
@@ -228,7 +235,7 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
             throw new IllegalStateException("Snapshot in progress");
         }
         publicAddress = props.getProperty(PUBLIC_ADDRESS_PROP);
-
+        
         try {
             super.start(props);
         } finally {
@@ -310,6 +317,7 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
         // set the current port & WFS URL to the ones we are now running with.
         // This will stay valid until the runner is stopped.
         currentPort = getPort(props);
+        currentInternalPort = getInternalPort(props);
         currentWFSName = getWFSName();
 
         // see if we need to force a coldstart
@@ -442,6 +450,7 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
         info.setProperty(HOSTNAME_PROP, getHostname());
         info.setProperty(HOSTNAME_INTERNAL_PROP, getInternalHostname());
         info.setProperty(PORT_PROP, String.valueOf(getPort()));
+        info.setProperty(PORT_INTERNAL_PROP, String.valueOf(getInternalPort()));
         info.setProperty(WFSNAME_PROP, getWFSName());
         return info;
 
@@ -493,13 +502,46 @@ public class DarkstarRunnerImpl extends BaseRunner implements DarkstarRunner {
             return getPort(RunManager.getInstance().getStartProperties(this));
         }
     }
-
+    
+    /**
+     * Get the internal Darkstar server port for clients to connect to.  This 
+     * method returns the port of the currently running server.  If the server
+     * is not running, it returns what the port will be the next time the
+     * server starts up.
+     * @return the port
+     */
+    public synchronized int getInternalPort() {
+        // if the server is running, us the current port variable
+        if (getStatus() == Status.RUNNING ||
+                getStatus() == Status.STARTING_UP)
+        {
+            return currentInternalPort;
+        } else {
+            return getInternalPort(RunManager.getInstance().getStartProperties(this));
+        }
+    }
+    
     /**
      * Get the port to run on from a set of properties
      * @param properties the properties to look at
      * @return the port to run on
      */
     private int getPort(Properties props) {
+        // determine the current port
+        String portProp = props.getProperty(PUBLIC_PORT_PROP);
+        if (portProp != null) {
+            return Integer.parseInt(portProp);
+        } else {
+            return getInternalPort(props);
+        }
+    }
+    
+    /**
+     * Get the port to run on from a set of properties
+     * @param properties the properties to look at
+     * @return the port to run on
+     */
+    private int getInternalPort(Properties props) {
         // determine the current port
         String portProp = props.getProperty("sgs.port");
         if (portProp != null) {
