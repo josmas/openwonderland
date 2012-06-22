@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -442,21 +442,22 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             setup.y = location.getY();
             setup.z = location.getZ();
 
+            // do we need to start paused?
+            if (playWhen.equals(PlayWhen.ALWAYS) == false) {
+                setup.startPaused = true;
+            }
+            
             logger.info("Starting treatment " + setup.treatment + " at (" + setup.x 
 		+ ":" + setup.y + ":" + setup.z + ")");
 
             System.out.println("Starting treatment " + setup.treatment + " at (" + setup.x 
 		+ ":" + setup.y + ":" + setup.z + ")");
-
+  
             try {
 		Treatment t = vm.createTreatment(treatmentId, setup);
 
 		if (group != null) {
                     group.addTreatment(t);
-		}
-
-		if (playWhen.equals(PlayWhen.ALWAYS) == false) {
-		    t.pause(true);
 		}
 
 	        if (playWhen.equals(PlayWhen.FIRST_IN_RANGE)) {
