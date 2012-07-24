@@ -180,7 +180,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
 
     }
     
-    private void handleListSelectionChanged(ListSelectionEvent e) {
+    protected void handleListSelectionChanged(ListSelectionEvent e) {
                 Object[] selectedValues = view.getSelectedEntries();
 
         if (selectedValues.length == 0) {
