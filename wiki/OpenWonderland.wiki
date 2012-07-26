@@ -37,7 +37,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td>This tutorial describes how users launch the Open Wonderland client using Java(TM) Web Start.</td>
 </tr>
 <tr>
-  <td width="25%">[http://199.17.224.245:8080//quickstartguide/quickstartguide/QuickstartTOC.html Quickstart Guides]</td>
+  <td width="25%">[http://owf1.virtualnorthstar.org:8080/quickstartguide/quickstartguide/QuickstartTOC.html Quickstart Guides]</td>
   <td>This set of very short guides provides a brief introduction to the basic features of Open Wonderland. These guides are also available in-world from the Help menu.</td>
 </tr>
 <tr>
