@@ -1,0 +1,8 @@
+build
+dist
+nb.properties
+my.run.properties
+run-client.properties
+utils/wonderland-version/src/classes/org/jdesktop/wonderland/utils/version/Version.java
+bridge-echo.zip
+bridge-recorder.zip

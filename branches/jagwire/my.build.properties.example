@@ -1,0 +1,20 @@
+#
+# my.build.properties.example
+#
+# Rename this file to 'my.build.properties' to change local properties during the build.
+# This file can be used to set the server, username and password to use with 'ant deploy'.
+#
+# IMPORTANT SECURITY NOTE: if a password is set in this file, be sure to set permissions
+# so that other users do not have access to the file (eg 'chmod 400 my.build.properties
+# on Unix).
+#
+
+
+# the url of the server to connect to
+# wonderland.web.url = http://localhost:8080/
+
+# the username to user when logging in to the server
+# wonderland.web.username = admin
+
+# the password to use when logging in to the server
+# wonderland.web.password = admin
