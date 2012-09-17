@@ -40,7 +40,7 @@ import com.jme.math.Vector3f;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailable;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;

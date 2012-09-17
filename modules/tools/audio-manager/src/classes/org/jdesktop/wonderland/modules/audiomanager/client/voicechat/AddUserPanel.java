@@ -50,8 +50,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.Vo
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 
-import org.jdesktop.wonderland.client.cell.ProximityComponent;
-import org.jdesktop.wonderland.client.cell.ProximityListener;
+import org.jdesktop.wonderland.client.cell.component.ProximityComponent;
+import org.jdesktop.wonderland.client.cell.component.ProximityListener;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 

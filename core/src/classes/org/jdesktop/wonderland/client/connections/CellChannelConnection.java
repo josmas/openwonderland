@@ -15,8 +15,9 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.connections;
 
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,7 +30,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.cell.CellCache.CellCacheListener;
+import org.jdesktop.wonderland.client.annotations.ClientConnection;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.cache.CellCache.CellCacheListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -55,6 +60,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  *
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
+@ClientConnection
 @InternalAPI
 public class CellChannelConnection extends BaseConnection 
         implements CellCacheListener, CellStatusChangeListener
@@ -129,7 +135,7 @@ public class CellChannelConnection extends BaseConnection
      * Set the cell cache for this connection
      * @param cache the cache
      */
-    void setCellCache(CellCache cache) {
+    public void setCellCache(CellCache cache) {
         this.cache = cache;
         
         // add a listener for dealing with cell delay queues

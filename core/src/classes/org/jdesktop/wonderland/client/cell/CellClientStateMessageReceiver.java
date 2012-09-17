@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellClientStateMessage;
 

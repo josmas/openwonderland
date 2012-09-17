@@ -16,10 +16,12 @@
  * Foundation in the License file that accompanied this code.
  */
 
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.cell.component;
 
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.InteractionComponentClientState;
 

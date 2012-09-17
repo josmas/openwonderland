@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.modules.security.client;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellCache.CellCacheListener;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache.CellCacheListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
@@ -56,6 +56,7 @@ public class SecurityClientPlugin
 
     public void cellLoaded(CellID cellID, Cell cell) {
         cell.addComponent(new SecurityComponent(cell));
+        
     }
 
     public void cellLoadFailed(CellID cellID, String className,

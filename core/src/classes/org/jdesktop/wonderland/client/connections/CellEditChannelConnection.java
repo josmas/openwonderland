@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.connections;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.textchat.client;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.jdesktop.wonderland.client.annotations.ClientConnection;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -30,6 +31,7 @@ import org.jdesktop.wonderland.modules.textchat.common.TextChatConnectionType;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@ClientConnection
 public class TextChatConnection extends BaseConnection {
 
     /**

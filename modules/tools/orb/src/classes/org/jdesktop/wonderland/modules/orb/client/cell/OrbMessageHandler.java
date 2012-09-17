@@ -30,9 +30,9 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.client.ClientContext;
 
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.component.MovableComponent;
 
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 

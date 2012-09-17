@@ -33,8 +33,9 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.cell.component;
 
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
@@ -81,7 +82,7 @@ public class CellComponent {
      *
      * @param status The new status of the component
      */
-    final void setComponentStatus(CellStatus status, boolean increasing) {
+    final public  void setComponentStatus(CellStatus status, boolean increasing) {
         int currentStatus = this.status.ordinal();
         int requiredStatus = status.ordinal();
 

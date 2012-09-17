@@ -22,9 +22,9 @@ import java.util.logging.Logger;
 
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent.ComponentMessageReceiver;
 
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 
