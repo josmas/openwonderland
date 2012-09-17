@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.phone.client.cell;
 import java.util.ResourceBundle;
 import org.jdesktop.wonderland.common.cell.CellID;
 
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
 
 import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
 

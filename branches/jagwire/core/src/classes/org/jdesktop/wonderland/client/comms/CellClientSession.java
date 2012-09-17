@@ -20,11 +20,11 @@ package org.jdesktop.wonderland.client.comms;
 import java.util.Properties;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.CellChannelConnection;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCacheBasicImpl;
+import org.jdesktop.wonderland.client.cell.cache.CellCacheConnection;
+import org.jdesktop.wonderland.client.connections.CellChannelConnection;
+import org.jdesktop.wonderland.client.connections.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**

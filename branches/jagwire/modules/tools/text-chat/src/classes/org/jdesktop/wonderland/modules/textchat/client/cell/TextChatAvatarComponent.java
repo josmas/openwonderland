@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.textchat.client.cell;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**

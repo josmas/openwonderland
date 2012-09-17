@@ -35,6 +35,8 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.client.cell.component.ModelCellComponent;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;

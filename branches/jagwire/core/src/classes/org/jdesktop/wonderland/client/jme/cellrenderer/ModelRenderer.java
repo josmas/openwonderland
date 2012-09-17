@@ -54,7 +54,7 @@ import org.jdesktop.mtgame.RenderComponent.AttachPointNode;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellStatistics.TimeCellStat;
-import org.jdesktop.wonderland.client.cell.ModelCellComponent;
+import org.jdesktop.wonderland.client.cell.component.ModelCellComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;

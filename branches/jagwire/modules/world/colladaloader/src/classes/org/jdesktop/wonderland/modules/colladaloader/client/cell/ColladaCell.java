@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.modules.colladaloader.common.cell.state.ColladaCe
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.*;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 

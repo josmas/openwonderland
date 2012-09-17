@@ -41,8 +41,9 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.annotations.ClientConnection;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -74,6 +75,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceI
  *
  * @author jprovino
  */
+@ClientConnection
 public class PresenceManagerClient extends BaseConnection implements
         ViewCellConfiguredListener {
 

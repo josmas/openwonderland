@@ -33,9 +33,13 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.cell.cache;
 
 import java.util.Collection;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.connections.CellChannelConnection;
+import org.jdesktop.wonderland.client.cell.CellStatistics;
+import org.jdesktop.wonderland.client.cell.EnvironmentCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;

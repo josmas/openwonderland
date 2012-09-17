@@ -33,8 +33,9 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.cell.component;
 
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import com.jme.scene.Node;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -48,6 +49,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.AssetPreloader;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;

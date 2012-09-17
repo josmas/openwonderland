@@ -18,9 +18,9 @@
 package org.jdesktop.wonderland.client.cell.view;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
+import org.jdesktop.wonderland.client.cell.component.MovableAvatarComponent;
+import org.jdesktop.wonderland.client.cell.component.MovableComponent;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -53,7 +53,7 @@ public class ViewCell extends Cell {
     }
 
     @Override
-    protected void setStatus(CellStatus status,boolean increasing) {
+    public void setStatus(CellStatus status,boolean increasing) {
         super.setStatus(status, increasing);
 
         switch(status) {

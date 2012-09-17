@@ -90,7 +90,7 @@ import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import org.jdesktop.wonderland.client.connections.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;

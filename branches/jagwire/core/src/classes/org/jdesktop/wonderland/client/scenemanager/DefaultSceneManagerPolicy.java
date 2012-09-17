@@ -37,7 +37,7 @@ package org.jdesktop.wonderland.client.scenemanager;
 
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.InteractionComponent;
+import org.jdesktop.wonderland.client.cell.component.InteractionComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.InputEvent3D.ModifierId;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;

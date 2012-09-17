@@ -33,7 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.EnvironmentCell;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;

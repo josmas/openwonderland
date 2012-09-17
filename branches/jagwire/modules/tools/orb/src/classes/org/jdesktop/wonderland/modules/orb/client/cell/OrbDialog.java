@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
 import java.util.ResourceBundle;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;

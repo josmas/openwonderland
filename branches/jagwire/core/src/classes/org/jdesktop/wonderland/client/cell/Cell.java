@@ -35,6 +35,11 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.client.cell.component.ComponentChangeListener;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import java.lang.reflect.InvocationTargetException;
 import org.jdesktop.wonderland.common.cell.messages.CellClientStateMessage;
 import com.jme.bounding.BoundingVolume;
@@ -51,7 +56,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
+import org.jdesktop.wonderland.client.cell.component.ComponentChangeListener.ChangeType;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -365,7 +370,7 @@ public class Cell {
      * 
      * @param localTransform
      */
-    void setLocalTransform(CellTransform localTransform, TransformChangeListener.ChangeSource source) {
+    public void setLocalTransform(CellTransform localTransform, TransformChangeListener.ChangeSource source) {
         // Don't process the same transform twice
         if (this.localTransform != null && this.localTransform.equals(localTransform)) {
             return;
@@ -639,7 +644,7 @@ public class Cell {
      * @param status the cell status
      * @param increasing indicates if the status is increasing
      */
-    protected void setStatus(CellStatus status, boolean increasing) {
+    public void setStatus(CellStatus status, boolean increasing) {
         synchronized(statusLock) {
             if (status == CellStatus.INACTIVE && increasing) {
                 resolveAutoComponentAnnotationsForCell();
@@ -721,7 +726,7 @@ public class Cell {
      * listeners, after the call to setStatus() completes.
      * @param status the new status
      */
-    protected void fireCellStatusChanged(CellStatus status) {
+    public void fireCellStatusChanged(CellStatus status) {
         // update both local and global listeners.  This is done after the
         // lock is released, so the status may change again before the listeners
         // are called

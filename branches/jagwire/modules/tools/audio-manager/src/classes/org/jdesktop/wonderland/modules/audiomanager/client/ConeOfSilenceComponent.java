@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;

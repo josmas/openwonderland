@@ -33,8 +33,9 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.cell.cache;
 
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import com.jme.bounding.BoundingVolume;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -61,7 +62,17 @@ import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.AssetPreloader;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.connections.CellChannelConnection;
+import org.jdesktop.wonderland.client.cell.CellChildrenChangeListener;
+import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.CellStatistics;
 import org.jdesktop.wonderland.client.cell.CellStatistics.TimeCellStat;
+import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
+import org.jdesktop.wonderland.client.cell.EnvironmentCell;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -650,9 +661,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
     }
     
-    interface CellStatusManager {
-        public void setCellStatus(Cell cell, CellStatus status);
-    }
+
     
     private class SynchronousCellStatusManager implements CellStatusManager {
         /** executor for modifying values in separate threads */

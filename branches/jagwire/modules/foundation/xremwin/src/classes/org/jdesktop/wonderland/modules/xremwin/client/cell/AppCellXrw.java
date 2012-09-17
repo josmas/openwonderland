@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.xremwin.client.cell;
 
 import javax.crypto.SecretKey;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;

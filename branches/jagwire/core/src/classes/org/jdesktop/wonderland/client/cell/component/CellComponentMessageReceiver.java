@@ -33,12 +33,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.cell.component;
 
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;

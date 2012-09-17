@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.component.MovableComponent;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.contextmenu.cell;
 
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.client.cell.*;

@@ -62,8 +62,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.annotations.ClientConnection;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.ProximityComponent;
+import org.jdesktop.wonderland.client.cell.component.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
@@ -141,6 +142,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  * @author jprovino
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
+@ClientConnection
 public class AudioManagerClient extends BaseConnection implements
         AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener
 {

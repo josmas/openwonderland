@@ -23,7 +23,7 @@ import com.sun.sgs.client.ClientChannel;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;

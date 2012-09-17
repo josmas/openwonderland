@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.ModelCellComponent;
+import org.jdesktop.wonderland.client.cell.component.ModelCellComponent;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
