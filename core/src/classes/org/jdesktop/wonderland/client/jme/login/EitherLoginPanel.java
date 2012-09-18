@@ -44,10 +44,10 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.ValidityListener;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.LoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
+import org.jdesktop.wonderland.client.login.EitherLoginControl;
+import org.jdesktop.wonderland.client.login.LoginControl;
+import org.jdesktop.wonderland.client.login.NoAuthLoginControl;
+import org.jdesktop.wonderland.client.login.UserPasswordLoginControl;
 
 /**
  *

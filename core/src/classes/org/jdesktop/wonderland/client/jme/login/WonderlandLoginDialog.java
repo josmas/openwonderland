@@ -47,10 +47,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
-import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetProgressListener;
+import org.jdesktop.wonderland.client.assetmgr.AssetProgressListener;
 import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.LoginControl;
+import org.jdesktop.wonderland.client.login.LoginControl;
 import org.jdesktop.wonderland.client.login.ServerStatusListener;
 
 /**
@@ -65,8 +65,8 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             Logger.getLogger(WonderlandLoginDialog.class.getName());
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/client/jme/login/Bundle");
-    private Frame parent;
-    private LoginPanel login;
+    Frame parent;
+    LoginPanel login;
     /** the set of modules we are downloading */
     private Map<Integer, String> statusMessages =
             new LinkedHashMap<Integer, String>();

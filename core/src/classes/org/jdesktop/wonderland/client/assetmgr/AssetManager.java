@@ -277,7 +277,7 @@ public class AssetManager {
                 logger.fine("Spawning service to download asset " + assetURI);
                 Asset asset = assetFactory.assetFactory(AssetType.FILE, assetID);
                 
-                AssetLoader loader = new AssetLoader(asset, factory);
+                AssetLoader loader = new AssetLoader(asset, factory, this);
                 loadingAssets.put(assetID, loader);
                 Future f = downloadService.submit(loader);
                 loader.setFuture(f);
@@ -389,13 +389,13 @@ public class AssetManager {
      * Synchronously download an asset from a server, given the input stream
      * to read the asset, and the Asset object.
      */
-    private void loadAssetFromServer(Asset asset, AssetStream assetStream) throws IOException {
+    public void loadAssetFromServer(Asset asset, AssetStream assetStream) throws IOException {
 
         // Surround the input stream with a tracking input stream and register
         // a listener that associates the tracking stream with the asset.
         try {
             TrackingInputStream in = new TrackingInputStream(assetStream.getInputStream());
-            StreamProgressListener listener = new StreamProgressListener(asset);
+            StreamProgressListener listener = new StreamProgressListener(asset, this);
             in.setListener(listener, AssetManager.UPDATE_BYTE_INTERVAL, assetStream.getContentLength());
 
             // We will put the download bits into the desired cache file. Create
@@ -506,7 +506,7 @@ public class AssetManager {
      * the success or failure information in the asset. Returns the asset
      * upon success, and null upon failure.
      */
-    private Asset loadAssetFromCache(Asset asset, String originalChecksum) {
+    public Asset loadAssetFromCache(Asset asset, String originalChecksum) {
         AssetURI assetURI = asset.getAssetURI();
         String uriString = assetURI.toExternalForm();
         String checksum = asset.getChecksum();
@@ -582,249 +582,6 @@ public class AssetManager {
     private void assetSuccess(Asset asset) {
         asset.setDownloadSuccess();
     }
-
-    /**
-     * Used to load assets in parallel. This class implements the Callable
-     * interface and is run inside of a Java Executer. The class can load
-     * assets from both a remote repository and the local file cache, as given
-     * by the 'server' flag.
-     */
-    class AssetLoader implements Callable {
-        /* The asset to load */
-        private final Asset asset;
-
-        /* The factory which tells us how to download the asset */
-        private final AssetRepositoryFactory factory;
-        
-        /* Object reflecting the results of the asynchronous operation */
-        private Future future = null;
-
-        /**
-         * Load a given asset, either from local cache or the server.
-         * 
-         * @param asset The asset to load
-         * @param server true loads from server, false for client local cache
-         */
-        public AssetLoader(Asset asset, AssetRepositoryFactory factory) {
-            this.asset = asset;
-            this.factory = factory;
-        }
-        
-        /**
-         * Return the asset this loader is loading
-         * 
-         * @return The asset
-         */
-        public Asset getAsset() {
-            return this.asset;
-        }
-        
-        /**
-         * Returns the object representing the state of the asynchronous task
-         *
-         * @return The Future status object
-         */
-        Future getFuture() {
-            return this.future;
-        }
-
-        /**
-         * Sets the object representing the state of the asynchronous task.
-         * Typically this is called by the thread that kicks off the task and
-         * sets the Future object returns by the Java Executer service.
-         * 
-         * @param future The Future status object
-         */
-        void setFuture(Future future) {
-            this.future = future;
-        }
-        
-        /**
-         * Called by the asynchronous task service to attempt to load the asset.
-         * Returns the asset upon success, null upn failure.
-         * 
-         * @return Upon success returns the asset, null upon failure
-         * @throws java.lang.Exception
-         */
-        public Object call() throws Exception {
-            try {
-                // Do the asset download from the server. If the asset is
-                // already cached then doAssetDownload() will detect this. The
-                // failure information of the asset download is set here as is
-                // notifying the asset ready listeners.
-                Object ret = doAssetDownload();
-                return ret;
-            } catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "Exception in call()", excp);
-                throw excp;
-            }
-        }
-
-        /**
-         * Downloads the asset from the server and returns the asset upon success
-         * or null upon failure
-         */
-        private Object doAssetDownload() {
-            AssetURI assetURI = asset.getAssetURI();
-            String uriString = assetURI.toExternalForm();
-
-            // Keep a copy of the original asset checksum. Sometimes (e.g. in
-            // the case of HTTP if-modified-since) the "checksum" can change
-            // after we have downloaded. We need to make sure we remove the
-            // proper thing from the "loading" and "loaded" lists.
-            String originalChecksum = asset.getChecksum();
-            
-            // Using the repository factory, fetch the list of repositories
-            // from which to fetch the asset. It is up to each of the
-            // individual repositories to determine whether the asset is
-            // already cached or not.
-            AssetRepository repositories[] = factory.getAssetRepositories();
-            logger.fine("Got a list of repositories " + repositories +
-                    " for asset " + uriString);
-
-            for (AssetRepository repository : repositories) {
-                logger.fine("Seeing if repository " + repository.toString() +
-                        " has asset " + assetURI);
-
-                long startTime = System.currentTimeMillis();
-                
-                // Try to open the output stream. If the repository tells
-                // us we already have the most up-to-date version, then we
-                // simply return that. Otherwise, we attempt to download
-                // the asset.
-                AssetStream stream = repository.openAssetStream(assetURI);
-                AssetResponse response = stream.getResponse();
-                logger.fine("Got an asset stream with response " + response +
-                        " for asset " + uriString);
-
-                // record statistic
-                long streamTime = System.currentTimeMillis() - startTime;
-                getStatsProvider().assetStatistic(assetURI, AssetStat.OPEN_STREAM, streamTime);
-                startTime = System.currentTimeMillis();
-                
-                if (response == AssetResponse.ASSET_CACHED) {
-                    // The asset is already cache, so we just return that
-                    // version. We first need to set up the location of the
-                    // cache file first
-                    AssetID assetID = new AssetID(assetURI, asset.getChecksum());
-                    asset.setLocalCacheFile(new File(getAssetCache().getAssetCacheFileName(assetID)));
-                    Asset out = loadAssetFromCache(asset, originalChecksum);
-                
-                    // statistic
-                    long cacheTime = System.currentTimeMillis() - startTime;
-                    getStatsProvider().assetStatistic(assetURI, AssetStat.GET_FROM_CACHE, cacheTime);
-                    
-                    return out;
-                }
-                else if (response == AssetResponse.STREAM_READY) {
-                    // The asset stream is ready to be downloaded, so we go
-                    // ahead and download the asset. Once we do that we
-                    // need to add the asset to the cache and then fetch
-                    // it from the cache.
-                    try {
-                        stream.open();
-                        loadAssetFromServer(asset, stream);
-                        getAssetCache().addAsset(asset, stream.getCachePolicy());
-                        stream.close();
-                        Asset out = loadAssetFromCache(asset, originalChecksum);
-                    
-                        // statistic
-                        long serverTime = System.currentTimeMillis() - startTime;
-                        getStatsProvider().assetStatistic(assetURI, AssetStat.GET_FROM_SERVER, serverTime);
-                        
-                        return out;
-                    } catch (java.io.IOException excp) {
-                        logger.log(Level.WARNING, "Failed to download asset " +
-                                "from this stream " + uriString, excp);
-                        continue;
-                    } catch (AssetCacheException excp) {
-                        logger.log(Level.WARNING, "Failed to cache downloaded" +
-                                " asset " + uriString, excp);
-                        continue;
-                    }
-                }
-                else {
-                    // We did not find a valid repository to load from,
-                    // so we will just go into the next one
-                    continue;
-                }
-            }
-
-            // if we got here, the asset was not loaded from any of the
-            // repositories, so it has failed
-            asset.setDownloadFailure("Unable to load from any repositories");
-            return null;
-        }
-    }
-
-    /**
-     * A class that implements the progress listener for a tracking stream,
-     * and also associates an Asset. Signals the AssetManager's progress
-     * listener
-     */
-    private class StreamProgressListener implements ProgressListener {
-        private Asset asset = null;
-
-        public StreamProgressListener(Asset asset) {
-            this.asset = asset;
-        }
-
-        public void downloadProgress(int readBytes, int percentage) {
-            // notify the listeners of progress
-            fireDownloadProgress(asset, readBytes, percentage);
-        }
-    }
-
-    /**
-     * Used to indicate the status of an asset that is being downloaded
-     */
-    @ExperimentalAPI
-    public interface AssetProgressListener {
-        /**
-         * Updates the amount the asset has been downloaded.
-         *
-         * @param asset The Asset being downloaded
-         * @param readBytes The number of bytes that have been ready
-         * @param percentage The percentage of the bytes read, or -1 if unknown
-         */
-        public void downloadProgress(Asset asset, int readBytes, int percentage);
-
-        /**
-         * Indicates the download of the asset has failed
-         *
-         * @param asset The Asset whose download has failed
-         */
-        public void downloadFailed(Asset asset);
-
-        /**
-         * Indicates the download of the asset has finished successfull.
-         *
-         * @param asset The Asset whose download has completed
-         */
-        public void downloadCompleted(Asset asset);
-    }
-    
-    /**
-     * Provider that will be notified of asset statistics
-     */
-    public interface AssetStatisticsSPI {
-        /**
-         * Asset statistic value.
-         * @param uri the uri of the asset
-         * @param stat the statistic
-         * @param time the time in milliseconds
-         */
-        public void assetStatistic(AssetURI uri, AssetStat stat, long time);
-    }
-    
-    /**
-     * No-op default implementation
-     */
-    private static class NoopAssetStatisticsSPI implements AssetStatisticsSPI {
-        public void assetStatistic(AssetURI uri, AssetStat stat, long time) {
-            // ignore
-        }
-    }
     
     /**
      * Asset statistic
@@ -888,10 +645,6 @@ public class AssetManager {
                 logger.log(Level.WARNING, "Thread is interrupted", excp);
             }
         }
-    }
-
-    public static void main(String[] args) throws URISyntaxException {
-        AssetManager.downloadFile();
     }
 
 }
