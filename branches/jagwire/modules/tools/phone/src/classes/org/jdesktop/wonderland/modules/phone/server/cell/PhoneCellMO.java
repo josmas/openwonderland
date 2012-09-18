@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.security.annotation.Actions;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.cell.component.MovableComponentMO;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;

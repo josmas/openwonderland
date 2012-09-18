@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.server.cell.view;
 
+import org.jdesktop.wonderland.server.cell.component.MovableComponentMO;
+import org.jdesktop.wonderland.server.cell.component.MovableAvatarComponentMO;
 import org.jdesktop.wonderland.common.cell.state.AvatarCellServerState;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;

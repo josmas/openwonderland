@@ -56,8 +56,8 @@ import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState.TransparencyMode;
 
 /**
  *

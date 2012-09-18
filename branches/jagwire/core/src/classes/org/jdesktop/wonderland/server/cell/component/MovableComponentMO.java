@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.cell.component;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
@@ -24,7 +24,9 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -69,7 +71,7 @@ public class MovableComponentMO extends CellComponentMO {
 
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.client.cell.MovableComponent";
+        return "org.jdesktop.wonderland.client.cell.component.MovableComponent";
     }
 
     /**

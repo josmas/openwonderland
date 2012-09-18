@@ -22,9 +22,9 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Bounds.BoundsType;
+import org.jdesktop.wonderland.common.cell.component.state.PositionComponentServerState.Bounds.BoundsType;
 
 /**
  * The BasicPositionComponentServerStateHelper class implements a collection of utility routines

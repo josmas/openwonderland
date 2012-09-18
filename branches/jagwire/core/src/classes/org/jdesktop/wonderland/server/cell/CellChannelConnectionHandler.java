@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO;
 import com.sun.sgs.app.AppContext;
 import java.io.Serializable;
 import java.util.Properties;

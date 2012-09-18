@@ -54,7 +54,7 @@ import com.sun.voip.CallParticipant;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 

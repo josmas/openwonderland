@@ -33,7 +33,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.common.cell.state;
+package org.jdesktop.wonderland.common.cell.component.state;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -45,6 +45,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
 import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;

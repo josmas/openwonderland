@@ -55,8 +55,8 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreatedMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.ViewComponentServerState;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**

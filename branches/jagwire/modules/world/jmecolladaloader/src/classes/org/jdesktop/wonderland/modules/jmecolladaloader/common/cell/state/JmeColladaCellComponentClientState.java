@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentClientState;
 
 /**
  * A cell component that encapsulates all the information required to load a

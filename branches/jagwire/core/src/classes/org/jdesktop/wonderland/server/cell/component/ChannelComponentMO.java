@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.cell.component;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
@@ -36,6 +36,8 @@ import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -256,7 +258,7 @@ public class ChannelComponentMO extends CellComponentMO {
 
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.client.cell.ChannelComponent";
+        return "org.jdesktop.wonderland.client.cell.component.ChannelComponent";
     }
 
     /**

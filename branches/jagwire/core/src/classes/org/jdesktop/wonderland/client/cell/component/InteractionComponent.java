@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.InteractionComponentClientState;
+import org.jdesktop.wonderland.common.cell.component.state.InteractionComponentClientState;
 
 /**
  * Component describing how a cell interacts with the world

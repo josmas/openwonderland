@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentClientState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ModelCellComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ModelCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

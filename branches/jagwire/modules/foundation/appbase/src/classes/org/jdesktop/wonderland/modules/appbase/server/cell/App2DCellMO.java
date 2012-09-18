@@ -17,30 +17,30 @@
  */
 package org.jdesktop.wonderland.modules.appbase.server.cell;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
-import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
-import com.jme.bounding.BoundingBox;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
-import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import com.sun.sgs.app.ManagedReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.component.state.ViewComponentServerState;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.component.MovableComponentMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 

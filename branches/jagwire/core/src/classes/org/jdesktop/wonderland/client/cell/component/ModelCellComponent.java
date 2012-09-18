@@ -58,8 +58,8 @@ import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentClientState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState.TransparencyMode;
 
 /**
  * A Component that represents a deployed model.

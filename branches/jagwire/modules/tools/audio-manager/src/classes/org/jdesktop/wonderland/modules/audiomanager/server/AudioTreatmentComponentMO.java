@@ -74,8 +74,8 @@ import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellParentChangeListenerSrv;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ProximityComponentMO;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
