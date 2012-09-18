@@ -35,6 +35,9 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
+import org.jdesktop.wonderland.common.cell.component.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.InteractionComponentServerState;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;

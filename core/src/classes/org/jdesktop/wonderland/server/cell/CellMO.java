@@ -35,6 +35,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
@@ -77,7 +78,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.OKMessage;
@@ -369,7 +370,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @param transform
      */
-    protected void setLocalTransform(CellTransform transform) {
+    public void setLocalTransform(CellTransform transform) {
         
         this.localTransform = (CellTransform) transform.clone(null);
 

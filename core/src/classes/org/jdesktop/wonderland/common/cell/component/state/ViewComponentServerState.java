@@ -15,10 +15,11 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.common.cell.state;
+package org.jdesktop.wonderland.common.cell.component.state;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 /**
  * A special cell component server state object that represents the view cell

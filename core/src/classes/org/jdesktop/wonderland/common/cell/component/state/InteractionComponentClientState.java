@@ -15,7 +15,9 @@
  * subject to the "Classpath" exception as provided by the Open Wonderland
  * Foundation in the License file that accompanied this code.
  */
-package org.jdesktop.wonderland.common.cell.state;
+package org.jdesktop.wonderland.common.cell.component.state;
+
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 /**
  * The server state for the cell interaction component, which controls how users

@@ -15,15 +15,17 @@
  * subject to the "Classpath" exception as provided by the Open Wonderland
  * Foundation in the License file that accompanied this code.
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.cell.component;
 
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellClientComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.InteractionComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.InteractionComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.InteractionComponentClientState;
+import org.jdesktop.wonderland.common.cell.component.state.InteractionComponentServerState;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -76,7 +78,7 @@ public class InteractionComponentMO extends CellComponentMO {
 
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.client.cell.InteractionComponent";
+        return "org.jdesktop.wonderland.client.cell.component.InteractionComponent";
     }
 
     public void setCollidable(boolean collidable) {

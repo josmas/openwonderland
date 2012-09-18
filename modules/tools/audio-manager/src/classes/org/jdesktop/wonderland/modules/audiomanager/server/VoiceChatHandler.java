@@ -68,7 +68,7 @@ import org.jdesktop.wonderland.server.UserMO;
 
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ProximityComponentMO;
 
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 

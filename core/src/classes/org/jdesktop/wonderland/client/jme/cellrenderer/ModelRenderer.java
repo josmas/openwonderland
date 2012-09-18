@@ -61,7 +61,7 @@ import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState.TransparencyMode;
 
 /**
  *

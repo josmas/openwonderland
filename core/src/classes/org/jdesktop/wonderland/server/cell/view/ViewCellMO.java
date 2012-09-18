@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell.view;
 
+import org.jdesktop.wonderland.server.cell.component.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.ExperimentalAPI;

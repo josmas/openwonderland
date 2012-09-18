@@ -83,9 +83,9 @@ import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentServerState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.LoaderData;
 

@@ -15,12 +15,13 @@
  * subject to the "Classpath" exception as provided by the Open Wonderland
  * Foundation in the License file that accompanied this code.
  */
-package org.jdesktop.wonderland.common.cell.state;
+package org.jdesktop.wonderland.common.cell.component.state;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
@@ -44,7 +45,7 @@ public class InteractionComponentServerState extends CellComponentServerState
     @Override
     @XmlTransient
     public String getServerComponentClassName() {
-        return "org.jdesktop.wonderland.server.cell.InteractionComponentMO";
+        return "org.jdesktop.wonderland.server.cell.component.InteractionComponentMO";
     }
     
     /**

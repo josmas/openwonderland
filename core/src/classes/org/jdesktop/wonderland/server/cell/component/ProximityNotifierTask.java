@@ -15,8 +15,9 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.cell.component;
 
+import org.jdesktop.wonderland.server.cell.component.ProximityListenerSrv;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.service.DataService;

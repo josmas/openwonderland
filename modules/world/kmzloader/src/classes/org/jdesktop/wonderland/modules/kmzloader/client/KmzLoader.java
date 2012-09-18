@@ -70,7 +70,7 @@ import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
 
 /**

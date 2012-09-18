@@ -33,9 +33,10 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.common.cell.state;
+package org.jdesktop.wonderland.common.cell.component.state;
 
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState.TransparencyMode;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState.TransparencyMode;
 
 /**
  * A cell component that encapsulates all the information required to load a

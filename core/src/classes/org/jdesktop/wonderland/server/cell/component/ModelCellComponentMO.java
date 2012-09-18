@@ -33,15 +33,17 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.cell.component;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentClientState;
+import org.jdesktop.wonderland.common.cell.component.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -58,7 +60,7 @@ public class ModelCellComponentMO extends CellComponentMO {
     }
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.client.cell.ModelCellComponent";
+        return "org.jdesktop.wonderland.client.cell.component.ModelCellComponent";
     }
 
     @Override

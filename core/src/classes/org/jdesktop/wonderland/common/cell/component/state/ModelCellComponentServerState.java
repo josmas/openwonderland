@@ -33,12 +33,14 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.common.cell.state;
+package org.jdesktop.wonderland.common.cell.component.state;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
@@ -83,7 +85,7 @@ public class ModelCellComponentServerState extends CellComponentServerState impl
 
     @Override
     @XmlTransient public String getServerComponentClassName() {
-        return "org.jdesktop.wonderland.server.cell.ModelCellComponentMO";
+        return "org.jdesktop.wonderland.server.cell.component.ModelCellComponentMO";
     }
 
     public CellComponentServerState clone(CellComponentServerState state) {

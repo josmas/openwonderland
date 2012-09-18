@@ -56,7 +56,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
+import org.jdesktop.wonderland.server.cell.component.ProximityListenerSrv;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedReference;
