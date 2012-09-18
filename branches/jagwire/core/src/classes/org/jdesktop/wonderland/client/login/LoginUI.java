@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.client.login;
 
-import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
+import org.jdesktop.wonderland.client.login.NoAuthLoginControl;
+import org.jdesktop.wonderland.client.login.UserPasswordLoginControl;
+import org.jdesktop.wonderland.client.login.EitherLoginControl;
 
 /**
  * An interface that the login system will call back to to request

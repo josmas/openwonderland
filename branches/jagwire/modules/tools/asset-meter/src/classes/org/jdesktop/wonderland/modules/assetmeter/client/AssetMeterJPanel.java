@@ -59,7 +59,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
-import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetProgressListener;
+import org.jdesktop.wonderland.client.assetmgr.AssetProgressListener;
 
 /**
  *

@@ -41,7 +41,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
-import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetProgressListener;
+import org.jdesktop.wonderland.client.assetmgr.AssetProgressListener;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
