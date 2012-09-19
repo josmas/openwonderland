@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.comms;
+package org.jdesktop.wonderland.client.comms.session;
 
 import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.ClientChannelListener;
@@ -38,6 +38,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.comms.BaseConnection;
+import org.jdesktop.wonderland.client.comms.ClientConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.OKErrorResponseListener;
+import org.jdesktop.wonderland.client.comms.ResponseListener;
+import org.jdesktop.wonderland.client.comms.SessionStatusListener;
+import org.jdesktop.wonderland.client.comms.WaitResponseListener;
+import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -224,7 +235,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
             startLogin(loginParams);
         }
         
-        simpleClient = new SimpleClient(new WonderlandClientListener());
+        simpleClient = new SimpleClient(new WonderlandClientListener(this));
         
         Properties connectProperties = new Properties();
         connectProperties.setProperty("host", server.getHostname());
@@ -316,7 +327,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // processed immediately, otherwise messages received immediately
         // after the response to this message will not be handled
         // properly.
-        AttachResponseListener listener = new AttachResponseListener(record);
+        AttachResponseListener listener = new AttachResponseListener(record, this);
         
         // whether or not the connect attempt succeeded
         boolean success = false;
@@ -561,7 +572,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * Get the default client for handling traffic over the session channel
      * @return the default client
      */
-    protected SessionInternalHandler getInternalClient() {
+    public SessionInternalHandler getInternalClient() {
         return (SessionInternalHandler) getConnection(INTERNAL_CLIENT_TYPE);
     }
     
@@ -572,7 +583,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      */
     protected ClientRecord addClientRecord(ClientConnection client) {
         logger.fine(getName() + " adding record for client " + client);
-        ClientRecord record = new ClientRecord(client);
+        ClientRecord record = new ClientRecord(client, this);
         clients.put(client.getConnectionType(), record);
         return record;
     }
@@ -656,7 +667,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * is received from the server.
      * @param sessionID the new sessionID
      */
-    private synchronized void setID(BigInteger sessionID) {
+    public synchronized void setID(BigInteger sessionID) {
         this.sessionID = sessionID;
     }
 
@@ -665,7 +676,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * is received from the server.
      * @param userID the new userID
      */
-    private synchronized void setUserID(WonderlandIdentity userID) {
+    public synchronized void setUserID(WonderlandIdentity userID) {
         this.userID = userID;
     }
     
@@ -675,7 +686,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      */
     private synchronized void startLogin(LoginParameters params) {
         setStatus(Status.CONNECTING);
-        currentLogin = new LoginAttempt(params);
+        currentLogin = new LoginAttempt(params, this);
     }
     
     /**
@@ -683,7 +694,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * @return the current login attempt, or null if there is no
      * current attempt
      */
-    private synchronized LoginAttempt getCurrentLogin() {
+    public synchronized LoginAttempt getCurrentLogin() {
         return currentLogin;
     }
     
@@ -692,7 +703,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * sets the status to the given value.
      * @param status the new status
      */
-    private synchronized void finishLogin(Status status) {
+    public synchronized void finishLogin(Status status) {
         setStatus(status);
         currentLogin = null;
     }
@@ -710,428 +721,5 @@ public class WonderlandSessionImpl implements WonderlandSession {
     @Override
     public String toString() {
         return getName() + " status: " + getStatus();
-    }
-    
-    /**
-     * Wonderland client listener
-     */
-    class WonderlandClientListener implements SimpleClientListener {
-
-        /**
-         * {@inheritDoc}
-         */
-        public PasswordAuthentication getPasswordAuthentication() {
-            // This is called to get the user name and authentication data (eg password)
-            // to be authenticated server side.
-            LoginParameters loginParams = getCurrentLogin().getLoginParameters();
-            return new PasswordAuthentication(loginParams.getUserName(),
-                                              loginParams.getPassword());
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public synchronized void loggedIn() {
-            logger.fine(getName() + " logged in");
-            getCurrentLogin().setLoginSuccess();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public synchronized void loginFailed(String reason) {
-            logger.fine(getName() + " login failed: " + reason);
-            getCurrentLogin().setFailure(reason);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void disconnected(boolean graceful, String reason) {
-            logger.fine(getName() + " disconnected, reason: " + reason);
-            synchronized (this) {
-                // are we in the process of logging in?
-                if (getCurrentLogin() != null) {
-                    getCurrentLogin().setFailure(reason);
-                } else {
-                    setStatus(Status.DISCONNECTED);
-                }
-            }
-        }
-
-        public ClientChannelListener joinedChannel(ClientChannel channel) {
-            logger.fine("Client joined channel " + channel.getName());
-            
-            return new ClientChannelListener() {
-
-                public void receivedMessage(ClientChannel channel, 
-                                            ByteBuffer data) 
-                {
-                    logger.finest("Received " + data.remaining() + 
-                                  " bytes on channel " + channel.getName());
-                    fireSessionMessageReceived(data);
-                }
-
-                public void leftChannel(ClientChannel channel) {
-                    logger.fine("Left channel " + channel.getName());
-                }
-            };
-        }
-        
-        /**
-         * {@inheritDoc}
-         */
-        public void receivedMessage(ByteBuffer data) {
-            fireSessionMessageReceived(data);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void reconnecting() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void reconnected() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-    
-    /**
-     * An attempt to log in
-     */
-    class LoginAttempt {
-        // parameters to log in with
-        private LoginParameters params;
-        
-        // whether the login is complete
-        private boolean loginComplete;
-        
-        // whether the login succeeded
-        private boolean loginSuccess;
-        
-        // the exception if the login failed
-        private LoginFailureException loginException;
-        
-        /**
-         * Create a new login attempt
-         * @param params the login parameters
-         */
-        public LoginAttempt(LoginParameters params) {
-            this.params = params;
-            
-            loginComplete = false;
-            loginSuccess = true;
-        }
-        
-        /**
-         * Get the login parameters
-         * @return the login parameters
-         */
-        public LoginParameters getLoginParameters() {
-            return params;
-        }
-        
-        /**
-         * Set a successful result for the login phase.  This will initiate the 
-         * protocol selection phase.
-         */
-        public synchronized void setLoginSuccess() {
-           ProtocolSelectionMessage psm = 
-                   new ProtocolSelectionMessage(getProtocolName(),
-                                                getProtocolVersion());
-           ResponseListener rl = new OKErrorResponseListener() {
-                @Override
-                public void onSuccess(MessageID messageID) {
-                    // move to the next phase
-                    setProtocolSuccess();
-                }
-
-                @Override
-                public void onFailure(MessageID messageID, String message,
-                                      Throwable cause) 
-                {
-                    setFailure(message, cause);
-                }
-            };
-            
-            // send the message using the default client
-            getInternalClient().send(psm, rl);
-        }
-        
-        /**
-         * Set success in the protocol selection phase.
-         */
-        public synchronized void setProtocolSuccess() {
-            SessionInitializationMessage initMessage = null;
-            
-            try {
-                initMessage = getInternalClient().waitForInitialization();
-            } catch (InterruptedException ie) {
-                // ignore -- treat as a null init message
-            }
-            
-            if (initMessage == null) {
-                // no initialization message means there has been a login
-                // problem of some sort
-                setFailure("No initialization message.");
-            } else {
-                // we got an initialization message.  Read the session id
-                // and then notify everyone that login has succeeded
-                setID(initMessage.getSessionID());
-                setUserID(initMessage.getUserID());
-                setSessionInitialized();
-            }
-        }
-        
-        /**
-         * Called when we receive a session initialization message
-         */
-        public synchronized void setSessionInitialized() {
-            loginComplete = true;
-            loginSuccess = true;
-            finishLogin(Status.CONNECTED);
-            notifyAll();
-        }
-        
-        /**
-         * Set a failed result
-         * @param reason the reason for failure
-         */
-        public synchronized void setFailure(String reason) {
-            setFailure(reason, null);
-        }
-        
-        /**
-         * Set a failed result
-         * @param reason the reason for failure
-         * @param cause the underlying cause of the failure
-         */
-        public synchronized void setFailure(String reason, Throwable cause) {
-            loginComplete = true;
-            loginSuccess = false;
-            loginException = new LoginFailureException(reason, cause);
-            finishLogin(Status.DISCONNECTED);
-            notifyAll();
-        }
-               
-        /**
-         * Get the result of logging in.  This method blocks until the
-         * login and protocol selection succeeds or fails.
-         * @return true if everything works, or false if not
-         */
-        public synchronized LoginResult waitForLogin() 
-            throws InterruptedException
-        {
-            while (!loginComplete) {
-                wait();
-            }
-            
-            return new LoginResult(loginSuccess, loginException);
-        }
-    }
-    
-    /**
-     * The result of a login attempt
-     */
-    class LoginResult {
-        boolean success;
-        LoginFailureException exception;
-    
-        public LoginResult(boolean success, LoginFailureException exception) {
-            this.success = success;
-            this.exception = exception;
-        }
-    }
-    
-    /**
-     * The record for an connected client
-     */
-    protected class ClientRecord {
-        /** the client that connected */
-        private ClientConnection client;
-        
-        /** the id of this client, as assigned by the server */
-        private short clientID;
-        
-        public ClientRecord(ClientConnection client) {
-            this.client = client;
-        }
-        
-        /**
-         * Get the client associated with this record
-         * @return the associated client
-         */
-        public ClientConnection getClient() {
-            return client;
-        }
-        
-        /**
-         * Get the clientID for this client as sent by the server.  When
-         * the client attaches a given protocol, the server assigns an ID
-         * that must be pre-pended to outgoing messages so the server
-         * can determine which client they are intended for. 
-         * @return the id of this client
-         */
-        protected synchronized short getClientID() {
-            return clientID;
-        }
-         
-        /**
-         * Set the client ID associated with this record
-         * @param clientID the client id to set
-         */
-        protected synchronized void setClientID(short clientID) {
-            this.clientID = clientID;
-        }
-        
-        /**
-         * Handle a message
-         * @param message the message to handle
-         */
-        protected void handleMessage(Message message) {
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.finest(getName() + " client " + this + 
-                              " received message " + message);
-            }
-            
-            // send to the client
-            getClient().messageReceived(message);
-        }
-          
-        @Override
-        public String toString() {
-            return getClient().toString();
-        }
-    }
-    
-    /**
-     * Handle traffic over the session channel
-     */
-    protected static class SessionInternalHandler extends BaseConnection {
-        private WonderlandSessionImpl session;
-        private SessionInitializationMessage initMessage;
-        
-        public SessionInternalHandler(WonderlandSessionImpl session) {
-            this.session = session;
-            
-            // notify anyone waiting for initialization messages if the
-            // status becomes disconnected.
-            session.addSessionStatusListener(new SessionStatusListener() {
-                public void sessionStatusChanged(WonderlandSession session, 
-                                                 WonderlandSession.Status status) 
-                {
-                    if (status == WonderlandSession.Status.DISCONNECTED) {
-                        synchronized (SessionInternalHandler.this) {
-                            SessionInternalHandler.this.notifyAll();
-                        }
-                    }
-                }
-            });
-        }
-        
-        public ConnectionType getConnectionType() {
-            // only used internally
-            return INTERNAL_CLIENT_TYPE;
-        }
-
-        public void handleMessage(Message message) {
-            if (message instanceof SessionInitializationMessage) {
-                synchronized (this) {
-                    this.initMessage = (SessionInitializationMessage) message;
-                    notifyAll();
-                }
-            } else {
-                
-                // unhandled session messages?
-                logger.warning("Unhandled message: " + message);
-            }
-        }
-        
-        /**
-         * Wait for a session initialization message to be sent to the internal
-         * handler.  This method will return the most recent initialization
-         * message received, or block if no message has been received.
-         * <p>
-         * When a client disconnects, the message will be reset to null.
-         * Clients waiting at that point will be woken with a null response.
-         * @return the most recent message, or null if the client is
-         * disconnected.
-         */
-        public synchronized SessionInitializationMessage waitForInitialization() 
-            throws InterruptedException
-        {
-            while (initMessage == null && 
-                    session.getStatus() != WonderlandSession.Status.DISCONNECTED) 
-            {
-                wait();
-            }
-            
-            return initMessage;
-        }
-    }
-    
-    /**
-     * Listen for responses to the connect() message.
-     */
-    class AttachResponseListener extends WaitResponseListener {
-        /** the record to update on success */
-        private ClientRecord record;
-        
-        /** whether or not we succeeded */
-        private boolean success = false;
-        
-        /** the exception if we failed */
-        private ConnectionFailureException exception;
-        
-        public AttachResponseListener(ClientRecord record) {
-            this.record = record;
-        }
-        
-        @Override
-        public void responseReceived(ResponseMessage response) {
-            if (response instanceof AttachedClientMessage) {
-                AttachedClientMessage acm = (AttachedClientMessage) response;
-
-                // set the client id
-                setClientID(record, acm.getClientID());
-                
-                // notify the client that we are now connected
-                record.getClient().connected(WonderlandSessionImpl.this);
-                
-                // success
-                setSuccess(true);
-            } else if (response instanceof ErrorMessage) {
-                // error -- throw an exception
-                ErrorMessage e = (ErrorMessage) response;
-                setException(new ConnectionFailureException(e.getErrorMessage(),
-                                                        e.getErrorCause()));
-            } else {
-                // bad situation
-                setException(new ConnectionFailureException("Unexpected response " +
-                                                        "type: " + response));
-            }
-            
-            super.responseReceived(response);
-        }
-        
-        public synchronized boolean isSuccess() {
-            return success;
-        }
-        
-        private synchronized void setSuccess(boolean success) {
-            this.success = success;
-        }
-        
-        public synchronized ConnectionFailureException getException() {
-            return exception;
-        }
-        
-        public synchronized void setException(ConnectionFailureException exception) {
-            this.exception = exception;
-        }
     }
 }

@@ -15,14 +15,19 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.comms;
+package org.jdesktop.wonderland.client.comms.session;
 
+import org.jdesktop.wonderland.client.comms.session.WonderlandSessionImpl;
 import java.util.Properties;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.cache.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.cache.CellCacheConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.connections.CellCacheConnection;
 import org.jdesktop.wonderland.client.connections.CellChannelConnection;
 import org.jdesktop.wonderland.client.connections.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;

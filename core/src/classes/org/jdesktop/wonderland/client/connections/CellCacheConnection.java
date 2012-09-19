@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell.cache;
+package org.jdesktop.wonderland.client.connections;
 
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;

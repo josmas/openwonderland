@@ -21,7 +21,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.component.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.component.MovableComponent;
-import org.jdesktop.wonderland.client.comms.CellClientSession;
+import org.jdesktop.wonderland.client.comms.session.CellClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;

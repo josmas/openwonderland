@@ -35,6 +35,7 @@
  */
 package org.jdesktop.wonderland.client.cell.cache;
 
+import org.jdesktop.wonderland.client.connections.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import com.jme.bounding.BoundingVolume;
 import java.io.InputStream;

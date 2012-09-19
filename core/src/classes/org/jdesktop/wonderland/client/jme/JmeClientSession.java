@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.Properties;
-import org.jdesktop.wonderland.client.comms.CellClientSession;
+import org.jdesktop.wonderland.client.comms.session.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
