@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.userlist.client;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
-import org.jdesktop.wonderland.client.comms.CellClientSession;
+import org.jdesktop.wonderland.client.comms.session.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;

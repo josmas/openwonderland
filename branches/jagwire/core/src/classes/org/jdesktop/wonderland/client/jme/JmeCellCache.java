@@ -40,7 +40,7 @@ import java.util.List;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.cache.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
-import org.jdesktop.wonderland.client.comms.CellClientSession;
+import org.jdesktop.wonderland.client.comms.session.CellClientSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**

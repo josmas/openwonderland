@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
+import org.jdesktop.wonderland.client.comms.session.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.client.login.NoAuthLoginControl;
 import org.jdesktop.wonderland.client.login.UserPasswordLoginControl;

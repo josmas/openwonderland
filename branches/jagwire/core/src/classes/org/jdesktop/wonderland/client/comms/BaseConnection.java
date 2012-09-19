@@ -142,7 +142,7 @@ public abstract class BaseConnection implements ClientConnection {
      * CONNECTED state or the session this client is connected to is not
      * in the CONNECTED state
      */
-    protected void send(Message message) {
+    public void send(Message message) {
         send(message, null);
     }
    
@@ -169,7 +169,7 @@ public abstract class BaseConnection implements ClientConnection {
      * CONNECTED state or the session this client is connected to is not
      * in the CONNECTED state 
      */
-    protected void send(Message message, ResponseListener listener) 
+    public void send(Message message, ResponseListener listener) 
     {
         if (getStatus() != Status.CONNECTED) {
             throw new IllegalStateException("Not connected");
