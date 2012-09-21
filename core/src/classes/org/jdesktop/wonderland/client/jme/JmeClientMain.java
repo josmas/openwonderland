@@ -3,35 +3,33 @@
  *
  * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * The Open Wonderland Foundation designates this particular file as
- * subject to the "Classpath" exception as provided by the Open Wonderland
- * Foundation in the License file that accompanied this code.
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
  */
-
 /**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
- * this code.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.client.jme;
 
@@ -49,6 +47,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -69,7 +72,7 @@ import org.jdesktop.wonderland.client.assetmgr.AssetDB;
 import org.jdesktop.wonderland.client.assetmgr.AssetDBException;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
-import org.jdesktop.wonderland.common.ThreadManager;
+//import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -79,8 +82,8 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.LogControl;
 /* For Testing FocusEvent3D
-import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
-import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+ import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
+ import org.jdesktop.wonderland.client.jme.input.InputManager3D;
  */
 
 /**
@@ -93,12 +96,14 @@ public class JmeClientMain {
             Logger.getLogger(JmeClientMain.class.getName());
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/client/jme/resources/Bundle");
-
-    /** Default window size */
+    /**
+     * Default window size
+     */
     private static final int DEFAULT_WIDTH = 800;
     private static final int DEFAULT_HEIGHT = 600;
-
-    /** The frame of the Wonderland client window. */
+    /**
+     * The frame of the Wonderland client window.
+     */
     private static MainFrame frame;
     // standard properties
     private static final String PROPS_URL_PROP = "run.properties.file";
@@ -111,7 +116,6 @@ public class JmeClientMain {
     private static final String SERVER_URL_DEFAULT = "http://localhost:8080";
     private static final String DESIRED_FPS_DEFAULT = "30";
     private static final String WINDOW_SIZE_DEFAULT = "800x600";
-  
     // the current Wonderland login and session
     private JmeLoginUI login;
     private JmeClientSession curSession;
@@ -119,16 +123,38 @@ public class JmeClientMain {
     private boolean loggingOut;
     // whether we should try to auto-reconnect
     private boolean autoReconnect = true;
-
-
+    private ExecutorService executor =
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     // log uncaught exceptions
     private static final UncaughtExceptionHandler ueh =
-            new UncaughtExceptionHandler()
-    {
-        public void uncaughtException(Thread t, Throwable e) {
-            LOGGER.log(Level.WARNING, "Uncaught exception", e);
-        }
-    };
+            new UncaughtExceptionHandler() {
+                public void uncaughtException(Thread t, Throwable e) {
+                    LOGGER.log(Level.WARNING, "Uncaught exception", e);
+                }
+            };
+
+    private void forceScenarioToInitialize() {
+
+        Clip clip2 = Clip.create(1000, new TimingTarget() {
+            public void timingEvent(float arg0, long arg1) {
+            }
+
+            public void begin() {
+            }
+
+            public void end() {
+            }
+
+            public void pause() {
+            }
+
+            public void resume() {
+            }
+        });
+        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+        clip2.start();
+        // End HUGE HACK.
+    }
 
     private enum OS {
 
@@ -138,6 +164,7 @@ public class JmeClientMain {
 
     /**
      * creates a new JmeClientMain
+     *
      * @param args the command line arguments
      */
     public JmeClientMain(String[] args) {
@@ -163,7 +190,7 @@ public class JmeClientMain {
 
         String windowSize = System.getProperty(
                 WINDOW_SIZE_PROP, WINDOW_SIZE_DEFAULT);
-        
+
         int width = DEFAULT_WIDTH;
         int height = DEFAULT_HEIGHT;
 
@@ -196,25 +223,7 @@ public class JmeClientMain {
 
         // HUGE HACK ! Force scenario to initialize so menus work correctly
         // (work around for scenario bug)
-        Clip clip2 = Clip.create(1000, new TimingTarget() {
-
-            public void timingEvent(float arg0, long arg1) {
-            }
-
-            public void begin() {
-            }
-
-            public void end() {
-            }
-
-            public void pause() {
-            }
-
-            public void resume() {
-            }
-        });
-        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
-        clip2.start();
+        forceScenarioToInitialize();
         // End HUGE HACK.
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
@@ -229,11 +238,21 @@ public class JmeClientMain {
         // add a listener that will be notified when the user selects a new
         // server
         frame.addServerURLListener(new ServerURLListener() {
-
             public void serverURLChanged(final String serverURL) {
                 // run in a new thread so we don't block the AWT thread
-                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
+//                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
+//
+//                    public void run() {
+//                        try {
+//                            loadServer(serverURL);
+//                        } catch (IOException ioe) {
+//                            LOGGER.log(Level.WARNING, "Error connecting to "
+//                                    + serverURL, ioe);
+//                        }
+//                    }
+//                }).start();
 
+                executor.submit(new Runnable() {
                     public void run() {
                         try {
                             loadServer(serverURL);
@@ -242,16 +261,24 @@ public class JmeClientMain {
                                     + serverURL, ioe);
                         }
                     }
-                }).start();
+                });
+
+
             }
 
             public void logout() {
-                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
-
+//                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
+//                    public void run() {
+//                        JmeClientMain.this.logout();
+//                    }
+//                }).start();
+                
+                
+                executor.submit(new Runnable() { 
                     public void run() {
                         JmeClientMain.this.logout();
                     }
-                }).start();
+                });
             }
         });
 
@@ -280,9 +307,9 @@ public class JmeClientMain {
         float startZ = Float.parseFloat(System.getProperty("z", "0"));
         Vector3f startLoc = new Vector3f(startX, startY, startZ);
 
-        float look = Float.parseFloat(System.getProperty("look",  "0"));
+        float look = Float.parseFloat(System.getProperty("look", "0"));
         Quaternion startLook = new Quaternion(
-                new float[] { 0f, (float) Math.toRadians(look), 0f });
+                new float[]{0f, (float) Math.toRadians(look), 0f});
 
         // connect to the default server
         try {
@@ -295,6 +322,7 @@ public class JmeClientMain {
 
     /**
      * Return whether or not we should auto-reconnect on disconnect
+     *
      * @return true if auto reconnect is enabled, or false if not
      */
     public synchronized boolean getAutoReconnect() {
@@ -303,6 +331,7 @@ public class JmeClientMain {
 
     /**
      * Set whether or not we should auto-reconnect on disconnect
+     *
      * @param autoReconnect true to reconnect automatically, or false not to
      */
     public synchronized void setAutoReconnect(boolean autoReconnect) {
@@ -311,8 +340,9 @@ public class JmeClientMain {
 
     /**
      * Move the client to the given location
-     * @param serverURL the url of the server to go to, or null to stay
-     * on the current server
+     *
+     * @param serverURL the url of the server to go to, or null to stay on the
+     * current server
      * @param translation the translation
      * @param look the direction to look in, or null to look in the default
      * direction
@@ -350,14 +380,20 @@ public class JmeClientMain {
             // issue #859 - load the server in a separate thread to
             // guarantee it won't get loaded in the awt event thread
             ServerLoader sl = new ServerLoader(serverURL, translation, look);
-            Thread t = new Thread(sl);
-            t.start();
+//            Thread t = new Thread(sl);
+//            t.start();
 
+            Future<Boolean> future = executor.submit(sl);
+            
+            
             // wait for the thread to finish
             try {
-                t.join();
+//                t.join();
+                future.get();
             } catch (InterruptedException ex) {
-                LOGGER.log(Level.WARNING, "Join interrupted", ex);
+                LOGGER.log(Level.WARNING, "Thread interrupted", ex);
+            } catch(ExecutionException ex) {
+                LOGGER.log(Level.WARNING, "Execution Exception!", ex);
             }
 
             // see if there was an exception
@@ -409,7 +445,7 @@ public class JmeClientMain {
         // OWL issue #185: set this manager as primary before creating any
         // connectons (but after it is properly initialized)
         login.setPrimary(true);
-        
+
         // create a new session
         try {
             curSession = lm.createSession(login);
@@ -431,7 +467,6 @@ public class JmeClientMain {
         // Listen for session disconnected and remove session physics and
         // collision systems
         curSession.addSessionStatusListener(new SessionStatusListener() {
-
             public void sessionStatusChanged(
                     WonderlandSession session, Status status) {
                 if (status == Status.DISCONNECTED) {
@@ -463,7 +498,6 @@ public class JmeClientMain {
 
                         if (getAutoReconnect()) {
                             SwingUtilities.invokeLater(new Runnable() {
-
                                 public void run() {
                                     ReconnectDialog rf = new ReconnectDialog(
                                             JmeClientMain.this, mgr);
@@ -487,7 +521,7 @@ public class JmeClientMain {
         // set the primary session
         lm.setPrimarySession(curSession);
         frame.setServerURL(serverURL);
-  
+
         // OWL issue #92: request focus in main window
         frame.getCanvas().requestFocusInWindow();
     }
@@ -519,6 +553,7 @@ public class JmeClientMain {
 
     /**
      * Compare two Strings as URLs.
+     *
      * @param url1 the first URL to compare
      * @param url2 the second URL to compare
      * @return true if the URLs match
@@ -541,6 +576,7 @@ public class JmeClientMain {
 
     /**
      * returns the properties URL
+     *
      * @return the properties URL
      */
     protected URL getPropsURL() {
@@ -571,11 +607,12 @@ public class JmeClientMain {
 
     /**
      * Get the current desired framerate
+     *
      * @return the current framerate
      */
     static int getDesiredFrameRate() {
         Preferences prefs = Preferences.userNodeForPackage(JmeClientMain.class);
-        
+
         // first try a preference
         String requestedFPS = null;
         try {
@@ -584,7 +621,7 @@ public class JmeClientMain {
             }
         } catch (Exception e) {
         }
-        
+
         // if the preference was not set, use a system property
         if (requestedFPS == null) {
             requestedFPS = System.getProperty(DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
@@ -593,22 +630,22 @@ public class JmeClientMain {
         try {
             return Integer.parseInt(requestedFPS);
         } catch (NumberFormatException e) {
-            LOGGER.warning(DESIRED_FPS_PROP + " property format error for '" + 
-                           requestedFPS + "', using default");
+            LOGGER.warning(DESIRED_FPS_PROP + " property format error for '"
+                    + requestedFPS + "', using default");
             return Integer.parseInt(DESIRED_FPS_DEFAULT);
         }
     }
-    
+
     /**
      * Set the current desired framerate
+     *
      * @param frameRate the current desired framerate
      */
     static void setDesiredFrameRate(int frameRate) {
         Preferences prefs = Preferences.userNodeForPackage(JmeClientMain.class);
         prefs.put("fps", String.valueOf(frameRate));
     }
-    
-    
+
     /**
      * @param args the command line arguments
      */
@@ -638,7 +675,7 @@ public class JmeClientMain {
                 Thread.currentThread().setUncaughtExceptionHandler(ueh);
             }
         });
-        
+
         // try our best to log any uncaught exceptions
         Thread.setDefaultUncaughtExceptionHandler(ueh);
 
@@ -676,7 +713,7 @@ public class JmeClientMain {
 
         // show frame
         frame.getFrame().setVisible(true);
-        
+
         JPanel canvas3D = frame.getCanvas3DPanel();
         // Initialize an onscreen view
         ViewManager.initialize(canvas3D.getWidth(), canvas3D.getHeight());
@@ -701,39 +738,39 @@ public class JmeClientMain {
         inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
 
         /* For Testing FocusEvent3D
-        InputManager3D.getInputManager().addGlobalEventListener(
-        new EventClassListener () {
-        private final Logger logger = Logger.getLogger("My Logger");
-        public Class[] eventClassesToConsume () {
-        return new Class[] { FocusEvent3D.class };
-        }
-        public void commitEvent (Event event) {
-        logger.severe("Global listener: received mouse event, event = " + event);
-        }
-        });
+         InputManager3D.getInputManager().addGlobalEventListener(
+         new EventClassListener () {
+         private final Logger logger = Logger.getLogger("My Logger");
+         public Class[] eventClassesToConsume () {
+         return new Class[] { FocusEvent3D.class };
+         }
+         public void commitEvent (Event event) {
+         logger.severe("Global listener: received mouse event, event = " + event);
+         }
+         });
          */
 
         /* Note: Example of global key and mouse event listener
-        InputManager3D.getInputManager().addGlobalEventListener(
-        new EventClassFocusListener () {
-        private final Logger logger = Logger.getLogger("My Logger");
-        public Class[] eventClassesToConsume () {
-        return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
-        }
-        public void commitEvent (Event event) {
-        // NOTE: to test, change the two logger.fine calls below to logger.warning
-        if (event instanceof KeyEvent3D) {
-        if (((KeyEvent3D)event).isPressed()) {
-        logger.fine("Global listener: received key event, event = " + event );
-        }
-        } else {
-        logger.fine("Global listener: received mouse event, event = " + event);
-        MouseEvent3D mouseEvent = (MouseEvent3D) event;
-        System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
-        System.err.println("Event entity = " + mouseEvent.getEntity());
-        }
-        }
-        });
+         InputManager3D.getInputManager().addGlobalEventListener(
+         new EventClassFocusListener () {
+         private final Logger logger = Logger.getLogger("My Logger");
+         public Class[] eventClassesToConsume () {
+         return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+         }
+         public void commitEvent (Event event) {
+         // NOTE: to test, change the two logger.fine calls below to logger.warning
+         if (event instanceof KeyEvent3D) {
+         if (((KeyEvent3D)event).isPressed()) {
+         logger.fine("Global listener: received key event, event = " + event );
+         }
+         } else {
+         logger.fine("Global listener: received mouse event, event = " + event);
+         MouseEvent3D mouseEvent = (MouseEvent3D) event;
+         System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
+         System.err.println("Event entity = " + mouseEvent.getEntity());
+         }
+         }
+         });
          */
 
         // make sure we don't miss any MT-Game exceptions
@@ -753,6 +790,7 @@ public class JmeClientMain {
 
     /**
      * Returns the frame of the Wonderland client window.
+     *
      * @return the frame of the Wonderland client window.
      */
     public static MainFrame getFrame() {
@@ -761,6 +799,7 @@ public class JmeClientMain {
 
     /**
      * Set the main frame
+     *
      * @param frame the new main frame
      */
     public static void setFrame(MainFrame frame) {
@@ -769,6 +808,7 @@ public class JmeClientMain {
 
     /**
      * Load system properties and properties from the named file
+     *
      * @param propsURL the URL of the properties file to load
      */
     protected void loadProperties(URL propsURL) {
@@ -788,7 +828,7 @@ public class JmeClientMain {
         for (String propsName : mergeProps.stringPropertyNames()) {
             if (System.getProperties().getProperty(propsName) == null) {
                 System.getProperties().setProperty(propsName,
-                                                   mergeProps.getProperty(propsName));
+                        mergeProps.getProperty(propsName));
             }
         }
     }
@@ -830,8 +870,8 @@ public class JmeClientMain {
     }
 
     /**
-     * Check if another JVM process has the database opened. If so, then post
-     * a message and exit.
+     * Check if another JVM process has the database opened. If so, then post a
+     * message and exit.
      */
     private void checkDBException() {
         // Create an AssetDB object, which will attempt to open the DB. Upon
@@ -856,8 +896,10 @@ public class JmeClientMain {
         assetDB.disconnect();
     }
 
-    /** runnable for loading the server and remembering the exception */
-    class ServerLoader implements Runnable {
+    /**
+     * runnable for loading the server and remembering the exception
+     */
+    class ServerLoader implements Callable<Boolean> {
 
         private String serverURL;
         private Vector3f translation;
@@ -871,12 +913,14 @@ public class JmeClientMain {
             this.look = look;
         }
 
-        public void run() {
+        public Boolean call() {
             try {
                 loadServer(serverURL, translation, look);
+                return Boolean.TRUE;
             } catch (IOException ioe) {
                 // remember the exception
                 this.ioe = ioe;
+                return Boolean.FALSE;
             }
         }
 
