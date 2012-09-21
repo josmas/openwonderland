@@ -32,4 +32,14 @@ public interface HUDWindowSPI {
      * @return 
      */
     public JComponent getComponent();
+    
+    /**
+     * Initialize the window for appearance on HUD
+     */
+    public void initialize();
+    
+    /**
+     * Cleanup the window on client logout from server.
+     */
+    public void cleanup();
 }
