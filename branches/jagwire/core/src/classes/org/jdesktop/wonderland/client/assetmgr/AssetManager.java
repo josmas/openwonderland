@@ -3,35 +3,33 @@
  *
  * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * The Open Wonderland Foundation designates this particular file as
- * subject to the "Classpath" exception as provided by the Open Wonderland
- * Foundation in the License file that accompanied this code.
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
  */
-
 /**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
- * this code.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.client.assetmgr;
 
@@ -51,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.assetmgr.AssetStream.AssetResponse;
@@ -61,77 +60,75 @@ import org.jdesktop.wonderland.client.assetmgr.modules.ModuleAssetRepositoryFact
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.ThreadManager;
+//import org.jdesktop.wonderland.common.ThreadManager;
 
 /**
  * AssetManager provides services for downloading and maintaining the latest
- * version of asset data for the system. Primary use is for Images (Textures) and
- * geometry files of various types.
- * 
+ * version of asset data for the system. Primary use is for Images (Textures)
+ * and geometry files of various types.
+ *
  * @author paulby
  */
 @ExperimentalAPI
 public class AssetManager {
-    
+
     private static final Logger logger = Logger.getLogger(AssetManager.class.getName());
     private final AssetFactory assetFactory;
     private final Set<AssetProgressListener> progressListeners =
             new CopyOnWriteArraySet<AssetProgressListener>();
-
     private AssetCache assetCache;
-
     // A map that maintains protocols and the asset repository factories that
     // handle them.
     private static final Map<String, Class<? extends AssetRepositoryFactory>> protocolFactoryMap =
             new HashMap<String, Class<? extends AssetRepositoryFactory>>();
+
     static {
         protocolFactoryMap.put("wla", ModuleAssetRepositoryFactory.class);
         protocolFactoryMap.put("wlhttp", WlHttpAssetRepositoryFactory.class);
         protocolFactoryMap.put("wlcontent", WlContentAssetRepositoryFactory.class);
-    };
+    }
+    ;
 
     /*
      * A map of assets currently being loaded, where the key is the unique ID
      * of the asset and the value is the loader reponsible for loading it
      */
     private final HashMap<AssetID, AssetLoader> loadingAssets;
-    
     /*
      * A map of assets already loaded by the asset manager, where the key is the
      * unique ID of the asset and the value is the Asset object itself.
      */
     private final HashMap<AssetID, Asset> loadedAssets;
-    
     /* The number of threads to use for each of the downloading service */
-    private static final int NUMBER_THREADS = 10;    
+    private static final int NUMBER_THREADS = 10;
     private final ExecutorService downloadService = Executors.newFixedThreadPool(AssetManager.NUMBER_THREADS);
-    
-    /** Statistics */
+    /**
+     * Statistics
+     */
     private AssetStatisticsSPI stats = new NoopAssetStatisticsSPI();
-    
     /* Receive updates every 10 KB during downloads */
     private static final int UPDATE_BYTE_INTERVAL = 1024 * 10;
-    
     /* Number of bytes to read as chunks from the network */
     private static final int NETWORK_CHUNK_SIZE = 50 * 1024;
-    
+
     private AssetManager() {
         assetFactory = new AssetFactory();
         loadingAssets = new HashMap<AssetID, AssetLoader>();
         loadedAssets = new HashMap<AssetID, Asset>();
     }
-    
+
     /**
      * AssetManagerHolder holds the single instance of the AssetManager class.
-     * It is loaded upon the first call to AssetManager.getAssetManager(). 
+     * It is loaded upon the first call to AssetManager.getAssetManager().
      */
     private static class AssetManagerHolder {
+
         private final static AssetManager assetManager = new AssetManager();
     }
-    
+
     /**
      * Return the singleton AssetManager.
-     * 
+     *
      * @return An instance of the AssetManager class
      */
     public static AssetManager getAssetManager() {
@@ -140,6 +137,7 @@ public class AssetManager {
 
     /**
      * Get the asset cache associated with this asset manager.
+     *
      * @return the cache associated with this manager
      */
     public synchronized AssetCache getAssetCache() {
@@ -155,8 +153,8 @@ public class AssetManager {
     }
 
     /**
-     * Close the asset cache associated with this asset manager. The cache
-     * will be reopened on the next call to getAssetCache()
+     * Close the asset cache associated with this asset manager. The cache will
+     * be reopened on the next call to getAssetCache()
      */
     public synchronized void closeAssetCache() {
         if (assetCache != null) {
@@ -188,10 +186,8 @@ public class AssetManager {
      * local cache, then it will be downloaded and cached. This method returns
      * immediately with an Asset object that represents the asset being
      * downloaded or fetched from the cache. Upon error, this method returns
-     * null.
-     * <p>
-     * To receive an event when the asset is ready, attach a listener to the
-     * asset.
+     * null. <p> To receive an event when the asset is ready, attach a listener
+     * to the asset.
      *
      * @param assetURI The URI of the asset to fetch
      * @return An Asset object
@@ -213,11 +209,11 @@ public class AssetManager {
 
         try {
             Constructor constructor = clazz.getConstructor(AssetURI.class);
-            AssetRepositoryFactory factory = (AssetRepositoryFactory)constructor.newInstance(assetURI);
+            AssetRepositoryFactory factory = (AssetRepositoryFactory) constructor.newInstance(assetURI);
             return getAsset(assetURI, factory);
         } catch (Exception excp) {
-            logger.log(Level.WARNING, "Unable to create factory " +
-                    assetURI, excp);
+            logger.log(Level.WARNING, "Unable to create factory "
+                    + assetURI, excp);
             return null;
         }
     }
@@ -227,21 +223,17 @@ public class AssetManager {
      * local cache, then it will be downloaded and cached. This method returns
      * immediately with an Asset object that represents the asset being
      * downloaded or fetched from the cache. Upon error, this method returns
-     * null.
-     * <p>
-     * To receive an event when the asset is ready, attach a listener to the
-     * asset.
-     * <p>
-     * This method also takes the factory that is responsible for fetching the
-     * asset from some server.
+     * null. <p> To receive an event when the asset is ready, attach a listener
+     * to the asset. <p> This method also takes the factory that is responsible
+     * for fetching the asset from some server.
      *
      * @param assetURI The URI of the asset to fetch
      * @return An Asset object
      */
     public Asset getAsset(AssetURI assetURI, AssetRepositoryFactory factory) {
         long startTime = System.currentTimeMillis();
-        
-        synchronized(loadingAssets) {
+
+        synchronized (loadingAssets) {
             // Formulate the id (uri + checksum) of the asset we wish to download.
             // We need this to see if we are already downloading the same asset.
             String checksum = factory.getDesiredChecksum();
@@ -267,7 +259,7 @@ public class AssetManager {
                 // (e.g. in HTTP if-modified-since)
                 if (factory.isAlwaysDownload() == false) {
                     if (loadedAssets.containsKey(assetID) == true) {
-                    logger.fine("Asset has already been downloaded " + assetURI);
+                        logger.fine("Asset has already been downloaded " + assetURI);
                         return loadedAssets.get(assetID);
                     }
                 }
@@ -276,7 +268,7 @@ public class AssetManager {
                 // asynchronous. We immediately return the Asset object here
                 logger.fine("Spawning service to download asset " + assetURI);
                 Asset asset = assetFactory.assetFactory(AssetType.FILE, assetID);
-                
+
                 AssetLoader loader = new AssetLoader(asset, factory, this);
                 loadingAssets.put(assetID, loader);
                 Future f = downloadService.submit(loader);
@@ -285,18 +277,18 @@ public class AssetManager {
                 // record time
                 long submitTime = System.currentTimeMillis() - startTime;
                 getStatsProvider().assetStatistic(assetURI, AssetStat.SUBMIT, submitTime);
-                
+
                 return asset;
             }
         }
     }
 
     /**
-     * Wait for the specified asset to load. This method will return once
-     * the asset is either loaded, or the load fails.
-     * 
+     * Wait for the specified asset to load. This method will return once the
+     * asset is either loaded, or the load fails.
+     *
      * If the load is successful true is returned, otherwise false is returned
-     * 
+     *
      * @param asset
      * @return true if asset is ready, false if there was a failure
      */
@@ -319,10 +311,10 @@ public class AssetManager {
             if (loader == null) {
                 return true;
             }
-            
+
             Object o = loader.getFuture().get();
             logger.fine("Waiting for asset finished got " + o + " for asset " + asset.getAssetURI());
-           
+
             if (o == null) {
                 // Load failed
                 return false;
@@ -335,39 +327,42 @@ public class AssetManager {
         }
         return false;
     }
-    
+
     /**
      * Unload the asset from memory
+     *
      * @param asset
      */
     public void unloadAsset(Asset asset) {
-        synchronized(loadedAssets) {
+        synchronized (loadedAssets) {
             AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
             loadedAssets.remove(assetID);
             asset.unloaded();
         }
     }
-    
+
     /**
      * Delete the asset from the local cache
+     *
      * @param asset
      */
     public void deleteAsset(Asset asset) {
-        synchronized(loadedAssets) {
+        synchronized (loadedAssets) {
             AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
             loadedAssets.remove(assetID);
             asset.unloaded();
             try {
                 getAssetCache().deleteAsset(asset);
             } catch (AssetCacheException excp) {
-                logger.log(Level.WARNING, "Unable to delete asset from the " +
-                        " cache " + assetID.toString(), excp);
+                logger.log(Level.WARNING, "Unable to delete asset from the "
+                        + " cache " + assetID.toString(), excp);
             }
         }
     }
 
     /**
      * Set the asset statistics provider
+     *
      * @param provider the provider
      */
     public synchronized void setStatsProvider(AssetStatisticsSPI provider) {
@@ -377,17 +372,17 @@ public class AssetManager {
             this.stats = provider;
         }
     }
-    
+
     /**
      * Get the current statistics provider
      */
     public synchronized AssetStatisticsSPI getStatsProvider() {
         return this.stats;
     }
-    
+
     /**
-     * Synchronously download an asset from a server, given the input stream
-     * to read the asset, and the Asset object.
+     * Synchronously download an asset from a server, given the input stream to
+     * read the asset, and the Asset object.
      */
     public void loadAssetFromServer(Asset asset, AssetStream assetStream) throws IOException {
 
@@ -437,10 +432,10 @@ public class AssetManager {
             asset.setChecksum(assetStream.getChecksum());
             asset.setBaseURL(assetStream.getBaseURL());
 
-            logger.fine("Downloaded asset with checksum " +
-                    asset.getChecksum() + " for asset " + assetID.getAssetURI());
-            logger.fine("Downloaded asset to file " + file.getAbsolutePath() +
-                    " for asset " + assetID.getAssetURI());
+            logger.fine("Downloaded asset with checksum "
+                    + asset.getChecksum() + " for asset " + assetID.getAssetURI());
+            logger.fine("Downloaded asset to file " + file.getAbsolutePath()
+                    + " for asset " + assetID.getAssetURI());
         } catch (IOException excp) {
             // Tell the listeners that the asset has failed
             fireDownloadFailed(asset);
@@ -450,6 +445,7 @@ public class AssetManager {
 
     /**
      * Notify listeners of download progress
+     *
      * @param asset the asset that has progress
      * @param readBytes the bytes read
      * @param percent the percent of the total
@@ -457,7 +453,7 @@ public class AssetManager {
     protected void fireDownloadProgress(Asset asset, int readBytes, int percent) {
         // notify per-asset listeners
         asset.setDownloadProgress(readBytes, percent);
-        
+
         // notify global listeners
         for (AssetProgressListener listener : progressListeners) {
             listener.downloadProgress(asset, readBytes, percent);
@@ -466,6 +462,7 @@ public class AssetManager {
 
     /**
      * Notify listeners that a download has completed
+     *
      * @param asset the asset that completed
      */
     protected void fireDownloadCompleted(Asset asset) {
@@ -476,6 +473,7 @@ public class AssetManager {
 
     /**
      * Notify listeners that a download has completed
+     *
      * @param asset the asset that completed
      */
     protected void fireDownloadFailed(Asset asset) {
@@ -483,11 +481,12 @@ public class AssetManager {
             listener.downloadCompleted(asset);
         }
     }
+
     /**
      * Make the directory in which this file will go.
      *
      * Removes the trailing filename from File and creates the directory
-     * 
+     *
      */
     private synchronized void makeDirectory(File file) throws IOException {
         // Method synchronized to avoid problems where lots of calls can cause
@@ -500,11 +499,11 @@ public class AssetManager {
             throw new IOException("Failed to Create cache dir " + dir.getAbsolutePath());
         }
     }
-    
+
     /**
      * Utility routine that attempts to load the asset from the cache and sets
-     * the success or failure information in the asset. Returns the asset
-     * upon success, and null upon failure.
+     * the success or failure information in the asset. Returns the asset upon
+     * success, and null upon failure.
      */
     public Asset loadAssetFromCache(Asset asset, String originalChecksum) {
         AssetURI assetURI = asset.getAssetURI();
@@ -530,18 +529,18 @@ public class AssetManager {
                 // have downloaded (e.g. HTTP if-modified-since)
                 AssetID originalID = new AssetID(assetURI, originalChecksum);
 
-                logger.fine("Removing from loading assets with uri=" + uriString +
-                        ", old checksum=" + originalChecksum);
-                logger.fine("Does asset exist in loading list? " +
-                        loadingAssets.containsKey(originalID));
+                logger.fine("Removing from loading assets with uri=" + uriString
+                        + ", old checksum=" + originalChecksum);
+                logger.fine("Does asset exist in loading list? "
+                        + loadingAssets.containsKey(originalID));
 
                 loadingAssets.remove(originalID);
 
                 // Next we put the new asset ID into the "loaded" list
                 AssetID assetID = new AssetID(assetURI, checksum);
 
-                logger.fine("Adding to loaded assets with uri=" + uriString +
-                        ", new checksum=" + checksum);
+                logger.fine("Adding to loaded assets with uri=" + uriString
+                        + ", new checksum=" + checksum);
 
                 loadedAssets.put(assetID, asset);
                 assetSuccess(asset);
@@ -550,14 +549,14 @@ public class AssetManager {
             }
         }
     }
-    
+
     /**
      * Replaces all of the spaces (' ') in a URI string with '%20'
      */
     public static String encodeSpaces(String uri) {
         StringBuilder sb = new StringBuilder(uri);
         int index = 0;
-        while ((index = sb.indexOf(" ", index )) != -1) {
+        while ((index = sb.indexOf(" ", index)) != -1) {
             // If we find a space at position 'index', then replace the space
             // and update the value of 'index'. The value of 'index' should be
             // the next character after the replaced '%20', which is index + 3
@@ -568,8 +567,8 @@ public class AssetManager {
     }
 
     /**
-     * Sets the asset to indicate a loading failure given the string reason
-     * why and notifies all of the listeners.
+     * Sets the asset to indicate a loading failure given the string reason why
+     * and notifies all of the listeners.
      */
     private void assetFailed(Asset asset, String reason) {
         asset.setDownloadFailure(reason);
@@ -582,12 +581,13 @@ public class AssetManager {
     private void assetSuccess(Asset asset) {
         asset.setDownloadSuccess();
     }
-    
+
     /**
      * Asset statistic
      */
     public enum AssetStat {
-        SUBMIT, OPEN_STREAM, GET_FROM_CACHE, GET_FROM_SERVER; 
+
+        SUBMIT, OPEN_STREAM, GET_FROM_CACHE, GET_FROM_SERVER;
     }
 
     /* URLs to download */
@@ -603,16 +603,18 @@ public class AssetManager {
         "wlcontent://users/J/reload_architecture.png",
         "wlcontent://users/J/reload_architecture.png",
         "wlcontent://users/J/reload_architecture.png",
-        "wlcontent://users/J/reload_architecture.png",
-
-    };
+        "wlcontent://users/J/reload_architecture.png",};
 
     public static void downloadFile() throws java.net.URISyntaxException {
-        final Thread threads[] = new Thread[uris.length];
+//        final Thread threads[] = new Thread[uris.length];
+
+        final int availableProcessors = Runtime.getRuntime().availableProcessors();
+        final ExecutorService executor = Executors.newFixedThreadPool(availableProcessors);
+
         for (int i = 0; i < uris.length; i++) {
             final int j = i;
-            threads[i] = new Thread(ThreadManager.getThreadGroup(), "AssetMgrDownloader") {
-                @Override
+
+            executor.submit(new Runnable() {
                 public void run() {
                     Logger logger = Logger.getLogger(AssetManager.class.getName());
                     AssetManager assetManager = AssetManager.getAssetManager();
@@ -628,23 +630,57 @@ public class AssetManager {
                     logger.fine("Failure info: " + asset.getFailureInfo());
                     if (asset.getLocalCacheFile() == null) {
                         logger.fine("Local Cache File: null");
-                    }
-                    else {
+                    } else {
                         logger.fine("Local Cache File: " + asset.getLocalCacheFile().getAbsolutePath());
                     }
                     logger.fine("Done with: " + assetURI.toString());
                 }
-            };
-            threads[i].start();
-        }
+            });
 
-        for (int i = 0; i < uris.length; i++) {
+            executor.shutdown();
             try {
-                threads[i].join();
-            } catch (java.lang.InterruptedException excp) {
-                logger.log(Level.WARNING, "Thread is interrupted", excp);
+                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AssetManager.class.getName()).log(Level.SEVERE, null, ex);
             }
+
+
+
+
+
+//            threads[i] = new Thread(ThreadManager.getThreadGroup(), "AssetMgrDownloader") {
+//                @Override
+//                public void run() {
+//                    Logger logger = Logger.getLogger(AssetManager.class.getName());
+//                    AssetManager assetManager = AssetManager.getAssetManager();
+//
+//                    // Create the AssetURI and Asset to use to load. Just
+//                    // use the localhost:8080 as the server name and port
+//                    AssetURI assetURI = AssetURI.uriFactory(uris[j]);
+//                    assetURI.setServerHostAndPort("localhost:8080");
+//
+//                    // Wait for the asset to load and print out the result
+//                    Asset asset = assetManager.getAsset(assetURI);
+//                    assetManager.waitForAsset(asset);
+//                    logger.fine("Failure info: " + asset.getFailureInfo());
+//                    if (asset.getLocalCacheFile() == null) {
+//                        logger.fine("Local Cache File: null");
+//                    }
+//                    else {
+//                        logger.fine("Local Cache File: " + asset.getLocalCacheFile().getAbsolutePath());
+//                    }
+//                    logger.fine("Done with: " + assetURI.toString());
+//                }
+//            };
+//            threads[i].start();
+//        }
+//
+//        for (int i = 0; i < uris.length; i++) {
+//            try {
+//                threads[i].join();
+//            } catch (java.lang.InterruptedException excp) {
+//                logger.log(Level.WARNING, "Thread is interrupted", excp);
+//            }
         }
     }
-
 }
