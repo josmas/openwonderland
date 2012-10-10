@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import org.jdesktop.wonderland.client.utils.Observable;
+import org.jdesktop.wonderland.client.utils.Observer;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
@@ -31,7 +33,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author jkaplan
  */
 @ExperimentalAPI
-public abstract class BaseConnection implements ClientConnection {
+public abstract class BaseConnection<O extends Observer> implements ClientConnection {
     /** the current status */
     private Status status = Status.DISCONNECTED;
     
@@ -44,6 +46,13 @@ public abstract class BaseConnection implements ClientConnection {
             Collections.synchronizedMap(
                     new HashMap<MessageID, ResponseListener>());
    
+    
+    protected Observable<O> observable = new Observable<O>();
+    
+    
+    public void addObserver(O observer) {
+        observable.addObserver(observer);
+    }
     public WonderlandSession getSession() {
         return session;
     }

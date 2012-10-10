@@ -41,6 +41,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.PickInfo;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
@@ -98,15 +100,20 @@ public abstract class EventDistributor implements Runnable {
 	}
     }
 
-    private Thread thread;
+//    private Thread thread;
+    
+    private ExecutorService executor =
+            
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     private LinkedBlockingQueue<Entry> inputQueue = new LinkedBlockingQueue<Entry>();
 
     private final EventListenerCollection globalEventListeners = new EventListenerCollection();
 
     protected void start () {
-	thread = new Thread(ThreadManager.getThreadGroup(), this, "EventDistributor");
-	thread.start();
+//	thread = new Thread(ThreadManager.getThreadGroup(), this, "EventDistributor");
+//	thread.start();
+        executor.submit(this);
     }
 
     /**

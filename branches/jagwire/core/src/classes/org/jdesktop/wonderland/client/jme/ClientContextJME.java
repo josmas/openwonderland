@@ -42,6 +42,7 @@ import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.view.ClientView;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -196,4 +197,13 @@ public class ClientContextJME extends ClientContext {
     static void setClientMain(JmeClientMain clientMain) {
         ClientContextJME.clientMain = clientMain;
     }
+    
+    public static ClientView getClientView() {
+        return ClientContextJME.clientView;
+    }
+    
+    public static void setClientView(ClientView clientView) {
+        ClientContextJME.clientView = clientView;
+    }
+    private static ClientView clientView;
 }

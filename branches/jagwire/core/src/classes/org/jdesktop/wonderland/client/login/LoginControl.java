@@ -170,6 +170,12 @@ public abstract class LoginControl {
             this.classLoader = setupClassLoader(getServerURL());
             // initialize plugins
             initializePlugins(classLoader);
+            
+            
+            logger.warning("\n************************************\n"
+                            +"* PLUGINS INITIALIZED!             *\n"
+                            +"************************************");
+            
             // if we get here, the login has succeeded
             this.success = true;
         }
@@ -237,7 +243,7 @@ public abstract class LoginControl {
     
     
     
-        /**
+    /**
      * Initialize plugins
      */
     public void initializePlugins(ScannedClassLoader loader) {

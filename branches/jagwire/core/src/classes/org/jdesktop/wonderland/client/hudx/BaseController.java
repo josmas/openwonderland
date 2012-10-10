@@ -4,8 +4,6 @@
  */
 package org.jdesktop.wonderland.client.hudx;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,7 +12,6 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.hudx.SPI.ViewSPI;
-import org.jdesktop.wonderland.client.hudx.annotations.ControlledView;
 import org.jdesktop.wonderland.client.hudx.annotations.View;
 import org.jdesktop.wonderland.client.utils.Observer;
 
@@ -96,5 +93,4 @@ public abstract class BaseController implements Observer {
     
     protected abstract void cleanup();
     
-    protected abstract boolean openOnStartup();
 }

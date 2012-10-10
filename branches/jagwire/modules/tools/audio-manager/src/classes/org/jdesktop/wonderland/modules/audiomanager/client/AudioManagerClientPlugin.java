@@ -74,12 +74,12 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
 
     @Override
     protected void activate() {
-        getClient().addMenus();
+//        getClient().addMenus();
     }
 
     @Override
     protected void deactivate() {
-        getClient().removeMenus();
+//        getClient().removeMenus();
     }
 
     public void sessionCreated(WonderlandSession session) {
@@ -111,26 +111,26 @@ public class AudioManagerClientPlugin extends BaseClientPlugin
      * be in the CONNECTED state.
      */
     protected void connectClient(WonderlandSession session) {
-        try {
-            getClient().connect(session);
-        } catch (ConnectionFailureException e) {
-            logger.log(Level.WARNING, "Connect client error", e);
-        }
+//        try {
+////            getClient().connect(session);
+//        } catch (ConnectionFailureException e) {
+//            logger.log(Level.WARNING, "Connect client error", e);
+//        }
     }
 
     /**
      * Disconnect the client
      */
     protected void disconnectClient() {
-        getClient().disconnect();
+//        getClient().disconnect();
     }
 
-    public static AudioManagerClient getClient() {
-        return SingletonHolder.INSTANCE;
-    }
+//    public static AudioManagerClient getClient() {
+//        return SingletonHolder.INSTANCE;
+//    }
 
-    private static class SingletonHolder {
-        private static final AudioManagerClient INSTANCE =
-                new AudioManagerClient();
-    }
+//    private static class SingletonHolder {
+//        private static final AudioManagerClient INSTANCE =
+//                new AudioManagerClient();
+//    }
 }

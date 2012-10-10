@@ -11,7 +11,7 @@ import java.awt.event.ActionListener;
  *
  * @author JagWire
  */
-public interface MenuItemSPI extends ActionListener {
+public interface MenuItemSPI {
     
     /**
      * Provides array of groups that are allowed to use this Menu Item
@@ -32,10 +32,5 @@ public interface MenuItemSPI extends ActionListener {
      */
     public String getDisplayName();
     
-    /**
-     * 
-     * @inherit 
-     */
-    public void actionPerformed(ActionEvent event);
     
 }

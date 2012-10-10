@@ -19,7 +19,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
  *
- * @author Ryan
+ * @author JagWire
  */
 public class ParallelCellStatusManager implements CellStatusChangeListener, CellChildrenChangeListener,
         CellStatusManager {

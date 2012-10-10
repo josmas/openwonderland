@@ -52,7 +52,7 @@ public class ModuleAssetRepositoryFactory extends AssetRepositoryFactory {
         // If null, then we log an error and return an empty array.
         CachedModule cachedModule = getCachedModule();
         if (cachedModule == null) {
-            logger.warning("Unable to find module information for " +
+            logger.fine("Unable to find module information for " +
                     getAssetURI().toExternalForm());
             return null;
         }
@@ -68,7 +68,7 @@ public class ModuleAssetRepositoryFactory extends AssetRepositoryFactory {
         // If null, then we log an error and return an empty array.
         CachedModule cachedModule = getCachedModule();
         if (cachedModule == null) {
-            logger.warning("Unable to find module information for " +
+            logger.fine("Unable to find module information for " +
                     getAssetURI().toExternalForm());
             return new ModuleAssetRepository[] {};
         }
@@ -77,7 +77,7 @@ public class ModuleAssetRepositoryFactory extends AssetRepositoryFactory {
         // then we will log an error and return an empty array
         String desiredChecksum = getDesiredChecksum(cachedModule);
         if (desiredChecksum == null) {
-            logger.warning("Unable to find the desired checksum for " +
+            logger.fine("Unable to find the desired checksum for " +
                     getAssetURI().toExternalForm());
             return new ModuleAssetRepository[] {};
         }
@@ -87,7 +87,7 @@ public class ModuleAssetRepositoryFactory extends AssetRepositoryFactory {
         // represent each.
         Repository repositories[] = getRepositories(cachedModule);
         if (repositories == null) {
-            logger.warning("Unable to find repository list for " +
+            logger.fine("Unable to find repository list for " +
                     getAssetURI().toExternalForm());
             return new ModuleAssetRepository[] {};
         }
@@ -114,13 +114,13 @@ public class ModuleAssetRepositoryFactory extends AssetRepositoryFactory {
 
         ServerCache serverCache = ServerCache.getServerCache(serverURL);
         if (serverCache == null) {
-            logger.warning("Unable to locate cache of modules for the server " + serverURL);
+            logger.fine("Unable to locate cache of modules for the server " + serverURL);
             return null;
         }
 
         CachedModule cachedModule = serverCache.getModule(moduleName);
         if (cachedModule == null) {
-            logger.warning("Unable to locate module " + moduleName +
+            logger.fine("Unable to locate module " + moduleName +
                     " on the server " + serverURL);
             return null;
         }
@@ -141,14 +141,14 @@ public class ModuleAssetRepositoryFactory extends AssetRepositoryFactory {
 
         ChecksumList moduleChecksums = cachedModule.getModuleChecksums();
         if (moduleChecksums == null) {
-            logger.warning("Unable to locate checksum information for " +
+            logger.fine("Unable to locate checksum information for " +
                     assetURI.toExternalForm());
             return null;
         }
 
         Checksum checksum = moduleChecksums.getChecksumMap().get(path);
         if (checksum == null) {
-            logger.warning("Unable to locate checksum for path " + path +
+            logger.fine("Unable to locate checksum for path " + path +
                     " for " + assetURI.toExternalForm());
             return null;
         }
@@ -162,7 +162,7 @@ public class ModuleAssetRepositoryFactory extends AssetRepositoryFactory {
     private Repository[] getRepositories(CachedModule cachedModule) {
         ModuleRepository moduleRepository = cachedModule.getModuleRepositories();
         if (moduleRepository == null) {
-            logger.warning("Unable to locate module repositories for " +
+            logger.fine("Unable to locate module repositories for " +
                     getAssetURI().toExternalForm());
             return null;
         }

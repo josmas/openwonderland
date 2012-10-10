@@ -236,7 +236,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         simpleClient = new SimpleClient(new WonderlandClientListener(this));
-        
+      
         Properties connectProperties = new Properties();
         connectProperties.setProperty("host", server.getHostname());
         connectProperties.setProperty("port", Integer.toString(server.getSgsPort()));

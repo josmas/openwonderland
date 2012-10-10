@@ -70,7 +70,7 @@ public class TextChatClientPlugin extends BaseClientPlugin
         if (session != null) {
             session.addSessionStatusListener(this);
             if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-                connectClient(session);
+//                connectClient(session);
             }
         }
     }
@@ -81,7 +81,7 @@ public class TextChatClientPlugin extends BaseClientPlugin
     public void sessionStatusChanged(WonderlandSession session, Status status) {
         switch (status) {
             case CONNECTED:
-                connectClient(session);
+//                connectClient(session);
                 return;
 
             case DISCONNECTED:
