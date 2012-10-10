@@ -39,13 +39,13 @@ public class PresenceManagerClientPlugin extends BaseClientPlugin
     private static final Logger logger =
             Logger.getLogger(PresenceManagerClientPlugin.class.getName());
     
-    private PresenceManagerClient client;
+//    private PresenceManagerClient client;
     
     @Override
     public void initialize(ServerSessionManager loginManager) {
         logger.info("Presence manager initialized");
 
-        this.client = new PresenceManagerClient();
+//        this.client = new PresenceManagerClient();
         loginManager.addLifecycleListener(this);
         super.initialize(loginManager);
     }
@@ -65,7 +65,7 @@ public class PresenceManagerClientPlugin extends BaseClientPlugin
             logger.fine("Primary session:  " + session.getUserID());
             session.addSessionStatusListener(this);
             if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-                connectClient(session);
+//                connectClient(session);
             }
         }
     }
@@ -75,7 +75,7 @@ public class PresenceManagerClientPlugin extends BaseClientPlugin
     {
         logger.fine("session status changed " + session + " status " + status);
         if (status.equals(WonderlandSession.Status.CONNECTED)) {
-            connectClient(session);
+//            connectClient(session);
         } else if (status.equals(WonderlandSession.Status.DISCONNECTED)) {
             disconnectClient();
         }
@@ -87,17 +87,17 @@ public class PresenceManagerClientPlugin extends BaseClientPlugin
      * be in the CONNECTED state.
      */
     protected void connectClient(WonderlandSession session) {
-        try {
-            client.connect(session);
-        } catch (ConnectionFailureException e) {
-            logger.warning("Connect client error " + e.getMessage());
-        }
+//        try {
+//            client.connect(session);
+//        } catch (ConnectionFailureException e) {
+//            logger.warning("Connect client error " + e.getMessage());
+//        }
     }
 
     /**
      * Disconnect the client
      */
     protected void disconnectClient() {
-        client.disconnect();
+//        client.disconnect();
     }
 }

@@ -28,12 +28,6 @@ public interface HUDWindowSPI {
     public String getWindowTitle();
     
     /**
-     * Get the Swing component which will appear in the window
-     * @return 
-     */
-    public JComponent getComponent();
-    
-    /**
      * Initialize the window for appearance on HUD
      */
     public void initialize();
@@ -42,4 +36,9 @@ public interface HUDWindowSPI {
      * Cleanup the window on client logout from server.
      */
     public void cleanup();
+    
+    /**
+     *  Whether or not to open the window when client first starts
+     */
+    public boolean openOnStartup();
 }

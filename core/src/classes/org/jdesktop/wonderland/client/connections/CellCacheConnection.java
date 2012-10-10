@@ -29,6 +29,9 @@ import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.utils.Observable;
+import org.jdesktop.wonderland.client.utils.Observer;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -44,16 +47,16 @@ import org.jdesktop.wonderland.common.messages.MessageList;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class CellCacheConnection extends BaseConnection {
+public class CellCacheConnection extends BaseConnection<CellCacheMessageListener> {
     private static final Logger logger = Logger.getLogger(CellCacheConnection.class.getName());
     
-    private ArrayList<CellCacheMessageListener> listeners = new ArrayList();
-    
+//    private ArrayList<CellCacheMessageListener> listeners = new ArrayList();
+//    private Observable<CellCacheMessageListener> observable = new Observable<CellCacheMessageListener>();
     private ClientView clientView;
     private CellID viewCellID = null;
     
-    public CellCacheConnection(ClientView clientView) {
-        this.clientView = clientView;
+    public CellCacheConnection() {
+        this.clientView = ClientContextJME.getClientView();
     }
     
     /**
@@ -64,14 +67,15 @@ public class CellCacheConnection extends BaseConnection {
         return CellCacheConnectionType.CLIENT_TYPE;
     }
 
-    /**
-     * Add a listener for cell cache actions. This should be called during setup
-     * not once the system is running
-     * @param listener
-     */
-    public void addListener(CellCacheMessageListener listener) {
-        listeners.add(listener);
-    }
+//    /**
+//     * Add a listener for cell cache actions. This should be called during setup
+//     * not once the system is running
+//     * @param listener
+//     */
+//    public void addObserver(CellCacheMessageListener listener) {
+//        listeners.add(listener);
+//        observable.addObserver(listener);
+//    }
     
     private ViewCreateResponseMessage registerView(String viewID) {
         try {
@@ -95,6 +99,9 @@ public class CellCacheConnection extends BaseConnection {
             List<Message> list = ((MessageList)message).getMessages();
             for(Message m : list)
                 handleMessage(m);
+            
+            observable.fire("loading-finished", true);
+            logger.warning("LOADING-FINISHED!");
             return;
         }
         
@@ -104,16 +111,18 @@ public class CellCacheConnection extends BaseConnection {
         CellHierarchyMessage msg = (CellHierarchyMessage)message;
         switch(msg.getActionType()) {
             case LOAD_CELL :
-                for(CellCacheMessageListener l : listeners) {
-                    l.loadCell(msg.getCellID(),
-                                msg.getCellClassName(),
-                                msg.getLocalBounds(),
-                                msg.getParentID(),
-                                msg.getCellTransform(),
-                                msg.getSetupData(),
-                                msg.getCellName()
-                                );
-                }
+//                for(CellCacheMessageListener l : listeners) {
+//                    l.loadCell(msg.getCellID(),
+//                                msg.getCellClassName(),
+//                                msg.getLocalBounds(),
+//                                msg.getParentID(),
+//                                msg.getCellTransform(),
+//                                msg.getSetupData(),
+//                                msg.getCellName()
+//                                );
+//                    observable.fire("load-cell", msg);
+//                }
+                observable.fire("load-cell", msg);
 //                if (viewCellID!=null && viewCellID.equals(msg.getCellID())) {
 //
 //                    clientView.viewCellConfigured(viewCellID);
@@ -126,19 +135,22 @@ public class CellCacheConnection extends BaseConnection {
                 // Update recieving a "configure cell" message, dispatch to all
                 // of the listeners. A "configure" message simply send a new
                 // client cell state to an already existing cell.
-                for (CellCacheMessageListener l : listeners) {
-                    l.configureCell(msg.getCellID(), msg.getSetupData(), msg.getCellName());
-                }
+//                for (CellCacheMessageListener l : listeners) {
+//                    l.configureCell(msg.getCellID(), msg.getSetupData(), msg.getCellName());
+//                }
+                observable.fire("configure-cell", msg);
                 break;
             case UNLOAD_CELL :
-                for(CellCacheMessageListener l : listeners) {
-                    l.unloadCell(msg.getCellID());
-                }
+//                for(CellCacheMessageListener l : listeners) {
+//                    l.unloadCell(msg.getCellID());
+//                }
+                observable.fire("unload-cell", msg);
                 break;
             case DELETE_CELL :
-                for(CellCacheMessageListener l : listeners) {
-                    l.deleteCell(msg.getCellID());
-                }
+//                for(CellCacheMessageListener l : listeners) {
+//                    l.deleteCell(msg.getCellID());
+//                }
+                observable.fire("delete-cell", msg);
                 break;
             case CHANGE_PARENT:
                 // Unused at the moment, CellEditConnectionHandler processes reparenting
@@ -174,61 +186,10 @@ public class CellCacheConnection extends BaseConnection {
     @Override
     public void disconnected() {
         // remove any action listeners
-        listeners.clear();
-    }
-    
-    /**
-     * Listener interface for cell cache action messages
-     */
-    @ExperimentalAPI
-    public static interface CellCacheMessageListener {
-        /**
-         * Load the cell and prepare it for use
-         * @param cellID
-         * @param className
-         * @param computedWorldBounds
-         * @param parentCellID
-         * @param cellTransform
-         * @param setup
-         */
-        public Cell loadCell(CellID cellID, 
-                               String className, 
-                               BoundingVolume localBounds,
-                               CellID parentCellID,
-                               CellTransform cellTransform,
-                               CellClientState setup,
-                               String cellName);
-
-        /**
-         * (Re)configures an existing cell with a new client state
-         *
-         * @param cellID The unique ID of the cell
-         * @param clientState The new client state for the cell
-         * @param cellName The (new) name of the cell
-         */
-        public void configureCell(CellID cellID, CellClientState clientState, String cellName);
+//        listeners.clear();
+        observable.clear();
         
-        /**
-         * Unload the cell. This removes the cell from memory but will leave
-         * cell data cached on the client
-         * @param cellID
-         */
-        public void unloadCell(CellID cellID);
-        
-        /**
-         * Delete the cell and all its content from the client
-         * @param cellID
-         */
-        public void deleteCell(CellID cellID);
-
-        /**
-         * Changes the parent of the cell.
-         *
-         * @param cellID The Cell ID of the Cell to move
-         * @param parentCellID The Cell ID of the new parent
-         * @param cellTransform The new local transform of the Cell
-         */
-        public void changeParent(CellID cellID, CellID parentCellID, CellTransform cellTransform);
+      
     }
     
 }

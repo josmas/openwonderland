@@ -113,7 +113,7 @@ public class AvatarCell extends ViewCell {
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
+        CellRenderer avatarRenderer = null;
         switch(rendererType) {
             case RENDERER_2D :
                 // No 2D Renderer yet
@@ -122,18 +122,18 @@ public class AvatarCell extends ViewCell {
                 if (ViewManager.getViewManager().useAvatars) {
                     try {
                         ServerSessionManager session = getCellCache().getSession().getSessionManager();
-                        ret = ClientContextJME.getAvatarRenderManager().createRenderer(session, this);
+                        avatarRenderer = ClientContextJME.getAvatarRenderManager().createRenderer(session, this);
                     } catch (RendererUnavailable ex) {
                         Logger.getLogger(AvatarCell.class.getName()).log(Level.SEVERE, null, ex);
-                        ret = new AvatarJME(this);
+                        avatarRenderer = new AvatarJME(this);
                     }
                 } else {
-                    ret = new AvatarJME(this);
+                    avatarRenderer = new AvatarJME(this);
                 }
                 break;                
         }
         
-        return ret;
+        return avatarRenderer;
     }
 
     /**

@@ -32,8 +32,10 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin;
 import org.jdesktop.wonderland.modules.audiomanager.client.PresenceControls;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeConverter;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
@@ -268,14 +270,19 @@ public enum WonderlandUserList implements PresenceManagerListener {
         PresenceInfo pi = manager.getAliasPresenceInfo(username);
         return pi.getUserID();
     }
-    
+
+    public AudioManagerClient audioClient() {
+        return (AudioManagerClient)LoginManager.getPrimary().getPrimarySession().getConnection(AudioManagerConnectionType.CONNECTION_TYPE);
+
+    }
     public PresenceControls getPresenceControls() {
-        return new PresenceControls(AudioManagerClientPlugin.getClient(),
+        
+        return new PresenceControls(audioClient(),
                                     session, manager, localPresenceInfo);
     }
     
     public void sendChangeUsernameAliasMessage(PresenceInfo info) {
-        session.send(AudioManagerClientPlugin.getClient(),
+        session.send(audioClient(),
                     new ChangeUsernameAliasMessage(info.getCellID(),
                     info));
 

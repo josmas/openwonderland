@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.client.annotations.ClientConnection;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.textchat.common.TextChatMessage;
@@ -93,6 +95,13 @@ public class TextChatConnection extends BaseConnection {
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+    
+    @Override
+    public void connect(WonderlandSession session) throws ConnectionFailureException {
+        super.connect(session);
+        
+        ChatManager.getChatManager().registerConnection(this);
     }
 
     /**

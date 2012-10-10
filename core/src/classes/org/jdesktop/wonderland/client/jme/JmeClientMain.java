@@ -156,6 +156,94 @@ public class JmeClientMain {
         // End HUGE HACK.
     }
 
+    private void loadStartingCoordinates(String serverURL) throws NumberFormatException {
+        //        JMenuItem physicsMI = new JCheckBoxMenuItem(
+        //                BUNDLE.getString("Physics Enabled"));
+        //        physicsMI.setEnabled(false);
+        //        physicsMI.setSelected(false);
+        //        physicsMI.addActionListener(new ActionListener() {
+        //
+        //            public void actionPerformed(ActionEvent e) {
+        //                PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(
+        //                        curSession.getSessionManager(), "Default");
+        //                if (phySystem instanceof JBulletPhysicsSystem) {
+        //                    ((JBulletPhysicsSystem) phySystem).setStarted(
+        //                            ((JCheckBoxMenuItem) e.getSource()).isSelected());
+        //                } else {
+        //                    LOGGER.severe("Unsupported physics system " + phySystem);
+        //                }
+        //            }
+        //        });
+        //        frame.addToEditMenu(physicsMI, 3);
+
+                // load the starting coordinates and look direction
+                float startX = Float.parseFloat(System.getProperty("x", "0"));
+                float startY = Float.parseFloat(System.getProperty("y", "0"));
+                float startZ = Float.parseFloat(System.getProperty("z", "0"));
+                Vector3f startLoc = new Vector3f(startX, startY, startZ);
+
+                float look = Float.parseFloat(System.getProperty("look", "0"));
+                Quaternion startLook = new Quaternion(
+                        new float[]{0f, (float) Math.toRadians(look), 0f});
+
+                // connect to the default server
+                try {
+                    loadServer(serverURL, startLoc, startLook);
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, "Error connecting to default server "
+                            + serverURL, ioe);
+                }
+    }
+
+    private void addServerURLListenerToFrame() {
+        // add a listener that will be notified when the user selects a new
+        // server
+        frame.addServerURLListener(new ServerURLListener() {
+            public void serverURLChanged(final String serverURL) {
+                // run in a new thread so we don't block the AWT thread
+//                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
+//
+//                    public void run() {
+//                        try {
+//                            loadServer(serverURL);
+//                        } catch (IOException ioe) {
+//                            LOGGER.log(Level.WARNING, "Error connecting to "
+//                                    + serverURL, ioe);
+//                        }
+//                    }
+//                }).start();
+
+                executor.submit(new Runnable() {
+                    public void run() {
+                        try {
+                            loadServer(serverURL);
+                        } catch (IOException ioe) {
+                            LOGGER.log(Level.WARNING, "Error connecting to "
+                                    + serverURL, ioe);
+                        }
+                    }
+                });
+
+
+            }
+
+            public void logout() {
+//                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
+//                    public void run() {
+//                        JmeClientMain.this.logout();
+//                    }
+//                }).start();
+                
+                
+                executor.submit(new Runnable() { 
+                    public void run() {
+                        JmeClientMain.this.logout();
+                    }
+                });
+            }
+        });
+    }
+
     private enum OS {
 
         Linux, Windows, OSX, Other
@@ -234,90 +322,10 @@ public class JmeClientMain {
         // Register our loginUI for login requests
         login = new JmeLoginUI(frame);
         LoginManager.setLoginUI(login);
-
-        // add a listener that will be notified when the user selects a new
-        // server
-        frame.addServerURLListener(new ServerURLListener() {
-            public void serverURLChanged(final String serverURL) {
-                // run in a new thread so we don't block the AWT thread
-//                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
-//
-//                    public void run() {
-//                        try {
-//                            loadServer(serverURL);
-//                        } catch (IOException ioe) {
-//                            LOGGER.log(Level.WARNING, "Error connecting to "
-//                                    + serverURL, ioe);
-//                        }
-//                    }
-//                }).start();
-
-                executor.submit(new Runnable() {
-                    public void run() {
-                        try {
-                            loadServer(serverURL);
-                        } catch (IOException ioe) {
-                            LOGGER.log(Level.WARNING, "Error connecting to "
-                                    + serverURL, ioe);
-                        }
-                    }
-                });
-
-
-            }
-
-            public void logout() {
-//                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
-//                    public void run() {
-//                        JmeClientMain.this.logout();
-//                    }
-//                }).start();
-                
-                
-                executor.submit(new Runnable() { 
-                    public void run() {
-                        JmeClientMain.this.logout();
-                    }
-                });
-            }
-        });
-
-//        JMenuItem physicsMI = new JCheckBoxMenuItem(
-//                BUNDLE.getString("Physics Enabled"));
-//        physicsMI.setEnabled(false);
-//        physicsMI.setSelected(false);
-//        physicsMI.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(
-//                        curSession.getSessionManager(), "Default");
-//                if (phySystem instanceof JBulletPhysicsSystem) {
-//                    ((JBulletPhysicsSystem) phySystem).setStarted(
-//                            ((JCheckBoxMenuItem) e.getSource()).isSelected());
-//                } else {
-//                    LOGGER.severe("Unsupported physics system " + phySystem);
-//                }
-//            }
-//        });
-//        frame.addToEditMenu(physicsMI, 3);
-
-        // load the starting coordinates and look direction
-        float startX = Float.parseFloat(System.getProperty("x", "0"));
-        float startY = Float.parseFloat(System.getProperty("y", "0"));
-        float startZ = Float.parseFloat(System.getProperty("z", "0"));
-        Vector3f startLoc = new Vector3f(startX, startY, startZ);
-
-        float look = Float.parseFloat(System.getProperty("look", "0"));
-        Quaternion startLook = new Quaternion(
-                new float[]{0f, (float) Math.toRadians(look), 0f});
-
-        // connect to the default server
-        try {
-            loadServer(serverURL, startLoc, startLook);
-        } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Error connecting to default server "
-                    + serverURL, ioe);
-        }
+        
+        addServerURLListenerToFrame();
+        
+        loadStartingCoordinates(serverURL);
     }
 
     /**
@@ -705,9 +713,9 @@ public class JmeClientMain {
     /**
      * Create all of the Swing windows - and the 3D window
      */
-    private void createUI(WorldManager wm, int width, int height) {
+    private void createUI(WorldManager worldManager, int width, int height) {
 
-        frame = new MainFrameImpl(wm, width, height);
+        frame = new MainFrameImpl(worldManager, width, height);
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);
 

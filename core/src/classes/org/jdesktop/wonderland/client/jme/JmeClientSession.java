@@ -74,7 +74,7 @@ public class JmeClientSession extends CellClientSession {
     @Override
     protected JmeCellCache createCellCache() {
         jmeCellCache = new JmeCellCache(this, getClassLoader());
-        getCellCacheConnection().addListener(jmeCellCache);
+        getCellCacheConnection().addObserver(jmeCellCache);
         return jmeCellCache;
     }
 }

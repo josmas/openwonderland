@@ -3,134 +3,123 @@
  *
  * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * The Open Wonderland Foundation designates this particular file as
- * subject to the "Classpath" exception as provided by the Open Wonderland
- * Foundation in the License file that accompanied this code.
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
  */
-
 /**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
- * this code.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.client.cell.cache;
 
 import org.jdesktop.wonderland.client.connections.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import com.jme.bounding.BoundingVolume;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.cell.AssetPreloader;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.connections.CellChannelConnection;
-import org.jdesktop.wonderland.client.cell.CellChildrenChangeListener;
-import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatistics;
 import org.jdesktop.wonderland.client.cell.CellStatistics.TimeCellStat;
-import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.EnvironmentCell;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.connections.CellCacheMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * A basic implementation of core cell cache features. This is a convenience class
- * designed to be called from more complete cache implementations. 
- * 
+ * A basic implementation of core cell cache features. This is a convenience
+ * class designed to be called from more complete cache implementations.
+ *
  * @author paulby
  */
-public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCacheMessageListener {
-    private static final String STATUS_MANAGER_PROP = 
+public class CellCacheBasicImpl implements CellCache, CellCacheMessageListener {
+
+    private static final String STATUS_MANAGER_PROP =
             CellCacheBasicImpl.class.getSimpleName() + ".StatusManager";
     private static final String STATUS_MANAGER_DEFAULT =
             ParallelCellStatusManager.class.getName();
-    
-    
-    
     private Map<CellID, Cell> cells = Collections.synchronizedMap(new HashMap());
     private Set<Cell> rootCells = Collections.synchronizedSet(new HashSet());
-    
     protected static Logger logger = Logger.getLogger(CellCacheBasicImpl.class.getName());
-    
-    private ViewCell viewCell = null;
-
-    /** the classloader to use when instantiating classes */
-    private ClassLoader classLoader;
-    
-    /** the session this cache is associated with */
-    private WonderlandSession session;
-    
-    /** the connection for sending cell cache information */
-    private CellCacheConnection cellCacheConnection;
-    
-    /** the connection for sending cell information */
-    private CellChannelConnection cellChannelConnection;
-
-    /** listeners */
+    ViewCell viewCell = null;
+    /**
+     * the classloader to use when instantiating classes
+     */
+    ClassLoader classLoader;
+    /**
+     * the session this cache is associated with
+     */
+    WonderlandSession session;
+    /**
+     * the connection for sending cell cache information
+     */
+    CellCacheConnection cellCacheConnection;
+    /**
+     * the connection for sending cell information
+     */
+    CellChannelConnection cellChannelConnection;
+    /**
+     * listeners
+     */
     private final Set<CellCacheListener> listeners =
             new CopyOnWriteArraySet<CellCacheListener>();
-
-    /** statistics */
+    /**
+     * statistics
+     */
     private final CellStatistics stats = new CellStatistics();
-
-    /** status manager */
-    private final CellStatusManager statusManager;
-    
-    /** cell being processed on the current thread */
+    /**
+     * status manager
+     */
+    final CellStatusManager statusManager;
+    /**
+     * cell being processed on the current thread
+     */
     private static final ThreadLocal<Cell> currentCell = new ThreadLocal<Cell>();
-            
+    private boolean cellsAreStillLoading = true;
+
     /**
      * Create a new cache implementation
+     *
      * @param session the WonderlandSession the cache is associated with
      * @param cellCacheConnection the connection for sending cell cache
      * information
@@ -138,9 +127,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * messages
      */
     public CellCacheBasicImpl(WonderlandSession session,
-                              ClassLoader classLoader,
-                              CellCacheConnection cellCacheConnection,
-                              CellChannelConnection cellChannelConnection) {
+            ClassLoader classLoader,
+            CellCacheConnection cellCacheConnection,
+            CellChannelConnection cellChannelConnection) {
         this.session = session;
         this.classLoader = classLoader;
         this.cellCacheConnection = cellCacheConnection;
@@ -149,15 +138,45 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         this.cellChannelConnection.setCellCache(this);
 
         this.statusManager = createStatusManager();
-        
+
         ClientContext.registerCellCache(this, session);
         if (this.classLoader == null) {
             this.classLoader = getClass().getClassLoader();
         }
-        
+
         logger.warning("Create cell cache");
     }
+
+    public void eventObserved(String property, Object value) {
     
+        
+        if(property.equals("load-cell")) {
+            CellHierarchyMessage msg = (CellHierarchyMessage)value;
+            loadCell(msg.getCellID(),
+                     msg.getCellClassName(),
+                     msg.getLocalBounds(),
+                     msg.getParentID(),
+                     msg.getCellTransform(),
+                     msg.getSetupData(),
+                     msg.getCellName());
+        } else if(property.equals("configure-cell")) {
+            CellHierarchyMessage msg = (CellHierarchyMessage)value;
+            configureCell(msg.getCellID(),
+                          msg.getSetupData(),
+                          msg.getCellName());
+        } else if(property.equals("unload-cell")) {
+            CellHierarchyMessage msg = (CellHierarchyMessage)value;
+            unloadCell(msg.getCellID());
+            
+        } else if(property.equals("delete-cell")) {
+            CellHierarchyMessage msg = (CellHierarchyMessage)value;
+            deleteCell(msg.getCellID());
+        } else if(property.equals("loading-finished")) {
+            
+            cellsAreStillLoading = false;
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -174,6 +193,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
     /**
      * Return the set of cells in this cache
+     *
      * @return
      */
     public Cell[] getCells() {
@@ -183,31 +203,31 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     /**
      * {@inheritDoc}
      */
-    public Cell loadCell(CellID cellId, 
-                         String className, 
-                         BoundingVolume localBounds, 
-                         CellID parentCellID, 
-                         CellTransform cellTransform, 
-                         CellClientState setup,
-                         String cellName) {
+    public Cell loadCell(CellID cellId,
+            String className,
+            BoundingVolume localBounds,
+            CellID parentCellID,
+            CellTransform cellTransform,
+            CellClientState setup,
+            String cellName) {
 
         long startTime = System.currentTimeMillis();
 
         try {
             if (cells.containsKey(cellId)) {
-                logger.severe("Attempt to create cell that already exists "+cellId);
+                logger.severe("Attempt to create cell that already exists " + cellId);
                 return null;
             }
 
-            logger.info("creating cell "+className+" "+cellId);
+            logger.info("creating cell " + className + " " + cellId);
             Cell cell = instantiateCell(className, cellId);
-            if (cell==null)
+            if (cell == null) {
                 return null;     // Instantiation failed, error has already been logged
-
+            }
             // cell we are currently working on. Be sure to reset in the
             // finally block below
             currentCell.set(cell);
-            
+
             cell.setName(cellName);
             Cell parent = cells.get(parentCellID);
             if (parent != null) {
@@ -217,13 +237,13 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                     logger.log(Level.SEVERE, "Failed to load cell", ex);
                 }
             } else if (parentCellID != null) {
-                logger.warning("Failed to find parent " + parentCellID +
-                               " for child " + cellId);
+                logger.warning("Failed to find parent " + parentCellID
+                        + " for child " + cellId);
             }
 
             cell.setLocalBounds(localBounds);
             cell.setLocalTransform(cellTransform, TransformChangeListener.ChangeSource.SERVER_ADJUST);
-    //        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
+            //        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
             cells.put(cellId, cell);
 
@@ -236,10 +256,11 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
             // TODO this will change, the state will applied when the cell
             // becomes ACTIVE
-            if (setup!=null)
+            if (setup != null) {
                 cell.setClientState(setup);
-            else
-                logger.warning("Cell has null setup "+className+"  "+cell);
+            } else {
+                logger.warning("Cell has null setup " + className + "  " + cell);
+            }
 
             // Force the cell to create the JME renderer entity
             // Current assumption is that the cell is about to be VISIBLE, so we want the renderer asap
@@ -248,15 +269,19 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             // notify listeners
             fireCellLoaded(cell);
 
-            if (viewCell!=null) {
+            if (viewCell != null) {
                 // No point in makeing cells active if we don't have a view
                 // The changeCellStatus actually changes the status on another thread
                 // so we don't perform geometry load operations on the DS listener thread
                 changeCellStatus(cell, CellStatus.VISIBLE);
-            } else if (cell instanceof ViewCell || 
-                       cellId.equals(CellID.getEnvironmentCellID()))
-            {
-                changeCellStatus(cell, CellStatus.ACTIVE);
+            } else if (cell instanceof ViewCell
+                    || cellId.equals(CellID.getEnvironmentCellID())) {
+//                changeCellStatus(cell, CellStatus.ACTIVE);
+                if(cell instanceof ViewCell) {
+                    handleViewCellStatus(cell);
+                } else {
+                    changeCellStatus(cell, CellStatus.ACTIVE);
+                }
             }
 
             // record loading time statistic
@@ -267,7 +292,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             getStatistics().add(cell, loadStat);
 
             return cell;
-        } catch(Exception e) {
+        } catch (Exception e) {
             // notify listeners
             fireCellLoadFailed(cellId, className, parentCellID, e);
             logger.log(Level.SEVERE, "Failed to loadCell", e);
@@ -277,6 +302,30 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
     }
 
+    
+    
+    private void handleViewCellStatus(Cell cell) {
+        //we want to try and load the view cell last...
+        
+        //...so let's wait until the other objects have started loading.
+        
+        logger.warning("WAITING FOR ENVIRONMENT TO LOAD BEFORE LOADING AVATAR.");
+        while(cellsAreStillLoading) {
+            try {
+                wait(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CellCacheBasicImpl.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                logger.warning("\n*******************************\n"
+                            + "* ENVIRONMENT LOADING FINISHED*\n"
+                            + "*******************************");
+            }
+        }
+       
+        //ok we're done, go ahead and load
+        changeCellStatus(cell, CellStatus.ACTIVE);
+        
+    }
     /**
      * {@inheritDoc}
      */
@@ -285,15 +334,15 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         // is none, post a message to the log
         Cell cell = cells.get(cellID);
         if (cell == null) {
-            logger.warning("Received a CONFIGURE_CELL message to a non-" +
-                    "existent cell with id " + cellID);
+            logger.warning("Received a CONFIGURE_CELL message to a non-"
+                    + "existent cell with id " + cellID);
             return;
         }
 
         try {
             // set the cell we are currently operating on
             currentCell.set(cell);
-        
+
             // If the name of the cell has changed, then change it
             if (cellName != null && cellName.equals(cell.getName()) == false) {
                 cell.setName(cellName);
@@ -308,22 +357,23 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
     }
 
-
     /**
      * Create a the cell renderer for this cache.
+     *
      * @param cell the cell to create a renderer for
      */
     protected CellRenderer createCellRenderer(Cell cell) {
         try {
             return cell.getCellRenderer(ClientContext.getRendererType());
-        } catch(Exception e) {
-            logger.log(Level.SEVERE, "Failed to get Cell Renderer for cell "+cell.getClass().getName(), e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to get Cell Renderer for cell " + cell.getClass().getName(), e);
         }
         return null;
     }
 
     /**
      * Unload the cell from memory, sets the Cells status to DISK
+     *
      * @param cellId
      */
     public void unloadCell(CellID cellId) {
@@ -332,7 +382,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             logger.fine("UNLOADING CELL " + cell.getName());
             try {
                 currentCell.set(cell);
-            
+
                 // notify listeners
                 fireCellUnloaded(cell);
 
@@ -383,10 +433,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             logger.warning("Unable to find Cell in Cache with ID " + cellID);
             return;
         }
-        
+
         try {
             currentCell.set(cell);
-        
+
             // First, remove the Cell from its parent, if the parent is not null. If
             // the parent is null, this means it is a "root" Cell and we need to
             // remove it from the list of root Cells.
@@ -396,8 +446,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 // null the parent reference in the child Cell.
                 logger.warning("Removing the Cell from old parent " + parentCell.getCellID());
                 parentCell.removeChild(cell);
-            }
-            else {
+            } else {
                 logger.warning("Removing the Cell from the root");
                 rootCells.remove(cell);
             }
@@ -411,11 +460,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                     logger.warning("Adding the Cell to new parent " + newParentCell.getCellID());
                     newParentCell.addChild(cell);
                 } catch (MultipleParentException excp) {
-                    logger.log(Level.WARNING, "Multiple parents are set for Cell" +
-                               " with ID " + cellID, excp);
+                    logger.log(Level.WARNING, "Multiple parents are set for Cell"
+                            + " with ID " + cellID, excp);
                 }
-            }
-            else if (!cellID.equals(CellID.getEnvironmentCellID())) {
+            } else if (!cellID.equals(CellID.getEnvironmentCellID())) {
                 logger.warning("Adding the Cell to the root");
                 rootCells.add(cell);
             }
@@ -433,19 +481,19 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     public Collection<Cell> getRootCells() {
         return new LinkedList(rootCells);
     }
-    
+
     private Cell instantiateCell(String className, CellID cellId) {
         Cell cell;
-        
+
         try {
             Class clazz = Class.forName(className, true, classLoader);
             Constructor constructor = clazz.getConstructor(CellID.class, CellCache.class);
             cell = (Cell) constructor.newInstance(cellId, this);
-        } catch(Exception e) {
-            logger.log(Level.SEVERE, "Problem instantiating cell "+className, e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Problem instantiating cell " + className, e);
             return null;
         }
-        
+
         return cell;
     }
 
@@ -454,12 +502,12 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      */
     public void setViewCell(ViewCell viewCell) {
         this.viewCell = viewCell;
-        
+
         // Activate all current cells
-        synchronized(cells) {
+        synchronized (cells) {
             // issue #850 -- make sure to notify parents before their
             // children
-            for(Cell cell : cells.values()) {
+            for (Cell cell : cells.values()) {
                 if (cell.getParent() != null) {
                     // ignore child cells
                     continue;
@@ -473,6 +521,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
     /**
      * Notify a tree of cells to change their status
+     *
      * @param cell the root cell to notify
      * @param status the status to set
      */
@@ -492,7 +541,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     public ViewCell getViewCell() {
         return viewCell;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -500,7 +549,6 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         return session;
     }
 
-    
     public CellChannelConnection getCellChannelConnection() {
         return cellChannelConnection;
     }
@@ -528,6 +576,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
     /**
      * Notify listeners that a cell is loaded
+     *
      * @param cell the cell that was loaded
      */
     protected void fireCellLoaded(Cell cell) {
@@ -538,14 +587,14 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
     /**
      * Notify listeners that a cell laod failed
+     *
      * @param cellID the id of the cell that failed to load
      * @param className the class of the cell that failed to load
      * @param parentCellID the id of the cell's parent
      * @param cause the reason for failure
      */
     protected void fireCellLoadFailed(CellID cellID, String className,
-                                      CellID parentCellID, Throwable cause)
-    {
+            CellID parentCellID, Throwable cause) {
         for (CellCacheListener listener : listeners) {
             listener.cellLoadFailed(cellID, className, parentCellID, cause);
         }
@@ -553,6 +602,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
     /**
      * Notify listeners that a cell is unloaded
+     *
      * @param cell the cell that was unloaded
      */
     protected void fireCellUnloaded(Cell cell) {
@@ -563,18 +613,20 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
     /**
      * Cell status changes can take a while so should not be performed on the
-     * Darkstar listener thread that calls the cache methods. Therefore
-     * schedule a task actually apply the status change to the cell.
+     * Darkstar listener thread that calls the cache methods. Therefore schedule
+     * a task actually apply the status change to the cell.
+     *
      * @param cell
      * @param status
      */
     private void changeCellStatus(Cell cell, CellStatus status) {
         statusManager.setCellStatus(cell, status);
     }
-    
+
     /**
-     * Get the currently active cell for this thread. If no cell is active,
-     * this method return null.
+     * Get the currently active cell for this thread. If no cell is active, this
+     * method return null.
+     *
      * @return the currently active cell for this thread, if any
      */
     public static Cell getCurrentActiveCell() {
@@ -585,12 +637,11 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * Create a cell status manager
      */
     private CellStatusManager createStatusManager() {
-        String className = System.getProperty(STATUS_MANAGER_PROP, 
-                                              STATUS_MANAGER_DEFAULT);
+        String className = System.getProperty(STATUS_MANAGER_PROP,
+                STATUS_MANAGER_DEFAULT);
         try {
-            Class<CellStatusManager> clazz = (Class<CellStatusManager>)
-                    Class.forName(className);
-            
+            Class<CellStatusManager> clazz = (Class<CellStatusManager>) Class.forName(className);
+
             Constructor<CellStatusManager> ctor = clazz.getConstructor(CellCacheBasicImpl.class);
             return ctor.newInstance(this);
         } catch (ClassNotFoundException cnfe) {
@@ -609,5 +660,4 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     public ThreadLocal<Cell> getCurrentCell() {
         return currentCell;
     }
-   
 }

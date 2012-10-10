@@ -17,7 +17,7 @@ public abstract class BaseMenuItemController implements Observer {
     
     public BaseMenuItemController(String text) {
         view = new MenuItemView(text);
-        
+        view.addObserver(this);
         
     }
 
