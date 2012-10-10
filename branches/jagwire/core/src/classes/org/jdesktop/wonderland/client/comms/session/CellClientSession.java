@@ -222,7 +222,7 @@ public class CellClientSession extends WonderlandSessionImpl {
             
             ConnectionStarter starter = new ConnectionStarter(lookup(),
                                             listFromArray(connections));
-            starter.start(this);
+            starter.startInParallel(this);
             
             logger.warning("\n*******************************\n"
                             +"* CONNECTIONS STARTED!        *\n"

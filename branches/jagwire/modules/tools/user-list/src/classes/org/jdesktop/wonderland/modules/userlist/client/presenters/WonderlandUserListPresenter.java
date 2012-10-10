@@ -50,6 +50,7 @@ import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin;
 import org.jdesktop.wonderland.modules.audiomanager.client.PresenceControls;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList;
@@ -249,12 +250,17 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
                                         view.getUserListHUDComponent());
     }
     
+    public AudioManagerClient audioClient() {
+        return (AudioManagerClient)LoginManager.getPrimary().getPrimarySession().getConnection(AudioManagerConnectionType.CONNECTION_TYPE);
+
+    }
+    
     private void handleMuteButtonPressed(ActionEvent e) {
-        AudioManagerClientPlugin.getClient().toggleMute();
+        audioClient().toggleMute();
     }
     
     private void handlePhoneButtonPressed(ActionEvent e) {
-        AudioManagerClient client = AudioManagerClientPlugin.getClient();
+        AudioManagerClient client = audioClient();
         WonderlandSession session = model.getSession();
         
         PresenceInfo mine = (PresenceInfo)model.getLocalPresenceInfo().clone();
