@@ -244,7 +244,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="right">Programming guide for the MT (Multi-Threaded) Game layer on top of jMonkeyEngine ([https://sites.google.com/site/openwonderland/archive/MTGameProgGuide.odt?attredirects=0&d=1 document source], [https://sites.google.com/site/openwonderland/archive/MTGameProgGuide.pdf?attredirects=0&d=1 download PDF])</td>
 </tr>
 <tr>
-  <td class="left">[http://wiki.java.net/bin/view/Communications/JVoiceBridge jVoiceBridge Developer's Guide]</td>
+  <td class="left">[https://docs.google.com/open?id=0B59Igj4e2v5OYzlmN2NIbkN2NW8 jVoiceBridge Developer's Guide]</td>
   <td class="right">This guide covers topics such as building and running the voice bridge, configuring a VoIP to PSTN gateway, parameters for call setup, technical specs, and troubleshooting help.</td>
 </tr>
 <tr>
