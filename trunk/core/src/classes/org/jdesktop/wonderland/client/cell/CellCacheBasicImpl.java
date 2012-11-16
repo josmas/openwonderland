@@ -183,20 +183,26 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         long startTime = System.currentTimeMillis();
 
         try {
-            if (cells.containsKey(cellId)) {
-                logger.severe("Attempt to create cell that already exists "+cellId);
-                return null;
+            Cell cell;
+
+            synchronized (cells) {
+                if (cells.containsKey(cellId)) {
+                    logger.severe("Attempt to create cell that already exists "+cellId);
+                    return null;
+                }
+
+                logger.info("creating cell "+className+" "+cellId);
+                cell = instantiateCell(className, cellId);
+                if (cell==null)
+                    return null;     // Instantiation failed, error has already been logged
+
+                cells.put(cellId, cell);
             }
-
-            logger.info("creating cell "+className+" "+cellId);
-            Cell cell = instantiateCell(className, cellId);
-            if (cell==null)
-                return null;     // Instantiation failed, error has already been logged
-
+           
             // cell we are currently working on. Be sure to reset in the
             // finally block below
             currentCell.set(cell);
-            
+                 
             cell.setName(cellName);
             Cell parent = cells.get(parentCellID);
             if (parent != null) {
@@ -214,7 +220,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             cell.setLocalTransform(cellTransform, TransformChangeListener.ChangeSource.SERVER_ADJUST);
     //        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
-            cells.put(cellId, cell);
+            // cells.put(cellId, cell);
 
             // record the set of root cells
             logger.fine("LOADING CELL " + cell.getName());
