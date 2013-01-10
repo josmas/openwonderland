@@ -247,10 +247,7 @@ _To obtain a copy of the original source code, make a request on the <a href="ht
   <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=JVoiceBridge%20Developer%20Guide jVoiceBridge Developer's Guide]</td>
   <td class="right">This guide covers topics such as building and running the voice bridge, configuring a VoIP to PSTN gateway, parameters for call setup, technical specs, and troubleshooting help.</td>
 </tr>
-<tr>
-  <td class="left">[http://wiki.java.net/bin/view/Javadesktop/WonderlandTesting101 Wonderland Testing 101]</td>
-  <td class="right">This is a guide to collecting troubleshooting data and documenting bugs.</td>
-</tr>
+
 <tr>
   <td class="left">[http://wiki.openwonderland.org/Wiki.jsp?page=Topics  Community Documentation]</td>
   <td class="right">A wiki containing documents for features being worked on by the community including [http://wiki.openwonderland.org/Wiki.jsp?page=Development%20tips%20and%20tricks Development Tips and Tricks], [http://wiki.openwonderland.org/Wiki.jsp?page=Sysadmin%20Tips System Admin Tips], and [http://wiki.openwonderland.org/Wiki.jsp?page=Groups%20Security%20Tips Group Security Tips]. ([http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandCommunity05 Old Community Wiki])</td>
