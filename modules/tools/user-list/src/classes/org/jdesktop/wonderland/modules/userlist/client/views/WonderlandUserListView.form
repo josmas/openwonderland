@@ -3,7 +3,7 @@
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[194, 300]"/>
+      <Dimension value="[194, 310]"/>
     </Property>
   </Properties>
   <AuxValues>
@@ -22,7 +22,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="userListScrollPane" alignment="0" min="-2" pref="197" max="-2" attributes="2"/>
+          <Component id="userListScrollPane" alignment="0" pref="197" max="32767" attributes="2"/>
           <Component id="controlPanel" alignment="0" max="32767" attributes="2"/>
           <Component id="jPanel1" alignment="0" pref="197" max="32767" attributes="0"/>
       </Group>
@@ -30,9 +30,9 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="userListScrollPane" pref="205" max="32767" attributes="0"/>
+              <Component id="userListScrollPane" pref="186" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="controlPanel" max="32767" attributes="0"/>
+              <Component id="controlPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" pref="14" max="-2" attributes="0"/>
           </Group>
@@ -45,55 +45,59 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
+              <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
               <Group type="102" attributes="0">
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="muteButton" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                          <Component id="textChatButton" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                          <Component id="voiceChatButton" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                          <Component id="phoneButton" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                          <Component id="gotoUserButton" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                          <Component id="editButton" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
-                          <Component id="propertiesButton" min="-2" max="-2" attributes="1"/>
-                      </Group>
-                      <Component id="volumeLabel" alignment="0" pref="0" max="32767" attributes="1"/>
+                      <Component id="volumeLabel" pref="0" max="32767" attributes="1"/>
                       <Component id="volumeSlider" alignment="0" pref="0" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="propertiesButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="textChatButton" min="-2" max="-2" attributes="0"/>
-                      <Component id="muteButton" min="-2" max="-2" attributes="0"/>
-                      <Component id="voiceChatButton" min="-2" max="-2" attributes="0"/>
-                      <Component id="phoneButton" min="-2" max="-2" attributes="0"/>
-                      <Component id="gotoUserButton" min="-2" max="-2" attributes="0"/>
-                      <Component id="editButton" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="volumeLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="volumeSlider" min="-2" pref="23" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
+        <Component class="javax.swing.JLabel" name="volumeLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.volumeLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JSlider" name="volumeSlider">
+          <Properties>
+            <Property name="minorTickSpacing" type="int" value="10"/>
+            <Property name="paintTicks" type="boolean" value="true"/>
+          </Properties>
+        </Component>
+        <Container class="javax.swing.JPanel" name="jPanel2">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+            <Property name="columns" type="int" value="0"/>
+            <Property name="rows" type="int" value="1"/>
+          </Layout>
+          <SubComponents>
         <Component class="javax.swing.JButton" name="muteButton">
           <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/org/jdesktop/wonderland/modules/userlist/client/resources/UserListMicMuteOff24x24.png"/>
             </Property>
@@ -101,6 +105,7 @@
               <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.muteButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
             <Property name="borderPainted" type="boolean" value="false"/>
+                <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 24]"/>
             </Property>
@@ -121,6 +126,7 @@
               <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.textChatButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
             <Property name="borderPainted" type="boolean" value="false"/>
+                <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 24]"/>
             </Property>
@@ -140,6 +146,7 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.voiceChatButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
+                <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 24]"/>
             </Property>
@@ -159,6 +166,7 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.phoneButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
+                <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 24]"/>
             </Property>
@@ -170,14 +178,15 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="editButton">
+            <Component class="javax.swing.JButton" name="gotoUserButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/jdesktop/wonderland/modules/userlist/client/resources/UserListEdit24x24.png"/>
+                  <Image iconType="3" name="/org/jdesktop/wonderland/modules/userlist/client/resources/UserListGoto24x24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.editButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.gotoUserButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
+                <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 24]"/>
             </Property>
@@ -189,14 +198,15 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="propertiesButton">
+            <Component class="javax.swing.JButton" name="editButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/jdesktop/wonderland/modules/userlist/client/resources/UserListProperties24x24.png"/>
+                  <Image iconType="3" name="/org/jdesktop/wonderland/modules/userlist/client/resources/UserListEdit24x24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.propertiesButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.editButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
+                <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 24]"/>
             </Property>
@@ -208,21 +218,15 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="volumeLabel">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.volumeLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JButton" name="gotoUserButton">
+            <Component class="javax.swing.JButton" name="propertiesButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/jdesktop/wonderland/modules/userlist/client/resources/UserListGoto24x24.png"/>
+                  <Image iconType="3" name="/org/jdesktop/wonderland/modules/userlist/client/resources/UserListProperties24x24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.gotoUserButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/jdesktop/wonderland/modules/userlist/client/resources/Bundle.properties" key="UserListHUDPanel.propertiesButton.toolTipText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
+                <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 24]"/>
             </Property>
@@ -234,12 +238,8 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JSlider" name="volumeSlider">
-          <Properties>
-            <Property name="minorTickSpacing" type="int" value="10"/>
-            <Property name="paintTicks" type="boolean" value="true"/>
-          </Properties>
-        </Component>
+      </SubComponents>
+    </Container>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JScrollPane" name="userListScrollPane">

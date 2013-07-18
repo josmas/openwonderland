@@ -480,7 +480,12 @@ public class AudioManagerConnectionHandler implements ClientConnectionHandler,
         ps.orientation = direction;
         ps.isLivePlayer = true;
 
-        Player player = vm.createPlayer(callID, ps);
+        Player player = null;
+        if(p==null) {
+            player = vm.createPlayer(callID, ps);
+        } else {
+            player = p;
+        }
 
         call.setPlayer(player);
         player.setCall(call);

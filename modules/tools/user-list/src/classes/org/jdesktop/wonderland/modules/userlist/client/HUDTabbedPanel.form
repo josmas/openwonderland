@@ -3,7 +3,7 @@
 <Form version="1.3" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[194, 300]"/>
+      <Dimension value="[220, 330]"/>
     </Property>
   </Properties>
   <AuxValues>
@@ -21,14 +21,14 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="tabbedPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="tabbedPanel" alignment="0" pref="234" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="tabbedPanel" pref="294" max="32767" attributes="0"/>
+              <Component id="tabbedPanel" pref="289" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -37,7 +37,7 @@
     <Container class="javax.swing.JTabbedPane" name="tabbedPanel">
       <Properties>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[194, 300]"/>
+          <Dimension value="[220, 320]"/>
         </Property>
       </Properties>
 

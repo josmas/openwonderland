@@ -1142,9 +1142,13 @@ public class AudioManagerClient extends BaseConnection implements
         System.setProperty(
                 "org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER", "");
 
+        String x = System.getProperty("x");
+        String y = System.getProperty("y");
+        String z = System.getProperty("z");
+
         if (phoneNumber != null && phoneNumber.length() > 0) {
             sendMessage(new PlaceCallRequestMessage(presenceInfo, phoneNumber,
-                    0., 0., 0., 90., false));
+                    Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(z), 90., false));
             return;
         }
 
@@ -1204,7 +1208,7 @@ public class AudioManagerClient extends BaseConnection implements
                 if (sipURL != null) {
                     // XXX need location and direction
                     sendMessage(new PlaceCallRequestMessage(
-                            presenceInfo, sipURL, 0., 0., 0., 90., false));
+                            presenceInfo, sipURL, Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(z), 90., false));
                 } else {
                     logger.warning("Failed to start softphone, retrying.");
 
