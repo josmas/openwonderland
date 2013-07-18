@@ -669,7 +669,6 @@ public class JmeClientMain {
      * Create all of the Swing windows - and the 3D window
      */
     private void createUI(WorldManager wm, int width, int height) {
-
         frame = new MainFrameImpl(wm, width, height);
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);
@@ -677,7 +676,7 @@ public class JmeClientMain {
         // show frame
         frame.getFrame().setVisible(true);
         
-        JPanel canvas3D = frame.getCanvas3DPanel();
+        final JPanel canvas3D = frame.getCanvas3DPanel();
         // Initialize an onscreen view
         ViewManager.initialize(canvas3D.getWidth(), canvas3D.getHeight());
 
@@ -749,6 +748,8 @@ public class JmeClientMain {
         // the right size by forcing a repaint
         canvas3D.invalidate();
         frame.getFrame().getContentPane().validate();
+        // start MTGame renderer
+        ClientContextJME.getWorldManager().getRenderManager().setRunning(true);
     }
 
     /**

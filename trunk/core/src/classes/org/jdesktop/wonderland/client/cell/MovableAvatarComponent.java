@@ -42,6 +42,8 @@ import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableAvatarMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.MovableAvatarComponentClientState;
 
 /**
  * A component that extends MovableComponent to add additional information
@@ -56,6 +58,9 @@ public class MovableAvatarComponent extends MovableComponent {
     private String animationName;
     private float height;
     private boolean collision;
+    
+    private int serverTrigger;
+    private String serverAnimationName;
     
     public final static int NO_TRIGGER = -1;
 
@@ -154,6 +159,12 @@ public class MovableAvatarComponent extends MovableComponent {
 
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
         
+        //store value of trigger & animation
+        if(trigger!=-1) {
+            serverTrigger = mam.getTrigger();
+            serverAnimationName = mam.getAnimationName();
+        }
+        
         // update collision
         ((AvatarCell) cell).triggerCollision(mam.getHeight(), mam.isCollision());
         
@@ -163,5 +174,20 @@ public class MovableAvatarComponent extends MovableComponent {
         }
     }
 
+    @Override
+    public void setClientState(CellComponentClientState clientState) {
+
+        super.setClientState(clientState);
+        MovableAvatarComponentClientState state = (MovableAvatarComponentClientState) clientState;
+        this.serverAnimationName = state.getAnimationName();
+        this.serverTrigger = state.getTrigger();
+}
+
+    public int getServerTrigger() {
+        return serverTrigger;
+    }
+    public String getServerAnimationName() {
+        return serverAnimationName;
+    }
 
 }
