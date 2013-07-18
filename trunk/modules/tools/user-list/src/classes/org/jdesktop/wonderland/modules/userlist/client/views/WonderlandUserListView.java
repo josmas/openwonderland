@@ -308,93 +308,99 @@ public class WonderlandUserListView
     private void initComponents() {
 
         controlPanel = new javax.swing.JPanel();
+        volumeLabel = new javax.swing.JLabel();
+        volumeSlider = new javax.swing.JSlider();
+        jPanel2 = new javax.swing.JPanel();
         muteButton = new javax.swing.JButton();
         textChatButton = new javax.swing.JButton();
         voiceChatButton = new javax.swing.JButton();
         phoneButton = new javax.swing.JButton();
+        gotoUserButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         propertiesButton = new javax.swing.JButton();
-        volumeLabel = new javax.swing.JLabel();
-        gotoUserButton = new javax.swing.JButton();
-        volumeSlider = new javax.swing.JSlider();
         userListScrollPane = new javax.swing.JScrollPane();
         userList = new javax.swing.JList();
         jPanel1 = new javax.swing.JPanel();
         panelToggleButton = new javax.swing.JButton();
 
-        setPreferredSize(new java.awt.Dimension(194, 300));
+        setPreferredSize(new java.awt.Dimension(194, 310));
 
-        muteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListMicMuteOff24x24.png"))); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/userlist/client/resources/Bundle"); // NOI18N
+        volumeLabel.setText(bundle.getString("UserListHUDPanel.volumeLabel.text")); // NOI18N
+
+        volumeSlider.setMinorTickSpacing(10);
+        volumeSlider.setPaintTicks(true);
+
+        jPanel2.setLayout(new java.awt.GridLayout());
+
+        muteButton.setBackground(new java.awt.Color(255, 255, 255));
+        muteButton.setForeground(new java.awt.Color(255, 255, 255));
+        muteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListMicMuteOff24x24.png"))); // NOI18N
         muteButton.setToolTipText(bundle.getString("UserListHUDPanel.muteButton.toolTipText")); // NOI18N
         muteButton.setBorderPainted(false);
+        muteButton.setContentAreaFilled(false);
         muteButton.setMaximumSize(new java.awt.Dimension(24, 24));
         muteButton.setMinimumSize(new java.awt.Dimension(24, 24));
         muteButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        jPanel2.add(muteButton);
 
         textChatButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListChatText24x24.png"))); // NOI18N
         textChatButton.setToolTipText(bundle.getString("UserListHUDPanel.textChatButton.toolTipText")); // NOI18N
         textChatButton.setBorderPainted(false);
+        textChatButton.setContentAreaFilled(false);
         textChatButton.setMaximumSize(new java.awt.Dimension(24, 24));
         textChatButton.setMinimumSize(new java.awt.Dimension(24, 24));
         textChatButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        jPanel2.add(textChatButton);
 
         voiceChatButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListChatVoice24x24.png"))); // NOI18N
         voiceChatButton.setToolTipText(bundle.getString("UserListHUDPanel.voiceChatButton.toolTipText")); // NOI18N
+        voiceChatButton.setContentAreaFilled(false);
         voiceChatButton.setMaximumSize(new java.awt.Dimension(24, 24));
         voiceChatButton.setMinimumSize(new java.awt.Dimension(24, 24));
         voiceChatButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        jPanel2.add(voiceChatButton);
 
         phoneButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListPhone24x24.png"))); // NOI18N
         phoneButton.setToolTipText(bundle.getString("UserListHUDPanel.phoneButton.toolTipText")); // NOI18N
+        phoneButton.setContentAreaFilled(false);
         phoneButton.setMaximumSize(new java.awt.Dimension(24, 24));
         phoneButton.setMinimumSize(new java.awt.Dimension(24, 24));
         phoneButton.setPreferredSize(new java.awt.Dimension(24, 24));
-
-        editButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListEdit24x24.png"))); // NOI18N
-        editButton.setToolTipText(bundle.getString("UserListHUDPanel.editButton.toolTipText")); // NOI18N
-        editButton.setMaximumSize(new java.awt.Dimension(24, 24));
-        editButton.setMinimumSize(new java.awt.Dimension(24, 24));
-        editButton.setPreferredSize(new java.awt.Dimension(24, 24));
-
-        propertiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListProperties24x24.png"))); // NOI18N
-        propertiesButton.setToolTipText(bundle.getString("UserListHUDPanel.propertiesButton.toolTipText")); // NOI18N
-        propertiesButton.setMaximumSize(new java.awt.Dimension(24, 24));
-        propertiesButton.setMinimumSize(new java.awt.Dimension(24, 24));
-        propertiesButton.setPreferredSize(new java.awt.Dimension(24, 24));
-
-        volumeLabel.setText(bundle.getString("UserListHUDPanel.volumeLabel.text")); // NOI18N
+        jPanel2.add(phoneButton);
 
         gotoUserButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListGoto24x24.png"))); // NOI18N
         gotoUserButton.setToolTipText(bundle.getString("UserListHUDPanel.gotoUserButton.toolTipText")); // NOI18N
+        gotoUserButton.setContentAreaFilled(false);
         gotoUserButton.setMaximumSize(new java.awt.Dimension(24, 24));
         gotoUserButton.setMinimumSize(new java.awt.Dimension(24, 24));
         gotoUserButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        jPanel2.add(gotoUserButton);
 
-        volumeSlider.setMinorTickSpacing(10);
-        volumeSlider.setPaintTicks(true);
+        editButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListEdit24x24.png"))); // NOI18N
+        editButton.setToolTipText(bundle.getString("UserListHUDPanel.editButton.toolTipText")); // NOI18N
+        editButton.setContentAreaFilled(false);
+        editButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        editButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        editButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        jPanel2.add(editButton);
+
+        propertiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/userlist/client/resources/UserListProperties24x24.png"))); // NOI18N
+        propertiesButton.setToolTipText(bundle.getString("UserListHUDPanel.propertiesButton.toolTipText")); // NOI18N
+        propertiesButton.setContentAreaFilled(false);
+        propertiesButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        propertiesButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        propertiesButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        jPanel2.add(propertiesButton);
 
         org.jdesktop.layout.GroupLayout controlPanelLayout = new org.jdesktop.layout.GroupLayout(controlPanel);
         controlPanel.setLayout(controlPanelLayout);
         controlPanelLayout.setHorizontalGroup(
             controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(controlPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(controlPanelLayout.createSequentialGroup()
-                        .add(muteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(3, 3, 3)
-                        .add(textChatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(3, 3, 3)
-                        .add(voiceChatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(3, 3, 3)
-                        .add(phoneButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(3, 3, 3)
-                        .add(gotoUserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(3, 3, 3)
-                        .add(editButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(2, 2, 2)
-                        .add(propertiesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(volumeLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
@@ -402,19 +408,12 @@ public class WonderlandUserListView
         controlPanelLayout.setVerticalGroup(
             controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(controlPanelLayout.createSequentialGroup()
-                .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(propertiesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(textChatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(muteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(voiceChatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(phoneButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(gotoUserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(editButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(volumeLabel)
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         userListScrollPane.setPreferredSize(new java.awt.Dimension(260, 300));
@@ -447,16 +446,16 @@ public class WonderlandUserListView
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(userListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 197, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
             .add(controlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(controlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(controlPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -467,6 +466,7 @@ public class WonderlandUserListView
     private javax.swing.JButton editButton;
     private javax.swing.JButton gotoUserButton;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JButton muteButton;
     private javax.swing.JButton panelToggleButton;
     private javax.swing.JButton phoneButton;

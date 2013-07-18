@@ -403,6 +403,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
      */
     private void changeAvatarInternal(WlAvatarCharacter newAvatar) {
 
+        int flg=0;
         if (newAvatar==null)
             return;
 
@@ -423,6 +424,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTagNode);
             selectForInput(false);
             avatarCharacter.destroy();
+            flg=1;
         }
 
         // Set the new avatar character. If there is none (when would that happen?)
@@ -493,6 +495,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         // Turn off the indication that we have finished loading
         LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
+        
+        //--added for sitting problem when user logs in--//
+        //check If there is an existing avatar character
+        if(flg==0) {
+            AvatarCell acell = (AvatarCell) cell;
+            MovableAvatarComponent mac = (MovableAvatarComponent) acell.getComponent(MovableComponent.class);
+            //check if avatar has trigger value of sitting
+            if(mac.getServerTrigger()==15) {
+                avatarCharacter.getContext().triggerPressed(mac.getServerTrigger());
+    }
+        }
+        //--added for sitting problem when user logs in--//
     }
 
     public boolean isPickable() {

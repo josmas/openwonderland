@@ -25,6 +25,8 @@ import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwServerState
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.logging.Logger;
 
 /**
@@ -107,7 +109,8 @@ public class XAppCellFactory implements CellFactorySPI {
      */
     public Image getPreviewImage() {
         // TODO
-        return null;
+        URL url = XAppCellFactory.class.getResource("resources/X11-icon.png");
+        return Toolkit.getDefaultToolkit().getImage(url);
     }
 
     /**
