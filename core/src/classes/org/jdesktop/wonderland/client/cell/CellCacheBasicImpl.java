@@ -65,10 +65,8 @@ import org.jdesktop.wonderland.client.cell.CellStatistics.TimeCellStat;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.*;
+import org.jdesktop.wonderland.common.cell.messages.CellReparentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
@@ -212,8 +210,15 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                     logger.log(Level.SEVERE, "Failed to load cell", ex);
                 }
             } else if (parentCellID != null) {
-                logger.warning("Failed to find parent " + parentCellID +
-                               " for child " + cellId);
+                logger.warning("Failed to find parent " + parentCellID +" for child " + cellId);
+                /*
+                 * parent is not found so stop loading cell and
+                 * resend the reparent message to server
+                */
+                CellEditChannelConnection connection = (CellEditChannelConnection) session
+                        .getConnection(CellEditConnectionType.CLIENT_TYPE);
+                connection.send(new CellReparentMessage(cell.getCellID(), parentCellID, cell.getLocalTransform()));
+                return null;
             }
 
             cell.setLocalBounds(localBounds);

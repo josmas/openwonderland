@@ -36,10 +36,14 @@
 package org.jdesktop.wonderland.server.cell;
 
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.MovableAvatarMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.MovableAvatarComponentClientState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import com.sun.sgs.app.AppContext;
 
 /**
  *
@@ -48,6 +52,9 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ComponentLookupClass(MovableComponentMO.class)
 public class MovableAvatarComponentMO extends MovableComponentMO {
 
+    private int currentTrigeer=-1;
+    private String currentAnimationName=null;
+    
     public MovableAvatarComponentMO(CellMO cell) {
         super(cell);
     }
@@ -66,6 +73,13 @@ public class MovableAvatarComponentMO extends MovableComponentMO {
         ChannelComponentMO channelComponent;
         cell.setLocalTransform(transform);
 
+        //store trigger value
+        if(aMsg.getTrigger()!=-1) {
+            currentTrigeer = aMsg.getTrigger();
+            currentAnimationName = aMsg.getAnimationName();
+            AppContext.getDataManager().markForUpdate(this);
+        }
+        
         channelComponent = channelComponentRef.getForUpdate();
 
         if (cell.isLive()) {
@@ -77,6 +91,21 @@ public class MovableAvatarComponentMO extends MovableComponentMO {
         }
     }
 
+    @Override
+    public CellComponentClientState getClientState(CellComponentClientState state,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+        
+        // If the given cellClientState is null, create a new one
+        if (state == null) {
+            state = new MovableAvatarComponentClientState();
+        }
+        ((MovableAvatarComponentClientState)state).setAnimationName(currentAnimationName);
+        ((MovableAvatarComponentClientState)state).setTrigger(currentTrigeer);
+        
+        return super.getClientState(state, clientID, capabilities);
+    }
+    
     @Override
     protected String getClientClass() {
         return "org.jdesktop.wonderland.client.cell.MovableAvatarComponent";

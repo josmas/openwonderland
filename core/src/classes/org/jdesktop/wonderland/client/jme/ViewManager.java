@@ -63,10 +63,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Window;
-import java.awt.event.ComponentListener;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -75,7 +78,6 @@ import org.jdesktop.mtgame.OnscreenRenderBuffer;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.wonderland.client.jme.ViewProperties.ViewPropertiesListener;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -124,7 +126,7 @@ public class ViewManager implements ViewPropertiesListener {
     private Cell attachCell = null;
     private CellListener listener = null;
     private SimpleAvatarControls eventProcessor = null;
-    private ArrayList<ViewManagerListener> viewListeners = new ArrayList();
+    private List<ViewManagerListener> viewListeners = Collections.synchronizedList(new ArrayList());
     private HashMap<WonderlandSession, ViewCell> sessionViewCells = new HashMap();
     private ViewCell primaryViewCell = null;
     private ViewControls avatarControls = null;
@@ -134,7 +136,7 @@ public class ViewManager implements ViewPropertiesListener {
     private HashSet<CameraListener> cameraListeners = null;
     // The set of configurable properties for the view
     private ViewProperties viewProperties = null;
-
+    
     ViewManager(int width, int height) {
         this.width = width;
         this.height = height;
@@ -222,28 +224,34 @@ public class ViewManager implements ViewPropertiesListener {
         // Fix bug 884
         canvas.setFocusTraversalKeysEnabled(false);
 
-        panel.addComponentListener(new ComponentListener() {
+        panel.addComponentListener(new ComponentAdapter() {
 
-            public void componentResized(ComponentEvent e) {
-                logger.fine("Resizing " + e);
-                int width = e.getComponent().getWidth();
-                int height = e.getComponent().getHeight();
+            public void componentResized(final ComponentEvent e) {
+                // workaround for race condition between EDT and MTGame renderer thread 
+                // when using JOGL 2.0. Need to stop MTGame renderer to update canvas
+                ClientContextJME.getWorldManager().getRenderManager().setRunning(false);
+
+                final int width = e.getComponent().getWidth();
+                final int height = e.getComponent().getHeight();
                 float aspectRatio = (float) width / (float) height;
-
-                canvas.setBounds(0, 0, width, height);
+                logger.fine("Resizing " + e);
+                // ty to acquire synchronization semaphore
+                try{
+                    ClientContextJME.getWorldManager().getRenderManager().getSynchronizer().acquire();
+                } catch(InterruptedException ex){
+                    logger.severe("Interrupted while trying to acquire semaphore");
+                    return;
+                }
+                
+                getCanvas().setBounds(0, 0, width, height);
+                ClientContextJME.getWorldManager().getRenderManager().getSynchronizer().release();
                 cameraComponent.setViewport(width, height);
                 cameraComponent.setAspectRatio(aspectRatio);
                 viewProperties.setFieldOfView(viewProperties.getFieldOfView());
+                // start MTGame renderer again
+                ClientContextJME.getWorldManager().getRenderManager().setRunning(true);
             }
 
-            public void componentMoved(ComponentEvent e) {
-            }
-
-            public void componentShown(ComponentEvent e) {
-            }
-
-            public void componentHidden(ComponentEvent e) {
-            }
         });
 
         // Listen for (de)iconification of root window and start/stop the renderer accordingly
@@ -493,6 +501,7 @@ public class ViewManager implements ViewPropertiesListener {
      * @param listener to be added
      */
     public void addViewManagerListener(ViewManagerListener listener) {
+        logger.warning("||-- listener added --||"+listener);
         viewListeners.add(listener);
     }
 
@@ -505,9 +514,17 @@ public class ViewManager implements ViewPropertiesListener {
     }
 
     private void notifyViewManagerListeners(ViewCell oldViewCell, ViewCell newViewCell) {
-        for (ViewManagerListener vListener : viewListeners) {
-            vListener.primaryViewCellChanged(oldViewCell, newViewCell);
+        logger.warning("||-- notifyViewManagerListeners ENTER --|| ");
+        try {
+            synchronized (viewListeners) {
+                for (ViewManager.ViewManagerListener vListener : viewListeners) {
+                    vListener.primaryViewCellChanged(oldViewCell, newViewCell);
+                }
+            }
+        } catch (ConcurrentModificationException e) {
+            logger.warning("||-- EXCEPTION --|| : " + e);
         }
+        logger.warning("||-- notifyViewManagerListeners EXIT --|| ");
     }
 
     protected void createCameraEntity(WorldManager wm) {
