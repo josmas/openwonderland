@@ -103,7 +103,7 @@ public class JmeClientMain {
     // standard properties
     private static final String PROPS_URL_PROP = "run.properties.file";
     private static final String CONFIG_DIR_PROP =
-            "wonderland.client.config.dir";
+            "jnlp.wonderland.client.config.dir";
     private static final String DESIRED_FPS_PROP = "wonderland.client.fps";
     private static final String WINDOW_SIZE_PROP =
             "wonderland.client.windowSize";

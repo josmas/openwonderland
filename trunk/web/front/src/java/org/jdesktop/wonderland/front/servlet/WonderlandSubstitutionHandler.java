@@ -67,7 +67,7 @@ public class WonderlandSubstitutionHandler
         ServletContext context = request.getSession().getServletContext();
                 
         // substitute $$sgs.server with the sgs server URL
-        String serverURL = ServletPropertyUtil.getProperty("wonderland.server.url", context);
+        String serverURL = ServletPropertyUtil.getProperty("jnlp.wonderland.server.url", context);
         if (serverURL == null) {
             UriBuilder builder = UriBuilder.fromUri(request.getRequestURL().toString());
             serverURL = builder.replacePath("/").build().toString();
@@ -82,7 +82,7 @@ public class WonderlandSubstitutionHandler
         jnlpTemplate = substitute(jnlpTemplate, "$$wonderland.server.url", serverURL);
 
         // substitute in the config directory
-        String configDirURL = ServletPropertyUtil.getProperty("wonderland.client.config.dir", context);
+        String configDirURL = ServletPropertyUtil.getProperty("jnlp.wonderland.client.config.dir", context);
         if (configDirURL == null) {
             UriBuilder builder = UriBuilder.fromUri(request.getRequestURL().toString());
             configDirURL = builder.replacePath("/wonderland-web-front/config/").build().toString();
