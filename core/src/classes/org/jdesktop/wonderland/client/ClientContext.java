@@ -180,7 +180,7 @@ public class ClientContext {
         // if neither the preference or the system property are set, use
         // a default value based on the Wonderland version
         if (userDirName == null) {
-            String version = System.getProperty("wonderland.version");
+            String version = System.getProperty("jnlp.wonderland.version");
 
             // on Windows, we probably want to use the profile directory
             // rather than the home directory, as described in Java bug

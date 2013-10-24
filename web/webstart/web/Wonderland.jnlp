@@ -23,10 +23,10 @@
     <!-- jar files auto-populated by build script -->
     %LOCAL_JAR_FILES%
     
-    <property name="wonderland.server.url" value="$$wonderland.server.url"/>
-    <property name="wonderland.client.config.dir" value="$$wonderland.client.config.dir"/>
-    <property name="wonderland.protocol.handler.pkgs" value="org.jdesktop.wonderland.client.protocols"/>
-    <property name="wonderland.version" value="%VERSION%"/>
+    <property name="jnlp.wonderland.server.url" value="$$wonderland.server.url"/>
+    <property name="jnlp.wonderland.client.config.dir" value="$$wonderland.client.config.dir"/>
+    <property name="jnlp.wonderland.protocol.handler.pkgs" value="org.jdesktop.wonderland.client.protocols"/>
+    <property name="jnlp.wonderland.version" value="%VERSION%"/>
 
     <!-- properties passed in via the URL -->
     $$url.props
