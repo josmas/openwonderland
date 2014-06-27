@@ -512,28 +512,45 @@ public class AudioManagerClient extends BaseConnection implements
             logger.severe("TODO - Implement AudioManager.viewConfigured for the case when the primary view cell disconnects");
         } else {
             //System.out.println("LOCAL AVATAR BOUNDS:  " + cell.getLocalBounds());
-            CellID cellID = cell.getCellID();
+            final CellID cellID = cell.getCellID();
 
             /*
              * We require the PresenceManager so by the time we get here,
              * our presenceInfo has to be available.
              */
             presenceInfo = pm.getPresenceInfo(cellID);
-
+            
             /*
-             * Now we have everything we need to create the presence
-             * controls.
+             * Sometimes the presencemanager plugin loads after audio manager plugin.
+             * So the audio manager fails to find presence manager and can't connect client
+             * to voice bridge server.
+             * so create a thread which will wait untill presence manager finish loading.
              */
-            controls = new PresenceControls(this, session, pm, presenceInfo);
+            final AudioManagerClient amClient = this;
+            new Thread(new Runnable() {
 
-            logger.fine("[AudioManagerClient] view configured for cell " +
-                    cellID + " presence: " + presenceInfo + " from " + pm);
+                public void run() {
+                    while(presenceInfo==null) {
+                        presenceInfo = pm.getPresenceInfo(cellID);
+                    }
+                    logger.warning("Presence manamger is loaded.");
+                    /*
+                    * Now we have everything we need to create the presence
+                    * controls.
+                    */
+                   controls = new PresenceControls(amClient, session, pm, presenceInfo);
 
-            connectSoftphone();
+                   logger.fine("[AudioManagerClient] view configured for cell " +
+                           cellID + " presence: " + presenceInfo + " from " + pm);
 
-            if (cell.getComponent(ProximityComponent.class) == null) {
-                cell.addComponent(new ProximityComponent(cell));
-            }
+                   connectSoftphone();
+
+                   if (cell.getComponent(ProximityComponent.class) == null) {
+                       cell.addComponent(new ProximityComponent(cell));
+                   }
+                }
+            }).start();
+            
         }
     }
 
