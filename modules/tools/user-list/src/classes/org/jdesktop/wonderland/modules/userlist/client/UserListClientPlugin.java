@@ -17,14 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.userlist.client;
 
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
@@ -35,6 +41,7 @@ public class UserListClientPlugin extends BaseClientPlugin
     implements ViewCellConfiguredListener, SessionLifecycleListener 
 {
     private ServerSessionManager session;
+    private static final Logger LOGGER = Logger.getLogger(UserListClientPlugin.class.getName());
 
     public UserListClientPlugin() {
     }
@@ -64,9 +71,28 @@ public class UserListClientPlugin extends BaseClientPlugin
     }
     
     public void viewConfigured(LocalAvatar localAvatar) {
-        WonderlandUserList.INSTANCE.initialize();
-        UserListPresenterManager.INSTANCE.intialize();
-        UserListPresenterManager.INSTANCE.showActivePresenter();
+        /*
+         * Sometimes the presencemanager plugin loads after user list plugin.
+         * So the user list fails to find presence manager and can't load the user list panel.
+         * so create a thread which will wait untill presence manager finish loadind.
+         */
+        new Thread(new Runnable() {
+
+            public void run() {
+                PresenceManager manager = PresenceManagerFactory.getPresenceManager(session.getPrimarySession());
+                Cell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                PresenceInfo localPresenceInfo = manager.getPresenceInfo(cell.getCellID());
+                while(localPresenceInfo==null) {
+                    manager = PresenceManagerFactory.getPresenceManager(session.getPrimarySession());
+                    cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                    localPresenceInfo = manager.getPresenceInfo(cell.getCellID());
+                }
+                LOGGER.warning("Presence manager is loaded.");
+                WonderlandUserList.INSTANCE.initialize();
+                UserListPresenterManager.INSTANCE.intialize();
+                UserListPresenterManager.INSTANCE.showActivePresenter();
+            }
+        }).start();
     }
 
     public void sessionCreated(WonderlandSession session) {

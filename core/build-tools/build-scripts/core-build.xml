@@ -108,6 +108,10 @@
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/**/*.jpg"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/**/*.dae"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/**/*.properties"/>
+            <manifest>
+				<attribute name="Permissions"
+					value="all-permissions"/>
+			</manifest>
          </jar>
      </target>
      
