@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
@@ -37,6 +41,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import org.jdesktop.wonderland.client.jme.input.AvatarCollisionEvent;
 import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingBox;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -51,6 +56,7 @@ import com.jme.scene.Spatial;
 import com.jme.scene.Geometry;
 import com.jme.scene.Spatial.CullHint;
 import com.jme.scene.shape.Box;
+import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import imi.character.CharacterAnimationProcessor;
@@ -789,15 +795,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private void setCollisionController(WlAvatarCharacter avatar) {
         // Create a spatial that represents the bounds of the avatar to use
         // for collision. These are hardcoded values for now.
-        Vector3f origin = new Vector3f(0f, 0.92f, 0.15f);
-        float xExtent = 0.3f;
-        float yExtent = 0.6f;
-        float zExtent = 0.15f;
+        Vector3f origin = new Vector3f(0f, 0.57f, 0.0f);
+        float radius = 0.25f;
 
-        if (selectedForInput) {
-            Spatial collisionGraph = new Box("AvatarCollision", origin, xExtent,
-                    yExtent, zExtent);
-            collisionGraph.setModelBound(new BoundingSphere());
+        if (selectedForInput) {         
+            Spatial collisionGraph = new Sphere("AvatarCollision", origin, 10, 10, radius);
+            
+            collisionGraph.setModelBound(new BoundingBox());
             collisionGraph.updateModelBound();
 
             // Fetch the JME Collision system using the server manager of the Cell
