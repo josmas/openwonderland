@@ -35,10 +35,10 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="placemarks" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="placemarks" majorVersion="1" minorVersion="2" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="Placemark API and library" builddir="${build.dir}">
 
-            <requires name="placemarks-api" version="0" minorVersion="5"/>
+            <requires name="placemarks-api" version="0" minorVersion="6"/>
             <requires name="content-repository" version="0" minorVersion="5"/>
             <requires name="darkstar-api" version="0" minorVersion="5"/>
 

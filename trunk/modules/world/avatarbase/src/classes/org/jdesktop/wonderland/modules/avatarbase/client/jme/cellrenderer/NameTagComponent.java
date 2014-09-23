@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -20,15 +24,22 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 import com.jme.scene.Node;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.NameTagComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.NameTagMessage;
 
 /**
  * A NameTag for an avatar cell. Currently only supports 3D name tags, but
  * will be extended to support other forms of tag
  *
  * @author paulby
+ * @author Abhishek Upadhyay
  */
 public class NameTagComponent extends CellComponent {
 
@@ -40,7 +51,11 @@ public class NameTagComponent extends CellComponent {
     private boolean isSpeaking = false;
     private float heightAbove;
     private boolean isMuted;
-
+    
+    @UsesCellComponent
+    protected ChannelComponent channelComp;
+    protected ChannelComponent.ComponentMessageReceiver msgReceiver = null;
+    
     public NameTagComponent(Cell cell) {
         this (cell, 2f);
     }
@@ -60,9 +75,21 @@ public class NameTagComponent extends CellComponent {
         assert(rendererType==Cell.RendererType.RENDERER_JME);
         return nameTagNode;
     }
-
+    
     NameTagNode getNameTagNode() {
         return nameTagNode;
+    }
+    
+    /**
+     * Configure the component based on the client state that was
+     * passed in.
+     */
+    @Override
+    public void setClientState(CellComponentClientState clientState) {
+        
+        // allow the superclass to do any configuration necessary
+        super.setClientState(clientState);
+        isMuted = ((NameTagComponentClientState)clientState).isIsMuted();
     }
 
     @Override
@@ -87,7 +114,26 @@ public class NameTagComponent extends CellComponent {
                         if (nameTagNode!=null)
                              nameTagNode.done();
                         nameTagNode = null;
+                        if (msgReceiver != null && channelComp != null) {
+                            channelComp.removeMessageReceiver(NameTagMessage.class);
+                            msgReceiver = null;
+                        }
                     }
+                }
+                break;
+            case ACTIVE:
+                if(increasing) {
+                     if (msgReceiver == null) {
+                        msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+                            public void messageReceived(CellMessage message) {
+                                //handleConfigMessage((AvatarConfigMessage) message);
+                                NameTagMessage msg = (NameTagMessage) message;
+                                updateLabel(msg.getUsername(), false, false, msg.isIsMute());
+                                //updateLabel()
+                            }
+                        };
+                        channelComp.addMessageReceiver(NameTagMessage.class, msgReceiver);
+                     }
                 }
                 break;
         }

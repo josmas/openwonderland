@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -21,6 +25,7 @@ package org.jdesktop.wonderland.modules.portal.client;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -38,19 +43,20 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.AvatarCollisionEvent;
-import org.jdesktop.wonderland.client.utils.AudioResource;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.modules.portal.common.CoverScreenData;
 
 /**
  * Client-side portal component. Moves the client to the specified position
  * when they get within range of the portal.
  * 
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Abhishek Upadhyay
  */
 public class PortalComponent extends CellComponent
         implements ProximityListener
@@ -61,6 +67,11 @@ public class PortalComponent extends CellComponent
     private String serverURL;
     private Vector3f location;
     private Quaternion look;
+    
+    private ColorRGBA backgroundColor=ColorRGBA.black;
+    private ColorRGBA textColor=ColorRGBA.white;
+    private String imageURL="";
+    private String message="Teleporting. Please Wait...";
 
     private String audioSource;
     private boolean uploadFile;
@@ -74,6 +85,9 @@ public class PortalComponent extends CellComponent
     private URL teleportAudioURL;
 
     private ChannelComponent channelComp;
+    
+    private CoverScreenListener coverScreenListener = null;
+    private boolean listenerCreated=false;
 
     public PortalComponent(Cell cell) {
         super(cell);
@@ -116,6 +130,12 @@ public class PortalComponent extends CellComponent
 		    + ": " + e.getMessage());
 	    }
 	}
+        
+        backgroundColor = state.getBackgroundColor();
+        textColor = state.getTextColor();
+        imageURL = state.getImageURL();
+        message = state.getMessage();
+        
     }
 
     @Override
@@ -156,6 +176,26 @@ public class PortalComponent extends CellComponent
     private void teleport() {
         // teleport in a separate thread, since we don't know which one we
         // are called on
+        String prop = System.getProperty("Portal.CoverScreen");
+        if(prop == null) {
+            prop="";
+        }
+        if(!prop.equalsIgnoreCase("off")) {
+            if(coverScreenListener==null) {
+                if(!(ClientContextJME.getViewManager()
+                    .getPrimaryViewCell().getWorldTransform().getTranslation(null).x==location.x && 
+                    ClientContextJME.getViewManager()
+                    .getPrimaryViewCell().getWorldTransform().getTranslation(null).z==location.z)) {
+
+                    CoverScreenData csd = new CoverScreenData(backgroundColor, textColor
+                            , imageURL, message);
+
+                    //cell status change listener for removing cover screen
+                    coverScreenListener = new CoverScreenListener(location,csd);
+                }
+            }
+        }
+        
         Thread t = new Thread(new Runnable() {
             public void run() {
                 try {

@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,6 +21,7 @@
  */
 package org.jdesktop.wonderland.modules.placemarks.api.common;
 
+import com.jme.renderer.ColorRGBA;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,6 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * unique names.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Abhishek Upadhyay
  */
 @XmlRootElement(name="placemark")
 public class Placemark implements Serializable {
@@ -43,6 +49,10 @@ public class Placemark implements Serializable {
     @XmlElement(name="z") private float z = 0.0f;
     @XmlElement(name="angle") private float angle = 0.0f;
 
+    @XmlElement(name="background-color") private ColorRGBA backgroundColor = ColorRGBA.black;
+    @XmlElement(name="text-color") private ColorRGBA textColor = ColorRGBA.white;
+    @XmlElement(name="image-url") private String imageURL = "";
+    @XmlElement(name="message") private String message = "Teleporting. Please Wait...";
     /**
      * Default constructor, needed for JAXB
      */
@@ -60,6 +70,20 @@ public class Placemark implements Serializable {
      * @param z The z-coordinate of the transport destination
      * @param angle The initial look direction angle
      */
+    public Placemark(String name, String url, float x, float y, float z, float angle,
+            ColorRGBA backgroundColor, ColorRGBA textColor, String imageURL, String message) {
+        this.name = name;
+        this.url = url;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.angle = angle;
+        this.backgroundColor = backgroundColor;
+        this.textColor = textColor;
+        this.imageURL = imageURL;
+        this.message = message;
+    }
+    
     public Placemark(String name, String url, float x, float y, float z, float angle) {
         this.name = name;
         this.url = url;
@@ -92,6 +116,23 @@ public class Placemark implements Serializable {
     public float getAngle() {
         return angle;
     }
+
+    public ColorRGBA getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public ColorRGBA getTextColor() {
+        return textColor;
+    }
+
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
 
     @Override
     public boolean equals(Object obj) {

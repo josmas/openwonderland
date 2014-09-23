@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
@@ -114,25 +118,26 @@ public enum UserListPresenterManager implements HUDEventListener {
     public void cleanup() {
         removeMenuItem();
         hideActivePresenter();
-        
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         if (hudComponent != null) {
             mainHUD.removeComponent(hudComponent);
             hudComponent = null;
         }
-        
         presenters.clear();
     }
     
     public void HUDObjectChanged(HUDEvent event) {
-        HUDEvent.HUDEventType type = event.getEventType();
-        if(type == HUDEvent.HUDEventType.CLOSED
-         ||type == HUDEvent.HUDEventType.MINIMIZED
-         ||type == HUDEvent.HUDEventType.DISAPPEARED) {
-            userListMenuItem.setSelected(false);
-        } else {
-            userListMenuItem.setSelected(true);
-        }            
+       HUDEvent.HUDEventType hudEventType = event.getEventType();
+        if (hudEventType == HUDEvent.HUDEventType.MINIMIZED
+                        || hudEventType == HUDEvent.HUDEventType.MAXIMIZED
+                        || hudEventType == HUDEvent.HUDEventType.CLOSED) {
+                final boolean isSelected = hudEventType == HUDEvent.HUDEventType.MAXIMIZED;
+                SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                                userListMenuItem.setSelected(isSelected);
+                        }
+                });
+        }
     }
     
     public WonderlandUserListPresenter getDefaultPresenter() {
@@ -218,7 +223,7 @@ public enum UserListPresenterManager implements HUDEventListener {
         
     private void initializeMenuItem() {
         userListMenuItem = new JCheckBoxMenuItem();
-        userListMenuItem.setSelected(false);
+        userListMenuItem.setSelected(true);
         userListMenuItem.setText("Users");
         userListMenuItem.setEnabled(false);
 

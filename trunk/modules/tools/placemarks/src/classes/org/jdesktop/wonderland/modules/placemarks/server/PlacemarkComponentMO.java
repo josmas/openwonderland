@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -38,6 +42,7 @@ package org.jdesktop.wonderland.modules.placemarks.server;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedObjectRemoval;
@@ -45,7 +50,6 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -62,6 +66,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * Server side component that creates a placemark at the location of the cell
  * the component is attached to.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Abhishek Upadhyay
  */
 public class PlacemarkComponentMO extends CellComponentMO 
         implements ManagedObjectRemoval
@@ -71,7 +76,12 @@ public class PlacemarkComponentMO extends CellComponentMO
     private String placemarkName;
     private String placemarkRotation;
     private String moveTaskBindingName;
-
+    
+    private ColorRGBA backgroundColor=ColorRGBA.black;
+    private ColorRGBA textColor=ColorRGBA.white;
+    private String imageURL="";
+    private String message="Teleporting. Please Wait...";
+    
     public PlacemarkComponentMO(CellMO cell) {
         super(cell);
 
@@ -119,6 +129,10 @@ public class PlacemarkComponentMO extends CellComponentMO
 
         ((PlacemarkComponentServerState)state).setPlacemarkName(placemarkName);
         ((PlacemarkComponentServerState)state).setPlacemarkRotation(placemarkRotation);
+        ((PlacemarkComponentServerState)state).setBackgroundColor(backgroundColor);
+        ((PlacemarkComponentServerState)state).setTextColor(textColor);
+        ((PlacemarkComponentServerState)state).setImageURL(imageURL);
+        ((PlacemarkComponentServerState)state).setMessage(message);
 
         return super.getServerState(state);
     }
@@ -134,6 +148,10 @@ public class PlacemarkComponentMO extends CellComponentMO
 
         placemarkName = ((PlacemarkComponentServerState) state).getPlacemarkName();
         placemarkRotation= ((PlacemarkComponentServerState) state).getPlacemarkRotation();
+        backgroundColor= ((PlacemarkComponentServerState) state).getBackgroundColor();
+        textColor= ((PlacemarkComponentServerState) state).getTextColor();
+        imageURL= ((PlacemarkComponentServerState) state).getImageURL();
+        message= ((PlacemarkComponentServerState) state).getMessage();
 
         if (placemarkName == null) {
             // use the cell name if no placemark name is specified
@@ -160,7 +178,8 @@ public class PlacemarkComponentMO extends CellComponentMO
 
     protected void unregister() {
         // construct a fake placemark with the given name
-        Placemark pm = new Placemark(placemarkName, null, 0, 0, 0, 0);
+        Placemark pm = new Placemark(placemarkName, null, 0, 0, 0, 0
+                , ColorRGBA.black, ColorRGBA.white, "", "Teleporting. Please Wait...");
         PlacemarkRegistrySrvFactory.getInstance().unregisterPlacemark(pm);
     }
 
@@ -194,7 +213,8 @@ public class PlacemarkComponentMO extends CellComponentMO
         angle = (float) Math.toDegrees(angle);
 
         // create placemark
-        return new Placemark(placemarkName, null, trans.x, trans.y, trans.z, angle);    
+        return new Placemark(placemarkName, null, trans.x, trans.y, trans.z, angle, 
+                backgroundColor, textColor, imageURL, message);    
     }
 
     /**

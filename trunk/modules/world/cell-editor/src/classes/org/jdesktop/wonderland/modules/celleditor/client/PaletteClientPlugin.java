@@ -3,35 +3,33 @@
  *
  * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * The Open Wonderland Foundation designates this particular file as
- * subject to the "Classpath" exception as provided by the Open Wonderland
- * Foundation in the License file that accompanied this code.
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
  */
-
 /**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
- * this code.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
@@ -58,7 +56,7 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 /**
  * Client-size plugin for the cell editor. Installs a "Cell Editor" menu item
  * under "Tools"
- * 
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
@@ -69,10 +67,8 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
     private static final Logger LOGGER =
             Logger.getLogger(PaletteClientPlugin.class.getName());
-
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/celleditor/client/resources/Bundle");
-
     private JMenuItem editorMI = null;
     private WeakReference<CellPropertiesJFrame> cellPropertiesFrameRef = null;
 
@@ -115,9 +111,9 @@ public class PaletteClientPlugin extends BaseClientPlugin
      * @inheritDoc()
      */
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        return new ContextMenuItem[] {
-                    new SimpleContextMenuItem(BUNDLE.getString("Properties..."),
-                    null, new PropertiesListener())
+        return new ContextMenuItem[]{
+            new SimpleContextMenuItem(BUNDLE.getString("Properties..."),
+            null, new PropertiesListener())
         };
     }
 
@@ -130,8 +126,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
             CellPropertiesJFrame cellPropertiesFrame = new CellPropertiesJFrame();
             cellPropertiesFrameRef = new WeakReference(cellPropertiesFrame);
             return cellPropertiesFrame;
-        }
-        else {
+        } else {
             return cellPropertiesFrameRef.get();
         }
     }
