@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
@@ -129,6 +133,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Abhishek Upadhyay
  */
 public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor {
 
@@ -1054,6 +1059,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             TreePath path = new TreePath(node.getPath());
             cellHierarchyTree.expandPath(path);
             cellHierarchyTree.setSelectionPath(path);
+            
+            //scroll down so that the item is visible
+            cellHierarchyTree.scrollPathToVisible(path);
         }
 
         // Start listening to the tree once again
@@ -1124,7 +1132,7 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
         // sure we make it dynamically added
         CellComponentServerState state = spi.getDefaultCellComponentServerState();
         CellID cellID = selectedCell.getCellID();
-
+        
         // Send a ADD component message on the cell channel. Wait for a
         // response. If OK, then update the GUI with the new component.
         // Otherwise, display an error dialog box.
@@ -1143,6 +1151,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             // If successful, add the component to the GUI by refreshing the
             // Cell that is selected.
             setSelectedCell(selectedCell);
+            PropertiesManager manager = PropertiesManager.getPropertiesManager();
+            PropertiesFactorySPI prop = manager.getPropertiesByClass(state.getClass());
+            capabilityList.setSelectedValue(prop.getDisplayName(),true);
         }
         else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog
@@ -1330,6 +1341,9 @@ public class CellPropertiesJFrame extends JFrame implements CellPropertiesEditor
             // Make sure selected node is still selected
             TreePath treePath = new TreePath(getPath());
             cellHierarchyTree.setSelectionPath(treePath);
+            
+            //scroll down so that the item is visible
+            cellHierarchyTree.scrollPathToVisible(treePath);
         }
     }
 

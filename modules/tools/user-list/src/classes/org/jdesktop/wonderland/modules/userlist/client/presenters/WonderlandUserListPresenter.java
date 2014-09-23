@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
@@ -25,6 +29,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -35,6 +41,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.cell.utils.CellPlacementUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.hud.*;
@@ -51,7 +58,16 @@ import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlu
 import org.jdesktop.wonderland.modules.audiomanager.client.PresenceControls;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.modules.userlist.client.CoverScreenData;
+import org.jdesktop.wonderland.modules.userlist.client.CoverScreenListener;
+import org.jdesktop.wonderland.modules.userlist.client.GoToCoverScreenInfo;
 import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList;
 import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList.ModelChangedListener;
 import org.jdesktop.wonderland.modules.userlist.client.views.ChangeNamePanel;
@@ -298,7 +314,64 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
 
     }
     
+    public static GoToCoverScreenInfo getGoToCoverScreenInfo() {
+        try {
+            // Find the GoToCoverScreen.xml file and parse as a PlacemarkList object.
+           ContentCollection collection = getSystemContentRepository();
+           ContentCollection grps = (ContentCollection) collection.getParent().getChild("groups");
+            if(grps==null) {
+                grps = (ContentCollection) collection.getParent().createChild("groups", ContentNode.Type.COLLECTION);
+            }
+            ContentCollection grpusrs = (ContentCollection) grps.getChild("users");
+            if(grpusrs == null) {
+                grpusrs = (ContentCollection) grps.createChild("users", ContentNode.Type.COLLECTION);
+            }
+            ContentCollection csColl = (ContentCollection) grpusrs.getChild("GoToCoverScreen");
+            if(csColl==null) {
+                csColl = (ContentCollection) grpusrs.createChild("GoToCoverScreen", ContentNode.Type.COLLECTION);
+            }
+           ArrayList<ContentNode> resources = (ArrayList<ContentNode>) csColl.getChildren();
+           ContentResource resource = null;
+           if(resources!=null && !resources.isEmpty()) {
+                resource = (ContentResource)csColl.getChildren().get(0);
+           }
+           if (resource == null) {
+               LOGGER.warning("Unable to find GoToCoverScreen.xml in " + collection.getPath());
+               return null;
+           } else {
+               LOGGER.warning("find GoToCoverScreen.xml in " + collection.getPath());
+           } 
+           
+           
+           Reader r = new InputStreamReader(resource.getURL().openStream());
+           GoToCoverScreenInfo out = GoToCoverScreenInfo.decode(r);
+           return out;
+        } catch (ContentRepositoryException ex) {
+            Logger.getLogger(WonderlandUserListPresenter.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JAXBException ex) {
+            Logger.getLogger(WonderlandUserListPresenter.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(WonderlandUserListPresenter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the system repository for the primary session, creating
+     * it if it does not yet exist.
+     *
+     * @param The system ContentCollection for the current primary session
+     */
+    private static ContentCollection getSystemContentRepository()
+            throws ContentRepositoryException {
+
+        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+        ContentRepository cr = registry.getRepository(LoginManager.getPrimary());
+        return cr.getSystemRoot();
+    }
+    
     private void handleGoToButtonPressed(ActionEvent e) {
+        
         Object[] selectedValues = view.getSelectedEntries();
 
         if (selectedValues.length == 1) {
@@ -314,6 +387,33 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
 
             CellTransform desiredTransform = generateGoToPosition(info.getCellID());
 
+            
+            // attach cover screen
+            String prop = System.getProperty("UserList.CoverScreen");
+            if(prop == null) {
+                prop="";
+            }
+            if(!prop.equalsIgnoreCase("off")) {
+                //if(coverScreenListener==null) {
+                    if(!(ClientContextJME.getViewManager()
+                        .getPrimaryViewCell().getWorldTransform().getTranslation(null).x==desiredTransform.getTranslation(null).x && 
+                        ClientContextJME.getViewManager()
+                        .getPrimaryViewCell().getWorldTransform().getTranslation(null).z==desiredTransform.getTranslation(null).z)) {
+
+                        CoverScreenData csd = new CoverScreenData();
+                        GoToCoverScreenInfo info1 = getGoToCoverScreenInfo();
+                        if(info1!=null) {
+                            csd.setBackgroundColor(info1.getBackgroundColor());
+                            csd.setImageURL(info1.getImageURL());
+                            csd.setMessage(info1.getMessage());
+                            csd.setTextColor(info1.getTextColor());
+                        }
+                        //cell status change listener for removing cover screen
+                        new CoverScreenListener(desiredTransform.getTranslation(null),csd);
+                    }
+                //}
+            }
+            
             // get the current look direction of the avatar
 
             // go to the new location

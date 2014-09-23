@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -20,6 +24,7 @@ package org.jdesktop.wonderland.modules.portal.common;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -32,20 +37,22 @@ import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState.
  * Client state for portal cell component
  *
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Abhishek Upadhyay
  */
 public class PortalComponentClientState extends CellComponentClientState {
     private String serverURL;
     private Vector3f location;
     private Quaternion look;
+    
+    private ColorRGBA backgroundColor=ColorRGBA.black;
+    private ColorRGBA textColor=ColorRGBA.white;
+    private String imageURL="";
+    private String message="Teleporting. Please Wait...";
 
     private AudioSourceType audioSourceType;
-
     private String audioSource;
-
     private boolean uploadFile;
-
     private String cachedAudioSource;
-
     private float volume;
 
     /** Default constructor */
@@ -65,6 +72,26 @@ public class PortalComponentClientState extends CellComponentClientState {
 	this.uploadFile = uploadFile;
 	this.cachedAudioSource = cachedAudioSource;
 	this.volume = volume;
+    }
+    public PortalComponentClientState(String serverURL, Vector3f location,
+                                      Quaternion look, AudioSourceType audioSourceType,
+				      String audioSource, boolean uploadFile,
+				      String cachedAudioSource, float volume,
+                                      ColorRGBA backgroundColor, ColorRGBA textColor,
+                                      String imageURL,String message)
+    {
+        this.serverURL = serverURL;
+        this.location = location;
+        this.look = look;
+	this.audioSourceType = audioSourceType;
+	this.audioSource = audioSource;
+	this.uploadFile = uploadFile;
+	this.cachedAudioSource = cachedAudioSource;
+	this.volume = volume;
+        this.backgroundColor = backgroundColor;
+        this.textColor = textColor;
+        this.imageURL = imageURL;
+        this.message = message;
     }
 
     @XmlElement
@@ -139,6 +166,42 @@ public class PortalComponentClientState extends CellComponentClientState {
 
     public void setVolume(float volume) {
 	this.volume = volume;
+    }
+    
+    @XmlElement
+    public ColorRGBA getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(ColorRGBA backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    @XmlElement
+    public ColorRGBA getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(ColorRGBA textColor) {
+        this.textColor = textColor;
+    }
+
+    @XmlElement
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
+    }
+
+    @XmlElement
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
 }

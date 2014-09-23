@@ -29,12 +29,12 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
 
-        <module name="${module.name}" majorVersion="0" minorVersion="5"
+        <module name="${module.name}" majorVersion="1" minorVersion="1"
                 moduleDescription="${module.description}"
                 jarfile="${module.dist.dir}/${module.name}.jar"
                 builddir="${build.lib.dir}">
 
-            <requires name="placemarks-api" version="0" minorVersion="5"/>
+            <requires name="placemarks-api" version="0" minorVersion="6"/>
 	    <requires name="content-repository" version="0" minorVersion="5"/>
 
             <client>

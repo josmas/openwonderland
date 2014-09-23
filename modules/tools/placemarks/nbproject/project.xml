@@ -67,11 +67,18 @@
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
+                    <source-file>
+                        <location>my.module.properties</location>
+                    </source-file>
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <action>
+                        <label>Deploy Module</label>
+                        <target>deploy</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
@@ -79,7 +86,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jsr173_1.0_api.jar:../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/build/lib/wonderland-server.jar:../../../core/ext/common/servlet-api.jar:../../../web/front/dist/wonderland-webadmin-core.jar:../../../web/utils/dist/wonderland-web-utils.jar:../xremwin/build/client/xremwin-client.jar:../../../core/ext/common/swing-layout-1.0.jar:../xremwin/build/lib/xremwin-common.jar:../appbase/build/server/appbase-server.jar:../../../core/ext/common/swing-layout-1.0.jar:../../../core/ext/jme20/target/jme.jar:../../../core/ext/sgs/sgs-client-0.9.10/sgs-client-0.9.10-sources.jar:../../../core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../darkstar-api/build/lib/darkstar-api.jar:../../foundation/placemarks-api/build/client/placemarks-api-client.jar:../../foundation/placemarks-api/build/server/placemarks-api-server.jar:../../foundation/security/build/lib/server/security-server.jar:../../foundation/content-repository/build/client/contentrepo-client.jar:../../foundation/content-repository/build/lib/contentrepo-spi.jar:../../foundation/darkstar-api/build/lib/darkstar-api.jar</classpath>
+                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar;../../../lib/jaxb/jsr173_1.0_api.jar;../../../core/build/lib/wonderland-client.jar;../../../core/build/lib/wonderland-common.jar;../../../core/build/lib/wonderland-server.jar;../../../core/ext/common/servlet-api.jar;../../../web/front/dist/wonderland-webadmin-core.jar;../../../web/utils/dist/wonderland-web-utils.jar;../xremwin/build/client/xremwin-client.jar;../../../core/ext/common/swing-layout-1.0.jar;../xremwin/build/lib/xremwin-common.jar;../appbase/build/server/appbase-server.jar;../../../core/ext/common/swing-layout-1.0.jar;../../../core/ext/jme20/target/jme.jar;../../../core/ext/sgs/sgs-client-0.9.10/sgs-client-0.9.10-sources.jar;../../../core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar;../darkstar-api/build/lib/darkstar-api.jar;../../foundation/security/build/lib/server/security-server.jar;../../foundation/content-repository/build/client/contentrepo-client.jar;../../foundation/content-repository/build/lib/contentrepo-spi.jar;../../foundation/darkstar-api/build/lib/darkstar-api.jar;../../foundation/placemarks-api/build/client/placemarks-api-client.jar;../../foundation/placemarks-api/build/server/placemarks-api-server.jar;../webdav/build/client/webdav-client.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -20,6 +24,7 @@ package org.jdesktop.wonderland.modules.portal.server;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -35,6 +40,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * A sample cell component
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Abhishek Upadhyay
  */
 public class PortalComponentMO extends CellComponentMO {
 
@@ -43,6 +49,11 @@ public class PortalComponentMO extends CellComponentMO {
     private String serverURL;
     private Vector3f location;
     private Quaternion look;
+    
+    private ColorRGBA backgroundColor=ColorRGBA.black;
+    private ColorRGBA textColor=ColorRGBA.white;
+    private String imageURL="";
+    private String message="Teleporting. Please Wait...";
 
     private AudioSourceType audioSourceType;
     private String audioSource;
@@ -75,6 +86,11 @@ public class PortalComponentMO extends CellComponentMO {
 	clientState.setUploadFile(uploadFile);
 	clientState.setCachedAudioSource(cachedAudioSource);
 	clientState.setVolume(volume);
+        
+        clientState.setBackgroundColor(backgroundColor);
+        clientState.setTextColor(textColor);
+        clientState.setImageURL(imageURL);
+        clientState.setMessage(message);
 
         return super.getClientState(state, clientID, capabilities);
     }
@@ -95,6 +111,11 @@ public class PortalComponentMO extends CellComponentMO {
 	serverState.setUploadFile(uploadFile);
 	serverState.setCachedAudioSource(cachedAudioSource);
 	serverState.setVolume(volume);
+        
+        serverState.setBackgroundColor(backgroundColor);
+        serverState.setTextColor(textColor);
+        serverState.setImageURL(imageURL);
+        serverState.setMessage(message);
 
         return super.getServerState(state);
     }
@@ -113,6 +134,11 @@ public class PortalComponentMO extends CellComponentMO {
 	uploadFile = serverState.getUploadFile();
 	cachedAudioSource = serverState.getCachedAudioSource();
 	volume = serverState.getVolume();
+        
+        backgroundColor = serverState.getBackgroundColor();
+        textColor = serverState.getTextColor();
+        imageURL = serverState.getImageURL();
+        message = serverState.getMessage();
     }
 
 }

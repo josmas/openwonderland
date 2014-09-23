@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -35,6 +39,7 @@
  */
 package org.jdesktop.wonderland.modules.placemarks.client;
 
+import com.jme.renderer.ColorRGBA;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
@@ -44,12 +49,15 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame.PlacemarkType;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkListener;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
@@ -62,6 +70,7 @@ import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Abhishek Upadhyay
  */
 public class EditPlacemarksJFrame extends javax.swing.JFrame {
 
@@ -72,6 +81,10 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
     private PlacemarkTableModel placemarksTableModel = null;
     private JTable placemarksTable = null;
     private DecimalFormat df;
+    
+    public static final int RET_CANCEL = 0;
+    public static final int RET_OK = 1;
+    private int returnStatus = RET_CANCEL;
 
     /** Creates new form EditPlacemarksJFrame */
     public EditPlacemarksJFrame() {
@@ -134,6 +147,13 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                 }
             }
         });
+        
+        String un = LoginManager.getPrimary().getCredentialManager().getUsername();
+        if(!un.equals("admin")) {
+            jButton1.setVisible(false);
+            jButton1.setOpaque(false);
+        }
+        
     }
 
     /**
@@ -251,6 +271,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         removeButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         userScrollPane = new javax.swing.JScrollPane();
+        jButton1 = new javax.swing.JButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle"); // NOI18N
         setTitle(bundle.getString("EditPlacemarksJFrame.title")); // NOI18N
@@ -285,6 +306,13 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText(bundle.getString("EditPlacemarksJFrame.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -293,6 +321,8 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(jButton1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 70, Short.MAX_VALUE)
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editButton)
@@ -300,7 +330,7 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
                         .add(removeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(closeButton))
-                    .add(userScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE))
+                    .add(userScrollPane))
                 .addContainerGap())
         );
 
@@ -309,14 +339,15 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(userScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                .add(22, 22, 22)
+                .add(userScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(closeButton)
                     .add(removeButton)
                     .add(editButton)
-                    .add(addButton))
+                    .add(addButton)
+                    .add(jButton1))
                 .addContainerGap())
         );
 
@@ -345,8 +376,13 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             float y = dialog.getLocationY();
             float z = dialog.getLocationZ();
             float angle = dialog.getLookAtAngle();
+            ColorRGBA backColor = dialog.getBackgroundColor();
+            ColorRGBA textColor = dialog.getTextColor();
+            String imageURL = dialog.getImageURL();
+            String message = dialog.getMessage();
 
-            Placemark placemark = new Placemark(name, url, x, y, z, angle);
+            Placemark placemark = new Placemark(name, url, x, y, z, angle, backColor, textColor, 
+                    imageURL, message);
             try {
                 PlacemarkUtils.addUserPlacemark(placemark);
             } catch (Exception excp) {
@@ -432,7 +468,12 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
             float y = dialog.getLocationY();
             float z = dialog.getLocationZ();
             float angle = dialog.getLookAtAngle();
-            Placemark newPlacemark = new Placemark(name, url, x, y, z, angle);
+            ColorRGBA backColor = dialog.getBackgroundColor();
+            ColorRGBA textColor = dialog.getTextColor();
+            String imageURL = dialog.getImageURL();
+            String message = dialog.getMessage();
+            Placemark newPlacemark = new Placemark(name, url, x, y, z, angle, backColor, textColor, 
+                    imageURL, message);
 
             try {
                 PlacemarkUtils.addUserPlacemark(newPlacemark);
@@ -452,10 +493,26 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         this.setVisible(false);
     }//GEN-LAST:event_closeButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        JFrame frame = JmeClientMain.getFrame().getFrame();
+        CoverScreenDialog loginCSDialog = new CoverScreenDialog(this, true);
+        loginCSDialog.setTitle(BUNDLE.getString("edit_cover_screen"));  
+        loginCSDialog.setLocationRelativeTo(frame);
+        loginCSDialog.pack();
+        loginCSDialog.setVisible(true);
+        
+         if (loginCSDialog.getReturnStatus() ==
+                        AddEditPlacemarkJDialog.RET_OK) {
+             
+         }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton closeButton;
     private javax.swing.JButton editButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton removeButton;
     private javax.swing.JScrollPane userScrollPane;
     // End of variables declaration//GEN-END:variables

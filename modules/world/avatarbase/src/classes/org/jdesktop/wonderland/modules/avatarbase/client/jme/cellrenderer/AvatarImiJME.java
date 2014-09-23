@@ -102,6 +102,7 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -112,6 +113,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.loader.AvatarLoaderRegi
 import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderFactorySPI;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.NameTagMessage;
 
 
 /**
@@ -119,6 +121,7 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
  * 
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Abhishek Upadhyay
  */
 @ExperimentalAPI
 public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
@@ -798,7 +801,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         Vector3f origin = new Vector3f(0f, 0.57f, 0.0f);
         float radius = 0.25f;
 
-        if (selectedForInput) {         
+        if (selectedForInput) {       
             Spatial collisionGraph = new Sphere("AvatarCollision", origin, 10, 10, radius);
             
             collisionGraph.setModelBound(new BoundingBox());
@@ -1162,6 +1165,23 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                         nameTagNode.setNameTag(e.getEventType(), username,
                                            e.getUsernameAlias());
                     }
+                    
+                    //Issue#172 & 286 : Avatar name out of sync after Mute.
+                    //update server state for mute & unmute events
+                    //send message to server that mute/unmute event is fired
+                    String currUsername = LoginManager.getPrimary().getUsername();
+                    if(e.getUsername().equals(currUsername)) {
+                        if(e.getUsername().equals(username)) {
+                            if(e.getEventType().equals(AvatarNameEvent.EventType.MUTE) 
+                                    || e.getEventType().equals(AvatarNameEvent.EventType.UNMUTE)) {
+                                NameTagMessage msg = new NameTagMessage();
+                                msg.setUsername(currUsername);
+                                msg.setIsMute(e.getEventType().equals(AvatarNameEvent.EventType.MUTE)?true:false);
+                                cell.sendCellMessage(msg);
+                            }
+                        }
+                    }
+                    
                 } else if (event instanceof AvatarRendererChangeRequestEvent) {
                     handleAvatarRendererChangeRequest((AvatarRendererChangeRequestEvent)event);
                 }

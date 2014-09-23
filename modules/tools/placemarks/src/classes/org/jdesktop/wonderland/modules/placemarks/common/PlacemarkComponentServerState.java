@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -36,6 +40,9 @@
 
 package org.jdesktop.wonderland.modules.placemarks.common;
 
+import com.jme.renderer.ColorRGBA;
+import java.util.HashMap;
+import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -45,6 +52,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  * Server state for placemark cell component
  *
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Abhishek Upadhyay
  */
 @XmlRootElement(name="placemark-component")
 @ServerState
@@ -52,6 +60,12 @@ public class PlacemarkComponentServerState extends CellComponentServerState {
     /** the name of the placemark to create */
     private String placemarkName;
     private String placemarkRotation="0";
+    private ColorRGBA backgroundColor=ColorRGBA.black;
+    private ColorRGBA textColor=ColorRGBA.white;
+    private String imageURL="";
+    private String message="Teleporting. Please Wait...";
+    
+    private Map<String, String> extraCoverData = new HashMap<String, String>();
 
     /** Default constructor */
     public PlacemarkComponentServerState() {
@@ -83,4 +97,41 @@ public class PlacemarkComponentServerState extends CellComponentServerState {
     public void setPlacemarkRotation(String placemarkRotation) {
         this.placemarkRotation = placemarkRotation;
     }
+
+    @XmlElement
+    public ColorRGBA getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(ColorRGBA backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    @XmlElement
+    public ColorRGBA getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(ColorRGBA textColor) {
+        this.textColor = textColor;
+    }
+
+    @XmlElement
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
+    }
+
+    @XmlElement
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+    
 }

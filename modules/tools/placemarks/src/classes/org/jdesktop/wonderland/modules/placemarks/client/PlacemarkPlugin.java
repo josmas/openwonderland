@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -37,17 +41,25 @@ package org.jdesktop.wonderland.modules.placemarks.client;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
@@ -55,6 +67,8 @@ import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
+import static org.jdesktop.wonderland.client.comms.WonderlandSession.Status.CONNECTED;
+import static org.jdesktop.wonderland.client.comms.WonderlandSession.Status.DISCONNECTED;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
@@ -69,6 +83,8 @@ import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry.PlacemarkListener;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
 import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
+import org.jdesktop.wonderland.modules.placemarks.common.CoverScreenData;
+import org.jdesktop.wonderland.modules.placemarks.common.LoginCoverScreenInfo;
 
 /**
  * Client-size plugin for registering items in the Cell Registry that come from
@@ -76,6 +92,7 @@ import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Abhishek Upadhyay
  */
 @Plugin
 public class PlacemarkPlugin extends BaseClientPlugin
@@ -89,6 +106,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
     private JMenuItem manageMI = null;
     private JMenuItem addMI = null;
     private JMenuItem startingLocationMI = null;
+    private JMenuItem coverScreenMI = null;
     private PlacemarkListener listener = null;
     private PlacemarkClientConfigConnection placemarksConfigConnection = null;
     private PlacemarkConfigListener configListener = null;
@@ -102,9 +120,31 @@ public class PlacemarkPlugin extends BaseClientPlugin
      */
     @Override
     public void initialize(final ServerSessionManager sessionManager) {
+        
+        PlacemarkUtils.serverSessionManager = sessionManager;
+        
+        String prop = System.getProperty("Placemark.CoverScreen");
+        if(prop == null) {
+            prop="";
+        }
+        //cell status change listener for removing cover screen
+        if(!prop.equalsIgnoreCase("off")) {
+            
+            LoginCoverScreenInfo info = PlacemarkUtils.getLoginCoverScreenInfo();
+            
+            CoverScreenData csd = new CoverScreenData();
+            if(info!=null) {
+                csd.setBackgroundColor(info.getBackgroundColor());
+                csd.setImageURL(info.getImageURL());
+                csd.setMessage(info.getMessage());
+                csd.setTextColor(info.getTextColor());
+            }
+            new CoverScreenListener(null,sessionManager,null,"initial",csd);
+        }
+        
         // We will listen for changes to the list of registered Placemarks and
         // edit the main menu as a result.
-        listener = new PlacemarkMenuListener();
+        listener = new PlacemarkPlugin.PlacemarkMenuListener();
 
         // Create a new base connection to use for Placemark Config updates and
         // registry for notifications in changes to the current session.
@@ -173,7 +213,12 @@ public class PlacemarkPlugin extends BaseClientPlugin
                     float y = dialog.getLocationY();
                     float z = dialog.getLocationZ();
                     float angle = dialog.getLookAtAngle();
-                    Placemark newPlacemark = new Placemark(name, url, x, y, z, angle);
+                    ColorRGBA backColor = dialog.getBackgroundColor();
+                    ColorRGBA textColor = dialog.getTextColor();
+                    String imageURL = dialog.getImageURL();
+                    String message = dialog.getMessage();
+                    Placemark newPlacemark = new Placemark(name, url, x, y, z, angle,
+                            backColor, textColor, imageURL, message);
 
                     try {
                         PlacemarkUtils.addUserPlacemark(newPlacemark);
@@ -194,8 +239,43 @@ public class PlacemarkPlugin extends BaseClientPlugin
         startingLocationMI = new JMenuItem(BUNDLE.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                
                 Vector3f position = new Vector3f();
                 Quaternion look = new Quaternion();
+
+                String prop = System.getProperty("Placemark.CoverScreen");
+                if(prop == null) {
+                    prop="";
+                }
+                if(!prop.equalsIgnoreCase("off")) {
+                    if(!(ClientContextJME.getViewManager()
+                            .getPrimaryViewCell().getWorldTransform().getTranslation(null).x==position.x && 
+                            ClientContextJME.getViewManager()
+                            .getPrimaryViewCell().getWorldTransform().getTranslation(null).z==position.z)) {
+
+                        Placemark pl = new Placemark("", sessionManager.getServerURL()
+                                , position.x, position.y, position.z, 0);
+                        if(systemPlacemarkMenuItems!=null && systemPlacemarkMenuItems.keySet()!=null) {
+                            Iterator<Placemark> sysItr = systemPlacemarkMenuItems.keySet().iterator();
+                            while(sysItr.hasNext()) {
+                                Placemark p = sysItr.next();
+                                
+                                if(p.getX()==0 && p.getZ()==0) {
+                                    pl = p;
+                                }
+                            }
+                        }
+                        
+                        //cell status change listener for removing cover screen
+                        CoverScreenData csd = new CoverScreenData();
+                        csd.setBackgroundColor(pl.getBackgroundColor());
+                        csd.setImageURL(pl.getImageURL());
+                        csd.setMessage(pl.getMessage());
+                        csd.setTextColor(pl.getTextColor());
+                        new CoverScreenListener(pl,sessionManager,new Vector3f(pl.getX(),pl.getY(),pl.getZ()),"starting location",csd);
+
+                    }
+                }
                 try {
                     ClientContextJME.getClientMain().gotoLocation(null, position, look);
                 } catch (IOException ex) {
@@ -204,7 +284,24 @@ public class PlacemarkPlugin extends BaseClientPlugin
                 }
             }
         });
+        coverScreenMI = new JMenuItem(BUNDLE.getString("edit_cover_screen"));
+        coverScreenMI.setName("CSM");
+        coverScreenMI.addActionListener(new ActionListener() {
 
+            public void actionPerformed(ActionEvent e) {
+                JFrame frame = JmeClientMain.getFrame().getFrame();
+                CoverScreenDialog loginCSDialog = new CoverScreenDialog(frame, true);
+                loginCSDialog.setTitle(BUNDLE.getString("edit_cover_screen_title"));  
+                loginCSDialog.setLocationRelativeTo(frame);
+                loginCSDialog.pack();
+                loginCSDialog.setVisible(true);
+
+                 if (loginCSDialog.getReturnStatus() ==
+                                AddEditPlacemarkJDialog.RET_OK) {
+                     //nothing
+                 }
+            }
+        });
         super.initialize(sessionManager);
     }
 
@@ -237,6 +334,26 @@ public class PlacemarkPlugin extends BaseClientPlugin
         JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0, MainFrame.PlacemarkType.MANAGEMENT);
         JmeClientMain.getFrame().addToPlacemarksMenu(addMI, -1, MainFrame.PlacemarkType.MANAGEMENT);
         JmeClientMain.getFrame().addToPlacemarksMenu(manageMI, -1, MainFrame.PlacemarkType.MANAGEMENT);
+        
+        final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+        exec.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                JMenuBar c1 = (JMenuBar) JmeClientMain.getFrame().getFrame().getJMenuBar();
+                JMenu menu = (JMenu) c1.getComponent(4);
+                int totalPs = PlacemarkRegistryFactory.getInstance().getAllPlacemarks(PlacemarkType.SYSTEM).size();
+                int totalPu =  PlacemarkRegistryFactory.getInstance().getAllPlacemarks(PlacemarkType.USER).size();
+                if(totalPu!=0) {
+                    totalPu = totalPu+1;
+                }
+                
+                if(totalPs!=0 && menu.getMenuComponentCount()==(totalPs+totalPu+5)) {    
+                    menu.add(coverScreenMI);
+                    exec.shutdown();
+                }
+            }
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -289,7 +406,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
      */
     private void connectClient(WonderlandSession session) {
         try {
-            configListener = new ClientPlacemarkConfigListener();
+            configListener = new PlacemarkPlugin.ClientPlacemarkConfigListener();
             placemarksConfigConnection.addPlacemarkConfigListener(configListener);
             placemarksConfigConnection.connect(session);
         } catch (ConnectionFailureException e) {
@@ -351,13 +468,16 @@ public class PlacemarkPlugin extends BaseClientPlugin
             PlacemarkRegistry registry =
                     PlacemarkRegistryFactory.getInstance();
             registry.registerPlacemark(placemark, PlacemarkType.SYSTEM);
+            //addCoverScreenMenu();
         }
 
         public void placemarkRemoved(Placemark placemark) {
             PlacemarkRegistry registry =
                     PlacemarkRegistryFactory.getInstance();
             registry.unregisterPlacemark(placemark, PlacemarkType.SYSTEM);
+            //addCoverScreenMenu();
         }
+        
     }
 
     /**
@@ -379,7 +499,24 @@ public class PlacemarkPlugin extends BaseClientPlugin
             float z = placemark.getZ();
             float angle = placemark.getAngle();
             Vector3f location = new Vector3f(x, y, z);
+            
+            String prop = System.getProperty("Placemark.CoverScreen");
+            if(prop == null) {
+                prop="";
+            }
+            if(!prop.equalsIgnoreCase("off")) {
+                if(!(ClientContextJME.getViewManager()
+                        .getPrimaryViewCell().getWorldTransform().getTranslation(null).x==location.x && 
+                        ClientContextJME.getViewManager()
+                        .getPrimaryViewCell().getWorldTransform().getTranslation(null).z==location.z)) {
 
+                    //cell status change listener for removing cover screen
+                    CoverScreenData csd = new CoverScreenData(placemark.getBackgroundColor(),
+                            placemark.getTextColor(), placemark.getImageURL(), placemark.getMessage());
+                    new CoverScreenListener(placemark,getSessionManager(),location,"change",csd);
+                }
+            }
+            
             // create the rotation
             Quaternion look = new Quaternion();
             Vector3f axis = new Vector3f(Vector3f.UNIT_Y);
@@ -411,12 +548,12 @@ public class PlacemarkPlugin extends BaseClientPlugin
             // we can use the given Placemark as a key in the Map, because the
             // Placemark.equals() methods only evaluates the placemark name.
             placemarkRemoved(placemark, type);
-
+            
             // Now add the new JMenuItem to either the system or user position
             // in the Placemarks menu
             JMenuItem menuItem = new JMenuItem(placemark.getName());
-            PlacemarkActionListener listner =
-                    new PlacemarkActionListener(placemark);
+            PlacemarkPlugin.PlacemarkActionListener listner =
+                    new PlacemarkPlugin.PlacemarkActionListener(placemark);
             menuItem.addActionListener(listner);
             if (type == PlacemarkType.USER) {
                 userPlacemarkMenuItems.put(placemark, menuItem);
@@ -425,8 +562,46 @@ public class PlacemarkPlugin extends BaseClientPlugin
                 systemPlacemarkMenuItems.put(placemark, menuItem);
                 JmeClientMain.getFrame().addToPlacemarksMenu(menuItem, 1, MainFrame.PlacemarkType.SYSTEM);
             }
+            try {
+                addCoverScreenMenu();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
 
+        private void addCoverScreenMenu() throws Exception {
+            
+            final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+            exec.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        JMenuBar c1 = (JMenuBar) JmeClientMain.getFrame().getFrame().getJMenuBar();
+                        JMenu menu = (JMenu) c1.getComponent(4);
+                        int totalPs = PlacemarkRegistryFactory.getInstance().getAllPlacemarks(PlacemarkType.SYSTEM).size();
+                        int totalPu =  PlacemarkRegistryFactory.getInstance().getAllPlacemarks(PlacemarkType.USER).size();
+                        if(totalPu!=0) {
+                            totalPu = totalPu+1;
+                        }
+                        Component mi = menu.getMenuComponent(menu.getMenuComponents().length-1);
+                        int mp = 5;
+
+                        if(mi!=null && mi.getName()!=null && mi.getName().equals("CSM")) {
+                            mp = mp+1;
+                        }
+
+                        if(totalPs!=0 && menu.getMenuComponentCount()==(totalPs+totalPu+mp)) {
+
+                            menu.add(coverScreenMI);
+                            exec.shutdown();
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 0, 2, TimeUnit.SECONDS);
+        }
+        
         public void placemarkRemoved(Placemark placemark, PlacemarkType type) {
             // Try to find the existing placemark and remove it from the menu
             Map<Placemark, JMenuItem> map =
