@@ -22,8 +22,6 @@ import java.util.Set;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.security.Action;
-import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
-import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.security.server.service.GroupMemberResource;

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.modules;
 
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.checksums.Checksum;
 import org.jdesktop.wonderland.common.modules.ModuleArtList;
 import org.jdesktop.wonderland.common.checksums.ChecksumList;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
@@ -85,7 +86,17 @@ public class CachedModule {
      */
     public synchronized ChecksumList getModuleChecksums() {
         if (this.moduleChecksums == null) {
-            this.moduleChecksums = ModuleUtils.fetchModuleChecksums(serverURL, moduleName);
+            if (moduleInfo.getChecksumList() != null) {
+
+                this.moduleChecksums = moduleInfo.getChecksumList();
+
+                // Populate the internal map of checksums from the linked list.
+                for (Checksum checksum : this.moduleChecksums.checksumList) {
+                    this.moduleChecksums.internalChecksums.put(checksum.getPathName(), checksum);
+                }
+            } else {
+                this.moduleChecksums = ModuleUtils.fetchModuleChecksums(serverURL, moduleName);
+            }
         }
         return this.moduleChecksums;
     }
@@ -98,8 +109,15 @@ public class CachedModule {
      */
     public synchronized ModuleRepository getModuleRepositories() {
         if (this.moduleRepository == null) {
-            this.moduleRepository = ModuleUtils.fetchModuleRepositories(serverURL, moduleName);
+            if (this.moduleInfo.getRepository() != null) {
+
+                this.moduleRepository = moduleInfo.getRepository();
+
+                this.moduleRepository.updateRepositoryList();
+            } else {
+                this.moduleRepository = ModuleUtils.fetchModuleRepositories(serverURL, moduleName);
+            }
         }
         return this.moduleRepository;
-    }    
+    }
 }

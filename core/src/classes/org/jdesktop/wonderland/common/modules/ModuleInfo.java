@@ -42,6 +42,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.checksums.ChecksumList;
 
 /**
  * The ModuleInfo class represents the basic information about a module: its
@@ -78,6 +79,12 @@ public class ModuleInfo implements Serializable {
     /* The internal table of attributes */
     @XmlTransient
     private Map<String, String> attributeMap = new HashMap();
+    
+    @XmlElement
+    private ChecksumList checksumList;
+
+    @XmlElement
+    private ModuleRepository repository;
     
     private static JAXBContext jaxbContext = null;
     static {
@@ -190,6 +197,10 @@ public class ModuleInfo implements Serializable {
     public void setMini(int mini) { this.version.mini = mini; }
     @XmlTransient public String getDescription() { return this.description; }
     public void setDescription(String description) { this.description = description; }
+    @XmlTransient public ChecksumList getChecksumList() { return checksumList; }
+    public void setChecksumList(ChecksumList checksumList) { this.checksumList = checksumList; }    
+    @XmlTransient public ModuleRepository getRepository() { return repository; }
+    public void setRepository(ModuleRepository repository) { this.repository = repository; }
     
     /**
      * Returns a copy of the map of key-value pairs of attributes

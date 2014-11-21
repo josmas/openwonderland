@@ -98,8 +98,18 @@
         
         <for param="sign.jar.name" list="${common.jars}">
             <sequential>
-                <signjarnopack src.jar="${webstart.jar.dir}/@{sign.jar.name}"
-                               dest.jar="${webstart.dist.dir}/@{sign.jar.name}"/>
+                <if>
+                    <equals arg1="@{sign.jar.name}" arg2="jaxb-xjc.jar" />
+                    <then>
+                        <signjarnopack src.jar="${webstart.jar.dir}/@{sign.jar.name}"
+                               dest.jar="${webstart.dist.dir}/@{sign.jar.name}" />
+                    </then>
+                    <else>
+                        <signandpackjar src.jar="${webstart.jar.dir}/@{sign.jar.name}"
+                               dest.jar="${webstart.dist.dir}/@{sign.jar.name}" />
+                    </else>
+                </if>
+                
             </sequential>
         </for>
     </target>
@@ -112,7 +122,7 @@
                     <available file="${webstart.jar.dir}/@{ostype}/wonderland_native.jar"/>
                     <then>
                         <mkdir dir="${webstart.dist.dir}/@{ostype}"/>
-                        <signjarnopack src.jar="${webstart.jar.dir}/@{ostype}/wonderland_native.jar"
+                        <signandpackjar src.jar="${webstart.jar.dir}/@{ostype}/wonderland_native.jar"
                                        dest.jar="${webstart.dist.dir}/@{ostype}/wonderland_native.jar"/>
                     </then>
                 </if>

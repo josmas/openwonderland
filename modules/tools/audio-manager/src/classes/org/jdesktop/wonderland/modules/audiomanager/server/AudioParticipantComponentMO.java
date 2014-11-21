@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,55 +20,37 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import java.io.IOException;
-
-import java.util.ArrayList;
 
 import java.util.logging.Logger;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
-
-import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-
-
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
-
-import org.jdesktop.wonderland.server.WonderlandContext;
-
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-
 import com.jme.math.Vector3f;
-
-import com.sun.voip.client.connector.CallStatus;
-
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
-
 import com.sun.voip.client.connector.CallStatusListener;
 
 /**
  *
  * @author jprovino
+ * @author Abhishek Upadhyay
  */
 public class AudioParticipantComponentMO extends CellComponentMO {
 

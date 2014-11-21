@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -22,11 +25,11 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 /**
  * The component server state
  * @author jprovino
+ * @author Abhishek Upadhyay
  */
 @XmlRootElement(name="audio-treatment-component")
 @ServerState
@@ -35,6 +38,7 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 
     public enum PlayWhen {
 	ALWAYS,
+        ON_LEFT_CLICK,
 	FIRST_IN_RANGE,
 	MANUAL
     }

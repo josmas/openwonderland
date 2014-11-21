@@ -23,6 +23,7 @@
     <!-- jar files auto-populated by build script -->
     %LOCAL_JAR_FILES%
     
+    <property name="jnlp.packEnabled" value="true" />
     <property name="jnlp.wonderland.server.url" value="$$wonderland.server.url"/>
     <property name="jnlp.wonderland.client.config.dir" value="$$wonderland.client.config.dir"/>
     <property name="jnlp.wonderland.protocol.handler.pkgs" value="org.jdesktop.wonderland.client.protocols"/>

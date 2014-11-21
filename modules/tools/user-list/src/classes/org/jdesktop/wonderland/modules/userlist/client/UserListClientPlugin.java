@@ -85,6 +85,12 @@ public class UserListClientPlugin extends BaseClientPlugin
             public void run() {
                 PresenceManager manager = PresenceManagerFactory.getPresenceManager(session.getPrimarySession());
                 Cell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                while(manager==null) {
+                    manager = PresenceManagerFactory.getPresenceManager(session.getPrimarySession());
+                }
+                while(cell==null) {
+                    cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                }
                 PresenceInfo localPresenceInfo = manager.getPresenceInfo(cell.getCellID());
                 while(localPresenceInfo==null) {
                     manager = PresenceManagerFactory.getPresenceManager(session.getPrimarySession());
@@ -100,7 +106,6 @@ public class UserListClientPlugin extends BaseClientPlugin
     }
 
     public void sessionCreated(WonderlandSession session) {
-        
 //        LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
 //        
 //        avatar.addViewCellConfiguredListener(this);

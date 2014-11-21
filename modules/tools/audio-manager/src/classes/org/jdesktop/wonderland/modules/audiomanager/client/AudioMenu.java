@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+/**
  * Open Wonderland
  *
  * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
@@ -52,6 +55,7 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
  *
  * @author paulby
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Abhishek Upadhyay
  */
 public class AudioMenu extends javax.swing.JPanel {
 
@@ -63,6 +67,10 @@ public class AudioMenu extends javax.swing.JPanel {
     private JMenuItem personalPhoneMenuItem;
     private JMenuItem voiceChatMenuItem;
     private JCheckBoxMenuItem muteCheckBox;
+    //voice chat disabel property
+    public static final String VOICE_CHAT_DISABLE_PROP =
+            "VoiceChat.disable";
+    private boolean isVoiceChatDisable=false;
 
     /** Creates new form AudioMenu */
     AudioMenu(final AudioMenuListener audioMenuListener) {
@@ -92,6 +100,17 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
 
+        //check if voice chat is disabled or not
+        String isDisable = System.getProperty(VOICE_CHAT_DISABLE_PROP);
+        if(isDisable==null) {
+            isDisable="false";
+            isVoiceChatDisable=false;
+        }
+        if(isDisable.equalsIgnoreCase("true")) {
+            isVoiceChatDisable=true;
+        }
+        
+        
         voiceChatMenuItem = new JCheckBoxMenuItem(BUNDLE.getString("Voice_Chat"));
         voiceChatMenuItem.addActionListener(new ActionListener() {
 
@@ -101,7 +120,11 @@ public class AudioMenu extends javax.swing.JPanel {
                 }
             }
         });
-
+        
+        if(isVoiceChatDisable) {
+            voiceChatMenuItem.setEnabled(false);
+        }   
+        
         audioVolumeMenuItem = new JCheckBoxMenuItem(BUNDLE.getString("Audio_Status"));
         audioVolumeMenuItem.addActionListener(new ActionListener() {
 
@@ -119,13 +142,22 @@ public class AudioMenu extends javax.swing.JPanel {
         softphoneMenuItem.setEnabled(enabled);
         muteCheckBox.setEnabled(enabled);
         personalPhoneMenuItem.setEnabled(enabled);
-        voiceChatMenuItem.setEnabled(enabled);
+        if(!isVoiceChatDisable) {
+            voiceChatMenuItem.setEnabled(enabled);
+        }
     }
 
+    public void disableAudioMenu() {
+        audioMenu.setEnabled(false);
+    }
+    
     public void mute(boolean isMuted) {
         muteCheckBox.setState(isMuted);
     }
 
+    public void audioVolumeDisable() {
+        audioVolumeMenuItem.setEnabled(false);
+    }
     public void audioVolumeVisible(boolean visible) {
         audioVolumeMenuItem.setState(visible);
     }

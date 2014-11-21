@@ -2,7 +2,9 @@
 <project basedir="." default="dist" name="audio-manager">
      <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.audio-manager}"/>
-    <property name="modules.dir" location="${current.dir}/../.."/>
+    <property name="wonderland.dir" location="${current.dir}/../../../"/>
+    <property name="modules.dir" location="${current.dir}/../../"/>
+    <property name="modules.stable.dir" location="${wonderland.dir}/../wonderland-modules/stable"/>
         
     <property name="module.src" value="org/jdesktop/wonderland/modules/audiomanager"/>
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.audiomanager"/>
@@ -13,24 +15,25 @@
         <path location="${current.dir}/lib/voicelib.jar"/>
         <path location="${current.dir}/lib/voip.jar"/>
         <path location="${current.dir}/lib/bridge_connector.jar"/>
-        <path location="${current.dir}/../presence-manager/build/lib/server/presencemanager-server.jar"/>
-        <path location="${current.dir}/../orb/build/lib/server/orb-server.jar"/>
+        <path location="${modules.dir}/tools/presence-manager/build/lib/server/presencemanager-server.jar"/>
+        <path location="${modules.dir}/tools/orb/build/lib/server/orb-server.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
-        <path location="${current.dir}/../presence-manager/build/lib/client/presencemanager-client.jar"/>
-        <path location="${current.dir}/../orb/build/lib/client/orb-client.jar"/>
+        <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
+        <path location="${modules.dir}/tools/orb/build/lib/client/orb-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
-        <path location="${current.dir}/lib/stun.jar"/>
-        <path location="${current.dir}/../presence-manager/build/lib/client/presencemanager-client.jar"/>
-        <path location="${current.dir}/../orb/build/lib/client/orb-client.jar"/>
-        <path location="${current.dir}/../../world/avatarbase/build/client/avatarbase-client.jar"/>
-        <path location="${current.dir}/../../world/avatarbase/lib/avatars.jar"/>
-        <path location="${current.dir}/../orb/build/lib/client/orb-client.jar"/>
-        <path location="${current.dir}/../text-chat/build/client/textchat-client.jar"/>
+        <path location="${wonderland.dir}/lib/stun.jar"/>
+        <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
+        <path location="${modules.dir}/tools/orb/build/lib/client/orb-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${modules.dir}/tools/orb/build/lib/client/orb-client.jar"/>
+        <path location="${modules.dir}/tools/text-chat/build/client/textchat-client.jar"/>
+        <path location="${modules.dir}/tools/capability-bridge/build/client/capability-bridge-client.jar"/>
     </pathconvert>
 
     <!-- import common build file -->
@@ -43,7 +46,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="audiomanager" majorVersion="0" minorVersion="5" miniVersion="3"
+        <module name="audiomanager" majorVersion="1" minorVersion="0" miniVersion="0"
                 moduleDescription="Audio foundation API and library"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
@@ -51,6 +54,7 @@
             <requires name="presencemanager" version="0" minorVersion="5"/>
             <requires name="content-repository" version="0" minorVersion="5"/>
             <requires name="avatarbase" version="0" minorVersion="5" miniVersion="1"/>
+            <requires name="capability-bridge" majorversion="1" minorversion="0"/>
 
             <client dir="${current.dir}/lib">
                 <clientjar name="audiomanager-client" basedir="${build.classes.dir}">

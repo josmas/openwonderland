@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+/**
  * Open Wonderland
  *
  * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
@@ -40,61 +43,35 @@ import com.jme.bounding.BoundingCapsule;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.bounding.OrientedBoundingBox;
-
 import com.jme.math.Vector3f;
-
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
-
-import com.sun.sgs.kernel.KernelRunnable;
-
-import com.sun.sgs.service.NonDurableTransactionParticipant;
-import com.sun.sgs.service.Transaction;
-
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Serializable;
-
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import java.util.Iterator;
-import java.util.Map;
 import java.util.logging.Logger;
-
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
-
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
-import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellParentChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
-
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.TreatmentType;
-
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentDoneMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEndedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEstablishedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMenuChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
 import com.sun.voip.client.connector.CallStatus;
-import com.sun.voip.client.connector.CallStatusListener;
-
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.AmbientSpatializer;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
@@ -110,21 +87,18 @@ import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 import com.sun.sgs.app.Task;
-
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-
-import org.jdesktop.wonderland.common.checksums.Checksum;
 import org.jdesktop.wonderland.common.checksums.ChecksumList;
-import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  *
  * @author jprovino
+ * @author Abhishek Upadhyay
  */
 public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 	implements CellParentChangeListenerSrv, ManagedCallStatusListener {
@@ -150,6 +124,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     private BoundingVolume audioBounds;
 
     private boolean treatmentCreated = false;
+    
 
     /** the channel from that cell */
     @UsesCellComponentMO(ChannelComponentMO.class)
@@ -228,6 +203,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
     public double getVolume() {
 	return volume;
+    }
+    
+    public PlayWhen getPlayWhen() {
+        return playWhen;
     }
 
     @Override
@@ -428,6 +407,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             setup.treatment = treatment;
 
 	    vm.addCallStatusListener(this, treatmentId);
+            
 
             if (setup.treatment == null || setup.treatment.length() == 0) {
                 logger.warning("Invalid treatment '" + setup.treatment + "'");
@@ -446,7 +426,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             if (playWhen.equals(PlayWhen.ALWAYS) == false) {
                 setup.startPaused = true;
             }
-            
+           
             logger.info("Starting treatment " + setup.treatment + " at (" + setup.x 
 		+ ":" + setup.y + ":" + setup.z + ")");
 
@@ -459,11 +439,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 		if (group != null) {
                     group.addTreatment(t);
 		}
-
+                
 	        if (playWhen.equals(PlayWhen.FIRST_IN_RANGE)) {
 	            addProximityListener(t);
-	        }
-
+	        } 
                 treatmentCreated = true;
             } catch (IOException e) {
                 logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
@@ -565,7 +544,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             audioBounds = new BoundingSphere((float) extent, new Vector3f());
         }
 	
-	double fullVolumeRadius = fullVolumeAreaPercent / 100. * extent;
+	double fullVolumeRadius = fullVolumeAreaPercent / 100. * (extent*1.5);
 
 	double falloff = .92 + ((50 - this.falloff) * ((1 - .92) / 50));
 
@@ -583,7 +562,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
             spatializer.setFullVolumeRadius(fullVolumeRadius);
 
-            spatializer.setZeroVolumeRadius(extent);
+            spatializer.setZeroVolumeRadius(extent*1.5);
 
 	    spatializer.setAttenuator(volume);
 
@@ -729,7 +708,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         String callId = callStatus.getCallId();
 
         if (callId == null) {
-            logger.warning("No callId in callStatus:  " + callStatus);
+            logger.fine("No callId in callStatus:  " + callStatus);
             return;
         }
 
@@ -739,11 +718,16 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
             break;
 
         case CallStatus.TREATMENTDONE:
-	    logger.info("TREATMENT DONE, playOnce " + playOnce);
+	    logger.warning("TREATMENT DONE, playOnce " + playOnce);
 
 	    if (playOnce == true) {
 		channelRef.get().sendAll(null, new AudioTreatmentDoneMessage(cellID, callId));
 	    }
+            
+            if(playWhen.equals(PlayWhen.FIRST_IN_RANGE)) {
+                ((AudioTreatmentProximityListener)proximityListener.get()).setTreatmentDone(true);
+            }
+            
 	    break;
 
 	case CallStatus.ENDED:
@@ -758,7 +742,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
         public ComponentMessageReceiverImpl(CellMO cellMO) {
             super(cellMO);
-
 	    cellID = cellMO.getCellID();
         }
 
@@ -785,6 +768,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
 
 		if (msg.restartTreatment()) {
 		    treatment.restart(msg.isPaused());
+                    
 		} else {
 		    treatment.pause(msg.isPaused());
 		}
@@ -870,6 +854,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
     private void addProximityListener(Treatment treatment) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
+        removeProximityListener();
         ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
 
         if (component == null) {
@@ -881,10 +866,12 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO
         // We are making this component live, add a listener to the proximity component.
 	BoundingVolume[] bounds = new BoundingVolume[1];
 
-        bounds[0] = audioBounds;
+        BoundingVolume bs = new BoundingSphere((float) (extent*1.1) , new Vector3f());
+        
+        bounds[0] = bs;
 
         AudioTreatmentProximityListener proximityListener = 
-	    new AudioTreatmentProximityListener(cellRef.get(), treatment);
+	    new AudioTreatmentProximityListener(cellRef, treatment);
 
 	this.proximityListener = AppContext.getDataManager().createReference(proximityListener);
 	
