@@ -1,25 +1,29 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
- * this code.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import com.wonderbuilders.modules.capabilitybridge.client.CapabilityBridge;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
@@ -29,7 +33,11 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.CallID;
@@ -49,16 +57,17 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeM
 
 /**
  * A component that provides audio audio treatments
- * 
+ *
  * @author jprovino
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Abhishek Upadhyay
  */
 @ExperimentalAPI
 public class AudioTreatmentComponent
-        extends AudioParticipantComponent implements VolumeChangeListener {
+        extends AudioParticipantComponent implements VolumeChangeListener, CapabilityBridge {
 
-    private static final Logger LOGGER =
-            Logger.getLogger(AudioTreatmentComponent.class.getName());
+    private static final Logger LOGGER
+            = Logger.getLogger(AudioTreatmentComponent.class.getName());
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private static final String PLAY = BUNDLE.getString("Play");
@@ -76,6 +85,8 @@ public class AudioTreatmentComponent
     private ArrayList<AudioTreatmentDoneListener> listeners = new ArrayList();
     private PlayWhen playWhen = PlayWhen.ALWAYS;
     private boolean playOnce = false;
+    private static boolean isPlaying = false;
+    private AudioTreatmentMouseListener leftClickListener = null;
 
     public AudioTreatmentComponent(Cell cell) {
         super(cell);
@@ -86,50 +97,91 @@ public class AudioTreatmentComponent
         super.setStatus(status, increasing);
 
         switch (status) {
-	case DISK:
-	case INACTIVE:
-            if (msgReceiver == null) {
-		return;
-	    }
-		    
-            channelComp.removeMessageReceiver(AudioTreatmentDoneMessage.class);
-            channelComp.removeMessageReceiver(AudioTreatmentEndedMessage.class);
-            channelComp.removeMessageReceiver(AudioTreatmentEstablishedMessage.class);
-            channelComp.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
-            channelComp.removeMessageReceiver(AudioTreatmentRequestMessage.class);
-            channelComp.removeMessageReceiver(AudioVolumeMessage.class);
-            break;
-
-        case ACTIVE:
-            if (increasing) {
+            case DISK:
+            case INACTIVE:
                 if (msgReceiver == null) {
-                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-
-                        public void messageReceived(CellMessage message) {
-			    receive(message);
-                        }
-                    };
-
-                    channelComp = cell.getComponent(ChannelComponent.class);
-                    channelComp.addMessageReceiver(AudioTreatmentDoneMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(AudioTreatmentEndedMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(AudioTreatmentEstablishedMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(AudioTreatmentRequestMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(AudioVolumeMessage.class, msgReceiver);
+                    return;
                 }
 
-                if (menuItemAdded == false) {
-                    menuItemAdded = true;
+                channelComp.removeMessageReceiver(AudioTreatmentDoneMessage.class);
+                channelComp.removeMessageReceiver(AudioTreatmentEndedMessage.class);
+                channelComp.removeMessageReceiver(AudioTreatmentEstablishedMessage.class);
+                channelComp.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
+                channelComp.removeMessageReceiver(AudioTreatmentRequestMessage.class);
+                channelComp.removeMessageReceiver(AudioVolumeMessage.class);
+                break;
 
-                    if (playWhen.equals(PlayWhen.ALWAYS)) {
-                        addMenuItems(new String[] {STOP,PAUSE,VOLUME});
-                    } else {
-                        addMenuItems(new String[] {PLAY,VOLUME});
+            case ACTIVE:
+                if (increasing) {
+                    if (msgReceiver == null) {
+                        msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+
+                            public void messageReceived(CellMessage message) {
+                                receive(message);
+                            }
+                        };
+
+                        channelComp = cell.getComponent(ChannelComponent.class);
+                        channelComp.addMessageReceiver(AudioTreatmentDoneMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioTreatmentEndedMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioTreatmentEstablishedMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioTreatmentRequestMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioVolumeMessage.class, msgReceiver);
+                    }
+
+                    if (menuItemAdded == false) {
+                        menuItemAdded = true;
+
+                        if (playWhen.equals(PlayWhen.ALWAYS)) {
+                            addMenuItems(new String[]{STOP, PAUSE, VOLUME});
+                        } else {
+                            addMenuItems(new String[]{PLAY, VOLUME});
+                        }
                     }
                 }
+                break;
+            case RENDERING:
+                if (increasing) {
+                    addMouseListener();
+                }
+                break;
+
+        }
+    }
+
+    public void addMouseListener() {
+        //add mouse listener
+        BasicRenderer crJME = (BasicRenderer) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        Entity ent = crJME.getEntity();
+        if (leftClickListener == null) {
+            leftClickListener = new AudioTreatmentMouseListener(cell);
+            leftClickListener.addToEntity(ent);
+        }
+    }
+
+    class AudioTreatmentMouseListener extends EventClassListener {
+
+        Cell cell = null;
+
+        AudioTreatmentMouseListener(Cell cell) {
+            this.cell = cell;
+        }
+
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{MouseButtonEvent3D.class};
+        }
+
+        @Override
+        public void commitEvent(org.jdesktop.wonderland.client.input.Event event) {
+            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
+            if (playWhen.equals(PlayWhen.ON_LEFT_CLICK)
+                    && mbe.isClicked() == true && mbe.getButton() == MouseEvent3D.ButtonId.BUTTON1) {
+                LOGGER.warning("restart audio...");
+                addMenuItems(new String[]{STOP, PAUSE, VOLUME});
+                channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, false));
             }
-            break;
         }
     }
 
@@ -152,9 +204,9 @@ public class AudioTreatmentComponent
             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                 SimpleContextMenuItem[] menuItems = new SimpleContextMenuItem[items.length];
 
-		for (int i = 0; i < menuItems.length; i++) {
-		    menuItems[i] = new SimpleContextMenuItem(items[i], l);
-		}
+                for (int i = 0; i < menuItems.length; i++) {
+                    menuItems[i] = new SimpleContextMenuItem(items[i], l);
+                }
 
                 return menuItems;
             }
@@ -170,115 +222,116 @@ public class AudioTreatmentComponent
         CellID cellID = cell.getCellID();
         if (PLAY.equals(label) || RESUME.equals(label)) {
 
-            addMenuItems(new String[] {STOP, PAUSE, VOLUME});
+            addMenuItems(new String[]{STOP, PAUSE, VOLUME});
             channelComp.send(new AudioTreatmentRequestMessage(cellID, false, false));
             return;
         }
 
         if (PAUSE.equals(label)) {
-            addMenuItems(new String[] {STOP, RESUME, VOLUME});
+            addMenuItems(new String[]{STOP, RESUME, VOLUME});
             channelComp.send(new AudioTreatmentRequestMessage(cellID, false, true));
             return;
         }
 
         if (VOLUME.equals(label)) {
-	    String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
+            String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
 
-	    if (volumeControlJFrame == null) {
-	        volumeControlJFrame = new VolumeControlJFrame(this, "");
-	    }
+            if (volumeControlJFrame == null) {
+                volumeControlJFrame = new VolumeControlJFrame(this, "");
+            }
 
             volumeControlJFrame.setLocationRelativeTo(
                     JmeClientMain.getFrame().getFrame());
-	    volumeControlJFrame.setVisible(true);
-	    return;
+            volumeControlJFrame.setVisible(true);
+            return;
         }
 
         if (!(STOP.equals(label))) {
             return;
         }
 
-        addMenuItems(new String[] {PLAY, VOLUME});
+        addMenuItems(new String[]{PLAY, VOLUME});
         channelComp.send(new AudioTreatmentRequestMessage(cellID, true, true));
     }
 
     public void volumeChanged(float volume) {
-	LOGGER.fine("Volume changed " + volume);
+        LOGGER.fine("Volume changed " + volume);
 
-	String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
+        String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
 
-	String otherCallID = CallID.getCallID(cell.getCellID());
+        String otherCallID = CallID.getCallID(cell.getCellID());
 
-   	channelComp.send(new AudioVolumeMessage(cell.getCellID(), softphoneCallID,
-	    otherCallID, volume, true));
+        channelComp.send(new AudioVolumeMessage(cell.getCellID(), softphoneCallID,
+                otherCallID, volume, true));
     }
 
     private ArrayList<AudioTreatmentStatusListener> treatmentStatusListeners = new ArrayList();
 
     public void addTreatmentStatusListener(AudioTreatmentStatusListener listener) {
-	synchronized (treatmentStatusListeners) {
-	    treatmentStatusListeners.remove(listener);
-	    treatmentStatusListeners.add(listener);
-	}
+        synchronized (treatmentStatusListeners) {
+            treatmentStatusListeners.remove(listener);
+            treatmentStatusListeners.add(listener);
+        }
     }
-	
+
     public void removeTreatmentStatusListener(AudioTreatmentStatusListener listener) {
-	synchronized (treatmentStatusListeners) {
-	    treatmentStatusListeners.remove(listener);
-	}
+        synchronized (treatmentStatusListeners) {
+            treatmentStatusListeners.remove(listener);
+        }
     }
 
     private void notifyTreatmentEstablished() {
-	synchronized (treatmentStatusListeners) {
-	    for (AudioTreatmentStatusListener listener : treatmentStatusListeners) {
-	        listener.treatmentEstablished();
-	    }
-	}
+        synchronized (treatmentStatusListeners) {
+            for (AudioTreatmentStatusListener listener : treatmentStatusListeners) {
+                listener.treatmentEstablished();
+            }
+        }
     }
 
     private void notifyTreatmentEnded(String reason) {
-	synchronized (treatmentStatusListeners) {
-	    for (AudioTreatmentStatusListener listener : treatmentStatusListeners) {
-	        listener.treatmentEnded(reason);
-	    }
-	}
+        synchronized (treatmentStatusListeners) {
+            for (AudioTreatmentStatusListener listener : treatmentStatusListeners) {
+                listener.treatmentEnded(reason);
+            }
+        }
     }
 
     private void receive(CellMessage message) {
-	if (message instanceof AudioTreatmentDoneMessage) {
-	    addMenuItems(new String[] {PLAY, VOLUME});
-	    channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
-	    return;
-	}
+        if (message instanceof AudioTreatmentDoneMessage) {
+            addMenuItems(new String[]{PLAY, VOLUME});
+            channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
+            return;
+        }
 
-	if (message instanceof AudioTreatmentEndedMessage) {
-	    AudioTreatmentEndedMessage msg = (AudioTreatmentEndedMessage) message;
-	    LOGGER.warning("Treatment ended:  " + msg.getReason());
-	    notifyTreatmentEnded(msg.getReason());
-	    return;
-	}
+        if (message instanceof AudioTreatmentEndedMessage) {
+            AudioTreatmentEndedMessage msg = (AudioTreatmentEndedMessage) message;
+            LOGGER.warning("Treatment ended:  " + msg.getReason());
+            notifyTreatmentEnded(msg.getReason());
+            return;
+        }
 
-	if (message instanceof AudioTreatmentEstablishedMessage) {
-	    LOGGER.warning("Treatment established");
-	    notifyTreatmentEstablished();
-	    return;
-	}
+        if (message instanceof AudioTreatmentEstablishedMessage) {
+            LOGGER.warning("Treatment established");
+            notifyTreatmentEstablished();
+            return;
+        }
 
-	if (message instanceof AudioTreatmentMenuChangeMessage) {
-	    addMenuItems(((AudioTreatmentMenuChangeMessage) message).getMenuItems());
-	    return;
-	}
-	
-	if (message instanceof AudioVolumeMessage) {
-	    float volume = (float) ((AudioVolumeMessage) message).getVolume();
-	    
-	    LOGGER.fine("Got volume message " + volume);
-	    return;
-	}
+        if (message instanceof AudioTreatmentMenuChangeMessage) {
+            addMenuItems(((AudioTreatmentMenuChangeMessage) message).getMenuItems());
+            return;
+        }
+
+        if (message instanceof AudioVolumeMessage) {
+            float volume = (float) ((AudioVolumeMessage) message).getVolume();
+
+            LOGGER.fine("Got volume message " + volume);
+            return;
+        }
     }
 
     /**
      * Listen for audio treatment done
+     *
      * @param listener
      */
     public void addTreatmentDoneListener(AudioTreatmentDoneListener listener) {
@@ -287,6 +340,7 @@ public class AudioTreatmentComponent
 
     /**
      * Remove the audio treatment done listener.
+     *
      * @param listener
      */
     public void removeAudioTreatmentDoneListener(AudioTreatmentDoneListener listener) {
@@ -301,22 +355,23 @@ public class AudioTreatmentComponent
 
         playWhen = state.getPlayWhen();
 
-	playOnce = state.getPlayOnce();
+        playOnce = state.getPlayOnce();
 
-	if (menuItemAdded == false) {
-	    return;
-	}
+        if (menuItemAdded == false) {
+            return;
+        }
 
         if (playWhen.equals(PlayWhen.ALWAYS)) {
-            addMenuItems(new String[] {STOP, PAUSE, VOLUME});
+            addMenuItems(new String[]{STOP, PAUSE, VOLUME});
         } else {
-            addMenuItems(new String[] {PLAY, VOLUME});
+            addMenuItems(new String[]{PLAY, VOLUME});
         }
+
     }
 
     /**
      * Notify any audio treatment done listeners
-     * 
+     *
      * @param transform
      */
     private void notifyAudioTreatmentDoneListeners() {
@@ -329,10 +384,15 @@ public class AudioTreatmentComponent
     public interface AudioTreatmentDoneListener {
 
         /**
-         * Notification that the cell has moved. Source indicates the source of 
-         * the move, local is from this client, remote is from the server.
-         * XXX arguments?
+         * Notification that the cell has moved. Source indicates the source of
+         * the move, local is from this client, remote is from the server. XXX
+         * arguments?
          */
         public void audioTreatmentDone();
     }
+
+    public AudioTreatmentMouseListener getMouseEventListener() {
+        return leftClickListener;
+    }
+
 }

@@ -62,7 +62,13 @@ public class GetModuleChecksumsResource {
     @Path("/{assettype}")
     public Response getChecksums(@PathParam("modulename") String moduleName,
             @PathParam("modulePart") String modulePart) {
+        ChecksumList checksumList = getChecksumList(moduleName, modulePart);
 
+        ResponseBuilder rb = Response.ok(checksumList);
+        return rb.build();
+    }
+
+    private static ChecksumList getChecksumList(String moduleName, String modulePart) {
         // Fetch all of the module parts given the module name. This case
         // handles if the module part is null (in which case all module parts)
         ChecksumManager checksumManager = ChecksumManager.getChecksumManager();
@@ -87,9 +93,7 @@ public class GetModuleChecksumsResource {
                 checksumList.putChecksums(partList.getChecksumMap());
             }
         }
-
-        ResponseBuilder rb = Response.ok(checksumList);
-        return rb.build();
+        return checksumList;
     }
 
     @GET

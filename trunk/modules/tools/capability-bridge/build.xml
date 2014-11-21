@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="capability-bridge" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.capability-bridge}"/>
+    <property name="modules.dir" location="${current.dir}/../../../modules" />
+        
+    <property name="module.src" value="com/wonderbuilders/modules/capabilitybridge"/>
+    <property name="module.packagename" value="com.wonderbuilders.modules.capabilitybridge"/>
+    <property name="module.jarname" value="capability-bridge"/>
+    
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <target name="build" depends="-module-init, -module-compile-common,
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="capability-bridge" majorVersion="1" minorVersion="0" 
+                jarfile="${module.dist.dir}/${module.jarname}.jar" description="Bridge between two components"
+                builddir="${build.dir}">
+
+            <client>
+                <clientjar name="capability-bridge-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                </clientjar>
+            </client>
+
+        </module>
+    </target>
+                                           
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>

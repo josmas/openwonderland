@@ -6,6 +6,7 @@
     <!-- all projects -->
     <filelist dir="${current.dir}" id="all.projects">
         <file name="darkstar/build.xml"/>
+        <file name="capability-bridge/build.xml"/>
         <file name="security-group/build.xml"/>
         <file name="security-session-common/build.xml"/>
         <file name="security-session-noauth/build.xml"/>

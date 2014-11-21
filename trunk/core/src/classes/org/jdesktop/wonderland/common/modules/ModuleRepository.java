@@ -163,7 +163,7 @@ public class ModuleRepository implements Serializable {
      * Updates the internal linked list of repository objects. This is invoked
      * whenever the set of master and mirror repositories changes.
      */
-    private void updateRepositoryList() {
+    public void updateRepositoryList() {
         this.repositoryList = new LinkedList();
         
         /* Add the master if not null */

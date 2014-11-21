@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -17,53 +20,37 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEnterExitMessage;
-
-import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupListener;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
-import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CallID;
-import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
-
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
+import com.sun.sgs.app.ManagedReference;
 
 import java.io.Serializable;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 
 /**
  * @author jprovino
+ * @author Abhishek Upadhyay
  */
-public class AudioTreatmentProximityListener implements ProximityListenerSrv, 
+public class AudioTreatmentProximityListener implements ProximityListenerSrv,
 	ManagedObject, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentProximityListener.class.getName());
 
-    private CellID cellID;
-    private String name;
     private String treatmentId;
-
     private int numberInRange;
+    private boolean treatmentDone = true;
+    private ManagedReference<CellMO> cellMO;
 
-    public AudioTreatmentProximityListener(CellMO cellMO, Treatment treatment) {
-	cellID = cellMO.getCellID();
-        name = cellMO.getName();
+    public AudioTreatmentProximityListener(ManagedReference<CellMO> cellMO, Treatment treatment) {
+	this.cellMO = cellMO;
 	treatmentId = treatment.getId();
     }
 
@@ -71,24 +58,29 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv,
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
+        AudioTreatmentComponentMO atc = cellMO.get().getComponent(AudioTreatmentComponentMO.class);
+        PlayWhen playWhen = atc.getPlayWhen();
+        
 	logger.fine("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	if (entered) {
-	    cellEntered();
-	} else {
-	    cellExited();
-	}
+        if(playWhen.equals(PlayWhen.FIRST_IN_RANGE)) {
+            if (entered) {
+                cellEntered();
+            } else {
+                cellExited();
+            }
+        }
     }
 
     public void cellEntered() {
 	numberInRange++;
 
-	if (numberInRange > 1) {
-	    return;
-	}
+//	if (numberInRange > 1) {
+//	    return;
+//	}
 
-	logger.fine("Restarting treatment...");
+	logger.warning("Restarting treatment...");
 
 	Treatment treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
 
@@ -97,8 +89,10 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv,
 	    return;
 	}
 
-	//System.out.println("Cell entered, restarting input treatment " + treatment);
-	treatment.restart(false);
+        if(treatmentDone) {
+            treatment.restart(false);
+            treatmentDone = false;
+        }
     }
 
     public void cellExited() {
@@ -108,7 +102,7 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv,
 	    return;
 	}
 
-	logger.fine("Pausing treatment...");
+	logger.warning("Pausing treatment...");
 
 	Treatment treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
 
@@ -116,9 +110,19 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv,
 	    logger.warning("No treatment for " + treatmentId);
 	    return;
 	}
-
-	//System.out.println("Cell exited , pausing input treatment " + treatment);
+        
+        treatmentDone = true;
 	treatment.restart(true);
+    }
+
+    public void setTreatmentDone(boolean td) {
+        this.treatmentDone = td;
+    }
+    
+    public void stopTreatment() {
+        logger.warning("Pausing treatment...");
+        Treatment treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
+        treatment.restart(true);
     }
 
 }

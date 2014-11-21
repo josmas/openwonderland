@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+/**
  * Open Wonderland
  *
  * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
@@ -36,7 +39,6 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,9 +59,7 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -140,6 +140,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  *
  * @author jprovino
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ * @author Abhishek Upadhyay
  */
 public class AudioManagerClient extends BaseConnection implements
         AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener
@@ -151,6 +152,8 @@ public class AudioManagerClient extends BaseConnection implements
     // will result in the default behavior, unmuted.
     public static final String AUDIO_STATE_PROP =
             "AudioManagerClient.InitialState";
+    public static final String AUDIO_ISMUTE_PROP =
+            "Audio.disable";
 
     // whether or not to show the audio status HUD by default
     public static final String AUDIO_HUD_PROP =
@@ -223,7 +226,7 @@ public class AudioManagerClient extends BaseConnection implements
                 }
             }
         };
-
+        
         audioMeterListener = new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent event) {
                 if (event.getEventType() == HUDEvent.HUDEventType.APPEARED ||
@@ -371,7 +374,7 @@ public class AudioManagerClient extends BaseConnection implements
             // if the view is already configured, fake an event
             viewConfigured(avatar);
         }
-
+        
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
 
         // enable the menus
@@ -399,6 +402,19 @@ public class AudioManagerClient extends BaseConnection implements
         if (showHUD) {
             miniVUMeter();
         }
+        
+        //check if audio need to be muted or not
+        String audio = System.getProperty(AUDIO_ISMUTE_PROP);
+        if(audio==null) {
+            audio="false";
+        }
+        if(audio.equalsIgnoreCase("true")) {
+           disconnected();
+           // enable the menus
+            AudioMenu.getAudioMenu(this).setEnabled(false);
+            AudioMenu.getAudioMenu(this).audioVolumeDisable();
+            AudioMenu.getAudioMenu(this).disableAudioMenu();
+        } 
     }
 
     @Override
@@ -550,7 +566,6 @@ public class AudioManagerClient extends BaseConnection implements
                    }
                 }
             }).start();
-            
         }
     }
 
@@ -1163,6 +1178,10 @@ public class AudioManagerClient extends BaseConnection implements
         String y = System.getProperty("y");
         String z = System.getProperty("z");
 
+        if(x==null || y==null || z==null) {
+            x=y=z="0";
+        }
+        
         if (phoneNumber != null && phoneNumber.length() > 0) {
             sendMessage(new PlaceCallRequestMessage(presenceInfo, phoneNumber,
                     Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(z), 90., false));
