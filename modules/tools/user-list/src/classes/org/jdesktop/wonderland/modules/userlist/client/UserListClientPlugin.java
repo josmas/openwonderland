@@ -105,17 +105,23 @@ public class UserListClientPlugin extends BaseClientPlugin
         }).start();
     }
 
-    public void sessionCreated(WonderlandSession session) {
-//        LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
-//        
-//        avatar.addViewCellConfiguredListener(this);
+    public void sessionCreated(final WonderlandSession session) {
+        final UserListClientPlugin object = this;
+        new Thread(new Runnable() {
+
+            public void run() {
+                LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
+                avatar.addViewCellConfiguredListener(object);
+            }
+        }).start();
+        
 //        if (avatar!= null) {
 //            viewConfigured(avatar);
 //        }
     }
 
     public void primarySession(WonderlandSession session) {
-        LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();        
-        avatar.addViewCellConfiguredListener(this);
+//        LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
+//        avatar.addViewCellConfiguredListener(this);
     }
 }
