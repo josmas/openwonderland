@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="celleditor" default="all" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.wonderland-celleditor-module}"/>
-    <property name="modules.dir" location="${current.dir}/../../"/>
+    <dirname property="current.dir" file="${ant.file.celleditor}"/>
+    <property name="modules.dir" location="${current.dir}/../../" />
         
     <property name="module.src" value="org/jdesktop/wonderland/modules/celleditor"/>
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.celleditor"/>
