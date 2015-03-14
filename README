@@ -1,0 +1,34 @@
+# Build instructions and notes
+
+This is an early attempt to move the [Open Wonderland](http://openwonderland.org/) sources to github
+after the announcement that Google code is closing.
+
+## Forking and cloning
+
+There are two main projects, [Open Wonderland](https://github.com/josmas/openwonderland) and [Open Wonderland Modules](https://github.com/josmas/openwonderland-modules). If you want to make your own changes to the code, I would suggest forking and cloning your own repos.
+
+
+If all you want is to run the code locally you can do the following:
+
+1) clone the main project and it will create a folder called _wonderland_:
+
+    git clone git@github.com:josmas/openwonderland.git wonderland
+
+2) clone the modules project and it will create a project called _openwonderland-modules_:
+
+    git clone git@github.com:josmas/openwonderland-modules.git
+
+3) move into the modules project and create a soft link to the 0.5 folder:
+
+    cd openwonderland-modules
+    ln -s ../wonderland/ wonderland
+
+4) follow building instructions in the [main wiki](https://code.google.com/p/openwonderland/wiki/OpenWonderland?tm=6). The following should get you started:
+
+    cd ../ # if you still are in openwonderland-modules
+    cd wonderland
+    ant run-server
+
+You should have a server running that you can see at http://localhost:8080.
+
+If you want to work with the video module or avatars, you will have to fork/clone different projects; consult the main wiki for instructions.
