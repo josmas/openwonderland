@@ -75,7 +75,6 @@
                 </serverjar>
             </server>
             
-            <art dir="${current.dir}/art"/>
         </module>
     </target>                                                       
                                            
